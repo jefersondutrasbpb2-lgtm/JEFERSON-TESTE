@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liderança de Alta Performance — Treinamento Presencial Exclusivo</title>
+    <style>
+        :root {
+            --navy-deepest: #030812;
+            --navy-deep: #060D1E;
+            --navy: #0C1A3A;
+            --navy-light: #112247;
+            --gold: #D4AF37;
+            --gold-bright: #F5C842;
+            --gold-dim: #A88A28;
+            --cream: #F5F0E8;
+            --white: #FFFFFF;
+            --text-muted: #8B9BB8;
+            --card-bg: rgba(17, 34, 71, 0.7);
+            --border: rgba(212, 175, 55, 0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            background: var(--navy-deepest);
+            color: var(--white);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
+            line-height: 1.2;
+        }
+
+        /* ─── NAVIGATION ─── */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            padding: 1.2rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        nav.scrolled {
+            background: rgba(3, 8, 18, 0.96);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 1px 0 rgba(212, 175, 55, 0.2);
+            padding: 0.8rem 2rem;
+        }
+
+        .nav-logo {
+            font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
+            font-size: 1rem;
+            letter-spacing: 0.12em;
+            color: var(--gold);
+            text-transform: uppercase;
+        }
+
+        .nav-cta {
+            background: linear-gradient(135deg, var(--gold), var(--gold-bright));
+            color: var(--navy-deepest);
+            padding: 0.6rem 1.5rem;
+            font-weight: 800;
+            font-size: 0.82rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+        }
+
+        .nav-cta:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(212, 175, 55, 0.45);
+        }
+
+        /* ─── HERO ─── */
+        .hero {
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(212, 175, 55, 0.08) 0%, transparent 60%),
+                linear-gradient(135deg, #030812 0%, #060D1E 50%, #0C1A3A 100%);
+        }
+
+        .hero-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(212, 175, 55, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(212, 175, 55, 0.04) 1px, transparent 1px);
+            background-size: 60px 60px;
+            mask-image: radial-gradient(ellipse at center, black 20%, transparent 75%);
+        }
+
+        .hero-ring {
+            position: absolute;
+            border: 1px solid rgba(212, 175, 55, 0.12);
+            border-radius: 0;
+        }
+        .hero-ring-1 { top: -60px; right: -60px; width: 580px; height: 580px; transform: rotate(30deg); }
+        .hero-ring-2 { top: -120px; right: 80px; width: 380px; height: 380px; transform: rotate(52deg); border-color: rgba(212,175,55,0.06); }
+
+        .particle {
+            position: absolute;
+            background: var(--gold);
+            border-radius: 50%;
+            animation: floatUp linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes floatUp {
+            0%   { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10%  { opacity: 0.55; }
+            90%  { opacity: 0.55; }
+            100% { transform: translateY(-120px) rotate(720deg); opacity: 0; }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            max-width: 920px;
+            padding: 0 2rem;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: rgba(212, 175, 55, 0.08);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            padding: 0.4rem 1.25rem;
+            font-size: 0.72rem;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 2rem;
+            animation: fadeInDown 0.8s ease both;
+        }
+
+        .hero-badge::before {
+            content: '';
+            width: 6px; height: 6px;
+            background: var(--gold);
+            border-radius: 50%;
+            animation: blink 2s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.35; transform: scale(0.75); }
+        }
+
+        .hero-title {
+            font-size: clamp(3.2rem, 8.5vw, 7.5rem);
+            font-weight: 900;
+            line-height: 0.92;
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 0.8s ease 0.2s both;
+        }
+
+        .hero-title .word-1 { display: block; color: var(--white); }
+        .hero-title .word-2 {
+            display: block;
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 50%, var(--gold) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1rem, 2.4vw, 1.25rem);
+            color: var(--text-muted);
+            max-width: 580px;
+            margin: 0 auto 3rem;
+            line-height: 1.75;
+            animation: fadeInUp 0.8s ease 0.4s both;
+        }
+
+        .hero-cta-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.8s ease 0.6s both;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gold), var(--gold-bright));
+            color: var(--navy-deepest);
+            padding: 1.1rem 2.5rem;
+            font-weight: 800;
+            font-size: 0.93rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent, rgba(255,255,255,0.22), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.45s ease;
+        }
+
+        .btn-primary:hover::after { transform: translateX(100%); }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(212, 175, 55, 0.5);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--white);
+            padding: 1.1rem 2.5rem;
+            font-size: 0.93rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            border: 1px solid rgba(255,255,255,0.22);
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-ghost:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+            transform: translateY(-2px);
+        }
+
+        .hero-countdown {
+            margin-top: 3rem;
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            align-items: center;
+            animation: fadeInUp 0.8s ease 0.8s both;
+        }
+
+        .cdown-item { text-align: center; }
+        .cdown-num {
+            font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: var(--gold);
+            display: block;
+            line-height: 1;
+        }
+        .cdown-lbl { font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); }
+        .cdown-sep { font-size: 2rem; color: var(--gold-dim); line-height: 1.2; }
+
+        .scroll-cue {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--text-muted);
+            font-size: 0.68rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            animation: fadeInUp 1s ease 1.2s both;
+        }
+
+        .scroll-line {
+            width: 1px; height: 50px;
+            background: linear-gradient(to bottom, var(--gold), transparent);
+            animation: lineDown 2s ease-in-out infinite;
+        }
+
+        @keyframes lineDown {
+            0%, 100% { transform: scaleY(0); transform-origin: top; opacity: 0; }
+            50% { transform: scaleY(1); transform-origin: top; opacity: 1; }
+        }
+
+        /* ─── SHARED ─── */
+        section { padding: 6rem 2rem; position: relative; }
+
+        .container { max-width: 1100px; margin: 0 auto; }
+
+        .sec-label {
+            font-size: 0.68rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .sec-label::before { content: ''; width: 28px; height: 1px; background: var(--gold); }
+
+        .sec-title {
+            font-size: clamp(1.9rem, 4vw, 3.4rem);
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+        }
+        .sec-title span {
+            background: linear-gradient(135deg, var(--gold), var(--gold-bright));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .sec-desc { color: var(--text-muted); font-size: 1.02rem; line-height: 1.8; max-width: 580px; }
+
+        .gold-rule {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+        }
+
+        /* ─── ABOUT ─── */
+        .about { background: linear-gradient(180deg, var(--navy-deepest), var(--navy-deep)); }
+
+        .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; }
+
+        .diffs { margin-top: 2.5rem; display: flex; flex-direction: column; gap: 1rem; }
+
+        .diff {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .diff-icon {
+            width: 44px; height: 44px;
+            background: rgba(212,175,55,0.08);
+            border: 1px solid rgba(212,175,55,0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .diff-icon svg { width: 20px; height: 20px; }
+
+        .diff h4 { font-size: 0.93rem; font-weight: 700; color: var(--white); margin-bottom: 0.18rem; }
+        .diff p { font-size: 0.83rem; color: var(--text-muted); }
+
+        .quote-box {
+            background: linear-gradient(135deg, var(--navy-light), var(--navy));
+            border: 1px solid var(--border);
+            padding: 3rem;
+            position: relative;
+        }
+        .quote-box::before {
+            content: '\201C';
+            position: absolute;
+            top: -0.4rem; left: 2rem;
+            font-size: 6rem;
+            font-family: Georgia, serif;
+            color: var(--gold);
+            line-height: 1;
+        }
+        .quote-text {
+            font-size: 1.25rem;
+            font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
+            font-style: italic;
+            line-height: 1.65;
+            color: var(--cream);
+            margin-top: 1rem;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            margin-top: 1px;
+            background: var(--border);
+        }
+
+        .stat {
+            background: var(--navy-light);
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-n {
+            font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: var(--gold);
+            display: block;
+        }
+        .stat-l { font-size: 0.72rem; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; }
+
+        /* ─── MODULES ─── */
+        .modules { background: var(--navy-deepest); }
+
+        .modules-hd { text-align: center; margin-bottom: 4rem; }
+        .modules-hd .sec-label, .modules-hd .sec-desc { justify-content: center; margin: 0 auto; }
+
+        .modules-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+
+        .module-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .module-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 0; height: 2px;
+            background: linear-gradient(90deg, var(--gold), var(--gold-bright));
+            transition: width 0.4s ease;
+        }
+        .module-card:hover::after { width: 100%; }
+        .module-card:hover { transform: translateY(-4px); border-color: rgba(212,175,55,0.4); }
+
+        .mod-num {
+            font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: rgba(212,175,55,0.13);
+            line-height: 1;
+            margin-bottom: 0.6rem;
+        }
+        .mod-title { font-size: 1.05rem; font-weight: 700; color: var(--white); margin-bottom: 0.6rem; }
+        .mod-desc { font-size: 0.83rem; color: var(--text-muted); line-height: 1.65; }
+
+        .mod-topics { margin-top: 1.2rem; display: flex; flex-direction: column; gap: 0.35rem; }
+        .mod-topic {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+        .mod-topic::before { content: ''; width: 4px; height: 4px; background: var(--gold); border-radius: 50%; flex-shrink: 0; }
+
+        /* ─── FOR WHO ─── */
+        .for-who { background: linear-gradient(180deg, var(--navy-deepest), var(--navy-deep)); }
+
+        .for-who-layout { display: grid; grid-template-columns: 1fr 2fr; gap: 5rem; align-items: start; }
+
+        .profiles-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+
+        .profile-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 1.75rem;
+            transition: all 0.3s ease;
+        }
+        .profile-card:hover { border-color: rgba(212,175,55,0.4); transform: translateY(-3px); }
+
+        .profile-ico {
+            width: 48px; height: 48px;
+            background: rgba(212,175,55,0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        .profile-ico svg { width: 24px; height: 24px; }
+
+        .profile-title { font-size: 0.98rem; font-weight: 700; color: var(--white); margin-bottom: 0.35rem; }
+        .profile-desc { font-size: 0.81rem; color: var(--text-muted); line-height: 1.6; }
+
+        /* ─── INSTRUCTOR ─── */
+        .instructor { background: var(--navy-deepest); }
+
+        .instructor-layout { display: grid; grid-template-columns: 360px 1fr; gap: 5rem; align-items: center; }
+
+        .photo-wrap { position: relative; }
+
+        .photo-placeholder {
+            width: 100%;
+            aspect-ratio: 3/4;
+            background: linear-gradient(135deg, var(--navy-light), var(--navy));
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            overflow: hidden;
+        }
+        .photo-placeholder::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 50% 30%, rgba(212,175,55,0.07), transparent 60%);
+        }
+        .photo-ico {
+            width: 80px; height: 80px;
+            background: rgba(212,175,55,0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .photo-ico svg { width: 40px; height: 40px; }
+        .photo-lbl { font-size: 0.73rem; color: var(--text-muted); letter-spacing: 0.1em; }
+
+        .photo-frame {
+            position: absolute;
+            top: 1.5rem; left: 1.5rem;
+            right: -1.5rem; bottom: -1.5rem;
+            border: 1px solid rgba(212,175,55,0.18);
+            z-index: -1;
+        }
+
+        .ins-name { font-size: 2.4rem; font-weight: 700; margin-bottom: 0.2rem; }
+        .ins-role { color: var(--gold); font-size: 0.88rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 2rem; }
+        .ins-bio { color: var(--text-muted); line-height: 1.8; margin-bottom: 1.25rem; }
+
+        .creds { display: flex; flex-wrap: wrap; gap: 0.7rem; margin-top: 0.75rem; }
+        .cred {
+            background: rgba(212,175,55,0.07);
+            border: 1px solid rgba(212,175,55,0.2);
+            padding: 0.35rem 0.9rem;
+            font-size: 0.75rem;
+            color: var(--gold);
+            letter-spacing: 0.05em;
+        }
+
+        /* ─── TESTIMONIALS ─── */
+        .testimonials { background: linear-gradient(180deg, var(--navy-deepest), var(--navy-deep)); }
+
+        .test-hd { text-align: center; margin-bottom: 4rem; }
+
+        .test-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+
+        .test-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .test-card:hover { border-color: rgba(212,175,55,0.3); transform: translateY(-4px); }
+
+        .test-quote {
+            position: absolute;
+            top: 1.2rem; right: 1.5rem;
+            font-size: 3.5rem;
+            font-family: Georgia, serif;
+            color: rgba(212,175,55,0.18);
+            line-height: 1;
+        }
+
+        .stars { display: flex; gap: 0.2rem; margin-bottom: 1rem; }
+        .star { color: var(--gold); font-size: 0.88rem; }
+
+        .test-text {
+            font-size: 0.93rem;
+            color: var(--cream);
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+        }
+
+        .test-author { display: flex; align-items: center; gap: 0.75rem; }
+
+        .avatar {
+            width: 44px; height: 44px;
+            background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: Georgia, serif;
+            font-weight: 700;
+            color: var(--navy-deepest);
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .author-name { font-weight: 700; font-size: 0.88rem; color: var(--white); }
+        .author-role { font-size: 0.76rem; color: var(--text-muted); }
+
+        /* ─── EVENT DETAILS ─── */
+        .event-details { background: var(--navy-deepest); }
+
+        .event-hd { text-align: center; margin-bottom: 4rem; }
+
+        .event-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2.5rem; }
+
+        .event-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 2rem 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .event-card:hover { border-color: rgba(212,175,55,0.38); }
+
+        .event-ico {
+            width: 56px; height: 56px;
+            background: rgba(212,175,55,0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+        }
+        .event-ico svg { width: 28px; height: 28px; }
+
+        .event-label { font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.45rem; }
+        .event-val { font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif; font-size: 1.25rem; font-weight: 700; color: var(--white); line-height: 1.3; }
+        .event-sub { font-size: 0.76rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+        .urgency {
+            background: linear-gradient(135deg, rgba(212,175,55,0.09), rgba(212,175,55,0.04));
+            border: 1px solid rgba(212,175,55,0.22);
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .urgency-left { display: flex; align-items: center; gap: 1rem; }
+        .pulse-dot { width: 10px; height: 10px; background: var(--gold-bright); border-radius: 50%; animation: blink 2s ease-in-out infinite; }
+        .urgency-msg { font-size: 0.9rem; color: var(--cream); }
+        .urgency-msg strong { color: var(--gold); }
+
+        .prog-wrap { flex: 1; max-width: 280px; }
+        .prog-lbl { display: flex; justify-content: space-between; font-size: 0.73rem; color: var(--text-muted); margin-bottom: 0.45rem; }
+        .prog-bar { height: 4px; background: rgba(212,175,55,0.1); border-radius: 2px; overflow: hidden; }
+        .prog-fill { height: 100%; width: 72%; background: linear-gradient(90deg, var(--gold), var(--gold-bright)); border-radius: 2px; }
+
+        /* ─── PRICING ─── */
+        .pricing {
+            background: linear-gradient(135deg, var(--navy-deep), var(--navy), var(--navy-deep));
+            position: relative;
+            overflow: hidden;
+        }
+        .pricing::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(212,175,55,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(212,175,55,0.025) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .pricing-inner { text-align: center; position: relative; z-index: 2; }
+
+        .pricing-box {
+            max-width: 580px;
+            margin: 0 auto;
+            background: rgba(6, 13, 30, 0.82);
+            border: 1px solid rgba(212,175,55,0.38);
+            padding: 3.5rem;
+            position: relative;
+        }
+        .pricing-box::before {
+            content: 'OFERTA ESPECIAL';
+            position: absolute;
+            top: -13px; left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--gold), var(--gold-bright));
+            color: var(--navy-deepest);
+            padding: 0.25rem 1.5rem;
+            font-size: 0.68rem;
+            font-weight: 800;
+            letter-spacing: 0.18em;
+        }
+
+        .price-old { font-size: 1.05rem; color: var(--text-muted); text-decoration: line-through; margin-bottom: 0.5rem; }
+
+        .price-main { display: flex; align-items: flex-start; justify-content: center; gap: 0.2rem; margin-bottom: 0.4rem; }
+        .price-cur { font-size: 1.5rem; font-weight: 700; color: var(--gold); margin-top: 0.8rem; }
+        .price-val {
+            font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
+            font-size: 5.5rem;
+            font-weight: 700;
+            color: var(--white);
+            line-height: 1;
+        }
+
+        .price-inst { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 2rem; }
+
+        .includes { text-align: left; margin-bottom: 2.5rem; }
+        .inc-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid rgba(212,175,55,0.07);
+            font-size: 0.88rem;
+            color: var(--cream);
+        }
+        .inc-check {
+            width: 20px; height: 20px;
+            background: rgba(212,175,55,0.18);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .inc-check svg { width: 10px; height: 10px; }
+
+        .guarantee {
+            margin-top: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.7rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* ─── FAQ ─── */
+        .faq { background: var(--navy-deepest); }
+
+        .faq-layout { display: grid; grid-template-columns: 340px 1fr; gap: 5rem; }
+
+        .faq-list { display: flex; flex-direction: column; gap: 0.7rem; }
+
+        .faq-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .faq-q {
+            padding: 1.2rem 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.93rem;
+            font-weight: 600;
+            color: var(--white);
+            transition: color 0.2s ease;
+            user-select: none;
+        }
+        .faq-q:hover { color: var(--gold); }
+
+        .faq-arrow { width: 18px; height: 18px; flex-shrink: 0; transition: transform 0.3s ease; fill: var(--gold); }
+        .faq-item.open .faq-arrow { transform: rotate(180deg); }
+
+        .faq-a { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+        .faq-item.open .faq-a { max-height: 260px; }
+        .faq-a-inner { padding: 0 1.5rem 1.2rem; font-size: 0.86rem; color: var(--text-muted); line-height: 1.72; }
+
+        /* ─── FOOTER ─── */
+        footer {
+            background: var(--navy-deepest);
+            border-top: 1px solid rgba(212,175,55,0.13);
+            padding: 3rem 2rem;
+        }
+
+        .footer-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: start;
+            gap: 3rem;
+        }
+
+        .footer-logo { font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif; font-size: 1.2rem; color: var(--gold); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.4rem; }
+        .footer-tag { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+
+        .contact-list { display: flex; flex-direction: column; gap: 0.7rem; }
+        .contact-row { display: flex; align-items: center; gap: 0.7rem; font-size: 0.86rem; color: var(--text-muted); }
+        .contact-row svg { width: 15px; height: 15px; fill: var(--gold); flex-shrink: 0; }
+
+        .footer-bottom {
+            max-width: 1100px;
+            margin: 2rem auto 0;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.76rem;
+            color: var(--text-muted);
+        }
+
+        /* ─── ANIMATIONS ─── */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(28px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 960px) {
+            .about-grid,
+            .for-who-layout,
+            .instructor-layout,
+            .faq-layout { grid-template-columns: 1fr; gap: 3rem; }
+            .modules-grid { grid-template-columns: repeat(2, 1fr); }
+            .test-grid { grid-template-columns: 1fr; }
+            .event-cards { grid-template-columns: repeat(2, 1fr); }
+            .footer-inner { grid-template-columns: 1fr; }
+            .footer-bottom { flex-direction: column; gap: 0.4rem; text-align: center; }
+        }
+
+        @media (max-width: 600px) {
+            .modules-grid,
+            .profiles-grid,
+            .event-cards { grid-template-columns: 1fr; }
+            .pricing-box { padding: 2.5rem 1.5rem; }
+            .hero-countdown { gap: 1rem; }
+            .cdown-num { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══ NAVIGATION ═══ -->
+<nav id="navbar">
+    <div class="nav-logo">Liderança de Alta Performance</div>
+    <a href="#inscricao" class="nav-cta">Garantir Vaga</a>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-ring hero-ring-1"></div>
+    <div class="hero-ring hero-ring-2"></div>
+
+    <div class="hero-content">
+        <div class="hero-badge">Treinamento Presencial Exclusivo</div>
+
+        <h1 class="hero-title">
+            <span class="word-1">Liderança</span>
+            <span class="word-2">Alta Performance</span>
+        </h1>
+
+        <p class="hero-subtitle">
+            Domine as ferramentas, mentalidade e estratégias que separam os líderes comuns
+            dos extraordinários. Dois dias intensos que vão redefinir sua liderança.
+        </p>
+
+        <div class="hero-cta-group">
+            <a href="#inscricao" class="btn-primary">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+                Garantir Minha Vaga
+            </a>
+            <a href="#sobre" class="btn-ghost">Saiba Mais</a>
+        </div>
+
+        <div class="hero-countdown">
+            <div class="cdown-item">
+                <span class="cdown-num" id="cd-days">--</span>
+                <span class="cdown-lbl">Dias</span>
+            </div>
+            <span class="cdown-sep">:</span>
+            <div class="cdown-item">
+                <span class="cdown-num" id="cd-hours">--</span>
+                <span class="cdown-lbl">Horas</span>
+            </div>
+            <span class="cdown-sep">:</span>
+            <div class="cdown-item">
+                <span class="cdown-num" id="cd-min">--</span>
+                <span class="cdown-lbl">Min</span>
+            </div>
+            <span class="cdown-sep">:</span>
+            <div class="cdown-item">
+                <span class="cdown-num" id="cd-sec">--</span>
+                <span class="cdown-lbl">Seg</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="scroll-cue">
+        <span>Scroll</span>
+        <div class="scroll-line"></div>
+    </div>
+</section>
+
+<!-- ═══ ABOUT ═══ -->
+<section class="about" id="sobre">
+    <div class="container">
+        <div class="about-grid">
+            <div>
+                <div class="sec-label">Sobre o Treinamento</div>
+                <h2 class="sec-title">Liderança que <span>transforma</span> resultados</h2>
+                <p class="sec-desc">
+                    Um treinamento imersivo de dois dias projetado para executivos, gestores e
+                    profissionais que desejam elevar sua capacidade de liderança a um nível
+                    de alto desempenho sustentável.
+                </p>
+
+                <div class="diffs">
+                    <div class="diff reveal">
+                        <div class="diff-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                        <div>
+                            <h4>Metodologia Prática</h4>
+                            <p>Exercícios, simulações e cases reais do mercado brasileiro</p>
+                        </div>
+                    </div>
+                    <div class="diff reveal">
+                        <div class="diff-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/></svg>
+                        </div>
+                        <div>
+                            <h4>Turmas Reduzidas</h4>
+                            <p>Máximo de 25 participantes para aprendizado personalizado</p>
+                        </div>
+                    </div>
+                    <div class="diff reveal">
+                        <div class="diff-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        </div>
+                        <div>
+                            <h4>Resultados Imediatos</h4>
+                            <p>Ferramentas prontas para aplicar no retorno ao trabalho</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reveal">
+                <div class="quote-box">
+                    <p class="quote-text">
+                        "Grandes líderes não nascem prontos. Eles são forjados pela coragem
+                        de se desenvolver continuamente e pela disciplina de aplicar o que aprendem."
+                    </p>
+                </div>
+                <div class="stats-row">
+                    <div class="stat">
+                        <span class="stat-n" data-target="500">0</span>
+                        <span class="stat-l">Líderes Formados</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-n" data-target="96" data-suffix="%">0</span>
+                        <span class="stat-l">% Satisfação</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-n" data-target="8" data-suffix="+">0</span>
+                        <span class="stat-l">Anos de Mercado</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ MODULES ═══ -->
+<section class="modules" id="modulos">
+    <div class="gold-rule"></div>
+    <div class="container">
+        <div class="modules-hd reveal">
+            <div class="sec-label" style="justify-content:center">O que você vai aprender</div>
+            <h2 class="sec-title">6 Módulos <span>Transformadores</span></h2>
+            <p class="sec-desc" style="margin:0 auto 1rem">
+                Uma jornada estruturada do autoconhecimento à execução de alta performance
+            </p>
+        </div>
+
+        <div class="modules-grid">
+            <div class="module-card reveal">
+                <div class="mod-num">01</div>
+                <div class="mod-title">Identidade e Presença de Liderança</div>
+                <div class="mod-desc">Descubra e fortaleça seu estilo único de liderança</div>
+                <div class="mod-topics">
+                    <span class="mod-topic">Autoconhecimento estratégico</span>
+                    <span class="mod-topic">Inteligência emocional avançada</span>
+                    <span class="mod-topic">Presença executiva</span>
+                </div>
+            </div>
+            <div class="module-card reveal">
+                <div class="mod-num">02</div>
+                <div class="mod-title">Comunicação de Impacto</div>
+                <div class="mod-desc">Comunique com clareza, influência e autoridade</div>
+                <div class="mod-topics">
+                    <span class="mod-topic">Comunicação não-verbal</span>
+                    <span class="mod-topic">Storytelling executivo</span>
+                    <span class="mod-topic">Conversas difíceis</span>
+                </div>
+            </div>
+            <div class="module-card reveal">
+                <div class="mod-num">03</div>
+                <div class="mod-title">Gestão e Desenvolvimento de Equipes</div>
+                <div class="mod-desc">Construa equipes de alta performance e engajamento</div>
+                <div class="mod-topics">
+                    <span class="mod-topic">Feedback de alto impacto</span>
+                    <span class="mod-topic">Delegação estratégica</span>
+                    <span class="mod-topic">Cultura de performance</span>
+                </div>
+            </div>
+            <div class="module-card reveal">
+                <div class="mod-num">04</div>
+                <div class="mod-title">Tomada de Decisão Estratégica</div>
+                <div class="mod-desc">Decida com rapidez, precisão e confiança</div>
+                <div class="mod-topics">
+                    <span class="mod-topic">Frameworks de decisão</span>
+                    <span class="mod-topic">Gestão de riscos</span>
+                    <span class="mod-topic">Pensamento sistêmico</span>
+                </div>
+            </div>
+            <div class="module-card reveal">
+                <div class="mod-num">05</div>
+                <div class="mod-title">Gestão de Conflitos e Negociação</div>
+                <div class="mod-desc">Transforme conflitos em oportunidades de crescimento</div>
+                <div class="mod-topics">
+                    <span class="mod-topic">Mediação e resolução</span>
+                    <span class="mod-topic">Negociação integrativa</span>
+                    <span class="mod-topic">Gestão de stakeholders</span>
+                </div>
+            </div>
+            <div class="module-card reveal">
+                <div class="mod-num">06</div>
+                <div class="mod-title">Plano de Ação e Alta Performance</div>
+                <div class="mod-desc">Construa seu plano de desenvolvimento imediato</div>
+                <div class="mod-topics">
+                    <span class="mod-topic">Planejamento estratégico pessoal</span>
+                    <span class="mod-topic">Hábitos de alta performance</span>
+                    <span class="mod-topic">Métricas de liderança</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ FOR WHO ═══ -->
+<section class="for-who">
+    <div class="container">
+        <div class="for-who-layout">
+            <div class="reveal">
+                <div class="sec-label">Para Quem É</div>
+                <h2 class="sec-title">Feito para <span>você</span></h2>
+                <p class="sec-desc">
+                    Profissionais que já lideram ou desejam liderar com excelência
+                    e impacto real na organização.
+                </p>
+            </div>
+
+            <div class="profiles-grid">
+                <div class="profile-card reveal">
+                    <div class="profile-ico">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    </div>
+                    <div class="profile-title">Gestores e Gerentes</div>
+                    <div class="profile-desc">Que lideram equipes e querem ampliar seu impacto e resultados</div>
+                </div>
+                <div class="profile-card reveal">
+                    <div class="profile-ico">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                    </div>
+                    <div class="profile-title">Diretores e C-Level</div>
+                    <div class="profile-desc">Executivos que buscam refinar sua liderança estratégica e influência</div>
+                </div>
+                <div class="profile-card reveal">
+                    <div class="profile-ico">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                    </div>
+                    <div class="profile-title">Líderes em Transição</div>
+                    <div class="profile-desc">Profissionais assumindo novos desafios de liderança pela primeira vez</div>
+                </div>
+                <div class="profile-card reveal">
+                    <div class="profile-ico">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </div>
+                    <div class="profile-title">Empreendedores</div>
+                    <div class="profile-desc">Fundadores e sócios que precisam liderar com clareza e propósito</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ INSTRUCTOR ═══ -->
+<section class="instructor">
+    <div class="gold-rule"></div>
+    <div class="container">
+        <div class="instructor-layout">
+            <div class="photo-wrap reveal">
+                <div class="photo-placeholder">
+                    <div class="photo-ico">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--gold-dim)" stroke-width="1.5" stroke-linecap="round"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    </div>
+                    <span class="photo-lbl">Foto do Instrutor</span>
+                </div>
+                <div class="photo-frame"></div>
+            </div>
+
+            <div class="reveal">
+                <div class="sec-label">Seu Instrutor</div>
+                <h2 class="ins-name">Dr. Ricardo Alves</h2>
+                <p class="ins-role">Especialista em Liderança e Desenvolvimento Organizacional</p>
+                <p class="ins-bio">
+                    Com mais de 15 anos dedicados ao desenvolvimento de líderes em empresas Fortune 500
+                    e startups de alto crescimento, Ricardo já capacitou mais de 500 profissionais no
+                    Brasil, Portugal e Estados Unidos.
+                </p>
+                <p class="ins-bio">
+                    Doutor em Psicologia Organizacional pela USP, certificado em Coaching Executivo pelo
+                    ICF e autor do livro best-seller <em>"Liderança que Permanece"</em>, com mais de
+                    30.000 exemplares vendidos.
+                </p>
+                <div class="creds">
+                    <span class="cred">PhD — USP</span>
+                    <span class="cred">ICF Certified Coach</span>
+                    <span class="cred">+500 Líderes</span>
+                    <span class="cred">15+ Anos</span>
+                    <span class="cred">3 Livros Publicados</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ TESTIMONIALS ═══ -->
+<section class="testimonials">
+    <div class="container">
+        <div class="test-hd reveal">
+            <div class="sec-label" style="justify-content:center">Depoimentos</div>
+            <h2 class="sec-title">O que dizem nossos <span>participantes</span></h2>
+        </div>
+
+        <div class="test-grid">
+            <div class="test-card reveal">
+                <div class="test-quote">"</div>
+                <div class="stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
+                <p class="test-text">
+                    "Dois dias que valeram mais do que anos de tentativa e erro. Saí com um plano
+                    claro e ferramentas que apliquei na semana seguinte. Os resultados foram
+                    imediatos no engajamento da minha equipe."
+                </p>
+                <div class="test-author">
+                    <div class="avatar">A</div>
+                    <div>
+                        <div class="author-name">Ana Carolina Mendes</div>
+                        <div class="author-role">Diretora de RH — Grupo Votorantim</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-card reveal">
+                <div class="test-quote">"</div>
+                <div class="stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
+                <p class="test-text">
+                    "O treinamento mudou a forma como me comunico com meu time. Aprendi a dar
+                    feedback de verdade, e isso transformou completamente o clima e a performance
+                    do departamento."
+                </p>
+                <div class="test-author">
+                    <div class="avatar">M</div>
+                    <div>
+                        <div class="author-name">Marcos Souza</div>
+                        <div class="author-role">Gerente Sênior — TOTVS</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-card reveal">
+                <div class="test-quote">"</div>
+                <div class="stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
+                <p class="test-text">
+                    "Estava travada em conflitos de equipe que duravam meses. Em dois dias aprendi
+                    como lidar com eles de forma eficaz. Hoje tenho uma equipe coesa e entregando
+                    resultados acima da meta."
+                </p>
+                <div class="test-author">
+                    <div class="avatar">P</div>
+                    <div>
+                        <div class="author-name">Patrícia Lima</div>
+                        <div class="author-role">CEO — StartupBR</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ EVENT DETAILS ═══ -->
+<section class="event-details" id="evento">
+    <div class="gold-rule"></div>
+    <div class="container">
+        <div class="event-hd reveal">
+            <div class="sec-label" style="justify-content:center">Detalhes do Evento</div>
+            <h2 class="sec-title">Informações do <span>Treinamento</span></h2>
+        </div>
+
+        <div class="event-cards">
+            <div class="event-card reveal">
+                <div class="event-ico">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                </div>
+                <div class="event-label">Data</div>
+                <div class="event-val">14 e 15<br>de Junho</div>
+                <div class="event-sub">Sábado e Domingo, 2025</div>
+            </div>
+            <div class="event-card reveal">
+                <div class="event-ico">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"><path d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                </div>
+                <div class="event-label">Local</div>
+                <div class="event-val">Hotel Grand<br>Hyatt</div>
+                <div class="event-sub">São Paulo — SP</div>
+            </div>
+            <div class="event-card reveal">
+                <div class="event-ico">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <div class="event-label">Carga Horária</div>
+                <div class="event-val">16 Horas</div>
+                <div class="event-sub">08h às 18h nos dois dias</div>
+            </div>
+            <div class="event-card reveal">
+                <div class="event-ico">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                </div>
+                <div class="event-label">Vagas</div>
+                <div class="event-val">Apenas 25<br>Participantes</div>
+                <div class="event-sub">7 vagas disponíveis</div>
+            </div>
+        </div>
+
+        <div class="urgency reveal">
+            <div class="urgency-left">
+                <div class="pulse-dot"></div>
+                <span class="urgency-msg"><strong>Atenção:</strong> Restam apenas 7 vagas para esta turma. Não perca sua oportunidade!</span>
+            </div>
+            <div class="prog-wrap">
+                <div class="prog-lbl">
+                    <span>18 vagas preenchidas</span>
+                    <span>25 total</span>
+                </div>
+                <div class="prog-bar"><div class="prog-fill"></div></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ PRICING ═══ -->
+<section class="pricing" id="inscricao">
+    <div class="container">
+        <div class="pricing-inner">
+            <div class="reveal">
+                <div class="sec-label" style="justify-content:center">Investimento</div>
+                <h2 class="sec-title" style="margin-bottom:3rem">Garanta sua <span>transformação</span></h2>
+            </div>
+
+            <div class="pricing-box reveal">
+                <p class="price-old">De R$ 2.997,00</p>
+                <div class="price-main">
+                    <span class="price-cur">R$</span>
+                    <span class="price-val">1.997</span>
+                </div>
+                <p class="price-inst">ou 12x de R$ 199,90 sem juros</p>
+
+                <div class="includes">
+                    <div class="inc-item">
+                        <div class="inc-check"><svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg></div>
+                        16 horas de treinamento presencial intensivo
+                    </div>
+                    <div class="inc-item">
+                        <div class="inc-check"><svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg></div>
+                        Material exclusivo e apostila completa impressa
+                    </div>
+                    <div class="inc-item">
+                        <div class="inc-check"><svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg></div>
+                        Coffee breaks e almoço incluídos nos dois dias
+                    </div>
+                    <div class="inc-item">
+                        <div class="inc-check"><svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg></div>
+                        Acesso ao grupo exclusivo de ex-alunos
+                    </div>
+                    <div class="inc-item">
+                        <div class="inc-check"><svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg></div>
+                        Certificado digital de conclusão
+                    </div>
+                    <div class="inc-item">
+                        <div class="inc-check"><svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg></div>
+                        1 sessão de follow-up pós-evento (online)
+                    </div>
+                </div>
+
+                <a href="#" class="btn-primary" style="width:100%;justify-content:center;font-size:1rem">
+                    Garantir Minha Vaga Agora
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                </a>
+
+                <div class="guarantee">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    Garantia de satisfação de 7 dias — seu dinheiro de volta
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ FAQ ═══ -->
+<section class="faq">
+    <div class="gold-rule"></div>
+    <div class="container">
+        <div class="faq-layout">
+            <div class="reveal">
+                <div class="sec-label">FAQ</div>
+                <h2 class="sec-title">Perguntas <span>Frequentes</span></h2>
+                <p class="sec-desc">Ficou com alguma dúvida? Confira as respostas às perguntas mais comuns.</p>
+            </div>
+
+            <div class="faq-list">
+                <div class="faq-item reveal">
+                    <div class="faq-q">
+                        <span>O treinamento tem certificado?</span>
+                        <svg class="faq-arrow" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="faq-a"><div class="faq-a-inner">Sim! Todos os participantes recebem um certificado digital de conclusão com carga horária de 16 horas, reconhecido pelo mercado e válido para registro em currículo e LinkedIn.</div></div>
+                </div>
+                <div class="faq-item reveal">
+                    <div class="faq-q">
+                        <span>Qual o dress code para o evento?</span>
+                        <svg class="faq-arrow" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="faq-a"><div class="faq-a-inner">Recomendamos traje casual executivo (business casual). O importante é estar confortável para aproveitar ao máximo os dois dias de imersão.</div></div>
+                </div>
+                <div class="faq-item reveal">
+                    <div class="faq-q">
+                        <span>Posso pagar com nota fiscal para empresa?</span>
+                        <svg class="faq-arrow" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="faq-a"><div class="faq-a-inner">Sim! Emitimos nota fiscal para pessoa jurídica. Entre em contato pelo e-mail financeiro@liderancaap.com.br para receber a proposta comercial com dados para faturamento.</div></div>
+                </div>
+                <div class="faq-item reveal">
+                    <div class="faq-q">
+                        <span>O que acontece se eu precisar cancelar?</span>
+                        <svg class="faq-arrow" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="faq-a"><div class="faq-a-inner">Oferecemos garantia de 7 dias. Se cancelar até 30 dias antes do evento, reembolsamos 100% do valor. Entre 30 e 15 dias antes, você pode transferir a vaga para outra pessoa ou para a próxima turma.</div></div>
+                </div>
+                <div class="faq-item reveal">
+                    <div class="faq-q">
+                        <span>Há desconto para grupos?</span>
+                        <svg class="faq-arrow" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="faq-a"><div class="faq-a-inner">Sim! Para grupos de 3 ou mais participantes da mesma empresa, oferecemos desconto progressivo: 10% para 3 pessoas, 15% para 5 ou mais. Entre em contato para negociar.</div></div>
+                </div>
+                <div class="faq-item reveal">
+                    <div class="faq-q">
+                        <span>O material fica disponível após o evento?</span>
+                        <svg class="faq-arrow" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                    <div class="faq-a"><div class="faq-a-inner">Você recebe a apostila física completa e acesso digital aos slides e ferramentas. Todo o material fica disponível permanentemente na sua área de aluno.</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+    <div class="footer-inner">
+        <div>
+            <div class="footer-logo">Liderança de Alta Performance</div>
+            <div class="footer-tag">Formando líderes que transformam organizações</div>
+            <div class="contact-list">
+                <div class="contact-row">
+                    <svg viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+                    <span>contato@liderancaap.com.br</span>
+                </div>
+                <div class="contact-row">
+                    <svg viewBox="0 0 24 24"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+                    <span>(11) 9 9999-9999</span>
+                </div>
+                <div class="contact-row">
+                    <svg viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+                    <span>São Paulo — SP</span>
+                </div>
+            </div>
+        </div>
+        <div>
+            <a href="#inscricao" class="btn-primary">Garantir Vaga</a>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <span>© 2025 Liderança de Alta Performance. Todos os direitos reservados.</span>
+        <span>Política de Privacidade · Termos de Uso</span>
+    </div>
+</footer>
+
+<script>
+    // Sticky nav
+    const nav = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+        nav.classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    // Particles
+    (function spawnParticles() {
+        const hero = document.querySelector('.hero');
+        for (let i = 0; i < 22; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            const size = Math.random() * 3 + 1;
+            Object.assign(p.style, {
+                left: Math.random() * 100 + '%',
+                width: size + 'px',
+                height: size + 'px',
+                animationDuration: (Math.random() * 14 + 10) + 's',
+                animationDelay: (Math.random() * 12) + 's',
+                opacity: Math.random() * 0.45 + 0.15,
+            });
+            hero.appendChild(p);
+        }
+    })();
+
+    // Countdown
+    function tick() {
+        const target = new Date('2025-06-14T08:00:00');
+        const diff = target - Date.now();
+        if (diff <= 0) return;
+        const d = Math.floor(diff / 86400000);
+        const h = Math.floor((diff % 86400000) / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        document.getElementById('cd-days').textContent  = String(d).padStart(2,'0');
+        document.getElementById('cd-hours').textContent = String(h).padStart(2,'0');
+        document.getElementById('cd-min').textContent   = String(m).padStart(2,'0');
+        document.getElementById('cd-sec').textContent   = String(s).padStart(2,'0');
+    }
+    tick();
+    setInterval(tick, 1000);
+
+    // Scroll reveal
+    const revealObs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                e.target.classList.add('visible');
+                revealObs.unobserve(e.target);
+            }
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+    // Counter animation
+    function animateCount(el) {
+        const target = +el.dataset.target;
+        const suffix = el.dataset.suffix || '+';
+        const dur = 1800;
+        const start = performance.now();
+        function step(now) {
+            const p = Math.min((now - start) / dur, 1);
+            const ease = 1 - Math.pow(1 - p, 3);
+            el.textContent = Math.round(target * ease) + (p >= 1 ? suffix : '');
+            if (p < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+    }
+
+    const statObs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                e.target.querySelectorAll('[data-target]').forEach(animateCount);
+                statObs.unobserve(e.target);
+            }
+        });
+    }, { threshold: 0.5 });
+    document.querySelectorAll('.stats-row').forEach(el => statObs.observe(el));
+
+    // FAQ accordion
+    document.querySelectorAll('.faq-q').forEach(q => {
+        q.addEventListener('click', () => {
+            const item = q.parentElement;
+            const wasOpen = item.classList.contains('open');
+            document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+            if (!wasOpen) item.classList.add('open');
+        });
+    });
+
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+        a.addEventListener('click', e => {
+            const target = document.querySelector(a.getAttribute('href'));
+            if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
+        });
+    });
+</script>
+</body>
+</html>

@@ -239,7 +239,7 @@
   <div class="logo">📄</div>
   <div>
     <h1>Conferência de Notas Fiscais</h1>
-    <p>Comparação DANFE × Relatório do Fornecedor</p>
+    <p>Sistema × Fornecedor — Ração Subsidiada / Paraíba</p>
   </div>
 </header>
 
@@ -248,17 +248,19 @@
   <!-- Upload zones -->
   <div class="upload-grid">
     <div class="upload-card">
-      <h2>📑 DANFEs <span class="badge">Múltiplos PDFs</span></h2>
+      <h2>🖥️ Relatório do Sistema <span class="badge">1 PDF</span></h2>
+      <p style="font-size:0.78rem;color:#5a7090;margin-bottom:10px;">PDF exportado do sistema com as entradas dos polos (campos: Nota Fiscal, Quant, Valor total da nota)</p>
       <div class="drop-zone" id="dropDanfe">
-        <input type="file" id="inputDanfe" accept=".pdf" multiple>
+        <input type="file" id="inputDanfe" accept=".pdf">
         <div class="icon">📂</div>
-        <p><strong>Arraste os PDFs aqui</strong><br>ou clique para selecionar</p>
+        <p><strong>Arraste o PDF do sistema aqui</strong><br>ou clique para selecionar</p>
       </div>
       <div class="file-list" id="listDanfe"></div>
     </div>
 
     <div class="upload-card">
       <h2>📊 Relatório do Fornecedor <span class="badge">1 PDF</span></h2>
+      <p style="font-size:0.78rem;color:#5a7090;margin-bottom:10px;">PDF enviado pelo fornecedor com a tabela de notas emitidas para faturamento</p>
       <div class="drop-zone" id="dropReport">
         <input type="file" id="inputReport" accept=".pdf">
         <div class="icon">📋</div>
@@ -322,8 +324,8 @@ pdfjsLib.GlobalWorkerOptions.workerSrc =
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 // ─── State ────────────────────────────────────────────────────────────────────
-let danfeFiles   = [];
-let reportFile   = null;
+let sistemaFile  = null;   // Relatório do sistema (entradas dos polos)
+let reportFile   = null;   // Relatório do fornecedor
 let lastResults  = [];
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -366,74 +368,91 @@ async function extractText(file) {
   return text;
 }
 
-// ─── DANFE extraction ─────────────────────────────────────────────────────────
-function extractDanfe(text) {
+// ─── Sistema report extraction ────────────────────────────────────────────────
+// Extrai blocos de notas do relatório do sistema (entradas dos polos).
+// Campos esperados: "Nota Fiscal: 16929", "Quant: 280", "Valor total da nota: 36.260,00"
+function extractSistema(text) {
+  const entries = {};
   const upper = text.toUpperCase();
 
-  // --- NF Number ---
-  let nfRaw = null;
+  // Split por linhas para processar sequencialmente
+  const lines = text.split(/\n/);
 
-  // Pattern 1: Nº 000.000.000 or Nº 000 000 000
-  const p1 = upper.match(/N[ºO°]\.?\s*(\d{3}[\. ]\d{3}[\. ]\d{3})/);
-  if (p1) nfRaw = p1[1];
+  let currentNF = null;
+  let currentValor = null;
+  let currentQtd = null;
 
-  // Pattern 2: Nº followed by 6-9 digit number
-  if (!nfRaw) {
-    const p2 = upper.match(/N[ºO°]\.?\s*(\d{6,9})/);
-    if (p2) nfRaw = p2[1];
+  function flush() {
+    if (!currentNF) return;
+    const nf = normalizeNF(currentNF);
+    if (!nf || nf === '0') return;
+    if (!entries[nf]) {
+      entries[nf] = { nf, valor: currentValor, qtd: currentQtd };
+    } else {
+      // acumula se a mesma NF aparecer mais de uma vez (ex: parcelada)
+      if (currentValor !== null) entries[nf].valor = (entries[nf].valor || 0) + currentValor;
+      if (currentQtd   !== null) entries[nf].qtd   = (entries[nf].qtd   || 0) + currentQtd;
+    }
+    currentNF = null; currentValor = null; currentQtd = null;
   }
 
-  // Pattern 3: NÚMERO: 123456
-  if (!nfRaw) {
-    const p3 = upper.match(/N[ÚU]MERO\s*[:\-]?\s*(\d{3,9})/);
-    if (p3) nfRaw = p3[1];
-  }
+  for (const line of lines) {
+    const u = line.toUpperCase().trim();
+    if (!u) continue;
 
-  // Pattern 4: from 44-digit access key (chave de acesso) chars 25-34
-  if (!nfRaw) {
-    const keyMatch = upper.match(/\b(\d{44})\b/);
-    if (keyMatch) {
-      nfRaw = keyMatch[1].substring(25, 34);
+    // "Nota Fiscal: 16929" — inicia novo bloco
+    const nfMatch = u.match(/NOTA\s+FISCAL\s*[:\-]?\s*(\d{4,9})/);
+    if (nfMatch) {
+      flush();
+      currentNF = nfMatch[1];
+      // valor e qtd podem estar na mesma linha em sistemas compactos
+      const samVal = u.match(/VALOR\s+TOTAL\s+DA\s+NOTA\s*[:\-]?\s*R?\$?\s*([\d\.]+,\d{2})/);
+      if (samVal) currentValor = parseBR(samVal[1]);
+      const samQtd = u.match(/QUANT(?:IDADE)?\s*[:\-]?\s*([\d\.]+(?:,\d+)?)/);
+      if (samQtd) currentQtd = parseBR(samQtd[1]);
+      continue;
+    }
+
+    if (!currentNF) continue; // aguarda começar um bloco
+
+    // "Valor total da nota: 36.260,00"
+    if (currentValor === null) {
+      const vm = u.match(/VALOR\s+TOTAL\s+(?:DA\s+)?NOTA\s*[:\-]?\s*R?\$?\s*([\d\.]+,\d{2})/);
+      if (!vm) {
+        // fallback genérico: "Valor: 36.260,00" ou "Total: ..."
+        const vg = u.match(/(?:^|\s)(?:VALOR|TOTAL)\s*[:\-]\s*R?\$?\s*([\d\.]+,\d{2})/);
+        if (vg) currentValor = parseBR(vg[1]);
+      } else {
+        currentValor = parseBR(vm[1]);
+      }
+    }
+
+    // "Quant: 280"
+    if (currentQtd === null) {
+      const qm = u.match(/QUANT(?:IDADE)?\s*[:\-]?\s*([\d\.]+(?:,\d+)?)/);
+      if (qm) currentQtd = parseBR(qm[1]);
+    }
+  }
+  flush(); // último bloco
+
+  // Fallback: varredura por padrão "Nota Fiscal ... nnn ... valor" em texto corrido
+  if (Object.keys(entries).length === 0) {
+    const allText = text.toUpperCase();
+    const nfGlobal = /NOTA\s+FISCAL\s*[:\-]?\s*(\d{4,9})/g;
+    let m;
+    while ((m = nfGlobal.exec(allText)) !== null) {
+      const nf = normalizeNF(m[1]);
+      if (!nf || nf === '0') continue;
+      const after = allText.slice(m.index, m.index + 400);
+      const vm = after.match(/VALOR\s+TOTAL\s+(?:DA\s+)?NOTA\s*[:\-]?\s*R?\$?\s*([\d\.]+,\d{2})/);
+      const qm = after.match(/QUANT(?:IDADE)?\s*[:\-]?\s*([\d\.]+(?:,\d+)?)/);
+      if (!entries[nf]) {
+        entries[nf] = { nf, valor: vm ? parseBR(vm[1]) : null, qtd: qm ? parseBR(qm[1]) : null };
+      }
     }
   }
 
-  // Also try: standalone label "NF-E" or "NOTA FISCAL" followed by number
-  if (!nfRaw) {
-    const p5 = upper.match(/(?:NF-?E?|NOTA FISCAL(?:\s+ELETR[ÔO]NICA)?)\s*N[ºO°]?\s*[:\-]?\s*(\d{3,9})/);
-    if (p5) nfRaw = p5[1];
-  }
-
-  const nf = normalizeNF(nfRaw);
-
-  // --- Value ---
-  let valor = null;
-  const valPatterns = [
-    /VALOR\s+TOTAL\s+DA\s+NOTA\s*:?\s*R?\$?\s*([\d\.]+,\d{2})/,
-    /VALOR\s+TOTAL\s*:?\s*R?\$?\s*([\d\.]+,\d{2})/,
-    /TOTAL\s+DA\s+NOTA\s*:?\s*R?\$?\s*([\d\.]+,\d{2})/,
-    /TOTAL\s+GERAL\s*:?\s*R?\$?\s*([\d\.]+,\d{2})/,
-    /TOTAL\s*:?\s*R?\$?\s*([\d\.]+,\d{2})/,
-  ];
-  for (const pat of valPatterns) {
-    const m = upper.match(pat);
-    if (m) { valor = parseBR(m[1]); break; }
-  }
-
-  // --- Quantity ---
-  let qtd = null;
-  const qtdPatterns = [
-    /QUANTIDADE\s*(?:TOTAL)?\s*:?\s*([\d\.]+(?:,\d+)?)/,
-    /QTDE?\s*:?\s*([\d\.]+(?:,\d+)?)/,
-    /QTD\.?\s*:?\s*([\d\.]+(?:,\d+)?)/,
-    /PESO\s+L[IÍ]QUIDO\s*:?\s*([\d\.]+(?:,\d+)?)/,
-    /PESO\s+BRUTO\s*:?\s*([\d\.]+(?:,\d+)?)/,
-  ];
-  for (const pat of qtdPatterns) {
-    const m = upper.match(pat);
-    if (m) { qtd = parseBR(m[1]); break; }
-  }
-
-  return { nf, valor, qtd, raw: { nfRaw, nf } };
+  return entries;
 }
 
 // ─── Supplier report extraction ───────────────────────────────────────────────
@@ -503,70 +522,56 @@ function extractReport(text) {
 // ─── Comparison ───────────────────────────────────────────────────────────────
 const TOLERANCE = 0.02;
 
-function compare(danfeList, reportMap) {
+// sistemaMap  = { nf: { nf, valor, qtd } }  — vem do relatório do sistema
+// fornecMap   = { nf: { nf, valor, qtd } }  — vem do relatório do fornecedor
+function compare(sistemaMap, fornecMap) {
   const results = [];
-  const reportNFs = new Set(Object.keys(reportMap));
-  const seenNFs   = new Set();
+  const allNFs  = new Set([...Object.keys(sistemaMap), ...Object.keys(fornecMap)]);
 
-  for (const d of danfeList) {
-    if (!d.nf) {
+  for (const nf of allNFs) {
+    const sis = sistemaMap[nf];
+    const for_ = fornecMap[nf];
+
+    if (sis && !for_) {
+      // Está no sistema mas não no fornecedor
       results.push({
-        nf: '?', filename: d.filename,
-        valorNF: d.valor, valorRel: null,
-        qtdNF: d.qtd, qtdRel: null,
-        status: 'nao_encontrada',
-        note: 'NF não identificada no PDF'
+        nf, valorSis: sis.valor, valorFor: null,
+        qtdSis: sis.qtd, qtdFor: null,
+        status: 'nao_no_fornecedor', note: 'Consta no sistema, ausente no fornecedor'
       });
       continue;
     }
 
-    seenNFs.add(d.nf);
-    const rep = reportMap[d.nf];
-
-    if (!rep) {
+    if (!sis && for_) {
+      // Está no fornecedor mas não no sistema
       results.push({
-        nf: d.nf, filename: d.filename,
-        valorNF: d.valor, valorRel: null,
-        qtdNF: d.qtd, qtdRel: null,
-        status: 'nao_encontrada'
+        nf, valorSis: null, valorFor: for_.valor,
+        qtdSis: null, qtdFor: for_.qtd,
+        status: 'nao_no_sistema', note: 'Consta no fornecedor, ausente no sistema'
       });
       continue;
     }
 
-    // Compare
-    const valOk = (d.valor === null || rep.valor === null)
-      ? true
-      : Math.abs(d.valor - rep.valor) <= TOLERANCE;
+    // Está nos dois — compara valores
+    const valOk = (sis.valor === null || for_.valor === null)
+      ? true : Math.abs(sis.valor - for_.valor) <= TOLERANCE;
+    const qtdOk = (sis.qtd   === null || for_.qtd   === null)
+      ? true : Math.abs(sis.qtd   - for_.qtd  ) <= TOLERANCE;
 
-    const qtdOk = (d.qtd === null || rep.qtd === null)
-      ? true
-      : Math.abs(d.qtd - rep.qtd) <= TOLERANCE;
+    const notes = [];
+    if (!valOk) notes.push(`Valor: sistema ${fmtBR(sis.valor)} × fornecedor ${fmtBR(for_.valor)}`);
+    if (!qtdOk) notes.push(`Qtd: sistema ${fmtQty(sis.qtd)} × fornecedor ${fmtQty(for_.qtd)}`);
 
     results.push({
-      nf: d.nf, filename: d.filename,
-      valorNF: d.valor, valorRel: rep.valor,
-      qtdNF: d.qtd, qtdRel: rep.qtd,
-      status: (valOk && qtdOk) ? 'ok' : 'divergencia'
+      nf, valorSis: sis.valor, valorFor: for_.valor,
+      qtdSis: sis.qtd, qtdFor: for_.qtd,
+      status: (valOk && qtdOk) ? 'ok' : 'divergencia',
+      note: notes.join(' | ') || ''
     });
   }
 
-  // Report-only entries
-  for (const nf of reportNFs) {
-    if (!seenNFs.has(nf)) {
-      const rep = reportMap[nf];
-      results.push({
-        nf, filename: '—',
-        valorNF: null, valorRel: rep.valor,
-        qtdNF: null, qtdRel: rep.qtd,
-        status: 'somente_relatorio'
-      });
-    }
-  }
-
-  // Sort: divergencias first, then nao_encontrada, then somente_relatorio, then ok
-  const order = { divergencia:0, nao_encontrada:1, somente_relatorio:2, ok:3 };
+  const order = { divergencia:0, nao_no_sistema:1, nao_no_fornecedor:2, ok:3 };
   results.sort((a,b) => (order[a.status]??9) - (order[b.status]??9));
-
   return results;
 }
 
@@ -576,9 +581,9 @@ function renderResults(results) {
 
   const counts = { total:results.length, ok:0, divergencia:0, nao_encontrada:0 };
   for (const r of results) {
-    if (r.status === 'ok') counts.ok++;
+    if      (r.status === 'ok')          counts.ok++;
     else if (r.status === 'divergencia') counts.divergencia++;
-    else if (r.status === 'nao_encontrada' || r.status === 'somente_relatorio') counts.nao_encontrada++;
+    else counts.nao_encontrada++;
   }
 
   document.getElementById('cTotal').textContent = counts.total;
@@ -588,10 +593,10 @@ function renderResults(results) {
   document.getElementById('summarySection').classList.remove('hidden');
 
   const statusLabel = {
-    ok:               '<span class="status-badge badge-ok">✔ OK</span>',
-    divergencia:      '<span class="status-badge badge-div">⚠ Divergência</span>',
-    nao_encontrada:   '<span class="status-badge badge-notfound">✘ Não encontrada</span>',
-    somente_relatorio:'<span class="status-badge badge-report">📄 Só no relatório</span>',
+    ok:                '<span class="status-badge badge-ok">✔ OK</span>',
+    divergencia:       '<span class="status-badge badge-div">⚠ Divergência</span>',
+    nao_no_sistema:    '<span class="status-badge badge-notfound">✘ Falta no sistema</span>',
+    nao_no_fornecedor: '<span class="status-badge badge-report">📄 Falta no fornecedor</span>',
   };
 
   function cell(nfVal, repVal) {
@@ -622,10 +627,10 @@ function renderResults(results) {
   for (const r of results) {
     rows += `<tr>
       <td><strong>${r.nf || '?'}</strong></td>
-      ${cell(r.valorNF, r.valorRel)}
-      ${cellQty(r.qtdNF, r.qtdRel)}
+      ${cell(r.valorSis, r.valorFor)}
+      ${cellQty(r.qtdSis, r.qtdFor)}
       <td>${statusLabel[r.status] || r.status}</td>
-      <td style="font-size:0.75rem;color:#7a8fa0;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.filename||''}">${r.filename||'—'}</td>
+      <td style="font-size:0.75rem;color:#7a8fa0;max-width:200px" title="${r.note||''}">${r.note||''}</td>
     </tr>`;
   }
 
@@ -635,12 +640,12 @@ function renderResults(results) {
         <thead>
           <tr>
             <th>Nº NF</th>
-            <th>Valor NF</th>
-            <th>Valor Relatório</th>
-            <th>Qtd NF</th>
-            <th>Qtd Relatório</th>
+            <th>Valor Sistema</th>
+            <th>Valor Fornecedor</th>
+            <th>Qtd Sistema</th>
+            <th>Qtd Fornecedor</th>
             <th>Status</th>
-            <th>Arquivo</th>
+            <th>Obs.</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
@@ -653,21 +658,21 @@ function renderResults(results) {
 // ─── CSV Export ───────────────────────────────────────────────────────────────
 function exportCSV() {
   const BOM = '﻿';
-  const header = ['Nº NF','Valor NF','Valor Relatório','Qtd NF','Qtd Relatório','Status','Arquivo'];
+  const header = ['Nº NF','Valor Sistema','Valor Fornecedor','Qtd Sistema','Qtd Fornecedor','Status','Observações'];
   const statusPT = {
     ok:'OK',
     divergencia:'Divergência',
-    nao_encontrada:'Não encontrada',
-    somente_relatorio:'Só no relatório'
+    nao_no_sistema:'Falta no sistema',
+    nao_no_fornecedor:'Falta no fornecedor'
   };
   const rows = lastResults.map(r => [
     r.nf||'',
-    r.valorNF !== null ? fmtBR(r.valorNF) : 'N/D',
-    r.valorRel!== null ? fmtBR(r.valorRel): 'N/D',
-    r.qtdNF   !== null ? fmtQty(r.qtdNF)  : 'N/D',
-    r.qtdRel  !== null ? fmtQty(r.qtdRel) : 'N/D',
+    r.valorSis !== null ? fmtBR(r.valorSis) : 'N/D',
+    r.valorFor !== null ? fmtBR(r.valorFor) : 'N/D',
+    r.qtdSis   !== null ? fmtQty(r.qtdSis)  : 'N/D',
+    r.qtdFor   !== null ? fmtQty(r.qtdFor)  : 'N/D',
     statusPT[r.status]||r.status,
-    r.filename||''
+    r.note||''
   ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(';'));
 
   const csv = BOM + [header.join(';'), ...rows].join('\r\n');
@@ -694,7 +699,7 @@ function renderFileList(containerId, files, onRemove) {
 }
 
 function updateBtn() {
-  document.getElementById('btnConferir').disabled = !(danfeFiles.length > 0 && reportFile);
+  document.getElementById('btnConferir').disabled = !(sistemaFile && reportFile);
 }
 
 // ─── Drop zone setup ──────────────────────────────────────────────────────────
@@ -717,11 +722,11 @@ function setupDrop(dropId, inputId, multi, onFiles) {
   });
 }
 
-setupDrop('dropDanfe', 'inputDanfe', true, files => {
-  danfeFiles = [...danfeFiles, ...files];
-  renderFileList('listDanfe', danfeFiles, i => {
-    danfeFiles.splice(i, 1);
-    renderFileList('listDanfe', danfeFiles, arguments.callee);
+setupDrop('dropDanfe', 'inputDanfe', false, files => {
+  sistemaFile = files[0];
+  renderFileList('listDanfe', [sistemaFile], () => {
+    sistemaFile = null;
+    renderFileList('listDanfe', [], ()=>{});
     updateBtn();
   });
   updateBtn();
@@ -748,36 +753,34 @@ document.getElementById('btnConferir').addEventListener('click', async () => {
   statusMsg.textContent = 'Iniciando processamento...';
 
   try {
-    // Process DANFEs
-    const danfeData = [];
-    for (let i = 0; i < danfeFiles.length; i++) {
-      const f = danfeFiles[i];
-      statusMsg.textContent = `Lendo DANFE ${i+1}/${danfeFiles.length}: ${f.name}`;
-      try {
-        const text = await extractText(f);
-        const extracted = extractDanfe(text);
-        danfeData.push({ ...extracted, filename: f.name });
-      } catch (err) {
-        console.error('Erro no DANFE', f.name, err);
-        danfeData.push({ nf: null, valor: null, qtd: null, filename: f.name, error: err.message });
-      }
+    // Lê relatório do sistema
+    statusMsg.textContent = 'Lendo relatório do sistema...';
+    let sistemaMap = {};
+    try {
+      const sisText = await extractText(sistemaFile);
+      sistemaMap = extractSistema(sisText);
+      const qtdSis = Object.keys(sistemaMap).length;
+      statusMsg.textContent = `Sistema: ${qtdSis} nota(s) encontrada(s). Lendo relatório do fornecedor...`;
+    } catch (err) {
+      console.error('Erro no relatório do sistema', err);
+      statusMsg.textContent = 'Erro ao ler relatório do sistema: ' + err.message;
     }
 
-    // Process report
-    statusMsg.textContent = 'Lendo relatório do fornecedor...';
+    // Lê relatório do fornecedor
     let reportMap = {};
     try {
       const reportText = await extractText(reportFile);
       reportMap = extractReport(reportText);
+      const qtdFor = Object.keys(reportMap).length;
+      statusMsg.textContent = `Fornecedor: ${qtdFor} nota(s) encontrada(s). Comparando...`;
     } catch (err) {
-      console.error('Erro no relatório', err);
-      statusMsg.textContent = 'Erro ao ler relatório: ' + err.message;
+      console.error('Erro no relatório do fornecedor', err);
+      statusMsg.textContent = 'Erro ao ler relatório do fornecedor: ' + err.message;
     }
 
-    statusMsg.textContent = 'Comparando dados...';
-    const results = compare(danfeData, reportMap);
+    const results = compare(sistemaMap, reportMap);
     renderResults(results);
-    statusMsg.textContent = `Concluído: ${results.length} registro(s) processado(s).`;
+    statusMsg.textContent = `Concluído: ${results.length} nota(s) processada(s).`;
 
   } catch (err) {
     console.error(err);

@@ -19,414 +19,370 @@ except ImportError:
     HAS_PYPDF2 = False
 
 app = Flask(__name__)
-app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50 MB max
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# ---------------------------------------------------------------------------
+# Helper utilities
+# ---------------------------------------------------------------------------
 
-# ─────────────────────────────────────────────
-# Helpers
-# ─────────────────────────────────────────────
-
-def parse_br_number(s):
-    """Convert Brazilian number format (1.234,56) to float."""
-    if not s:
+def parse_br_number(value_str: str):
+    """Convert Brazilian number format (1.234,56) to float. Returns None on failure."""
+    if not value_str:
         return None
-    s = s.strip()
-    # Remove thousand separators, replace comma decimal separator
-    s = s.replace('.', '').replace(',', '.')
+    value_str = value_str.strip()
     try:
-        return float(s)
-    except ValueError:
+        if ',' in value_str:
+            # Remove dots used as thousand separators, replace comma with dot
+            clean = value_str.replace('.', '').replace(',', '.')
+        else:
+            # No comma: dots are thousand separators
+            clean = value_str.replace('.', '')
+        return float(clean)
+    except (ValueError, AttributeError):
         return None
 
 
-def normalize_nf(nf_str):
-    """Normalize NF number: strip leading zeros, remove dots/spaces."""
-    if not nf_str:
-        return None
-    nf_str = re.sub(r'[\s\.]', '', str(nf_str))
-    return str(int(nf_str)) if nf_str.isdigit() else nf_str
+def normalize_nf_number(raw: str) -> str:
+    """Strip formatting and leading zeros from an NF number."""
+    if not raw:
+        return ''
+    digits_only = re.sub(r'\D', '', raw)
+    return digits_only.lstrip('0') or '0'
 
 
-def extract_text_pdfplumber(file_bytes):
-    """Extract full text and tables from PDF using pdfplumber."""
+def extract_text_pdfplumber(file_bytes: bytes):
+    """Return (full_text, tables_list) extracted with pdfplumber."""
     text_parts = []
     tables = []
     try:
         with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
             for page in pdf.pages:
-                t = page.extract_text()
-                if t:
-                    text_parts.append(t)
+                page_text = page.extract_text() or ''
+                text_parts.append(page_text)
                 page_tables = page.extract_tables()
                 if page_tables:
                     tables.extend(page_tables)
-    except Exception as e:
-        logger.warning(f"pdfplumber error: {e}")
+    except Exception as exc:
+        logger.warning("pdfplumber extraction error: %s", exc)
     return '\n'.join(text_parts), tables
 
 
-def extract_text_pypdf2(file_bytes):
-    """Fallback: extract text using PyPDF2."""
+def extract_text_pypdf2(file_bytes: bytes) -> str:
+    """Fallback text extraction with PyPDF2."""
     text_parts = []
     try:
         reader = PyPDF2.PdfReader(io.BytesIO(file_bytes))
         for page in reader.pages:
-            t = page.extract_text()
-            if t:
-                text_parts.append(t)
-    except Exception as e:
-        logger.warning(f"PyPDF2 error: {e}")
-    return '\n'.join(text_parts), []
+            text_parts.append(page.extract_text() or '')
+    except Exception as exc:
+        logger.warning("PyPDF2 extraction error: %s", exc)
+    return '\n'.join(text_parts)
 
 
-def get_pdf_text_and_tables(file_bytes):
-    """Try pdfplumber first, fall back to PyPDF2."""
+def get_pdf_text_and_tables(file_bytes: bytes):
+    """Extract text and tables from PDF using best available library."""
+    text = ''
+    tables = []
     if HAS_PDFPLUMBER:
         text, tables = extract_text_pdfplumber(file_bytes)
-        if text.strip():
-            return text, tables
-    if HAS_PYPDF2:
-        return extract_text_pypdf2(file_bytes)
-    return '', []
+    if not text.strip() and HAS_PYPDF2:
+        text = extract_text_pypdf2(file_bytes)
+    return text, tables
 
 
-# ─────────────────────────────────────────────
-# DANFE extraction
-# ─────────────────────────────────────────────
+# ---------------------------------------------------------------------------
+# DANFE / NF-e extraction
+# ---------------------------------------------------------------------------
 
 NF_PATTERNS = [
-    r'N[ºO°]\.?\s*(?:DA\s+NOTA\s+FISCAL)?[\s:]*(\d{3}[\. ]\d{3}[\. ]\d{3})',
-    r'N[ºO°]\.?\s*(?:DA\s+NOTA\s+FISCAL)?[\s:]*(\d{6,9})',
-    r'NÚMERO[\s:]*(\d{3}[\. ]\d{3}[\. ]\d{3})',
-    r'NÚMERO[\s:]*(\d{6,9})',
-    r'NOTA\s+FISCAL[\s\S]{0,30}?N[ºO°][\s:]*(\d{3,9})',
-    r'NF[\-\s]*E?[\s:]*(\d{6,9})',
-    r'CHAVE[\s\S]{0,5}ACESSO[\s\S]{0,100}?(\d{44})',  # fallback: key contains NF
+    r'N[ºO°]\.?\s*(?:DA\s+NOTA\s*FISCAL)?[:\s]*(\d{3}[\.\s]?\d{3}[\.\s]?\d{3})',
+    r'N[ºO°]\.?\s*(\d{3}[\.\s]?\d{3}[\.\s]?\d{3})',
+    r'NÚMERO[:\s]*(\d{3}[\.\s]?\d{3}[\.\s]?\d{3})',
+    r'NOTA\s+FISCAL[^\d]{0,30}(\d{6,9})',
+    r'NF[- ]?(\d{6,9})',
+    r'(?<!\d)(\d{9})(?!\d)',
 ]
 
 VALUE_PATTERNS = [
-    r'VALOR\s+TOTAL\s+DA\s+NOTA\s+FISCAL[\s:R$]*(\d{1,3}(?:\.\d{3})*,\d{2})',
-    r'VALOR\s+TOTAL\s+DA\s+NF[\s:R$]*(\d{1,3}(?:\.\d{3})*,\d{2})',
-    r'TOTAL\s+DA\s+NOTA[\s:R$]*(\d{1,3}(?:\.\d{3})*,\d{2})',
-    r'VALOR\s+TOTAL[\s:R$]*(\d{1,3}(?:\.\d{3})*,\d{2})',
-    r'VALOR\s+L[IÍ]QUIDO[\s:R$]*(\d{1,3}(?:\.\d{3})*,\d{2})',
-    r'TOTAL[\s:R$]+(\d{1,3}(?:\.\d{3})*,\d{2})',
+    r'VALOR\s+TOTAL\s+DA\s+NOTA[^\d]*?([\d]{1,3}(?:[\.\s]\d{3})*,\d{2})',
+    r'VALOR\s+TOTAL\s+DA\s+NF[^\d]*?([\d]{1,3}(?:[\.\s]\d{3})*,\d{2})',
+    r'TOTAL\s+DA\s+NOTA[^\d]*?([\d]{1,3}(?:[\.\s]\d{3})*,\d{2})',
+    r'VALOR\s+L[ÍI]QUIDO[^\d]*?([\d]{1,3}(?:[\.\s]\d{3})*,\d{2})',
+    r'TOTAL\s+GERAL[^\d]*?([\d]{1,3}(?:[\.\s]\d{3})*,\d{2})',
+    r'VALOR\s+TOTAL[^\d]*?([\d]{1,3}(?:[\.\s]\d{3})*,\d{2})',
 ]
 
 QTY_PATTERNS = [
-    r'QUANTIDADE\s+(?:TOTAL\s+)?(?:DE\s+)?(?:VOLUMES?|PRODUTO)?[\s:]*(\d{1,3}(?:\.\d{3})*(?:,\d{0,4})?)',
-    r'QTDE?\.?\s+TOTAL[\s:]*(\d{1,3}(?:\.\d{3})*(?:,\d{0,4})?)',
-    r'QTD\.?\s+TOTAL[\s:]*(\d{1,3}(?:\.\d{3})*(?:,\d{0,4})?)',
-    r'PESO\s+L[IÍ]QUIDO[\s:]*(\d{1,3}(?:\.\d{3})*(?:,\d{0,4})?)',
-    r'PESO\s+BRUTO[\s:]*(\d{1,3}(?:\.\d{3})*(?:,\d{0,4})?)',
-    r'QUANTIDADE[\s:]*(\d{1,3}(?:\.\d{3})*(?:,\d{0,4})?)',
-    r'QTD[\s:]*(\d{1,3}(?:\.\d{3})*(?:,\d{0,4})?)',
+    r'QUANTIDADE[^\d]{0,10}([\d]{1,3}(?:[\.]\d{3})*(?:,\d{2,3})?)',
+    r'QTDE?\.?[^\d]{0,5}([\d]{1,3}(?:[\.]\d{3})*(?:,\d{2,3})?)',
+    r'QTD\.?[^\d]{0,5}([\d]{1,3}(?:[\.]\d{3})*(?:,\d{2,3})?)',
+    r'PESO\s+L[ÍI]Q(?:UIDO)?[^\d]{0,5}([\d]{1,3}(?:[\.]\d{3})*(?:,\d{2,3})?)',
+    r'PESO\s+BRUTO[^\d]{0,5}([\d]{1,3}(?:[\.]\d{3})*(?:,\d{2,3})?)',
 ]
 
 
-def search_patterns(text, patterns):
-    """Return first match from a list of regex patterns (case-insensitive)."""
+def first_match(text: str, patterns: list):
+    upper = text.upper()
     for pat in patterns:
-        m = re.search(pat, text, re.IGNORECASE)
+        m = re.search(pat, upper)
         if m:
-            return m.group(1)
+            return m.group(1).replace(' ', '')
     return None
 
 
-def extract_nf_number_from_access_key(text):
-    """Extract NF number from 44-digit access key (positions 26-34)."""
-    m = re.search(r'\b(\d{44})\b', text)
-    if m:
-        key = m.group(1)
-        nf_num = key[25:34]  # positions 26-34 (0-indexed: 25-33)
-        return nf_num.lstrip('0') or '0'
-    return None
-
-
-def extract_danfe_data(file_bytes, filename):
+def extract_danfe(file_bytes: bytes, filename: str) -> dict:
     """Extract NF number, value, and quantity from a DANFE PDF."""
     result = {
         'arquivo': filename,
-        'numero_nf': None,
-        'valor': None,
-        'quantidade': None,
+        'numero': 'N/D',
+        'valor': 'N/D',
+        'quantidade': 'N/D',
+        'valor_float': None,
+        'quantidade_float': None,
+        'numero_norm': '',
         'erro': None,
     }
-
     try:
-        text, tables = get_pdf_text_and_tables(file_bytes)
+        text, _ = get_pdf_text_and_tables(file_bytes)
         if not text.strip():
             result['erro'] = 'Não foi possível extrair texto do PDF'
             return result
 
-        # Normalize text for matching (collapse whitespace)
-        text_norm = re.sub(r'\s+', ' ', text.upper())
-
-        # --- NF Number ---
-        nf_raw = search_patterns(text_norm, NF_PATTERNS)
+        nf_raw = first_match(text, NF_PATTERNS)
         if nf_raw:
-            result['numero_nf'] = normalize_nf(nf_raw)
-        else:
-            # Try access key fallback
-            nf_from_key = extract_nf_number_from_access_key(text_norm)
-            if nf_from_key:
-                result['numero_nf'] = normalize_nf(nf_from_key)
+            result['numero'] = nf_raw
+            result['numero_norm'] = normalize_nf_number(nf_raw)
 
-        # --- Value ---
-        val_raw = search_patterns(text_norm, VALUE_PATTERNS)
+        val_raw = first_match(text, VALUE_PATTERNS)
         if val_raw:
-            result['valor'] = parse_br_number(val_raw)
+            result['valor'] = val_raw
+            result['valor_float'] = parse_br_number(val_raw)
 
-        # --- Quantity ---
-        qty_raw = search_patterns(text_norm, QTY_PATTERNS)
+        qty_raw = first_match(text, QTY_PATTERNS)
         if qty_raw:
-            result['quantidade'] = parse_br_number(qty_raw)
+            result['quantidade'] = qty_raw
+            result['quantidade_float'] = parse_br_number(qty_raw)
 
-        # --- Try tables if fields are still missing ---
-        if tables and (result['valor'] is None or result['quantidade'] is None):
-            for table in tables:
-                for row in table:
-                    if not row:
-                        continue
-                    row_text = ' '.join(str(c) for c in row if c)
-                    row_norm = re.sub(r'\s+', ' ', row_text.upper())
-                    if result['valor'] is None:
-                        v = search_patterns(row_norm, VALUE_PATTERNS)
-                        if v:
-                            result['valor'] = parse_br_number(v)
-                    if result['quantidade'] is None:
-                        q = search_patterns(row_norm, QTY_PATTERNS)
-                        if q:
-                            result['quantidade'] = parse_br_number(q)
-
-    except Exception as e:
-        logger.error(f"Error processing {filename}: {e}", exc_info=True)
-        result['erro'] = str(e)
-
+    except Exception as exc:
+        logger.exception("Error extracting DANFE %s", filename)
+        result['erro'] = str(exc)
     return result
 
 
-# ─────────────────────────────────────────────
+# ---------------------------------------------------------------------------
 # Supplier report extraction
-# ─────────────────────────────────────────────
+# ---------------------------------------------------------------------------
 
-def extract_relatorio_data(file_bytes):
-    """
-    Extract NF records from supplier report PDF.
-    Returns list of dicts: {numero_nf, valor, quantidade}
-    """
-    records = []
-
-    try:
-        text, tables = get_pdf_text_and_tables(file_bytes)
-        text_norm = re.sub(r'\s+', ' ', text.upper())
-
-        # Strategy 1: parse pdfplumber tables
-        if tables:
-            for table in tables:
-                records_from_table = parse_table(table)
-                records.extend(records_from_table)
-
-        # Strategy 2: line-by-line regex parsing
-        if not records:
-            records = parse_text_lines(text_norm)
-
-    except Exception as e:
-        logger.error(f"Error processing supplier report: {e}", exc_info=True)
-
-    return records
+def _clean_cell(cell) -> str:
+    if cell is None:
+        return ''
+    return str(cell).strip()
 
 
-def parse_table(table):
-    """Try to extract NF records from a pdfplumber table."""
-    records = []
-    if not table or len(table) < 2:
-        return records
-
-    # Detect header row
-    header = [str(c).upper().strip() if c else '' for c in table[0]]
-
-    nf_col = val_col = qty_col = None
-    for i, h in enumerate(header):
-        if re.search(r'N[ºO°]|NOTA|NF', h):
-            nf_col = i
-        elif re.search(r'VALOR|TOTAL|VL\.?', h):
-            val_col = i
-        elif re.search(r'QTD|QUANT|PESO|KG|SACO|TON', h):
-            qty_col = i
-
-    if nf_col is None:
-        # Try auto-detect: find a column that looks like NF numbers
-        for col_idx in range(len(header)):
-            col_values = [str(row[col_idx]) if col_idx < len(row) and row[col_idx] else '' for row in table[1:]]
-            nf_candidates = [v for v in col_values if re.match(r'^\s*\d{3,9}\s*$', v)]
-            if len(nf_candidates) > len(table) // 3:
-                nf_col = col_idx
-                break
-
-    if nf_col is None:
-        return records
-
-    for row in table[1:]:
-        if not row or len(row) <= nf_col:
-            continue
-        nf_cell = str(row[nf_col]).strip() if row[nf_col] else ''
-        nf_clean = re.sub(r'[^\d]', '', nf_cell)
-        if not nf_clean or len(nf_clean) < 3:
-            continue
-
-        rec = {
-            'numero_nf': normalize_nf(nf_clean),
-            'valor': None,
-            'quantidade': None,
-        }
-
-        if val_col is not None and val_col < len(row) and row[val_col]:
-            rec['valor'] = parse_br_number(str(row[val_col]))
-
-        if qty_col is not None and qty_col < len(row) and row[qty_col]:
-            rec['quantidade'] = parse_br_number(str(row[qty_col]))
-
-        # Try all columns if value/qty still missing
-        if rec['valor'] is None or rec['quantidade'] is None:
-            for ci, cell in enumerate(row):
-                if ci == nf_col or not cell:
-                    continue
-                cell_str = str(cell).strip()
-                num = parse_br_number(cell_str) if re.match(r'^\s*\d', cell_str) else None
-                if num is None:
-                    continue
-                if rec['valor'] is None and num > 10:
-                    rec['valor'] = num
-                elif rec['quantidade'] is None and num > 0:
-                    rec['quantidade'] = num
-
-        records.append(rec)
-
-    return records
+def _looks_like_nf(cell: str) -> bool:
+    digits = re.sub(r'\D', '', cell)
+    return 6 <= len(digits) <= 9
 
 
-def parse_text_lines(text):
-    """
-    Fallback: scan text lines for patterns like:
-      123456  1.234,56  500,00
-    or labelled rows.
-    """
-    records = []
-    lines = text.split('\n')
-
-    # Pattern: line with NF number followed by numbers
-    line_pattern = re.compile(
-        r'\b(\d{3}[\. ]?\d{3}[\. ]?\d{3}|\d{6,9})\b'
-        r'[\s\S]{0,60}?'
-        r'(\d{1,3}(?:\.\d{3})*,\d{2})'
-        r'(?:[\s\S]{0,30}?(\d{1,3}(?:\.\d{3})*(?:,\d{0,4})?))?'
-    )
-
-    for line in lines:
-        line = line.strip()
-        if not line:
-            continue
-        m = line_pattern.search(line)
-        if m:
-            nf_raw = re.sub(r'[\s\.]', '', m.group(1))
-            if not nf_raw.isdigit():
-                continue
-            records.append({
-                'numero_nf': normalize_nf(nf_raw),
-                'valor': parse_br_number(m.group(2)),
-                'quantidade': parse_br_number(m.group(3)) if m.group(3) else None,
-            })
-
-    return records
+def _looks_like_number(cell: str) -> bool:
+    return bool(re.search(r'\d', cell))
 
 
-# ─────────────────────────────────────────────
-# Comparison logic
-# ─────────────────────────────────────────────
-
-def fmt_num(v):
-    """Format number for display or return 'N/D'."""
-    if v is None:
-        return 'N/D'
-    if isinstance(v, float) and v == int(v):
-        return f'{v:,.0f}'.replace(',', '.')
-    return f'{v:,.2f}'.replace(',', 'X').replace('.', ',').replace('X', '.')
-
-
-def compare(danfe_list, relatorio_list):
-    """Build comparison rows."""
-    # Index relatorio by NF number
-    rel_index = {}
-    for rec in relatorio_list:
-        nf = rec.get('numero_nf')
-        if nf:
-            rel_index[nf] = rec
-
+def parse_report_tables(tables: list) -> list:
+    """Try to parse supplier report from pdfplumber table data."""
     rows = []
-    for danfe in danfe_list:
-        nf = danfe.get('numero_nf')
-        rel = rel_index.get(nf) if nf else None
-
-        val_nf = danfe.get('valor')
-        qty_nf = danfe.get('quantidade')
-        val_rel = rel.get('valor') if rel else None
-        qty_rel = rel.get('quantidade') if rel else None
-
-        # Determine status
-        if nf is None:
-            status = 'erro'
-            status_label = '✗ NF não identificada'
-        elif rel is None:
-            status = 'nao_encontrada'
-            status_label = '✗ Não encontrada'
-        else:
-            val_ok = (val_nf is None or val_rel is None or abs(val_nf - val_rel) <= 0.01)
-            qty_ok = (qty_nf is None or qty_rel is None or abs(qty_nf - qty_rel) <= 0.01)
-            if val_ok and qty_ok:
-                status = 'ok'
-                status_label = '✓ OK'
-            else:
-                status = 'divergencia'
-                status_label = '⚠ Divergência'
-
-        rows.append({
-            'arquivo': danfe.get('arquivo', ''),
-            'numero_nf': nf or 'N/D',
-            'valor_nf': fmt_num(val_nf),
-            'valor_relatorio': fmt_num(val_rel),
-            'qtd_nf': fmt_num(qty_nf),
-            'qtd_relatorio': fmt_num(qty_rel),
-            'status': status,
-            'status_label': status_label,
-            'erro': danfe.get('erro'),
-        })
-
-    # Notes in relatorio but not in any danfe
-    danfe_nfs = {d.get('numero_nf') for d in danfe_list if d.get('numero_nf')}
-    for nf, rec in rel_index.items():
-        if nf not in danfe_nfs:
-            rows.append({
-                'arquivo': '—',
-                'numero_nf': nf,
-                'valor_nf': 'N/D',
-                'valor_relatorio': fmt_num(rec.get('valor')),
-                'qtd_nf': 'N/D',
-                'qtd_relatorio': fmt_num(rec.get('quantidade')),
-                'status': 'somente_relatorio',
-                'status_label': '⚠ Só no relatório',
-                'erro': None,
-            })
-
+    for table in tables:
+        if not table:
+            continue
+        for row in table:
+            cells = [_clean_cell(c) for c in row]
+            non_empty = [c for c in cells if c]
+            if len(non_empty) < 2:
+                continue
+            if any(_looks_like_nf(c) for c in non_empty):
+                rows.append(cells)
     return rows
 
 
-# ─────────────────────────────────────────────
-# Routes
-# ─────────────────────────────────────────────
+def infer_report_row(cells: list):
+    """Attempt to extract nf, value, quantity from a table row."""
+    nf = val = qty = None
+    for cell in cells:
+        if nf is None and _looks_like_nf(cell):
+            nf = cell
+        elif _looks_like_number(cell):
+            parsed = parse_br_number(cell)
+            if parsed is None:
+                continue
+            if val is None and parsed > 100:
+                val = cell
+            elif qty is None and parsed <= 100000:
+                qty = cell
+    if nf:
+        return {
+            'numero': nf,
+            'numero_norm': normalize_nf_number(nf),
+            'valor': val or 'N/D',
+            'valor_float': parse_br_number(val) if val else None,
+            'quantidade': qty or 'N/D',
+            'quantidade_float': parse_br_number(qty) if qty else None,
+        }
+    return None
+
+
+def parse_report_text(text: str) -> list:
+    """Fallback: scan raw text for lines that look like report rows."""
+    rows = []
+    lines = text.splitlines()
+    for line in lines:
+        if not line.strip():
+            continue
+        tokens = re.findall(r'[\d]{1,3}(?:[\.]\d{3})*(?:,\d{2})?|\d+', line)
+        nf_token = None
+        for tok in tokens:
+            digits = re.sub(r'\D', '', tok)
+            if 6 <= len(digits) <= 9:
+                nf_token = tok
+                break
+        if not nf_token:
+            continue
+        other_nums = [t for t in tokens if t != nf_token and _looks_like_number(t)]
+        val = qty = None
+        for tok in other_nums:
+            p = parse_br_number(tok)
+            if p is None:
+                continue
+            if val is None and p > 100:
+                val = tok
+            elif qty is None:
+                qty = tok
+        rows.append({
+            'numero': nf_token,
+            'numero_norm': normalize_nf_number(nf_token),
+            'valor': val or 'N/D',
+            'valor_float': parse_br_number(val) if val else None,
+            'quantidade': qty or 'N/D',
+            'quantidade_float': parse_br_number(qty) if qty else None,
+        })
+    return rows
+
+
+def extract_relatorio(file_bytes: bytes) -> list:
+    """Extract list of {numero, valor, quantidade} from supplier report PDF."""
+    text, tables = get_pdf_text_and_tables(file_bytes)
+    rows = []
+
+    if tables:
+        table_rows = parse_report_tables(tables)
+        for cells in table_rows:
+            item = infer_report_row(cells)
+            if item:
+                rows.append(item)
+
+    if not rows and text.strip():
+        rows = parse_report_text(text)
+
+    # Deduplicate by normalized NF number
+    seen = set()
+    unique = []
+    for r in rows:
+        key = r['numero_norm']
+        if key and key not in seen:
+            seen.add(key)
+            unique.append(r)
+    return unique
+
+
+# ---------------------------------------------------------------------------
+# Comparison logic
+# ---------------------------------------------------------------------------
+
+TOLERANCE = 0.02  # 2 cents tolerance for rounding
+
+
+def compare(danfes: list, relatorio_rows: list) -> dict:
+    """Compare DANFE list against supplier report rows."""
+    report_by_nf = {r['numero_norm']: r for r in relatorio_rows if r['numero_norm']}
+
+    results = []
+    summary = {'total': 0, 'ok': 0, 'divergencia': 0, 'nao_encontrada': 0}
+
+    for danfe in danfes:
+        summary['total'] += 1
+        nf_norm = danfe['numero_norm']
+        rel = report_by_nf.get(nf_norm)
+
+        row = {
+            'arquivo': danfe['arquivo'],
+            'numero_nf': danfe['numero'],
+            'valor_nf': danfe['valor'],
+            'quantidade_nf': danfe['quantidade'],
+            'valor_relatorio': 'N/D',
+            'quantidade_relatorio': 'N/D',
+            'status': 'nao_encontrada',
+            'divergencias': [],
+            'erro': danfe.get('erro'),
+        }
+
+        if rel is None:
+            summary['nao_encontrada'] += 1
+            results.append(row)
+            continue
+
+        row['valor_relatorio'] = rel['valor']
+        row['quantidade_relatorio'] = rel['quantidade']
+
+        divs = []
+        vf = danfe['valor_float']
+        vr = rel['valor_float']
+        if vf is not None and vr is not None:
+            if abs(vf - vr) > TOLERANCE:
+                divs.append(f'Valor: NF={danfe["valor"]} / Rel={rel["valor"]}')
+        elif not (vf is None and vr is None):
+            divs.append('Valor não comparável (dado ausente em um dos lados)')
+
+        qf = danfe['quantidade_float']
+        qr = rel['quantidade_float']
+        if qf is not None and qr is not None:
+            if abs(qf - qr) > TOLERANCE:
+                divs.append(f'Qtd: NF={danfe["quantidade"]} / Rel={rel["quantidade"]}')
+
+        if divs:
+            row['status'] = 'divergencia'
+            row['divergencias'] = divs
+            summary['divergencia'] += 1
+        else:
+            row['status'] = 'ok'
+            summary['ok'] += 1
+
+        results.append(row)
+
+    # Report entries not found in any DANFE
+    danfe_norms = {d['numero_norm'] for d in danfes}
+    for nf_norm, rel in report_by_nf.items():
+        if nf_norm not in danfe_norms:
+            results.append({
+                'arquivo': '—',
+                'numero_nf': rel['numero'],
+                'valor_nf': 'N/D',
+                'quantidade_nf': 'N/D',
+                'valor_relatorio': rel['valor'],
+                'quantidade_relatorio': rel['quantidade'],
+                'status': 'somente_relatorio',
+                'divergencias': ['NF presente no relatório mas sem DANFE correspondente'],
+                'erro': None,
+            })
+            summary['nao_encontrada'] += 1
+
+    return {'resultados': results, 'resumo': summary}
+
+
+# ---------------------------------------------------------------------------
+# Flask routes
+# ---------------------------------------------------------------------------
 
 @app.route('/')
 def index():
@@ -438,70 +394,82 @@ def upload():
     notas_files = request.files.getlist('notas[]')
     relatorio_file = request.files.get('relatorio')
 
+    errors = []
     if not notas_files or all(f.filename == '' for f in notas_files):
-        return jsonify({'erro': 'Nenhuma nota fiscal enviada.'}), 400
-    if not relatorio_file or relatorio_file.filename == '':
-        return jsonify({'erro': 'Relatório do fornecedor não enviado.'}), 400
+        errors.append('Nenhuma nota fiscal enviada.')
+    if relatorio_file is None or relatorio_file.filename == '':
+        errors.append('Nenhum relatório do fornecedor enviado.')
+    if errors:
+        return jsonify({'erro': ' '.join(errors)}), 400
 
-    # Process DANFEs
-    danfe_results = []
+    danfes = []
     for f in notas_files:
         if f.filename == '':
             continue
-        data = extract_danfe_data(f.read(), f.filename)
-        danfe_results.append(data)
+        try:
+            file_bytes = f.read()
+            danfe = extract_danfe(file_bytes, f.filename)
+            danfes.append(danfe)
+        except Exception as exc:
+            logger.exception("Failed reading DANFE file %s", f.filename)
+            danfes.append({
+                'arquivo': f.filename,
+                'numero': 'N/D',
+                'valor': 'N/D',
+                'quantidade': 'N/D',
+                'valor_float': None,
+                'quantidade_float': None,
+                'numero_norm': '',
+                'erro': str(exc),
+            })
 
-    # Process supplier report
-    relatorio_records = extract_relatorio_data(relatorio_file.read())
+    relatorio_rows = []
+    try:
+        rel_bytes = relatorio_file.read()
+        relatorio_rows = extract_relatorio(rel_bytes)
+    except Exception as exc:
+        logger.exception("Failed reading report file")
+        return jsonify({'erro': f'Erro ao processar relatório: {exc}'}), 500
 
-    # Compare
-    comparison = compare(danfe_results, relatorio_records)
-
-    # Summary
-    total = len(comparison)
-    ok = sum(1 for r in comparison if r['status'] == 'ok')
-    div = sum(1 for r in comparison if r['status'] == 'divergencia')
-    nao_enc = sum(1 for r in comparison if r['status'] == 'nao_encontrada')
-    so_rel = sum(1 for r in comparison if r['status'] == 'somente_relatorio')
-    erros = sum(1 for r in comparison if r['status'] == 'erro')
-
-    return jsonify({
-        'resultados': comparison,
-        'resumo': {
-            'total': total,
-            'ok': ok,
-            'divergencias': div,
-            'nao_encontradas': nao_enc,
-            'somente_relatorio': so_rel,
-            'erros': erros,
-        },
-        'relatorio_registros': len(relatorio_records),
-    })
+    result = compare(danfes, relatorio_rows)
+    result['relatorio_linhas'] = len(relatorio_rows)
+    return jsonify(result)
 
 
 @app.route('/export-csv', methods=['POST'])
 def export_csv():
-    """Generate CSV from comparison results sent as JSON."""
-    data = request.get_json()
-    if not data or 'resultados' not in data:
-        return jsonify({'erro': 'Dados inválidos.'}), 400
+    data = request.get_json(force=True)
+    resultados = data.get('resultados', [])
 
     output = io.StringIO()
-    writer = csv.DictWriter(
-        output,
-        fieldnames=['arquivo', 'numero_nf', 'valor_nf', 'valor_relatorio',
-                    'qtd_nf', 'qtd_relatorio', 'status_label', 'erro'],
-        extrasaction='ignore',
-    )
-    writer.writeheader()
-    for row in data['resultados']:
-        writer.writerow(row)
+    writer = csv.writer(output, delimiter=';')
+    writer.writerow([
+        'Arquivo', 'Número NF', 'Valor NF', 'Valor Relatório',
+        'Qtd NF', 'Qtd Relatório', 'Status', 'Divergências'
+    ])
+    status_labels = {
+        'ok': 'OK',
+        'divergencia': 'Divergência',
+        'nao_encontrada': 'Não encontrada',
+        'somente_relatorio': 'Somente no relatório',
+    }
+    for r in resultados:
+        writer.writerow([
+            r.get('arquivo', ''),
+            r.get('numero_nf', ''),
+            r.get('valor_nf', ''),
+            r.get('valor_relatorio', ''),
+            r.get('quantidade_nf', ''),
+            r.get('quantidade_relatorio', ''),
+            status_labels.get(r.get('status', ''), r.get('status', '')),
+            ' | '.join(r.get('divergencias', [])),
+        ])
 
-    csv_bytes = output.getvalue().encode('utf-8-sig')  # BOM for Excel
+    csv_bytes = output.getvalue().encode('utf-8-sig')  # BOM for Excel compatibility
     return Response(
         csv_bytes,
         mimetype='text/csv',
-        headers={'Content-Disposition': 'attachment; filename=conferencia_nf.csv'},
+        headers={'Content-Disposition': 'attachment; filename=conferencia_nf.csv'}
     )
 
 

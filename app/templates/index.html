@@ -7,253 +7,336 @@
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
-  <header>
-    <div class="header-inner">
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-icon">📋</div>
+    <div>
       <h1>Conferência de Notas Fiscais</h1>
-      <p class="subtitle">Ração Subsidiada — Paraíba</p>
+      <p class="header-sub">Ração Subsidiada — Paraíba</p>
     </div>
-  </header>
+  </div>
+</header>
 
-  <main>
-    <form id="uploadForm" enctype="multipart/form-data">
-      <div class="upload-grid">
+<main class="main-content">
 
-        <div class="upload-card" id="dropNotas">
-          <div class="upload-icon">📄</div>
-          <h2>Notas Fiscais (DANFE)</h2>
-          <p>Selecione um ou mais arquivos PDF das notas fiscais atestadas</p>
-          <label class="btn btn-outline" for="inputNotas">Selecionar PDFs</label>
-          <input type="file" id="inputNotas" name="notas[]" accept=".pdf" multiple hidden />
-          <div id="notasFileList" class="file-list"></div>
-        </div>
+  <!-- Upload Section -->
+  <section class="card upload-section">
+    <h2 class="section-title">1. Enviar Arquivos</h2>
+    <div class="upload-grid">
 
-        <div class="upload-card" id="dropRelatorio">
-          <div class="upload-icon">📊</div>
-          <h2>Relatório do Fornecedor</h2>
-          <p>Selecione o PDF com a tabela de notas enviada pelo fornecedor</p>
-          <label class="btn btn-outline" for="inputRelatorio">Selecionar PDF</label>
-          <input type="file" id="inputRelatorio" name="relatorio" accept=".pdf" hidden />
-          <div id="relatorioFileList" class="file-list"></div>
-        </div>
-
-      </div>
-
-      <div class="action-row">
-        <button type="submit" class="btn btn-primary" id="btnConferir">
-          🔍 Conferir Notas
+      <!-- DANFEs -->
+      <div class="upload-zone" id="zone-notas"
+           ondragover="handleDragOver(event, 'zone-notas')"
+           ondragleave="handleDragLeave('zone-notas')"
+           ondrop="handleDrop(event, 'notas-input', 'zone-notas')">
+        <input type="file" id="notas-input" name="notas[]"
+               accept=".pdf" multiple hidden />
+        <div class="upload-icon">📄</div>
+        <p class="upload-label">Notas Fiscais (DANFE)</p>
+        <p class="upload-hint">Arraste vários arquivos PDF aqui ou clique para selecionar</p>
+        <button type="button" class="btn btn-outline"
+                onclick="document.getElementById('notas-input').click()">
+          Selecionar PDFs
         </button>
+        <div id="notas-list" class="file-list"></div>
       </div>
-    </form>
 
-    <div id="loading" class="loading hidden">
-      <div class="spinner"></div>
-      <span>Processando PDFs, aguarde...</span>
+      <!-- Relatório -->
+      <div class="upload-zone" id="zone-relatorio"
+           ondragover="handleDragOver(event, 'zone-relatorio')"
+           ondragleave="handleDragLeave('zone-relatorio')"
+           ondrop="handleDrop(event, 'relatorio-input', 'zone-relatorio')">
+        <input type="file" id="relatorio-input" name="relatorio"
+               accept=".pdf" hidden />
+        <div class="upload-icon">📊</div>
+        <p class="upload-label">Relatório do Fornecedor</p>
+        <p class="upload-hint">Arraste o PDF do relatório aqui ou clique para selecionar</p>
+        <button type="button" class="btn btn-outline"
+                onclick="document.getElementById('relatorio-input').click()">
+          Selecionar PDF
+        </button>
+        <div id="relatorio-list" class="file-list"></div>
+      </div>
+
     </div>
 
-    <div id="results" class="hidden">
-      <div class="summary-cards" id="summaryCards"></div>
+    <div class="action-row">
+      <button type="button" class="btn btn-primary btn-lg" id="btn-conferir"
+              onclick="conferir()">
+        <span class="btn-icon">🔍</span> Conferir Notas
+      </button>
+    </div>
+  </section>
 
-      <div class="results-header">
-        <h2>Resultado da Conferência</h2>
-        <button class="btn btn-outline" id="btnExport">⬇ Exportar CSV</button>
-      </div>
+  <!-- Loading indicator -->
+  <div id="loading" class="loading hidden">
+    <div class="spinner"></div>
+    <p>Processando arquivos, aguarde...</p>
+  </div>
 
-      <div class="filter-row">
-        <label>Filtrar:
-          <select id="filterStatus">
-            <option value="">Todos</option>
-            <option value="ok">✓ OK</option>
-            <option value="divergencia">⚠ Divergência</option>
-            <option value="nao_encontrada">✗ Não encontrada</option>
-            <option value="somente_relatorio">⚠ Só no relatório</option>
-            <option value="erro">✗ Erro</option>
-          </select>
-        </label>
-        <span id="filteredCount"></span>
-      </div>
+  <!-- Error message -->
+  <div id="error-box" class="alert alert-error hidden"></div>
 
-      <div class="table-wrapper">
-        <table id="resultsTable">
-          <thead>
-            <tr>
-              <th>Nº NF</th>
-              <th>Valor NF (R$)</th>
-              <th>Valor Relatório (R$)</th>
-              <th>Qtd NF</th>
-              <th>Qtd Relatório</th>
-              <th>Status</th>
-              <th>Arquivo</th>
-            </tr>
-          </thead>
-          <tbody id="resultsBody"></tbody>
-        </table>
-      </div>
+  <!-- Results Section -->
+  <section id="results-section" class="card hidden">
+    <div class="results-header">
+      <h2 class="section-title">2. Resultado da Conferência</h2>
+      <button type="button" class="btn btn-success" id="btn-export"
+              onclick="exportCSV()">
+        ⬇ Exportar CSV
+      </button>
     </div>
 
-    <div id="errorMsg" class="error-box hidden"></div>
-  </main>
+    <!-- Summary Cards -->
+    <div class="summary-grid" id="summary-grid"></div>
 
-  <script>
-    let lastResults = null;
+    <!-- Info about report lines -->
+    <p id="relatorio-info" class="relatorio-info"></p>
 
-    // File input display
-    document.getElementById('inputNotas').addEventListener('change', function () {
-      const list = document.getElementById('notasFileList');
-      list.innerHTML = '';
-      const files = Array.from(this.files);
-      files.forEach(f => {
-        const tag = document.createElement('span');
-        tag.className = 'file-tag';
-        tag.textContent = f.name;
-        list.appendChild(tag);
-      });
-      if (files.length > 0) {
-        const count = document.createElement('p');
-        count.className = 'file-count';
-        count.textContent = `${files.length} arquivo(s) selecionado(s)`;
-        list.prepend(count);
-      }
+    <!-- Results Table -->
+    <div class="table-wrapper">
+      <table id="results-table">
+        <thead>
+          <tr>
+            <th>Arquivo</th>
+            <th>Nº NF</th>
+            <th>Valor NF</th>
+            <th>Valor Relatório</th>
+            <th>Qtd NF</th>
+            <th>Qtd Relatório</th>
+            <th>Status</th>
+            <th>Observações</th>
+          </tr>
+        </thead>
+        <tbody id="results-tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <p>Sistema de Conferência de NF — Ração Subsidiada &nbsp;|&nbsp; Paraíba, Brasil</p>
+</footer>
+
+<script>
+  // -------------------------------------------------------------------------
+  // File input wiring
+  // -------------------------------------------------------------------------
+  document.getElementById('notas-input').addEventListener('change', function () {
+    renderFileList('notas-list', this.files);
+  });
+  document.getElementById('relatorio-input').addEventListener('change', function () {
+    renderFileList('relatorio-list', this.files);
+  });
+
+  function renderFileList(containerId, files) {
+    const el = document.getElementById(containerId);
+    el.innerHTML = '';
+    if (!files || files.length === 0) return;
+    Array.from(files).forEach(f => {
+      const chip = document.createElement('span');
+      chip.className = 'file-chip';
+      chip.textContent = f.name;
+      el.appendChild(chip);
     });
+  }
 
-    document.getElementById('inputRelatorio').addEventListener('change', function () {
-      const list = document.getElementById('relatorioFileList');
-      list.innerHTML = '';
-      if (this.files[0]) {
-        const tag = document.createElement('span');
-        tag.className = 'file-tag';
-        tag.textContent = this.files[0].name;
-        list.appendChild(tag);
-      }
-    });
+  // -------------------------------------------------------------------------
+  // Drag & drop
+  // -------------------------------------------------------------------------
+  function handleDragOver(e, zoneId) {
+    e.preventDefault();
+    document.getElementById(zoneId).classList.add('drag-over');
+  }
+  function handleDragLeave(zoneId) {
+    document.getElementById(zoneId).classList.remove('drag-over');
+  }
+  function handleDrop(e, inputId, zoneId) {
+    e.preventDefault();
+    document.getElementById(zoneId).classList.remove('drag-over');
+    const input = document.getElementById(inputId);
+    const dt = e.dataTransfer;
+    // DataTransfer files are read-only; we assign to the input via a DataTransfer
+    const newDt = new DataTransfer();
+    Array.from(dt.files)
+      .filter(f => f.name.toLowerCase().endsWith('.pdf'))
+      .forEach(f => newDt.items.add(f));
+    input.files = newDt.files;
+    const listId = inputId === 'notas-input' ? 'notas-list' : 'relatorio-list';
+    renderFileList(listId, input.files);
+  }
 
-    // Form submit
-    document.getElementById('uploadForm').addEventListener('submit', async function (e) {
-      e.preventDefault();
+  // -------------------------------------------------------------------------
+  // Upload & comparison
+  // -------------------------------------------------------------------------
+  let lastResults = null;
 
-      const notasInput = document.getElementById('inputNotas');
-      const relatorioInput = document.getElementById('inputRelatorio');
+  async function conferir() {
+    const notasInput = document.getElementById('notas-input');
+    const relatorioInput = document.getElementById('relatorio-input');
 
-      if (!notasInput.files.length) {
-        showError('Por favor, selecione as notas fiscais em PDF.');
+    hideError();
+    hideResults();
+
+    if (!notasInput.files.length) {
+      showError('Por favor, selecione pelo menos uma Nota Fiscal (DANFE) em PDF.');
+      return;
+    }
+    if (!relatorioInput.files.length) {
+      showError('Por favor, selecione o Relatório do Fornecedor em PDF.');
+      return;
+    }
+
+    const formData = new FormData();
+    Array.from(notasInput.files).forEach(f => formData.append('notas[]', f));
+    formData.append('relatorio', relatorioInput.files[0]);
+
+    showLoading(true);
+    document.getElementById('btn-conferir').disabled = true;
+
+    try {
+      const resp = await fetch('/upload', { method: 'POST', body: formData });
+      const data = await resp.json();
+
+      if (!resp.ok || data.erro) {
+        showError(data.erro || 'Erro desconhecido ao processar os arquivos.');
         return;
       }
-      if (!relatorioInput.files.length) {
-        showError('Por favor, selecione o relatório do fornecedor em PDF.');
-        return;
-      }
 
-      hideError();
-      showLoading(true);
-      document.getElementById('results').classList.add('hidden');
+      lastResults = data;
+      renderResults(data);
+    } catch (err) {
+      showError('Erro de comunicação com o servidor: ' + err.message);
+    } finally {
+      showLoading(false);
+      document.getElementById('btn-conferir').disabled = false;
+    }
+  }
 
-      const formData = new FormData(this);
+  // -------------------------------------------------------------------------
+  // Render results
+  // -------------------------------------------------------------------------
+  function renderResults(data) {
+    const { resultados, resumo, relatorio_linhas } = data;
 
-      try {
-        const res = await fetch('/upload', { method: 'POST', body: formData });
-        const data = await res.json();
+    // Summary cards
+    const grid = document.getElementById('summary-grid');
+    grid.innerHTML = `
+      <div class="summary-card summary-total">
+        <div class="summary-num">${resumo.total}</div>
+        <div class="summary-lbl">Total de NFs</div>
+      </div>
+      <div class="summary-card summary-ok">
+        <div class="summary-num">${resumo.ok}</div>
+        <div class="summary-lbl">✓ Conferidas (OK)</div>
+      </div>
+      <div class="summary-card summary-div">
+        <div class="summary-num">${resumo.divergencia}</div>
+        <div class="summary-lbl">⚠ Com Divergência</div>
+      </div>
+      <div class="summary-card summary-nf">
+        <div class="summary-num">${resumo.nao_encontrada}</div>
+        <div class="summary-lbl">✗ Não Encontradas</div>
+      </div>
+    `;
 
-        if (!res.ok) {
-          showError(data.erro || 'Erro ao processar os arquivos.');
-          return;
-        }
+    // Report info line
+    const infoEl = document.getElementById('relatorio-info');
+    infoEl.textContent = `Relatório do fornecedor: ${relatorio_linhas} linha(s) identificada(s).`;
 
-        lastResults = data;
-        renderResults(data);
-      } catch (err) {
-        showError('Erro de conexão: ' + err.message);
-      } finally {
-        showLoading(false);
-      }
+    // Table rows
+    const tbody = document.getElementById('results-tbody');
+    tbody.innerHTML = '';
+    resultados.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.className = 'row-' + r.status;
+
+      const statusMap = {
+        ok: '<span class="badge badge-ok">✓ OK</span>',
+        divergencia: '<span class="badge badge-div">⚠ Divergência</span>',
+        nao_encontrada: '<span class="badge badge-nf">✗ Não encontrada</span>',
+        somente_relatorio: '<span class="badge badge-nf">✗ Somente no relatório</span>',
+      };
+      const badge = statusMap[r.status] || r.status;
+
+      const obs = [];
+      if (r.erro) obs.push(`<em class="obs-error">Erro: ${escHtml(r.erro)}</em>`);
+      r.divergencias.forEach(d => obs.push(escHtml(d)));
+      const obsHtml = obs.join('<br>') || '—';
+
+      tr.innerHTML = `
+        <td class="td-file" title="${escHtml(r.arquivo)}">${escHtml(shortName(r.arquivo))}</td>
+        <td class="td-nf">${escHtml(r.numero_nf)}</td>
+        <td>${escHtml(r.valor_nf)}</td>
+        <td>${escHtml(r.valor_relatorio)}</td>
+        <td>${escHtml(r.quantidade_nf)}</td>
+        <td>${escHtml(r.quantidade_relatorio)}</td>
+        <td>${badge}</td>
+        <td class="td-obs">${obsHtml}</td>
+      `;
+      tbody.appendChild(tr);
     });
 
-    // Filter
-    document.getElementById('filterStatus').addEventListener('change', function () {
-      if (lastResults) applyFilter(lastResults.resultados, this.value);
-    });
+    document.getElementById('results-section').classList.remove('hidden');
+    document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
+  }
 
-    function renderResults(data) {
-      renderSummary(data.resumo, data.relatorio_registros);
-      applyFilter(data.resultados, '');
-      document.getElementById('results').classList.remove('hidden');
-    }
-
-    function renderSummary(resumo, relRecs) {
-      const cards = [
-        { label: 'Total conferido', value: resumo.total, cls: '' },
-        { label: '✓ OK', value: resumo.ok, cls: 'ok' },
-        { label: '⚠ Divergências', value: resumo.divergencias, cls: 'warn' },
-        { label: '✗ Não encontradas', value: resumo.nao_encontradas, cls: 'err' },
-        { label: '⚠ Só no relatório', value: resumo.somente_relatorio, cls: 'warn' },
-        { label: 'Registros no relatório', value: relRecs, cls: '' },
-      ];
-      const container = document.getElementById('summaryCards');
-      container.innerHTML = cards.map(c =>
-        `<div class="summary-card ${c.cls}">
-          <span class="card-value">${c.value}</span>
-          <span class="card-label">${c.label}</span>
-        </div>`
-      ).join('');
-    }
-
-    function applyFilter(rows, statusFilter) {
-      const filtered = statusFilter ? rows.filter(r => r.status === statusFilter) : rows;
-      document.getElementById('filteredCount').textContent =
-        filtered.length < rows.length ? `Mostrando ${filtered.length} de ${rows.length}` : '';
-      renderTable(filtered);
-    }
-
-    function renderTable(rows) {
-      const tbody = document.getElementById('resultsBody');
-      tbody.innerHTML = rows.map(r => {
-        const valDiff = r.valor_nf !== 'N/D' && r.valor_relatorio !== 'N/D' && r.valor_nf !== r.valor_relatorio;
-        const qtdDiff = r.qtd_nf !== 'N/D' && r.qtd_relatorio !== 'N/D' && r.qtd_nf !== r.qtd_relatorio;
-        return `<tr class="row-${r.status}">
-          <td><strong>${r.numero_nf}</strong></td>
-          <td class="${valDiff ? 'cell-diff' : ''}">${r.valor_nf}</td>
-          <td class="${valDiff ? 'cell-diff' : ''}">${r.valor_relatorio}</td>
-          <td class="${qtdDiff ? 'cell-diff' : ''}">${r.qtd_nf}</td>
-          <td class="${qtdDiff ? 'cell-diff' : ''}">${r.qtd_relatorio}</td>
-          <td><span class="badge badge-${r.status}">${r.status_label}</span></td>
-          <td class="file-col">${r.arquivo}</td>
-        </tr>`;
-      }).join('');
-
-      if (!rows.length) {
-        tbody.innerHTML = '<tr><td colspan="7" class="empty">Nenhum resultado encontrado.</td></tr>';
-      }
-    }
-
-    // Export CSV
-    document.getElementById('btnExport').addEventListener('click', async function () {
-      if (!lastResults) return;
-      const res = await fetch('/export-csv', {
+  // -------------------------------------------------------------------------
+  // Export CSV
+  // -------------------------------------------------------------------------
+  async function exportCSV() {
+    if (!lastResults) return;
+    try {
+      const resp = await fetch('/export-csv', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(lastResults),
+        body: JSON.stringify({ resultados: lastResults.resultados }),
       });
-      const blob = await res.blob();
+      if (!resp.ok) { showError('Erro ao gerar CSV.'); return; }
+      const blob = await resp.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = 'conferencia_nf.csv';
       a.click();
       URL.revokeObjectURL(url);
-    });
-
-    function showLoading(show) {
-      document.getElementById('loading').classList.toggle('hidden', !show);
-      document.getElementById('btnConferir').disabled = show;
+    } catch (err) {
+      showError('Erro ao exportar: ' + err.message);
     }
+  }
 
-    function showError(msg) {
-      const el = document.getElementById('errorMsg');
-      el.textContent = msg;
-      el.classList.remove('hidden');
-    }
-
-    function hideError() {
-      document.getElementById('errorMsg').classList.add('hidden');
-    }
-  </script>
+  // -------------------------------------------------------------------------
+  // UI helpers
+  // -------------------------------------------------------------------------
+  function showLoading(on) {
+    document.getElementById('loading').classList.toggle('hidden', !on);
+  }
+  function showError(msg) {
+    const el = document.getElementById('error-box');
+    el.textContent = msg;
+    el.classList.remove('hidden');
+    el.scrollIntoView({ behavior: 'smooth' });
+  }
+  function hideError() {
+    document.getElementById('error-box').classList.add('hidden');
+  }
+  function hideResults() {
+    document.getElementById('results-section').classList.add('hidden');
+  }
+  function escHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+  function shortName(name) {
+    if (!name || name === '—') return name;
+    return name.length > 30 ? '...' + name.slice(-27) : name;
+  }
+</script>
 </body>
 </html>

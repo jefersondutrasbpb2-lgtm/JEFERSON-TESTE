@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Conferência de Notas Fiscais — Ração Subsidiada</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <h1>Conferência de Notas Fiscais</h1>
+      <p class="subtitle">Ração Subsidiada — Paraíba</p>
+    </div>
+  </header>
+
+  <main>
+    <form id="uploadForm" enctype="multipart/form-data">
+      <div class="upload-grid">
+
+        <div class="upload-card" id="dropNotas">
+          <div class="upload-icon">📄</div>
+          <h2>Notas Fiscais (DANFE)</h2>
+          <p>Selecione um ou mais arquivos PDF das notas fiscais atestadas</p>
+          <label class="btn btn-outline" for="inputNotas">Selecionar PDFs</label>
+          <input type="file" id="inputNotas" name="notas[]" accept=".pdf" multiple hidden />
+          <div id="notasFileList" class="file-list"></div>
+        </div>
+
+        <div class="upload-card" id="dropRelatorio">
+          <div class="upload-icon">📊</div>
+          <h2>Relatório do Fornecedor</h2>
+          <p>Selecione o PDF com a tabela de notas enviada pelo fornecedor</p>
+          <label class="btn btn-outline" for="inputRelatorio">Selecionar PDF</label>
+          <input type="file" id="inputRelatorio" name="relatorio" accept=".pdf" hidden />
+          <div id="relatorioFileList" class="file-list"></div>
+        </div>
+
+      </div>
+
+      <div class="action-row">
+        <button type="submit" class="btn btn-primary" id="btnConferir">
+          🔍 Conferir Notas
+        </button>
+      </div>
+    </form>
+
+    <div id="loading" class="loading hidden">
+      <div class="spinner"></div>
+      <span>Processando PDFs, aguarde...</span>
+    </div>
+
+    <div id="results" class="hidden">
+      <div class="summary-cards" id="summaryCards"></div>
+
+      <div class="results-header">
+        <h2>Resultado da Conferência</h2>
+        <button class="btn btn-outline" id="btnExport">⬇ Exportar CSV</button>
+      </div>
+
+      <div class="filter-row">
+        <label>Filtrar:
+          <select id="filterStatus">
+            <option value="">Todos</option>
+            <option value="ok">✓ OK</option>
+            <option value="divergencia">⚠ Divergência</option>
+            <option value="nao_encontrada">✗ Não encontrada</option>
+            <option value="somente_relatorio">⚠ Só no relatório</option>
+            <option value="erro">✗ Erro</option>
+          </select>
+        </label>
+        <span id="filteredCount"></span>
+      </div>
+
+      <div class="table-wrapper">
+        <table id="resultsTable">
+          <thead>
+            <tr>
+              <th>Nº NF</th>
+              <th>Valor NF (R$)</th>
+              <th>Valor Relatório (R$)</th>
+              <th>Qtd NF</th>
+              <th>Qtd Relatório</th>
+              <th>Status</th>
+              <th>Arquivo</th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="errorMsg" class="error-box hidden"></div>
+  </main>
+
+  <script>
+    let lastResults = null;
+
+    // File input display
+    document.getElementById('inputNotas').addEventListener('change', function () {
+      const list = document.getElementById('notasFileList');
+      list.innerHTML = '';
+      const files = Array.from(this.files);
+      files.forEach(f => {
+        const tag = document.createElement('span');
+        tag.className = 'file-tag';
+        tag.textContent = f.name;
+        list.appendChild(tag);
+      });
+      if (files.length > 0) {
+        const count = document.createElement('p');
+        count.className = 'file-count';
+        count.textContent = `${files.length} arquivo(s) selecionado(s)`;
+        list.prepend(count);
+      }
+    });
+
+    document.getElementById('inputRelatorio').addEventListener('change', function () {
+      const list = document.getElementById('relatorioFileList');
+      list.innerHTML = '';
+      if (this.files[0]) {
+        const tag = document.createElement('span');
+        tag.className = 'file-tag';
+        tag.textContent = this.files[0].name;
+        list.appendChild(tag);
+      }
+    });
+
+    // Form submit
+    document.getElementById('uploadForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const notasInput = document.getElementById('inputNotas');
+      const relatorioInput = document.getElementById('inputRelatorio');
+
+      if (!notasInput.files.length) {
+        showError('Por favor, selecione as notas fiscais em PDF.');
+        return;
+      }
+      if (!relatorioInput.files.length) {
+        showError('Por favor, selecione o relatório do fornecedor em PDF.');
+        return;
+      }
+
+      hideError();
+      showLoading(true);
+      document.getElementById('results').classList.add('hidden');
+
+      const formData = new FormData(this);
+
+      try {
+        const res = await fetch('/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+
+        if (!res.ok) {
+          showError(data.erro || 'Erro ao processar os arquivos.');
+          return;
+        }
+
+        lastResults = data;
+        renderResults(data);
+      } catch (err) {
+        showError('Erro de conexão: ' + err.message);
+      } finally {
+        showLoading(false);
+      }
+    });
+
+    // Filter
+    document.getElementById('filterStatus').addEventListener('change', function () {
+      if (lastResults) applyFilter(lastResults.resultados, this.value);
+    });
+
+    function renderResults(data) {
+      renderSummary(data.resumo, data.relatorio_registros);
+      applyFilter(data.resultados, '');
+      document.getElementById('results').classList.remove('hidden');
+    }
+
+    function renderSummary(resumo, relRecs) {
+      const cards = [
+        { label: 'Total conferido', value: resumo.total, cls: '' },
+        { label: '✓ OK', value: resumo.ok, cls: 'ok' },
+        { label: '⚠ Divergências', value: resumo.divergencias, cls: 'warn' },
+        { label: '✗ Não encontradas', value: resumo.nao_encontradas, cls: 'err' },
+        { label: '⚠ Só no relatório', value: resumo.somente_relatorio, cls: 'warn' },
+        { label: 'Registros no relatório', value: relRecs, cls: '' },
+      ];
+      const container = document.getElementById('summaryCards');
+      container.innerHTML = cards.map(c =>
+        `<div class="summary-card ${c.cls}">
+          <span class="card-value">${c.value}</span>
+          <span class="card-label">${c.label}</span>
+        </div>`
+      ).join('');
+    }
+
+    function applyFilter(rows, statusFilter) {
+      const filtered = statusFilter ? rows.filter(r => r.status === statusFilter) : rows;
+      document.getElementById('filteredCount').textContent =
+        filtered.length < rows.length ? `Mostrando ${filtered.length} de ${rows.length}` : '';
+      renderTable(filtered);
+    }
+
+    function renderTable(rows) {
+      const tbody = document.getElementById('resultsBody');
+      tbody.innerHTML = rows.map(r => {
+        const valDiff = r.valor_nf !== 'N/D' && r.valor_relatorio !== 'N/D' && r.valor_nf !== r.valor_relatorio;
+        const qtdDiff = r.qtd_nf !== 'N/D' && r.qtd_relatorio !== 'N/D' && r.qtd_nf !== r.qtd_relatorio;
+        return `<tr class="row-${r.status}">
+          <td><strong>${r.numero_nf}</strong></td>
+          <td class="${valDiff ? 'cell-diff' : ''}">${r.valor_nf}</td>
+          <td class="${valDiff ? 'cell-diff' : ''}">${r.valor_relatorio}</td>
+          <td class="${qtdDiff ? 'cell-diff' : ''}">${r.qtd_nf}</td>
+          <td class="${qtdDiff ? 'cell-diff' : ''}">${r.qtd_relatorio}</td>
+          <td><span class="badge badge-${r.status}">${r.status_label}</span></td>
+          <td class="file-col">${r.arquivo}</td>
+        </tr>`;
+      }).join('');
+
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="empty">Nenhum resultado encontrado.</td></tr>';
+      }
+    }
+
+    // Export CSV
+    document.getElementById('btnExport').addEventListener('click', async function () {
+      if (!lastResults) return;
+      const res = await fetch('/export-csv', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(lastResults),
+      });
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'conferencia_nf.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    function showLoading(show) {
+      document.getElementById('loading').classList.toggle('hidden', !show);
+      document.getElementById('btnConferir').disabled = show;
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('errorMsg');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+    }
+
+    function hideError() {
+      document.getElementById('errorMsg').classList.add('hidden');
+    }
+  </script>
+</body>
+</html>

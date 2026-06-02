@@ -1,760 +1,611 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Conferência de Notas Fiscais — Ração Subsidiada / Paraíba</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Conferência de Notas Fiscais — Ração Subsidiada / Paraíba</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:#1a2a3a;min-height:100vh}
+header{background:linear-gradient(135deg,#1a3a5c,#2a5f8f);color:#fff;padding:16px 28px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+header .icon{font-size:2rem}
+header h1{font-size:1.25rem;font-weight:700;line-height:1.3}
+header p{font-size:.8rem;opacity:.8;margin-top:2px}
+main{max-width:1400px;margin:0 auto;padding:24px 18px 48px}
 
-    body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: #f0f4f8;
-      color: #1a2a3a;
-      min-height: 100vh;
-    }
+/* ── step cards ─────────────────────────────────────────── */
+.steps{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:22px}
+@media(max-width:720px){.steps{grid-template-columns:1fr}}
+.step-card{background:#fff;border-radius:12px;box-shadow:0 1px 5px rgba(0,0,0,.08);padding:20px}
+.step-card h2{font-size:.88rem;font-weight:700;color:#1a3a5c;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.step-card p{font-size:.78rem;color:#6a8aaa;margin-bottom:12px;line-height:1.4}
 
-    header {
-      background: linear-gradient(135deg, #1a3a5c 0%, #2a5f8f 100%);
-      color: #fff;
-      padding: 18px 32px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-    }
-    header .icon { font-size: 2rem; }
-    header h1 { font-size: 1.3rem; font-weight: 700; line-height: 1.3; }
-    header p { font-size: 0.82rem; opacity: 0.8; margin-top: 2px; }
+/* drop zone */
+.drop-zone{border:2px dashed #a0bcd8;border-radius:10px;padding:28px 16px;text-align:center;cursor:pointer;background:#f7fbff;transition:border-color .2s,background .2s}
+.drop-zone:hover,.drop-zone.drag-over{border-color:#1a3a5c;background:#e4f0fb}
+.drop-zone .dz-icon{font-size:2.2rem;margin-bottom:8px}
+.drop-zone .dz-title{font-size:.9rem;font-weight:600;color:#2a5f8f}
+.drop-zone .dz-sub{font-size:.76rem;color:#8aabcc;margin-top:4px}
+.drop-zone input[type=file]{display:none}
 
-    main { max-width: 1400px; margin: 0 auto; padding: 28px 20px; }
+.file-badge{display:none;margin-top:10px;background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:8px 12px;font-size:.82rem;color:#1565c0;align-items:center;gap:8px}
+.file-badge.on{display:flex}
 
-    /* Upload zone */
-    .upload-section { margin-bottom: 28px; }
-    .upload-section h2 { font-size: 0.95rem; font-weight: 600; color: #1a3a5c; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+/* ── action row ─────────────────────────────────────────── */
+.action-row{display:flex;align-items:center;gap:14px;margin-bottom:24px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 22px;border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer;border:none;transition:filter .15s,transform .1s;letter-spacing:.02em}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:linear-gradient(135deg,#1a3a5c,#2563a8);color:#fff}
+.btn-primary:hover{filter:brightness(1.1)}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.btn-success{background:linear-gradient(135deg,#166534,#22c55e);color:#fff}
+.btn-success:hover{filter:brightness(1.1)}
+.spinner{width:22px;height:22px;border:3px solid #c0d8f0;border-top-color:#1a3a5c;border-radius:50%;animation:spin .7s linear infinite;display:none}
+.spinner.on{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+#status-msg{font-size:.82rem;color:#5a7a9c}
 
-    #drop-zone {
-      border: 2.5px dashed #5a8fc2;
-      border-radius: 12px;
-      background: #fff;
-      padding: 40px 24px;
-      text-align: center;
-      cursor: pointer;
-      transition: background 0.2s, border-color 0.2s;
-      position: relative;
-    }
-    #drop-zone:hover, #drop-zone.drag-over {
-      background: #e8f0f8;
-      border-color: #1a3a5c;
-    }
-    #drop-zone .upload-icon { font-size: 2.8rem; margin-bottom: 10px; }
-    #drop-zone .upload-text { font-size: 1rem; color: #3a6a9c; font-weight: 600; }
-    #drop-zone .upload-sub { font-size: 0.82rem; color: #7a9ab8; margin-top: 6px; }
-    #file-input { display: none; }
+/* ── summary cards ──────────────────────────────────────── */
+#summary{display:none;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+#summary.on{display:grid}
+@media(max-width:700px){#summary{grid-template-columns:1fr 1fr}}
+.s-card{background:#fff;border-radius:12px;padding:18px 16px;box-shadow:0 1px 5px rgba(0,0,0,.08);border-left:5px solid #ccc}
+.s-card.blue{border-left-color:#1a3a5c}.s-card.green{border-left-color:#16a34a}.s-card.red{border-left-color:#dc2626}.s-card.orange{border-left-color:#ea580c}
+.s-card .num{font-size:2rem;font-weight:800;line-height:1}
+.s-card.blue .num{color:#1a3a5c}.s-card.green .num{color:#16a34a}.s-card.red .num{color:#dc2626}.s-card.orange .num{color:#ea580c}
+.s-card .lbl{font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#8aabcc;margin-bottom:4px}
+.s-card .sub{font-size:.8rem;color:#aac0d4;margin-top:3px}
 
-    #file-info {
-      display: none;
-      margin-top: 14px;
-      background: #e8f5e9;
-      border: 1px solid #a5d6a7;
-      border-radius: 8px;
-      padding: 10px 16px;
-      font-size: 0.9rem;
-      color: #2e7d32;
-      align-items: center;
-      gap: 10px;
-    }
-    #file-info.visible { display: flex; }
-    #file-info .fi-icon { font-size: 1.3rem; }
+/* ── filters ────────────────────────────────────────────── */
+#filter-bar{display:none;background:#fff;border-radius:12px;padding:14px 18px;margin-bottom:18px;box-shadow:0 1px 5px rgba(0,0,0,.08);flex-wrap:wrap;gap:12px;align-items:flex-end}
+#filter-bar.on{display:flex}
+#filter-bar label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#6a8aaa;display:block;margin-bottom:3px}
+#filter-bar select,#filter-bar input{border:1.5px solid #c8d8e8;border-radius:7px;padding:6px 10px;font-size:.85rem;color:#1a2a3a;background:#f8fbff;outline:none;min-width:160px;transition:border-color .2s}
+#filter-bar select:focus,#filter-bar input:focus{border-color:#2a5f8f}
+.fg{display:flex;flex-direction:column}
+#btn-clear-filters{background:#eef3f8;border:1.5px solid #c8d8e8;border-radius:7px;padding:6px 14px;font-size:.83rem;color:#3a6a9c;cursor:pointer;font-weight:600;align-self:flex-end}
+#btn-clear-filters:hover{background:#dce8f4}
 
-    /* Filter bar */
-    #filter-bar {
-      display: none;
-      background: #fff;
-      border-radius: 12px;
-      padding: 16px 20px;
-      margin-bottom: 24px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-      flex-wrap: wrap;
-      gap: 12px;
-      align-items: flex-end;
-    }
-    #filter-bar.visible { display: flex; }
-    #filter-bar label { font-size: 0.75rem; font-weight: 600; color: #5a7a9c; text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 4px; }
+/* ── table ──────────────────────────────────────────────── */
+#tbl-section{display:none}
+#tbl-section.on{display:block}
+.tbl-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+.tbl-hdr h2{font-size:.88rem;font-weight:700;color:#1a3a5c;text-transform:uppercase;letter-spacing:.05em}
+#row-count{font-size:.78rem;color:#8aabcc}
+.tbl-wrap{background:#fff;border-radius:12px;box-shadow:0 1px 5px rgba(0,0,0,.08);overflow:auto;max-height:70vh}
+table{width:100%;border-collapse:collapse;font-size:.83rem}
+thead th{background:#1a3a5c;color:#fff;padding:10px 12px;text-align:left;font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;position:sticky;top:0;z-index:2}
+tbody tr:nth-child(even){background:#f5f8fc}
+tbody tr:hover{background:#dceefb}
+tbody td{padding:8px 12px;border-bottom:1px solid #e8eef5;white-space:nowrap;vertical-align:middle}
+.badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.73rem;font-weight:700;white-space:nowrap}
+.ok{background:#dcfce7;color:#166534}
+.faltando{background:#fee2e2;color:#991b1b}
+.diverg{background:#fff3cd;color:#92400e}
+.somente-sis{background:#e0f2fe;color:#075985}
+.diff-neg{color:#dc2626;font-weight:700}
+.diff-pos{color:#1d4ed8;font-weight:700}
+.diff-zero{color:#9ab0c8}
 
-    #filter-bar select,
-    #filter-bar input {
-      border: 1.5px solid #ccd9e8;
-      border-radius: 7px;
-      padding: 7px 11px;
-      font-size: 0.88rem;
-      color: #1a2a3a;
-      background: #f8fbff;
-      outline: none;
-      transition: border-color 0.2s;
-      min-width: 170px;
-    }
-    #filter-bar select:focus,
-    #filter-bar input:focus { border-color: #2a5f8f; }
-
-    #filter-bar .filter-group { display: flex; flex-direction: column; }
-
-    #btn-clear {
-      background: #e8f0f8;
-      border: 1.5px solid #ccd9e8;
-      border-radius: 7px;
-      padding: 7px 14px;
-      font-size: 0.85rem;
-      color: #3a6a9c;
-      cursor: pointer;
-      font-weight: 600;
-      transition: background 0.2s;
-      align-self: flex-end;
-    }
-    #btn-clear:hover { background: #ccd9e8; }
-
-    /* Summary cards */
-    #summary-cards {
-      display: none;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-    #summary-cards.visible { display: grid; }
-
-    .card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 20px 22px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-      border-left: 5px solid transparent;
-      position: relative;
-      overflow: hidden;
-    }
-    .card-blue   { border-left-color: #2a5f8f; }
-    .card-green  { border-left-color: #2e7d32; }
-    .card-red    { border-left-color: #c62828; }
-    .card-orange { border-left-color: #e65100; }
-
-    .card .card-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #7a9ab8; margin-bottom: 6px; }
-    .card .card-value { font-size: 2rem; font-weight: 800; line-height: 1; }
-    .card-blue  .card-value { color: #1a3a5c; }
-    .card-green .card-value { color: #2e7d32; }
-    .card-red   .card-value { color: #c62828; }
-    .card-orange .card-value { color: #e65100; }
-    .card .card-pct { font-size: 0.85rem; color: #9ab0c8; margin-top: 4px; }
-    .card .card-icon { position: absolute; right: 16px; top: 16px; font-size: 2rem; opacity: 0.12; }
-
-    /* Table section */
-    #table-section { display: none; }
-    #table-section.visible { display: block; }
-
-    .table-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .table-header h2 { font-size: 0.95rem; font-weight: 700; color: #1a3a5c; text-transform: uppercase; letter-spacing: 0.05em; }
-    #row-count { font-size: 0.82rem; color: #7a9ab8; }
-
-    #btn-export {
-      background: linear-gradient(135deg, #1a3a5c, #2a5f8f);
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 9px 18px;
-      font-size: 0.88rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: opacity 0.2s;
-      letter-spacing: 0.03em;
-    }
-    #btn-export:hover { opacity: 0.85; }
-
-    .table-wrapper {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-      overflow: auto;
-      max-height: 72vh;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.85rem;
-    }
-
-    thead th {
-      background: #1a3a5c;
-      color: #fff;
-      padding: 11px 13px;
-      text-align: left;
-      font-weight: 700;
-      font-size: 0.78rem;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      white-space: nowrap;
-      position: sticky;
-      top: 0;
-      z-index: 2;
-    }
-    thead th:first-child { border-radius: 12px 0 0 0; }
-    thead th:last-child  { border-radius: 0 12px 0 0; }
-
-    tbody tr:nth-child(even) { background: #f5f8fc; }
-    tbody tr:hover { background: #e0ecf8; }
-
-    tbody td {
-      padding: 9px 13px;
-      border-bottom: 1px solid #e8eef5;
-      vertical-align: middle;
-      white-space: nowrap;
-    }
-
-    .status-badge {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 0.78rem;
-      font-weight: 700;
-    }
-    .status-lancada  { background: #e8f5e9; color: #2e7d32; }
-    .status-faltando { background: #ffebee; color: #c62828; }
-    .status-diverg   { background: #fff3e0; color: #e65100; }
-
-    .diff-neg  { color: #c62828; font-weight: 700; }
-    .diff-pos  { color: #1565c0; font-weight: 700; }
-    .diff-zero { color: #7a9ab8; }
-
-    #empty-state {
-      display: none;
-      text-align: center;
-      padding: 50px 20px;
-      color: #9ab0c8;
-      font-size: 1rem;
-    }
-    #empty-state.visible { display: block; }
-    #empty-state .es-icon { font-size: 3rem; margin-bottom: 12px; }
-
-    #loading {
-      display: none;
-      text-align: center;
-      padding: 30px;
-      color: #3a6a9c;
-      font-size: 0.95rem;
-    }
-    #loading.visible { display: block; }
-
-    @media (max-width: 900px) {
-      #summary-cards { grid-template-columns: repeat(2, 1fr); }
-      header h1 { font-size: 1.05rem; }
-    }
-    @media (max-width: 560px) {
-      #summary-cards { grid-template-columns: 1fr 1fr; }
-      main { padding: 16px 10px; }
-    }
-  </style>
+/* ── preview (debug) ────────────────────────────────────── */
+#preview-box{display:none;background:#1e293b;color:#e2e8f0;border-radius:10px;padding:16px;font-size:.75rem;font-family:monospace;max-height:200px;overflow:auto;margin-top:12px;white-space:pre-wrap;word-break:break-all}
+#preview-box.on{display:block}
+</style>
 </head>
 <body>
 
 <header>
-  <div class="icon">&#128203;</div>
+  <div class="icon">📋</div>
   <div>
-    <h1>Conferência de Notas Fiscais — Ração Subsidiada / Paraíba</h1>
-    <p>Sistema de verificação de lançamentos no SIGEF / Sistema de Entrada</p>
+    <h1>Conferência de Notas Fiscais — Ração Subsidiada</h1>
+    <p>Relação de Entradas (Sistema) × Cronograma do Fornecedor</p>
   </div>
 </header>
 
 <main>
-  <!-- Upload -->
-  <section class="upload-section">
-    <h2>1. Selecione o arquivo Excel</h2>
-    <div id="drop-zone">
-      <div class="upload-icon">&#128193;</div>
-      <div class="upload-text">Arraste o arquivo .xlsx aqui ou clique para selecionar</div>
-      <div class="upload-sub">Aceita arquivos .xlsx com abas "FATURAMENTO 01", "FATURAMENTO 02" etc.</div>
-      <input type="file" id="file-input" accept=".xlsx,.xls" />
-    </div>
-    <div id="file-info">
-      <span class="fi-icon">&#9989;</span>
-      <span id="file-name-display"></span>
-    </div>
-  </section>
 
-  <div id="loading"><span>&#9203; Processando arquivo...</span></div>
+  <!-- Upload -->
+  <div class="steps">
+
+    <!-- Lado 1: PDF do sistema -->
+    <div class="step-card">
+      <h2>📄 1. Relação de Entradas (Sistema)</h2>
+      <p>PDF exportado do sistema com as notas de entrada por unidade/polo.<br>
+         Campos extraídos: <strong>UNIDADE</strong>, <strong>Nota Fiscal</strong>, <strong>Quant</strong>, <strong>Valor Nota</strong>.</p>
+      <div class="drop-zone" id="dz-pdf">
+        <input type="file" id="inp-pdf" accept=".pdf">
+        <div class="dz-icon">📂</div>
+        <div class="dz-title">Arraste o PDF aqui ou clique para selecionar</div>
+        <div class="dz-sub">Arquivo .pdf — Relação de Entradas por Unidade/Setor</div>
+      </div>
+      <div class="file-badge" id="badge-pdf">
+        <span>📄</span><span id="badge-pdf-name"></span>
+      </div>
+      <button type="button" style="margin-top:8px;font-size:.74rem;background:none;border:none;color:#6a8aaa;cursor:pointer;text-decoration:underline" onclick="togglePreview()">ver texto extraído (debug)</button>
+      <div id="preview-box"></div>
+    </div>
+
+    <!-- Lado 2: Excel do fornecedor -->
+    <div class="step-card">
+      <h2>📊 2. Cronograma do Fornecedor (Excel)</h2>
+      <p>Planilha Excel (.xlsx) com as abas <strong>FATURAMENTO 01</strong>, <strong>02</strong>…<br>
+         Colunas lidas: <strong>A</strong>=Polo, <strong>B</strong>=Nº NF, <strong>C</strong>=Qtd Prevista.</p>
+      <div class="drop-zone" id="dz-xls">
+        <input type="file" id="inp-xls" accept=".xlsx,.xls">
+        <div class="dz-icon">📊</div>
+        <div class="dz-title">Arraste o Excel aqui ou clique para selecionar</div>
+        <div class="dz-sub">Arquivo .xlsx — Faturamentos SEDAP Ração</div>
+      </div>
+      <div class="file-badge" id="badge-xls">
+        <span>📊</span><span id="badge-xls-name"></span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Action -->
+  <div class="action-row">
+    <button class="btn btn-primary" id="btn-conferir" disabled onclick="conferir()">
+      🔍 Conferir Notas
+    </button>
+    <div class="spinner" id="spinner"></div>
+    <span id="status-msg"></span>
+  </div>
+
+  <!-- Summary -->
+  <div id="summary">
+    <div class="s-card blue"><div class="lbl">Total NFs</div><div class="num" id="c-total">0</div><div class="sub">no cronograma</div></div>
+    <div class="s-card green"><div class="lbl">✅ Lançadas</div><div class="num" id="c-ok">0</div><div class="sub" id="c-ok-pct"></div></div>
+    <div class="s-card red"><div class="lbl">❌ Faltando</div><div class="num" id="c-falt">0</div><div class="sub" id="c-falt-pct"></div></div>
+    <div class="s-card orange"><div class="lbl">⚠ Divergência</div><div class="num" id="c-div">0</div><div class="sub">qtd diferente</div></div>
+  </div>
 
   <!-- Filters -->
   <div id="filter-bar">
-    <div class="filter-group">
-      <label for="sel-fat">Faturamento</label>
-      <select id="sel-fat"></select>
-    </div>
-    <div class="filter-group">
-      <label for="sel-status">Status</label>
-      <select id="sel-status">
-        <option value="">Todos os Status</option>
-        <option value="LANCADA">&#9989; Lançadas</option>
-        <option value="FALTANDO">&#10060; Faltando</option>
-        <option value="DIVERG">&#9888; Divergência de Qtd</option>
+    <div class="fg"><label>Polo / Unidade</label><select id="f-polo"><option value="">Todos os Polos</option></select></div>
+    <div class="fg"><label>Faturamento</label><select id="f-fat"><option value="">Todos</option></select></div>
+    <div class="fg"><label>Status</label>
+      <select id="f-status">
+        <option value="">Todos</option>
+        <option value="ok">✅ Lançada</option>
+        <option value="faltando">❌ Faltando</option>
+        <option value="diverg">⚠ Divergência</option>
+        <option value="somente-sis">📄 Só no sistema</option>
       </select>
     </div>
-    <div class="filter-group">
-      <label for="sel-polo">Polo</label>
-      <select id="sel-polo"></select>
-    </div>
-    <div class="filter-group">
-      <label for="inp-nf">Nº NF</label>
-      <input type="text" id="inp-nf" placeholder="Buscar por número..." />
-    </div>
-    <button id="btn-clear">&#10005; Limpar Filtros</button>
-  </div>
-
-  <!-- Summary cards -->
-  <div id="summary-cards">
-    <div class="card card-blue">
-      <span class="card-icon">&#128194;</span>
-      <div class="card-label">Total de NFs</div>
-      <div class="card-value" id="c-total">0</div>
-      <div class="card-pct" id="c-total-sub">—</div>
-    </div>
-    <div class="card card-green">
-      <span class="card-icon">&#9989;</span>
-      <div class="card-label">Lançadas</div>
-      <div class="card-value" id="c-lanc">0</div>
-      <div class="card-pct" id="c-lanc-pct">—</div>
-    </div>
-    <div class="card card-red">
-      <span class="card-icon">&#10060;</span>
-      <div class="card-label">Faltando</div>
-      <div class="card-value" id="c-falt">0</div>
-      <div class="card-pct" id="c-falt-pct">—</div>
-    </div>
-    <div class="card card-orange">
-      <span class="card-icon">&#9888;</span>
-      <div class="card-label">Divergências de Qtd</div>
-      <div class="card-value" id="c-div">0</div>
-      <div class="card-pct" id="c-div-sub">Qtd prevista ≠ qtd sistema</div>
-    </div>
+    <div class="fg"><label>Nº NF</label><input type="text" id="f-nf" placeholder="ex: 16928"></div>
+    <button id="btn-clear-filters" onclick="clearFilters()">✕ Limpar</button>
   </div>
 
   <!-- Table -->
-  <section id="table-section">
-    <div class="table-header">
-      <div>
-        <h2>Resultado da Conferência</h2>
+  <div id="tbl-section">
+    <div class="tbl-hdr">
+      <h2>📋 Resultado da Conferência</h2>
+      <div style="display:flex;gap:10px;align-items:center">
         <span id="row-count"></span>
+        <button class="btn btn-success" onclick="exportCSV()">⬇ Exportar CSV</button>
       </div>
-      <button id="btn-export">&#11015; Exportar CSV</button>
     </div>
-    <div class="table-wrapper">
-      <table id="main-table">
+    <div class="tbl-wrap">
+      <table>
         <thead>
           <tr>
+            <th>Polo (Cronograma)</th>
             <th>Faturamento</th>
-            <th>Polo</th>
             <th>Nº NF (Cronograma)</th>
             <th>Qtd Prevista</th>
-            <th>Nº NF (Sistema)</th>
+            <th>Polo (Sistema)</th>
             <th>Qtd Sistema</th>
-            <th>Valor (R$)</th>
-            <th>Dif. Sacos</th>
+            <th>Valor Nota (R$)</th>
+            <th>Dif. Sacas</th>
             <th>Status</th>
           </tr>
         </thead>
-        <tbody id="table-body"></tbody>
+        <tbody id="tbody"></tbody>
       </table>
     </div>
-    <div id="empty-state">
-      <div class="es-icon">&#128269;</div>
-      <div>Nenhum registro encontrado para os filtros selecionados.</div>
-    </div>
-  </section>
+  </div>
+
 </main>
 
 <script>
-(function () {
-  'use strict';
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-  // ── State ──────────────────────────────────────────────────────────────────
-  var allRows = [];
-  var filteredRows = [];
+// ── State ────────────────────────────────────────────────────────────────────
+var pdfFile = null, xlsFile = null;
+var pdfData = {};   // { nfNum: { polo, nf, quant, valor } }
+var xlsData = [];   // [{ polo, fat, nfCron, qtdPrev }]
+var allRows = [];
+var rawPdfText = '';
 
-  // ── DOM refs ───────────────────────────────────────────────────────────────
-  var dropZone        = document.getElementById('drop-zone');
-  var fileInput       = document.getElementById('file-input');
-  var fileInfo        = document.getElementById('file-info');
-  var fileNameDisplay = document.getElementById('file-name-display');
-  var loading         = document.getElementById('loading');
-  var filterBar       = document.getElementById('filter-bar');
-  var summaryCards    = document.getElementById('summary-cards');
-  var tableSection    = document.getElementById('table-section');
-  var tableBody       = document.getElementById('table-body');
-  var emptyState      = document.getElementById('empty-state');
-  var rowCount        = document.getElementById('row-count');
+// ── Drop zones ───────────────────────────────────────────────────────────────
+setupDrop('dz-pdf','inp-pdf',function(f){
+  pdfFile = f;
+  document.getElementById('badge-pdf-name').textContent = f.name;
+  document.getElementById('badge-pdf').classList.add('on');
+  checkReady();
+});
+setupDrop('dz-xls','inp-xls',function(f){
+  xlsFile = f;
+  document.getElementById('badge-xls-name').textContent = f.name;
+  document.getElementById('badge-xls').classList.add('on');
+  checkReady();
+});
 
-  var selFat    = document.getElementById('sel-fat');
-  var selStatus = document.getElementById('sel-status');
-  var selPolo   = document.getElementById('sel-polo');
-  var inpNf     = document.getElementById('inp-nf');
-  var btnClear  = document.getElementById('btn-clear');
-  var btnExport = document.getElementById('btn-export');
-
-  // ── Drag & drop ────────────────────────────────────────────────────────────
-  dropZone.addEventListener('click', function () { fileInput.click(); });
-  fileInput.addEventListener('change', function (e) {
-    if (e.target.files[0]) handleFile(e.target.files[0]);
-  });
-  dropZone.addEventListener('dragover', function (e) {
-    e.preventDefault();
-    dropZone.classList.add('drag-over');
-  });
-  dropZone.addEventListener('dragleave', function () {
-    dropZone.classList.remove('drag-over');
-  });
-  dropZone.addEventListener('drop', function (e) {
-    e.preventDefault();
-    dropZone.classList.remove('drag-over');
+function setupDrop(dzId, inpId, cb){
+  var dz = document.getElementById(dzId);
+  var inp = document.getElementById(inpId);
+  dz.addEventListener('click', function(){ inp.click(); });
+  inp.addEventListener('change', function(){ if(inp.files[0]) cb(inp.files[0]); inp.value=''; });
+  dz.addEventListener('dragover', function(e){ e.preventDefault(); dz.classList.add('drag-over'); });
+  dz.addEventListener('dragleave', function(){ dz.classList.remove('drag-over'); });
+  dz.addEventListener('drop', function(e){
+    e.preventDefault(); dz.classList.remove('drag-over');
     var f = e.dataTransfer.files[0];
-    if (f) handleFile(f);
+    if(f) cb(f);
   });
+}
 
-  // ── File handling ──────────────────────────────────────────────────────────
-  function handleFile(file) {
-    loading.classList.add('visible');
-    fileInfo.classList.remove('visible');
+function checkReady(){
+  document.getElementById('btn-conferir').disabled = !(pdfFile && xlsFile);
+}
 
-    var reader = new FileReader();
-    reader.onload = function (e) {
-      try {
-        var data = new Uint8Array(e.target.result);
-        var wb = XLSX.read(data, { type: 'array' });
-        allRows = parseWorkbook(wb);
-        fileNameDisplay.textContent = file.name + '  —  ' + allRows.length + ' NFs carregadas';
-        fileInfo.classList.add('visible');
-        populateFilters(allRows);
-        applyFilters();
-        filterBar.classList.add('visible');
-        summaryCards.classList.add('visible');
-        tableSection.classList.add('visible');
-      } catch (err) {
-        alert('Erro ao processar o arquivo: ' + err.message);
-        console.error(err);
-      } finally {
-        loading.classList.remove('visible');
-      }
-    };
-    reader.onerror = function () {
-      loading.classList.remove('visible');
-      alert('Erro ao ler o arquivo.');
-    };
-    reader.readAsArrayBuffer(file);
+// ── PDF extraction ───────────────────────────────────────────────────────────
+async function extractPdf(file){
+  var ab = await file.arrayBuffer();
+  var pdf = await pdfjsLib.getDocument({data: new Uint8Array(ab)}).promise;
+  var fullText = '';
+  for(var p=1; p<=pdf.numPages; p++){
+    var page = await pdf.getPage(p);
+    var content = await page.getTextContent();
+    // Preserve line breaks by grouping items by Y position
+    var byY = {};
+    content.items.forEach(function(it){
+      var y = Math.round(it.transform[5]);
+      if(!byY[y]) byY[y] = [];
+      byY[y].push(it.str);
+    });
+    var ys = Object.keys(byY).map(Number).sort(function(a,b){return b-a});
+    ys.forEach(function(y){ fullText += byY[y].join(' ') + '\n'; });
+    fullText += '\n';
   }
+  return fullText;
+}
 
-  // ── Parse workbook ─────────────────────────────────────────────────────────
-  function parseWorkbook(wb) {
-    var rows = [];
+// Parse the sistema text into a map: { nfNormalized: { polo, nf, quant, valor } }
+function parseSistema(text){
+  var map = {};
+  // Split into blocks by "Nota Fiscal:"
+  var blocks = text.split(/(?=Nota\s+Fiscal\s*:)/i);
 
-    wb.SheetNames.forEach(function (sheetName) {
-      if (!/^FATURAMENTO\s+\d+/i.test(sheetName.trim())) return;
+  var currentPolo = '';
 
-      var ws = wb.Sheets[sheetName];
-      if (!ws) return;
+  // Pre-scan for UNIDADE lines to associate with blocks
+  // We'll do a linear scan instead
+  var lines = text.split('\n');
+  var polo = '';
 
-      var jsonRows;
-      try {
-        jsonRows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
-      } catch (e) {
-        console.warn('Skipping sheet', sheetName, e);
-        return;
-      }
+  for(var i=0; i<lines.length; i++){
+    var line = lines[i].trim();
+    if(!line) continue;
 
-      // Detecta se tem coluna "soma" (FATURAMENTO 01) ou não (02/03/04)
-      // Row index 1 = cabeçalho. Col D (index 3): "soma" → offset +1; senão → offset 0
-      var headerRow = jsonRows[1] || [];
-      var hasSoma = (headerRow[3] !== null && headerRow[3] !== undefined &&
-                     String(headerRow[3]).toLowerCase().trim() === 'soma');
-      var o = hasSoma ? 1 : 0; // offset para colunas do sistema
+    // Detect polo: "UNIDADE XX - NOME DA CIDADE"
+    var uMatch = line.match(/^UNIDADE\s+\d+\s*[-–]\s*(.+)/i);
+    if(uMatch){
+      polo = uMatch[1].trim().toUpperCase();
+      continue;
+    }
 
-      // Data starts at row index 2 (rows 0 and 1 are headers)
-      for (var i = 2; i < jsonRows.length; i++) {
-        var r = jsonRows[i];
-        if (!r) continue;
+    // Detect NF line: "Nota Fiscal:  16928   Data: ..."
+    var nfMatch = line.match(/Nota\s+Fiscal\s*:\s*(\d+)/i);
+    if(nfMatch){
+      var nf = String(parseInt(nfMatch[1], 10));
 
-        // Col B (index 1) — Nº NF Cronograma — must exist
-        var rawNfCron = r[1];
-        if (rawNfCron === null || rawNfCron === undefined || rawNfCron === '') continue;
+      // Look for Valor Nota on same line or next few lines
+      var valor = null;
+      var search = lines.slice(i, i+4).join(' ');
+      var vMatch = search.match(/Valor\s+Nota\s*:\s*([\d\.]+,\d{2})/i);
+      if(vMatch) valor = parseBR(vMatch[1]);
 
-        var polo     = valOrDash(r[0]);
-        var nfCron   = normalizeNF(rawNfCron);
-        var qtdPrev  = numOrDash(r[2]);
-        var nfSist   = normalizeNF(r[3 + o]);  // col D+offset = NF sistema
-        var qtdSist  = numOrDash(r[4 + o]);    // col E+offset = Qtd sistema
-        var valor    = r[5 + o];               // col F+offset = Valor
-        var rawStatus = (r[6 + o] !== null && r[6 + o] !== undefined) ? String(r[6 + o]).trim() : '';
-        var rawDiff  = r[7 + o];               // col H+offset = Diferença
-
-        var statusKey = 'LANCADA';
-        if (rawStatus.indexOf('FALTANDO') !== -1 || rawStatus.indexOf('❌') !== -1) {
-          statusKey = 'FALTANDO';
+      // Look for Quant in next ~10 lines (product table)
+      var quant = null;
+      for(var j=i+1; j<Math.min(i+15, lines.length); j++){
+        var pl = lines[j].trim();
+        // "Total da Nota" signals end of this block
+        if(/Total\s+da\s+Nota/i.test(pl)) break;
+        // Product line: starts with 6-digit code OR has pattern: text  NUMBER  decimal  money
+        // Look for: [description text] [integer quant] [unit price] [total]
+        // Pattern: integer followed by decimal followed by money at end
+        var qMatch = pl.match(/(\d{1,4})\s+\d{1,4}[,\.]\d+\s+[\d\.]+,\d{2}\s*$/);
+        if(qMatch){
+          quant = parseInt(qMatch[1], 10);
+          break;
         }
-
-        var isDiverg = false;
-        if (statusKey === 'LANCADA' && rawDiff !== null && rawDiff !== undefined && rawDiff !== '' && rawDiff !== 'N/A') {
-          var diffNum = parseFloat(rawDiff);
-          if (!isNaN(diffNum) && diffNum !== 0) isDiverg = true;
+        // Alternative: just "Quant" column header already passed, grab standalone int
+        // followed by unit price like 129,5 or 129.5
+        var qMatch2 = pl.match(/\b(\d{2,4})\s+\d{2,4}[,\.]\d/);
+        if(qMatch2 && !quant){
+          quant = parseInt(qMatch2[1], 10);
         }
-
-        rows.push({
-          faturamento: sheetName.trim(),
-          polo: polo,
-          nfCron: nfCron,
-          qtdPrev: qtdPrev,
-          nfSist: nfSist,
-          qtdSist: qtdSist,
-          valor: valor,
-          rawDiff: rawDiff,
-          statusKey: statusKey,
-          isDiverg: isDiverg,
-          rawStatus: rawStatus
-        });
       }
-    });
 
-    return rows;
-  }
-
-  // ── Helpers ────────────────────────────────────────────────────────────────
-  function valOrDash(v) {
-    if (v === null || v === undefined || v === '') return '—';
-    return String(v).trim() || '—';
-  }
-
-  function numOrDash(v) {
-    if (v === null || v === undefined || v === '') return '—';
-    var n = parseFloat(v);
-    return isNaN(n) ? '—' : n;
-  }
-
-  function normalizeNF(v) {
-    if (v === null || v === undefined || v === '') return '—';
-    var s = String(v).trim();
-    if (s === '' || s === '—') return '—';
-    var n = parseInt(s, 10);
-    return isNaN(n) ? s : String(n);
-  }
-
-  function formatBRL(v) {
-    if (v === null || v === undefined || v === '') return '—';
-    var n = parseFloat(v);
-    if (isNaN(n)) return '—';
-    return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  }
-
-  function formatDiff(rawDiff) {
-    if (rawDiff === null || rawDiff === undefined || rawDiff === '' || rawDiff === 'N/A') {
-      return '<span class="diff-zero">—</span>';
-    }
-    var n = parseFloat(rawDiff);
-    if (isNaN(n)) return '<span class="diff-zero">' + esc(String(rawDiff)) + '</span>';
-    if (n < 0) return '<span class="diff-neg">' + n + '</span>';
-    if (n > 0) return '<span class="diff-pos">+' + n + '</span>';
-    return '<span class="diff-zero">0</span>';
-  }
-
-  function esc(s) {
-    return String(s)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-  }
-
-  // ── Populate filters ───────────────────────────────────────────────────────
-  function populateFilters(rows) {
-    var fats = [];
-    var fatSeen = {};
-    rows.forEach(function (r) {
-      if (!fatSeen[r.faturamento]) { fatSeen[r.faturamento] = true; fats.push(r.faturamento); }
-    });
-    fats.sort();
-    selFat.innerHTML = '<option value="">Todos os Faturamentos</option>';
-    fats.forEach(function (f) {
-      var o = document.createElement('option');
-      o.value = f; o.textContent = f;
-      selFat.appendChild(o);
-    });
-
-    var polos = [];
-    var poloSeen = {};
-    rows.forEach(function (r) {
-      if (r.polo !== '—' && !poloSeen[r.polo]) { poloSeen[r.polo] = true; polos.push(r.polo); }
-    });
-    polos.sort();
-    selPolo.innerHTML = '<option value="">Todos os Polos</option>';
-    polos.forEach(function (p) {
-      var o = document.createElement('option');
-      o.value = p; o.textContent = p;
-      selPolo.appendChild(o);
-    });
-
-    selStatus.value = '';
-    inpNf.value = '';
-  }
-
-  // ── Filter logic ───────────────────────────────────────────────────────────
-  function applyFilters() {
-    var fat    = selFat.value;
-    var status = selStatus.value;
-    var polo   = selPolo.value;
-    var nfQ    = inpNf.value.trim().toLowerCase();
-
-    filteredRows = allRows.filter(function (r) {
-      if (fat  && r.faturamento !== fat)  return false;
-      if (polo && r.polo !== polo)         return false;
-      if (status === 'LANCADA'  && !(r.statusKey === 'LANCADA' && !r.isDiverg)) return false;
-      if (status === 'FALTANDO' && r.statusKey !== 'FALTANDO') return false;
-      if (status === 'DIVERG'   && !r.isDiverg) return false;
-      if (nfQ) {
-        var haystack = (r.nfCron + ' ' + r.nfSist).toLowerCase();
-        if (haystack.indexOf(nfQ) === -1) return false;
+      // If quant still null, try deriving from valor / 129.5
+      if(quant === null && valor !== null){
+        var derived = valor / 129.5;
+        if(Math.abs(derived - Math.round(derived)) < 0.01){
+          quant = Math.round(derived);
+        }
       }
-      return true;
-    });
 
-    // Sort: FALTANDO first, then divergências, then lançadas
-    filteredRows.sort(function (a, b) {
-      function order(row) {
-        if (row.statusKey === 'FALTANDO') return 0;
-        if (row.isDiverg)                 return 1;
-        return 2;
+      if(!map[nf]){
+        map[nf] = { polo: polo, nf: nf, quant: quant, valor: valor };
       }
-      return order(a) - order(b);
-    });
-
-    updateSummary(filteredRows);
-    renderTable(filteredRows);
-  }
-
-  // ── Summary cards ──────────────────────────────────────────────────────────
-  function updateSummary(rows) {
-    var total = rows.length;
-    var lanc  = rows.filter(function (r) { return r.statusKey === 'LANCADA'; }).length;
-    var falt  = rows.filter(function (r) { return r.statusKey === 'FALTANDO'; }).length;
-    var div   = rows.filter(function (r) { return r.isDiverg; }).length;
-
-    document.getElementById('c-total').textContent    = total;
-    document.getElementById('c-total-sub').textContent = total === 1 ? '1 nota fiscal' : total + ' notas fiscais';
-    document.getElementById('c-lanc').textContent     = lanc;
-    document.getElementById('c-lanc-pct').textContent = total ? pct(lanc, total) + '% do total' : '—';
-    document.getElementById('c-falt').textContent     = falt;
-    document.getElementById('c-falt-pct').textContent = total ? pct(falt, total) + '% do total' : '—';
-    document.getElementById('c-div').textContent      = div;
-  }
-
-  function pct(n, total) {
-    return total === 0 ? 0 : Math.round((n / total) * 100);
-  }
-
-  // ── Render table ───────────────────────────────────────────────────────────
-  function renderTable(rows) {
-    rowCount.textContent = rows.length + ' registro(s) encontrado(s)';
-
-    if (rows.length === 0) {
-      tableBody.innerHTML = '';
-      emptyState.classList.add('visible');
-      return;
+      continue;
     }
-    emptyState.classList.remove('visible');
-
-    var html = rows.map(function (r) {
-      var statusBadge = buildStatusBadge(r);
-      var diffHtml    = formatDiff(r.rawDiff);
-      var qtdPrevStr  = r.qtdPrev === '—' ? '—' : r.qtdPrev.toLocaleString('pt-BR');
-      var qtdSistStr  = r.qtdSist === '—' ? '—' : r.qtdSist.toLocaleString('pt-BR');
-      return '<tr>'
-        + '<td>' + esc(r.faturamento) + '</td>'
-        + '<td>' + esc(r.polo)        + '</td>'
-        + '<td>' + esc(r.nfCron)      + '</td>'
-        + '<td>' + esc(qtdPrevStr)    + '</td>'
-        + '<td>' + esc(r.nfSist)      + '</td>'
-        + '<td>' + esc(qtdSistStr)    + '</td>'
-        + '<td>' + esc(formatBRL(r.valor)) + '</td>'
-        + '<td>' + diffHtml           + '</td>'
-        + '<td>' + statusBadge        + '</td>'
-        + '</tr>';
-    }).join('');
-
-    tableBody.innerHTML = html;
   }
+  return map;
+}
 
-  function buildStatusBadge(r) {
-    if (r.statusKey === 'FALTANDO') {
-      return '<span class="status-badge status-faltando">&#10060; FALTANDO</span>';
-    }
-    if (r.isDiverg) {
-      return '<span class="status-badge status-diverg">&#9888; DIVERGÊNCIA</span>';
-    }
-    return '<span class="status-badge status-lancada">&#9989; LANÇADA</span>';
-  }
+function parseBR(s){
+  if(!s) return null;
+  var c = s.replace(/\./g,'').replace(',','.');
+  var n = parseFloat(c);
+  return isNaN(n) ? null : n;
+}
 
-  // ── Filter listeners ───────────────────────────────────────────────────────
-  selFat.addEventListener('change', applyFilters);
-  selStatus.addEventListener('change', applyFilters);
-  selPolo.addEventListener('change', applyFilters);
-  inpNf.addEventListener('input', applyFilters);
-  btnClear.addEventListener('click', function () {
-    selFat.value = '';
-    selStatus.value = '';
-    selPolo.value = '';
-    inpNf.value = '';
-    applyFilters();
+function fmtBR(n){
+  if(n===null||n===undefined) return '—';
+  return n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+function fmtNum(n){
+  if(n===null||n===undefined) return '—';
+  return n.toLocaleString('pt-BR');
+}
+
+// ── Excel extraction ─────────────────────────────────────────────────────────
+function parseExcel(ab){
+  var wb = XLSX.read(new Uint8Array(ab),{type:'array'});
+  var rows = [];
+  wb.SheetNames.forEach(function(sn){
+    if(!/^FATURAMENTO\s*\d+/i.test(sn.trim())) return;
+    var ws = wb.Sheets[sn];
+    if(!ws) return;
+    var json;
+    try{ json = XLSX.utils.sheet_to_json(ws,{header:1,defval:null}); }
+    catch(e){ return; }
+
+    // Detect offset: FATURAMENTO 01 has "soma" in col D (index 3)
+    var hdr = json[1]||[];
+    var hasSoma = hdr[3] && String(hdr[3]).toLowerCase().trim()==='soma';
+    // For cronograma we only need cols A, B, C regardless of offset
+    var lastPolo = '';
+    for(var i=2;i<json.length;i++){
+      var r = json[i];
+      if(!r) continue;
+      var nfB = r[1];
+      if(nfB===null||nfB===undefined||nfB==='') continue;
+      var polo = r[0] ? String(r[0]).trim().toUpperCase() : lastPolo;
+      if(r[0]) lastPolo = polo;
+      var qtd = r[2]!==null && r[2]!==undefined ? parseFloat(r[2]) : null;
+      var nf  = String(parseInt(nfB,10));
+      rows.push({ polo:polo||lastPolo, fat:sn.trim(), nfCron:nf, qtdPrev:isNaN(qtd)?null:qtd });
+    }
+  });
+  return rows;
+}
+
+// ── Main comparison ──────────────────────────────────────────────────────────
+function compare(sisMap, cronoList){
+  var results = [];
+  var sisNFs = new Set(Object.keys(sisMap));
+  var cronoNFs = new Set(cronoList.map(function(r){return r.nfCron;}));
+
+  // For each cronograma entry, find in sistema
+  cronoList.forEach(function(c){
+    var s = sisMap[c.nfCron];
+    if(!s){
+      results.push({
+        poloCrono:c.polo, fat:c.fat, nfCron:c.nfCron, qtdPrev:c.qtdPrev,
+        poloSis:'—', qtdSis:null, valor:null, diff:null, status:'faltando'
+      });
+    } else {
+      sisNFs.delete(c.nfCron);
+      var diff = (s.quant!==null && c.qtdPrev!==null) ? s.quant - c.qtdPrev : null;
+      var diverg = diff!==null && diff!==0;
+      results.push({
+        poloCrono:c.polo, fat:c.fat, nfCron:c.nfCron, qtdPrev:c.qtdPrev,
+        poloSis:s.polo||'—', qtdSis:s.quant, valor:s.valor, diff:diff,
+        status: diverg ? 'diverg' : 'ok'
+      });
+    }
   });
 
-  // ── CSV Export ─────────────────────────────────────────────────────────────
-  btnExport.addEventListener('click', function () {
-    if (filteredRows.length === 0) { alert('Nenhum dado para exportar.'); return; }
-
-    var cols = ['Faturamento','Polo','Nº NF (Cronograma)','Qtd Prevista','Nº NF (Sistema)','Qtd Sistema','Valor (R$)','Dif. Sacos','Status'];
-    var lines = [cols.join(';')];
-
-    filteredRows.forEach(function (r) {
-      var status = r.statusKey === 'FALTANDO' ? 'FALTANDO' : r.isDiverg ? 'DIVERGÊNCIA' : 'LANÇADA';
-      var diff   = (r.rawDiff === null || r.rawDiff === undefined || r.rawDiff === '' || r.rawDiff === 'N/A') ? '' : r.rawDiff;
-      var qtdPrev = r.qtdPrev === '—' ? '' : r.qtdPrev;
-      var qtdSist = r.qtdSist === '—' ? '' : r.qtdSist;
-      var valor   = (r.valor === null || r.valor === undefined || r.valor === '') ? '' : formatBRL(r.valor);
-
-      var row = [
-        r.faturamento,
-        r.polo,
-        r.nfCron === '—' ? '' : r.nfCron,
-        qtdPrev,
-        r.nfSist === '—' ? '' : r.nfSist,
-        qtdSist,
-        valor,
-        diff,
-        status
-      ].map(function (v) { return '"' + String(v).replace(/"/g, '""') + '"'; });
-      lines.push(row.join(';'));
+  // Entries only in sistema (not in cronograma)
+  sisNFs.forEach(function(nf){
+    var s = sisMap[nf];
+    results.push({
+      poloCrono:'—', fat:'—', nfCron:nf, qtdPrev:null,
+      poloSis:s.polo||'—', qtdSis:s.quant, valor:s.valor, diff:null, status:'somente-sis'
     });
-
-    var bom = '﻿';
-    var blob = new Blob([bom + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = 'conferencia_nf_' + new Date().toISOString().slice(0, 10) + '.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
   });
 
-}());
+  // Sort: faltando first, diverg, somente-sis, ok
+  var ord = {faltando:0,diverg:1,'somente-sis':2,ok:3};
+  results.sort(function(a,b){ return (ord[a.status]||9)-(ord[b.status]||9); });
+  return results;
+}
+
+// ── conferir ─────────────────────────────────────────────────────────────────
+async function conferir(){
+  var btn = document.getElementById('btn-conferir');
+  var spin = document.getElementById('spinner');
+  var msg = document.getElementById('status-msg');
+  btn.disabled = true; spin.classList.add('on');
+
+  try{
+    msg.textContent = 'Lendo PDF do sistema…';
+    var pdfText = await extractPdf(pdfFile);
+    rawPdfText = pdfText;
+    var preview = document.getElementById('preview-box');
+    if(preview.classList.contains('on')) preview.textContent = pdfText.slice(0,3000)+'…';
+
+    pdfData = parseSistema(pdfText);
+    var nSis = Object.keys(pdfData).length;
+    msg.textContent = 'Sistema: '+nSis+' nota(s) encontrada(s). Lendo Excel…';
+
+    var xlsAb = await xlsFile.arrayBuffer();
+    xlsData = parseExcel(xlsAb);
+    msg.textContent = 'Cronograma: '+xlsData.length+' NF(s). Comparando…';
+
+    allRows = compare(pdfData, xlsData);
+    populateFilters(allRows);
+    renderTable(allRows);
+    updateSummary(allRows);
+
+    document.getElementById('summary').classList.add('on');
+    document.getElementById('filter-bar').classList.add('on');
+    document.getElementById('tbl-section').classList.add('on');
+    msg.textContent = 'Concluído — '+allRows.length+' registro(s) processados.';
+
+  } catch(err){
+    msg.textContent = 'Erro: '+err.message;
+    console.error(err);
+  } finally{
+    btn.disabled = false; spin.classList.remove('on');
+  }
+}
+
+// ── Filters ──────────────────────────────────────────────────────────────────
+function populateFilters(rows){
+  var polos={}, fats={};
+  rows.forEach(function(r){
+    if(r.poloCrono && r.poloCrono!=='—') polos[r.poloCrono]=1;
+    if(r.poloSis && r.poloSis!=='—') polos[r.poloSis]=1;
+    if(r.fat && r.fat!=='—') fats[r.fat]=1;
+  });
+  var sel = document.getElementById('f-polo');
+  sel.innerHTML = '<option value="">Todos os Polos</option>';
+  Object.keys(polos).sort().forEach(function(p){
+    var o=document.createElement('option'); o.value=p; o.textContent=p; sel.appendChild(o);
+  });
+  var sf = document.getElementById('f-fat');
+  sf.innerHTML = '<option value="">Todos</option>';
+  Object.keys(fats).sort().forEach(function(f){
+    var o=document.createElement('option'); o.value=f; o.textContent=f; sf.appendChild(o);
+  });
+}
+
+['f-polo','f-fat','f-status','f-nf'].forEach(function(id){
+  document.getElementById(id).addEventListener('input', applyFilters);
+});
+
+function applyFilters(){
+  var polo   = document.getElementById('f-polo').value;
+  var fat    = document.getElementById('f-fat').value;
+  var status = document.getElementById('f-status').value;
+  var nf     = document.getElementById('f-nf').value.trim().replace(/^0+/,'');
+  var filtered = allRows.filter(function(r){
+    if(polo   && r.poloCrono!==polo && r.poloSis!==polo) return false;
+    if(fat    && r.fat!==fat) return false;
+    if(status && r.status!==status) return false;
+    if(nf     && r.nfCron.replace(/^0+/,'').indexOf(nf)<0) return false;
+    return true;
+  });
+  renderTable(filtered);
+  updateSummary(filtered);
+}
+
+function clearFilters(){
+  ['f-polo','f-fat','f-status'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('f-nf').value='';
+  renderTable(allRows);
+  updateSummary(allRows);
+}
+
+// ── Render table ──────────────────────────────────────────────────────────────
+var statusLabel = {
+  ok:          '<span class="badge ok">✅ Lançada</span>',
+  faltando:    '<span class="badge faltando">❌ Faltando</span>',
+  diverg:      '<span class="badge diverg">⚠ Divergência</span>',
+  'somente-sis':'<span class="badge somente-sis">📄 Só no sistema</span>'
+};
+
+function renderTable(rows){
+  var html = '';
+  rows.forEach(function(r){
+    var diffCell = '—';
+    if(r.diff!==null){
+      if(r.diff<0) diffCell='<span class="diff-neg">'+r.diff+'</span>';
+      else if(r.diff>0) diffCell='<span class="diff-pos">+'+r.diff+'</span>';
+      else diffCell='<span class="diff-zero">0</span>';
+    }
+    html += '<tr>'
+      +'<td>'+esc(r.poloCrono)+'</td>'
+      +'<td>'+esc(r.fat)+'</td>'
+      +'<td><strong>'+esc(r.nfCron)+'</strong></td>'
+      +'<td>'+(r.qtdPrev!==null?fmtNum(r.qtdPrev):'—')+'</td>'
+      +'<td>'+esc(r.poloSis)+'</td>'
+      +'<td>'+(r.qtdSis!==null?fmtNum(r.qtdSis):'—')+'</td>'
+      +'<td>'+fmtBR(r.valor)+'</td>'
+      +'<td>'+diffCell+'</td>'
+      +'<td>'+(statusLabel[r.status]||r.status)+'</td>'
+      +'</tr>';
+  });
+  document.getElementById('tbody').innerHTML = html || '<tr><td colspan="9" style="text-align:center;padding:24px;color:#9ab0c8">Nenhum resultado encontrado.</td></tr>';
+  document.getElementById('row-count').textContent = rows.length+' resultado(s)';
+}
+
+function updateSummary(rows){
+  var total=0, ok=0, falt=0, div=0;
+  rows.forEach(function(r){
+    if(r.status==='somente-sis') return;
+    total++;
+    if(r.status==='ok') ok++;
+    else if(r.status==='faltando') falt++;
+    else if(r.status==='diverg') div++;
+  });
+  document.getElementById('c-total').textContent = total;
+  document.getElementById('c-ok').textContent = ok;
+  document.getElementById('c-ok-pct').textContent = total ? Math.round(ok/total*100)+'%' : '';
+  document.getElementById('c-falt').textContent = falt;
+  document.getElementById('c-falt-pct').textContent = total ? Math.round(falt/total*100)+'%' : '';
+  document.getElementById('c-div').textContent = div;
+}
+
+// ── CSV export ────────────────────────────────────────────────────────────────
+function exportCSV(){
+  var BOM='﻿';
+  var hdr=['Polo (Cronograma)','Faturamento','Nº NF','Qtd Prevista','Polo (Sistema)','Qtd Sistema','Valor Nota','Dif. Sacas','Status'];
+  var statusPT={ok:'Lançada',faltando:'Faltando',diverg:'Divergência','somente-sis':'Só no sistema'};
+  var rows = allRows.map(function(r){
+    return [
+      r.poloCrono, r.fat, r.nfCron,
+      r.qtdPrev!==null?r.qtdPrev:'',
+      r.poloSis,
+      r.qtdSis!==null?r.qtdSis:'',
+      r.valor!==null?fmtBR(r.valor):'',
+      r.diff!==null?r.diff:'',
+      statusPT[r.status]||r.status
+    ].map(function(v){ return '"'+String(v).replace(/"/g,'""')+'"'; }).join(';');
+  });
+  var csv = BOM+[hdr.join(';')].concat(rows).join('\r\n');
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+  a.download='conferencia_nf_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function togglePreview(){
+  var b=document.getElementById('preview-box');
+  b.classList.toggle('on');
+  if(b.classList.contains('on') && rawPdfText) b.textContent=rawPdfText.slice(0,3000)+'…';
+}
 </script>
 </body>
 </html>

@@ -3,95 +3,91 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Conferência de Notas Fiscais — Ração Subsidiada / Paraíba</title>
+<title>Conferência de Notas — Ração Subsidiada / Paraíba</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:#1a2a3a;min-height:100vh}
 header{background:linear-gradient(135deg,#1a3a5c,#2a5f8f);color:#fff;padding:16px 28px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
 header .icon{font-size:2rem}
-header h1{font-size:1.25rem;font-weight:700;line-height:1.3}
+header h1{font-size:1.2rem;font-weight:700}
 header p{font-size:.8rem;opacity:.8;margin-top:2px}
-main{max-width:1400px;margin:0 auto;padding:24px 18px 48px}
+main{max-width:1300px;margin:0 auto;padding:24px 16px 48px}
 
-/* ── step cards ─────────────────────────────────────────── */
-.steps{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:22px}
-@media(max-width:720px){.steps{grid-template-columns:1fr}}
-.step-card{background:#fff;border-radius:12px;box-shadow:0 1px 5px rgba(0,0,0,.08);padding:20px}
-.step-card h2{font-size:.88rem;font-weight:700;color:#1a3a5c;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;display:flex;align-items:center;gap:8px}
-.step-card p{font-size:.78rem;color:#6a8aaa;margin-bottom:12px;line-height:1.4}
+.steps{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media(max-width:700px){.steps{grid-template-columns:1fr}}
 
-/* drop zone */
-.drop-zone{border:2px dashed #a0bcd8;border-radius:10px;padding:28px 16px;text-align:center;cursor:pointer;background:#f7fbff;transition:border-color .2s,background .2s}
-.drop-zone:hover,.drop-zone.drag-over{border-color:#1a3a5c;background:#e4f0fb}
-.drop-zone .dz-icon{font-size:2.2rem;margin-bottom:8px}
-.drop-zone .dz-title{font-size:.9rem;font-weight:600;color:#2a5f8f}
-.drop-zone .dz-sub{font-size:.76rem;color:#8aabcc;margin-top:4px}
-.drop-zone input[type=file]{display:none}
+.card{background:#fff;border-radius:12px;box-shadow:0 1px 5px rgba(0,0,0,.08);padding:18px}
+.card h2{font-size:.85rem;font-weight:700;color:#1a3a5c;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.card p{font-size:.76rem;color:#6a8aaa;margin-bottom:12px;line-height:1.5}
 
-.file-badge{display:none;margin-top:10px;background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:8px 12px;font-size:.82rem;color:#1565c0;align-items:center;gap:8px}
-.file-badge.on{display:flex}
+.dz{border:2px dashed #a0bcd8;border-radius:10px;padding:26px 16px;text-align:center;cursor:pointer;background:#f7fbff;transition:border-color .2s,background .2s;position:relative}
+.dz:hover,.dz.over{border-color:#1a3a5c;background:#e4f0fb}
+.dz input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.dz .di{font-size:2rem;margin-bottom:6px}
+.dz .dt{font-size:.88rem;font-weight:600;color:#2a5f8f}
+.dz .ds{font-size:.74rem;color:#90b0cc;margin-top:3px}
 
-/* ── action row ─────────────────────────────────────────── */
-.action-row{display:flex;align-items:center;gap:14px;margin-bottom:24px;flex-wrap:wrap}
-.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 22px;border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer;border:none;transition:filter .15s,transform .1s;letter-spacing:.02em}
+.badge-file{display:none;margin-top:10px;background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:7px 12px;font-size:.8rem;color:#1565c0;align-items:center;gap:8px}
+.badge-file.on{display:flex}
+
+.log{margin-top:8px;font-size:.75rem;color:#5a8aaa;min-height:16px}
+
+.action-row{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 22px;border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer;border:none;transition:filter .15s,transform .1s}
 .btn:active{transform:scale(.97)}
-.btn-primary{background:linear-gradient(135deg,#1a3a5c,#2563a8);color:#fff}
-.btn-primary:hover{filter:brightness(1.1)}
-.btn-primary:disabled{opacity:.45;cursor:not-allowed;filter:none}
-.btn-success{background:linear-gradient(135deg,#166534,#22c55e);color:#fff}
-.btn-success:hover{filter:brightness(1.1)}
-.spinner{width:22px;height:22px;border:3px solid #c0d8f0;border-top-color:#1a3a5c;border-radius:50%;animation:spin .7s linear infinite;display:none}
-.spinner.on{display:block}
-@keyframes spin{to{transform:rotate(360deg)}}
-#status-msg{font-size:.82rem;color:#5a7a9c}
+.btn-blue{background:linear-gradient(135deg,#1a3a5c,#2563a8);color:#fff}
+.btn-blue:hover{filter:brightness(1.1)}
+.btn-blue:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.btn-green{background:linear-gradient(135deg,#166534,#22c55e);color:#fff}
+.btn-green:hover{filter:brightness(1.1)}
+.spin{width:20px;height:20px;border:3px solid #c0d8f0;border-top-color:#1a3a5c;border-radius:50%;animation:sp .7s linear infinite;display:none}
+.spin.on{display:block}
+@keyframes sp{to{transform:rotate(360deg)}}
+#smsg{font-size:.82rem;color:#5a7a9c}
 
-/* ── summary cards ──────────────────────────────────────── */
-#summary{display:none;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+#summary{display:none;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
 #summary.on{display:grid}
 @media(max-width:700px){#summary{grid-template-columns:1fr 1fr}}
-.s-card{background:#fff;border-radius:12px;padding:18px 16px;box-shadow:0 1px 5px rgba(0,0,0,.08);border-left:5px solid #ccc}
-.s-card.blue{border-left-color:#1a3a5c}.s-card.green{border-left-color:#16a34a}.s-card.red{border-left-color:#dc2626}.s-card.orange{border-left-color:#ea580c}
-.s-card .num{font-size:2rem;font-weight:800;line-height:1}
-.s-card.blue .num{color:#1a3a5c}.s-card.green .num{color:#16a34a}.s-card.red .num{color:#dc2626}.s-card.orange .num{color:#ea580c}
-.s-card .lbl{font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#8aabcc;margin-bottom:4px}
-.s-card .sub{font-size:.8rem;color:#aac0d4;margin-top:3px}
+.sc{background:#fff;border-radius:12px;padding:16px;box-shadow:0 1px 5px rgba(0,0,0,.08);border-left:5px solid #ccc}
+.sc.bl{border-left-color:#1a3a5c}.sc.gr{border-left-color:#16a34a}.sc.rd{border-left-color:#dc2626}.sc.or{border-left-color:#ea580c}
+.sc .n{font-size:1.9rem;font-weight:800;line-height:1}
+.sc.bl .n{color:#1a3a5c}.sc.gr .n{color:#16a34a}.sc.rd .n{color:#dc2626}.sc.or .n{color:#ea580c}
+.sc .l{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#8aabcc;margin-bottom:4px}
+.sc .s{font-size:.78rem;color:#aac0d4;margin-top:3px}
 
-/* ── filters ────────────────────────────────────────────── */
-#filter-bar{display:none;background:#fff;border-radius:12px;padding:14px 18px;margin-bottom:18px;box-shadow:0 1px 5px rgba(0,0,0,.08);flex-wrap:wrap;gap:12px;align-items:flex-end}
-#filter-bar.on{display:flex}
-#filter-bar label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#6a8aaa;display:block;margin-bottom:3px}
-#filter-bar select,#filter-bar input{border:1.5px solid #c8d8e8;border-radius:7px;padding:6px 10px;font-size:.85rem;color:#1a2a3a;background:#f8fbff;outline:none;min-width:160px;transition:border-color .2s}
-#filter-bar select:focus,#filter-bar input:focus{border-color:#2a5f8f}
+#fbar{display:none;background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:16px;box-shadow:0 1px 5px rgba(0,0,0,.08);flex-wrap:wrap;gap:10px;align-items:flex-end}
+#fbar.on{display:flex}
+#fbar label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#6a8aaa;display:block;margin-bottom:3px}
+#fbar select,#fbar input{border:1.5px solid #c8d8e8;border-radius:7px;padding:6px 10px;font-size:.84rem;color:#1a2a3a;background:#f8fbff;outline:none;min-width:155px}
+#fbar select:focus,#fbar input:focus{border-color:#2a5f8f}
 .fg{display:flex;flex-direction:column}
-#btn-clear-filters{background:#eef3f8;border:1.5px solid #c8d8e8;border-radius:7px;padding:6px 14px;font-size:.83rem;color:#3a6a9c;cursor:pointer;font-weight:600;align-self:flex-end}
-#btn-clear-filters:hover{background:#dce8f4}
+#bcl{background:#eef3f8;border:1.5px solid #c8d8e8;border-radius:7px;padding:6px 12px;font-size:.82rem;color:#3a6a9c;cursor:pointer;font-weight:600;align-self:flex-end}
+#bcl:hover{background:#dce8f4}
 
-/* ── table ──────────────────────────────────────────────── */
-#tbl-section{display:none}
-#tbl-section.on{display:block}
-.tbl-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px}
-.tbl-hdr h2{font-size:.88rem;font-weight:700;color:#1a3a5c;text-transform:uppercase;letter-spacing:.05em}
-#row-count{font-size:.78rem;color:#8aabcc}
-.tbl-wrap{background:#fff;border-radius:12px;box-shadow:0 1px 5px rgba(0,0,0,.08);overflow:auto;max-height:70vh}
-table{width:100%;border-collapse:collapse;font-size:.83rem}
-thead th{background:#1a3a5c;color:#fff;padding:10px 12px;text-align:left;font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;position:sticky;top:0;z-index:2}
+#tsec{display:none}#tsec.on{display:block}
+.th{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+.th h2{font-size:.85rem;font-weight:700;color:#1a3a5c;text-transform:uppercase;letter-spacing:.05em}
+#rc{font-size:.76rem;color:#8aabcc}
+.tw{background:#fff;border-radius:12px;box-shadow:0 1px 5px rgba(0,0,0,.08);overflow:auto;max-height:68vh}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+thead th{background:#1a3a5c;color:#fff;padding:9px 11px;text-align:left;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;position:sticky;top:0;z-index:2}
 tbody tr:nth-child(even){background:#f5f8fc}
 tbody tr:hover{background:#dceefb}
-tbody td{padding:8px 12px;border-bottom:1px solid #e8eef5;white-space:nowrap;vertical-align:middle}
-.badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.73rem;font-weight:700;white-space:nowrap}
+tbody td{padding:7px 11px;border-bottom:1px solid #e8eef5;white-space:nowrap;vertical-align:middle}
+.bk{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.72rem;font-weight:700}
 .ok{background:#dcfce7;color:#166534}
-.faltando{background:#fee2e2;color:#991b1b}
-.diverg{background:#fff3cd;color:#92400e}
-.somente-sis{background:#e0f2fe;color:#075985}
-.diff-neg{color:#dc2626;font-weight:700}
-.diff-pos{color:#1d4ed8;font-weight:700}
-.diff-zero{color:#9ab0c8}
+.fa{background:#fee2e2;color:#991b1b}
+.dv{background:#fff3cd;color:#92400e}
+.ss{background:#e0f2fe;color:#075985}
+.dn{color:#dc2626;font-weight:700}
+.dp{color:#1d4ed8;font-weight:700}
+.dz2{color:#9ab0c8}
 
-/* ── preview (debug) ────────────────────────────────────── */
-#preview-box{display:none;background:#1e293b;color:#e2e8f0;border-radius:10px;padding:16px;font-size:.75rem;font-family:monospace;max-height:200px;overflow:auto;margin-top:12px;white-space:pre-wrap;word-break:break-all}
-#preview-box.on{display:block}
+/* debug text area */
+#dbg{display:none;background:#1e293b;color:#94d2bd;border-radius:10px;padding:14px;font-size:.72rem;font-family:monospace;max-height:180px;overflow:auto;margin-top:10px;white-space:pre-wrap;word-break:break-all}
+#dbg.on{display:block}
+.dbg-btn{background:none;border:none;font-size:.72rem;color:#90b0cc;cursor:pointer;text-decoration:underline;margin-top:6px;display:block}
 </style>
 </head>
 <body>
@@ -100,113 +96,107 @@ tbody td{padding:8px 12px;border-bottom:1px solid #e8eef5;white-space:nowrap;ver
   <div class="icon">📋</div>
   <div>
     <h1>Conferência de Notas Fiscais — Ração Subsidiada</h1>
-    <p>Relação de Entradas (Sistema) × Cronograma do Fornecedor</p>
+    <p>Sistema de Entradas × Cronograma do Fornecedor</p>
   </div>
 </header>
 
 <main>
 
-  <!-- Upload -->
-  <div class="steps">
+<div class="steps">
 
-    <!-- Lado 1: PDF do sistema -->
-    <div class="step-card">
-      <h2>📄 1. Relação de Entradas (Sistema)</h2>
-      <p>PDF exportado do sistema com as notas de entrada por unidade/polo.<br>
-         Campos extraídos: <strong>UNIDADE</strong>, <strong>Nota Fiscal</strong>, <strong>Quant</strong>, <strong>Valor Nota</strong>.</p>
-      <div class="drop-zone" id="dz-pdf">
-        <input type="file" id="inp-pdf" accept=".pdf">
-        <div class="dz-icon">📂</div>
-        <div class="dz-title">Arraste o PDF aqui ou clique para selecionar</div>
-        <div class="dz-sub">Arquivo .pdf — Relação de Entradas por Unidade/Setor</div>
-      </div>
-      <div class="file-badge" id="badge-pdf">
-        <span>📄</span><span id="badge-pdf-name"></span>
-      </div>
-      <button type="button" style="margin-top:8px;font-size:.74rem;background:none;border:none;color:#6a8aaa;cursor:pointer;text-decoration:underline" onclick="togglePreview()">ver texto extraído (debug)</button>
-      <div id="preview-box"></div>
+  <!-- PDF Sistema -->
+  <div class="card">
+    <h2>📄 1. Relação de Entradas (Sistema)</h2>
+    <p>PDF do sistema com todas as páginas.<br>
+       Campos extraídos: <strong>UNIDADE</strong> (polo), <strong>Nota Fiscal</strong>, <strong>Quant</strong>.</p>
+    <div class="dz" id="dz1">
+      <input type="file" id="in1" accept=".pdf">
+      <div class="di">📂</div>
+      <div class="dt">Arraste o PDF aqui ou clique para selecionar</div>
+      <div class="ds">Relação de Entradas por Unidade/Setor</div>
     </div>
-
-    <!-- Lado 2: Excel do fornecedor -->
-    <div class="step-card">
-      <h2>📊 2. Cronograma do Fornecedor (Excel)</h2>
-      <p>Planilha Excel (.xlsx) com as abas <strong>FATURAMENTO 01</strong>, <strong>02</strong>…<br>
-         Colunas lidas: <strong>A</strong>=Polo, <strong>B</strong>=Nº NF, <strong>C</strong>=Qtd Prevista.</p>
-      <div class="drop-zone" id="dz-xls">
-        <input type="file" id="inp-xls" accept=".xlsx,.xls">
-        <div class="dz-icon">📊</div>
-        <div class="dz-title">Arraste o Excel aqui ou clique para selecionar</div>
-        <div class="dz-sub">Arquivo .xlsx — Faturamentos SEDAP Ração</div>
-      </div>
-      <div class="file-badge" id="badge-xls">
-        <span>📊</span><span id="badge-xls-name"></span>
-      </div>
-    </div>
-
+    <div class="badge-file" id="bf1"><span>📄</span><span id="bf1n"></span></div>
+    <div class="log" id="log1"></div>
+    <button class="dbg-btn" onclick="toggleDbg(1)">🔍 ver texto extraído</button>
+    <div id="dbg1" class="dbg"></div>
   </div>
 
-  <!-- Action -->
-  <div class="action-row">
-    <button class="btn btn-primary" id="btn-conferir" disabled onclick="conferir()">
-      🔍 Conferir Notas
-    </button>
-    <div class="spinner" id="spinner"></div>
-    <span id="status-msg"></span>
+  <!-- PDF Fornecedor -->
+  <div class="card">
+    <h2>📊 2. Cronograma do Fornecedor (PDF)</h2>
+    <p>PDF do fornecedor com a tabela de notas entregues.<br>
+       Colunas rastreadas: <strong>NOTA FISCAL</strong> | <strong>POLO</strong> | <strong>QT SACOS</strong> | <strong>TOTAL</strong>.</p>
+    <div class="dz" id="dz2">
+      <input type="file" id="in2" accept=".pdf">
+      <div class="di">📊</div>
+      <div class="dt">Arraste o PDF aqui ou clique para selecionar</div>
+      <div class="ds">Relatório do Fornecedor — todas as notas</div>
+    </div>
+    <div class="badge-file" id="bf2"><span>📊</span><span id="bf2n"></span></div>
+    <div class="log" id="log2"></div>
+    <button class="dbg-btn" onclick="toggleDbg(2)">🔍 ver texto extraído</button>
+    <div id="dbg2" class="dbg"></div>
   </div>
 
-  <!-- Summary -->
-  <div id="summary">
-    <div class="s-card blue"><div class="lbl">Total NFs</div><div class="num" id="c-total">0</div><div class="sub">no cronograma</div></div>
-    <div class="s-card green"><div class="lbl">✅ Lançadas</div><div class="num" id="c-ok">0</div><div class="sub" id="c-ok-pct"></div></div>
-    <div class="s-card red"><div class="lbl">❌ Faltando</div><div class="num" id="c-falt">0</div><div class="sub" id="c-falt-pct"></div></div>
-    <div class="s-card orange"><div class="lbl">⚠ Divergência</div><div class="num" id="c-div">0</div><div class="sub">qtd diferente</div></div>
-  </div>
+</div>
 
-  <!-- Filters -->
-  <div id="filter-bar">
-    <div class="fg"><label>Polo / Unidade</label><select id="f-polo"><option value="">Todos os Polos</option></select></div>
-    <div class="fg"><label>Faturamento</label><select id="f-fat"><option value="">Todos</option></select></div>
-    <div class="fg"><label>Status</label>
-      <select id="f-status">
-        <option value="">Todos</option>
-        <option value="ok">✅ Lançada</option>
-        <option value="faltando">❌ Faltando</option>
-        <option value="diverg">⚠ Divergência</option>
-        <option value="somente-sis">📄 Só no sistema</option>
-      </select>
-    </div>
-    <div class="fg"><label>Nº NF</label><input type="text" id="f-nf" placeholder="ex: 16928"></div>
-    <button id="btn-clear-filters" onclick="clearFilters()">✕ Limpar</button>
-  </div>
+<div class="action-row">
+  <button class="btn btn-blue" id="btnc" disabled onclick="conferir()">🔍 Conferir Notas</button>
+  <div class="spin" id="spin"></div>
+  <span id="smsg"></span>
+</div>
 
-  <!-- Table -->
-  <div id="tbl-section">
-    <div class="tbl-hdr">
-      <h2>📋 Resultado da Conferência</h2>
-      <div style="display:flex;gap:10px;align-items:center">
-        <span id="row-count"></span>
-        <button class="btn btn-success" onclick="exportCSV()">⬇ Exportar CSV</button>
-      </div>
-    </div>
-    <div class="tbl-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Polo (Cronograma)</th>
-            <th>Faturamento</th>
-            <th>Nº NF (Cronograma)</th>
-            <th>Qtd Prevista</th>
-            <th>Polo (Sistema)</th>
-            <th>Qtd Sistema</th>
-            <th>Valor Nota (R$)</th>
-            <th>Dif. Sacas</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="tbody"></tbody>
-      </table>
+<!-- Summary -->
+<div id="summary">
+  <div class="sc bl"><div class="l">Total NFs</div><div class="n" id="ct">0</div><div class="s">no cronograma</div></div>
+  <div class="sc gr"><div class="l">✅ Lançadas</div><div class="n" id="co">0</div><div class="s" id="cop"></div></div>
+  <div class="sc rd"><div class="l">❌ Faltando</div><div class="n" id="cf">0</div><div class="s" id="cfp"></div></div>
+  <div class="sc or"><div class="l">⚠ Divergência</div><div class="n" id="cd">0</div><div class="s">qtd diferente</div></div>
+</div>
+
+<!-- Filters -->
+<div id="fbar">
+  <div class="fg"><label>Polo</label><select id="fp"><option value="">Todos os Polos</option></select></div>
+  <div class="fg"><label>Status</label>
+    <select id="fs">
+      <option value="">Todos</option>
+      <option value="ok">✅ Lançada</option>
+      <option value="fa">❌ Faltando</option>
+      <option value="dv">⚠ Divergência</option>
+      <option value="ss">📄 Só no sistema</option>
+    </select>
+  </div>
+  <div class="fg"><label>Nº NF</label><input type="text" id="fn" placeholder="ex: 16928"></div>
+  <button id="bcl" onclick="clearF()">✕ Limpar</button>
+</div>
+
+<!-- Table -->
+<div id="tsec">
+  <div class="th">
+    <h2>📋 Resultado da Conferência</h2>
+    <div style="display:flex;gap:10px;align-items:center">
+      <span id="rc"></span>
+      <button class="btn btn-green" onclick="exportCSV()">⬇ Exportar CSV</button>
     </div>
   </div>
+  <div class="tw">
+    <table>
+      <thead>
+        <tr>
+          <th>Nº NF</th>
+          <th>Polo (Cronograma)</th>
+          <th>QT Sacos (Crono)</th>
+          <th>Total (Crono)</th>
+          <th>Polo (Sistema)</th>
+          <th>Quant (Sistema)</th>
+          <th>Dif. Sacas</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="tb"></tbody>
+    </table>
+  </div>
+</div>
 
 </main>
 
@@ -214,397 +204,407 @@ tbody td{padding:8px 12px;border-bottom:1px solid #e8eef5;white-space:nowrap;ver
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-// ── State ────────────────────────────────────────────────────────────────────
-var pdfFile = null, xlsFile = null;
-var pdfData = {};   // { nfNum: { polo, nf, quant, valor } }
-var xlsData = [];   // [{ polo, fat, nfCron, qtdPrev }]
-var allRows = [];
-var rawPdfText = '';
+var f1=null, f2=null;
+var raw1='', raw2='';
+var allRows=[];
 
 // ── Drop zones ───────────────────────────────────────────────────────────────
-setupDrop('dz-pdf','inp-pdf',function(f){
-  pdfFile = f;
-  document.getElementById('badge-pdf-name').textContent = f.name;
-  document.getElementById('badge-pdf').classList.add('on');
-  checkReady();
-});
-setupDrop('dz-xls','inp-xls',function(f){
-  xlsFile = f;
-  document.getElementById('badge-xls-name').textContent = f.name;
-  document.getElementById('badge-xls').classList.add('on');
-  checkReady();
-});
-
-function setupDrop(dzId, inpId, cb){
-  var dz = document.getElementById(dzId);
-  var inp = document.getElementById(inpId);
-  dz.addEventListener('click', function(){ inp.click(); });
-  inp.addEventListener('change', function(){ if(inp.files[0]) cb(inp.files[0]); inp.value=''; });
-  dz.addEventListener('dragover', function(e){ e.preventDefault(); dz.classList.add('drag-over'); });
-  dz.addEventListener('dragleave', function(){ dz.classList.remove('drag-over'); });
-  dz.addEventListener('drop', function(e){
-    e.preventDefault(); dz.classList.remove('drag-over');
-    var f = e.dataTransfer.files[0];
-    if(f) cb(f);
+[1,2].forEach(function(n){
+  var dz=document.getElementById('dz'+n);
+  var inp=document.getElementById('in'+n);
+  dz.addEventListener('click',function(e){
+    if(e.target===inp) return;
+    inp.click();
   });
-}
+  inp.addEventListener('change',function(){
+    if(inp.files[0]) setFile(n, inp.files[0]);
+    inp.value='';
+  });
+  dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('over')});
+  dz.addEventListener('dragleave',function(){dz.classList.remove('over')});
+  dz.addEventListener('drop',function(e){
+    e.preventDefault();dz.classList.remove('over');
+    var f=e.dataTransfer.files[0];
+    if(f && f.name.toLowerCase().endsWith('.pdf')) setFile(n,f);
+  });
+});
 
+function setFile(n,f){
+  if(n===1) f1=f; else f2=f;
+  document.getElementById('bf'+n+'n').textContent=f.name;
+  document.getElementById('bf'+n).classList.add('on');
+  document.getElementById('log'+n).textContent='';
+  checkReady();
+}
 function checkReady(){
-  document.getElementById('btn-conferir').disabled = !(pdfFile && xlsFile);
+  document.getElementById('btnc').disabled=!(f1&&f2);
 }
 
-// ── PDF extraction ───────────────────────────────────────────────────────────
-async function extractPdf(file){
+// ── PDF text extraction (ALL pages) ─────────────────────────────────────────
+async function pdfToLines(file){
   var ab = await file.arrayBuffer();
-  var pdf = await pdfjsLib.getDocument({data: new Uint8Array(ab)}).promise;
-  var fullText = '';
+  var pdf = await pdfjsLib.getDocument({data:new Uint8Array(ab)}).promise;
+  var lines = [];
+
   for(var p=1; p<=pdf.numPages; p++){
     var page = await pdf.getPage(p);
     var content = await page.getTextContent();
-    // Preserve line breaks by grouping items by Y position
+
+    // Group text items by rounded Y coordinate to reconstruct lines
     var byY = {};
     content.items.forEach(function(it){
+      if(!it.str || !it.str.trim()) return;
       var y = Math.round(it.transform[5]);
-      if(!byY[y]) byY[y] = [];
-      byY[y].push(it.str);
+      if(!byY[y]) byY[y]=[];
+      byY[y].push({x: it.transform[4], str: it.str});
     });
+
+    // Sort Y descending (top of page first), items within line by X
     var ys = Object.keys(byY).map(Number).sort(function(a,b){return b-a});
-    ys.forEach(function(y){ fullText += byY[y].join(' ') + '\n'; });
-    fullText += '\n';
+    ys.forEach(function(y){
+      var items = byY[y].sort(function(a,b){return a.x-b.x});
+      lines.push(items.map(function(i){return i.str}).join('  '));
+    });
+    lines.push('--- PAGE BREAK ---');
   }
-  return fullText;
+  return lines;
 }
 
-// Parse the sistema text into a map: { nfNormalized: { polo, nf, quant, valor } }
-function parseSistema(text){
-  var map = {};
-  // Split into blocks by "Nota Fiscal:"
-  var blocks = text.split(/(?=Nota\s+Fiscal\s*:)/i);
-
-  var currentPolo = '';
-
-  // Pre-scan for UNIDADE lines to associate with blocks
-  // We'll do a linear scan instead
-  var lines = text.split('\n');
+// ── Parse Sistema PDF ────────────────────────────────────────────────────────
+// Format:
+//   UNIDADE 10 - PATOS
+//   Nota Fiscal:  16928   Data: ...   Valor Nota: 36.260,00
+//   [product rows]  280  129,5  36.260,00
+//   Total da Nota >>>>   36.260,00
+function parseSistema(lines){
+  var map = {};   // nf -> { polo, nf, quant }
   var polo = '';
+  var nf = null;
 
   for(var i=0; i<lines.length; i++){
-    var line = lines[i].trim();
-    if(!line) continue;
+    var line = lines[i];
+    var up = line.toUpperCase();
 
-    // Detect polo: "UNIDADE XX - NOME DA CIDADE"
-    var uMatch = line.match(/^UNIDADE\s+\d+\s*[-–]\s*(.+)/i);
-    if(uMatch){
-      polo = uMatch[1].trim().toUpperCase();
+    // UNIDADE XX - NOME
+    var um = up.match(/UNIDADE\s+\d+\s*[-–]\s*([A-ZÁÉÍÓÚÀÂÊÎÔÛÃÕÇ\s]+)/);
+    if(um){
+      polo = um[1].trim().replace(/\s+/g,' ');
+      nf = null;
       continue;
     }
 
-    // Detect NF line: "Nota Fiscal:  16928   Data: ..."
-    var nfMatch = line.match(/Nota\s+Fiscal\s*:\s*(\d+)/i);
-    if(nfMatch){
-      var nf = String(parseInt(nfMatch[1], 10));
-
-      // Look for Valor Nota on same line or next few lines
-      var valor = null;
-      var search = lines.slice(i, i+4).join(' ');
-      var vMatch = search.match(/Valor\s+Nota\s*:\s*([\d\.]+,\d{2})/i);
-      if(vMatch) valor = parseBR(vMatch[1]);
-
-      // Look for Quant in next ~10 lines (product table)
-      var quant = null;
-      for(var j=i+1; j<Math.min(i+15, lines.length); j++){
-        var pl = lines[j].trim();
-        // "Total da Nota" signals end of this block
-        if(/Total\s+da\s+Nota/i.test(pl)) break;
-        // Product line: starts with 6-digit code OR has pattern: text  NUMBER  decimal  money
-        // Look for: [description text] [integer quant] [unit price] [total]
-        // Pattern: integer followed by decimal followed by money at end
-        var qMatch = pl.match(/(\d{1,4})\s+\d{1,4}[,\.]\d+\s+[\d\.]+,\d{2}\s*$/);
-        if(qMatch){
-          quant = parseInt(qMatch[1], 10);
-          break;
-        }
-        // Alternative: just "Quant" column header already passed, grab standalone int
-        // followed by unit price like 129,5 or 129.5
-        var qMatch2 = pl.match(/\b(\d{2,4})\s+\d{2,4}[,\.]\d/);
-        if(qMatch2 && !quant){
-          quant = parseInt(qMatch2[1], 10);
-        }
-      }
-
-      // If quant still null, try deriving from valor / 129.5
-      if(quant === null && valor !== null){
-        var derived = valor / 129.5;
-        if(Math.abs(derived - Math.round(derived)) < 0.01){
-          quant = Math.round(derived);
-        }
-      }
-
-      if(!map[nf]){
-        map[nf] = { polo: polo, nf: nf, quant: quant, valor: valor };
-      }
+    // Nota Fiscal: XXXXX
+    var nm = line.match(/Nota\s+Fiscal\s*:\s*(\d+)/i);
+    if(nm){
+      nf = String(parseInt(nm[1],10));
+      if(!map[nf]) map[nf]={polo:polo, nf:nf, quant:null};
       continue;
+    }
+
+    // Quantity row: product line with [desc] [Quant] [ValorUnit] [ValorTotal]
+    // Pattern: ends with  INTEGER  DECIMAL  MONEY
+    // e.g.  "...REFERENCIA.  280  129,5  36.260,00"
+    if(nf && map[nf] && map[nf].quant===null){
+      // Try: last 3 numeric tokens = quant, unitPrice, total
+      var nums = line.match(/(\d{1,4})\s+\d{1,4}[,\.]\d+\s+[\d\.]+,\d{2}\s*$/);
+      if(nums){
+        map[nf].quant = parseInt(nums[1],10);
+        continue;
+      }
+      // Alternative: standalone "280  129" type pattern anywhere
+      var alt = line.match(/\b(\d{2,4})\s+\d{2,3}[,\.]\d/);
+      if(alt){
+        map[nf].quant = parseInt(alt[1],10);
+        continue;
+      }
+    }
+
+    // "Total da Nota" signals end of this NF block
+    if(/Total\s+da\s+Nota/i.test(line)){
+      nf = null;
     }
   }
   return map;
 }
 
-function parseBR(s){
-  if(!s) return null;
-  var c = s.replace(/\./g,'').replace(',','.');
-  var n = parseFloat(c);
-  return isNaN(n) ? null : n;
+// ── Parse Fornecedor PDF ─────────────────────────────────────────────────────
+// Table with columns: NOTA FISCAL | POLO | QT SACOS | TOTAL
+// Rows may look like:
+//   16501  CAJAZEIRAS  280  36.260,00
+//   or: 16501  CAJAZEIRAS  280 sacos  36.260,00
+function parseFornecedor(lines){
+  var list = [];
+  var inTable = false;
+
+  // Money pattern
+  var moneyRe = /[\d\.]+,\d{2}/;
+  // NF pattern: 4-6 digit number at start of line (after trim)
+  var nfRe = /^\s*(\d{4,6})\b/;
+
+  for(var i=0; i<lines.length; i++){
+    var line = lines[i].trim();
+    if(!line || line==='--- PAGE BREAK ---') continue;
+    var up = line.toUpperCase();
+
+    // Detect table header
+    if(/NOTA\s+FISCAL/.test(up) && /POLO/.test(up) && /SACOS|QT/.test(up)){
+      inTable = true;
+      continue;
+    }
+
+    if(!inTable) continue;
+
+    // Skip sub-headers and empty lines
+    if(/NOTA\s+FISCAL|POLO|QT\s*SACOS|TOTAL|---/.test(up)) continue;
+
+    // Try to parse a data row
+    var nfm = line.match(nfRe);
+    if(!nfm) continue;
+
+    var nf = String(parseInt(nfm[1],10));
+
+    // Extract all money values from line
+    var moneys = line.match(/[\d\.]+,\d{2}/g) || [];
+    var total = moneys.length > 0 ? parseBR(moneys[moneys.length-1]) : null;
+
+    // Extract all plain integers (potential qtd and NF)
+    var ints = line.match(/\b(\d{1,4})\b/g) || [];
+    // Remove the NF number, keep remaining
+    var qtdCandidates = ints.filter(function(n){ return String(parseInt(n,10))!==nf; });
+    var qtd = null;
+    // The quantity is the largest plausible number (10-9999 sacas)
+    qtdCandidates.forEach(function(c){
+      var v=parseInt(c,10);
+      if(v>=10 && v<=9999){ if(qtd===null || v>qtd) qtd=v; }
+    });
+
+    // Extract POLO: text between NF and numbers
+    // Remove NF, numbers, money from line to get the text part
+    var rest = line
+      .replace(nfm[0],'')
+      .replace(/[\d\.]+,\d{2}/g,'')
+      .replace(/\b\d+\b/g,'')
+      .replace(/[^\wÁÉÍÓÚÀÂÊÎÔÛÃÕÇáéíóúàâêîôûãõç\s]/g,' ')
+      .trim()
+      .replace(/\s+/g,' ');
+    var polo = rest.toUpperCase().trim() || '—';
+
+    if(nf && qtd!==null){
+      list.push({ nf:nf, polo:polo, qtSacos:qtd, total:total });
+    }
+  }
+  return list;
 }
 
+function parseBR(s){
+  if(!s) return null;
+  var c=String(s).replace(/\./g,'').replace(',','.');
+  var n=parseFloat(c);
+  return isNaN(n)?null:n;
+}
 function fmtBR(n){
   if(n===null||n===undefined) return '—';
   return n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
-
-function fmtNum(n){
+function fmtN(n){
   if(n===null||n===undefined) return '—';
-  return n.toLocaleString('pt-BR');
+  return Number(n).toLocaleString('pt-BR');
 }
 
-// ── Excel extraction ─────────────────────────────────────────────────────────
-function parseExcel(ab){
-  var wb = XLSX.read(new Uint8Array(ab),{type:'array'});
-  var rows = [];
-  wb.SheetNames.forEach(function(sn){
-    if(!/^FATURAMENTO\s*\d+/i.test(sn.trim())) return;
-    var ws = wb.Sheets[sn];
-    if(!ws) return;
-    var json;
-    try{ json = XLSX.utils.sheet_to_json(ws,{header:1,defval:null}); }
-    catch(e){ return; }
+// ── Comparison ───────────────────────────────────────────────────────────────
+function compare(sisMap, fornList){
+  var results=[];
+  var sisKeys=new Set(Object.keys(sisMap));
 
-    // Detect offset: FATURAMENTO 01 has "soma" in col D (index 3)
-    var hdr = json[1]||[];
-    var hasSoma = hdr[3] && String(hdr[3]).toLowerCase().trim()==='soma';
-    // For cronograma we only need cols A, B, C regardless of offset
-    var lastPolo = '';
-    for(var i=2;i<json.length;i++){
-      var r = json[i];
-      if(!r) continue;
-      var nfB = r[1];
-      if(nfB===null||nfB===undefined||nfB==='') continue;
-      var polo = r[0] ? String(r[0]).trim().toUpperCase() : lastPolo;
-      if(r[0]) lastPolo = polo;
-      var qtd = r[2]!==null && r[2]!==undefined ? parseFloat(r[2]) : null;
-      var nf  = String(parseInt(nfB,10));
-      rows.push({ polo:polo||lastPolo, fat:sn.trim(), nfCron:nf, qtdPrev:isNaN(qtd)?null:qtd });
-    }
-  });
-  return rows;
-}
-
-// ── Main comparison ──────────────────────────────────────────────────────────
-function compare(sisMap, cronoList){
-  var results = [];
-  var sisNFs = new Set(Object.keys(sisMap));
-  var cronoNFs = new Set(cronoList.map(function(r){return r.nfCron;}));
-
-  // For each cronograma entry, find in sistema
-  cronoList.forEach(function(c){
-    var s = sisMap[c.nfCron];
+  fornList.forEach(function(f){
+    sisKeys.delete(f.nf);
+    var s=sisMap[f.nf];
     if(!s){
-      results.push({
-        poloCrono:c.polo, fat:c.fat, nfCron:c.nfCron, qtdPrev:c.qtdPrev,
-        poloSis:'—', qtdSis:null, valor:null, diff:null, status:'faltando'
-      });
+      results.push({nf:f.nf,poloF:f.polo,qtF:f.qtSacos,total:f.total,poloS:'—',qtS:null,diff:null,status:'fa'});
     } else {
-      sisNFs.delete(c.nfCron);
-      var diff = (s.quant!==null && c.qtdPrev!==null) ? s.quant - c.qtdPrev : null;
-      var diverg = diff!==null && diff!==0;
-      results.push({
-        poloCrono:c.polo, fat:c.fat, nfCron:c.nfCron, qtdPrev:c.qtdPrev,
-        poloSis:s.polo||'—', qtdSis:s.quant, valor:s.valor, diff:diff,
-        status: diverg ? 'diverg' : 'ok'
-      });
+      var diff=(s.quant!==null&&f.qtSacos!==null)?s.quant-f.qtSacos:null;
+      results.push({nf:f.nf,poloF:f.polo,qtF:f.qtSacos,total:f.total,poloS:s.polo,qtS:s.quant,diff:diff,status:diff===null||diff===0?'ok':'dv'});
     }
   });
 
-  // Entries only in sistema (not in cronograma)
-  sisNFs.forEach(function(nf){
-    var s = sisMap[nf];
-    results.push({
-      poloCrono:'—', fat:'—', nfCron:nf, qtdPrev:null,
-      poloSis:s.polo||'—', qtdSis:s.quant, valor:s.valor, diff:null, status:'somente-sis'
-    });
+  // Só no sistema
+  sisKeys.forEach(function(nf){
+    var s=sisMap[nf];
+    results.push({nf:nf,poloF:'—',qtF:null,total:null,poloS:s.polo,qtS:s.quant,diff:null,status:'ss'});
   });
 
-  // Sort: faltando first, diverg, somente-sis, ok
-  var ord = {faltando:0,diverg:1,'somente-sis':2,ok:3};
-  results.sort(function(a,b){ return (ord[a.status]||9)-(ord[b.status]||9); });
+  var ord={fa:0,dv:1,ss:2,ok:3};
+  results.sort(function(a,b){return (ord[a.status]||9)-(ord[b.status]||9);});
   return results;
 }
 
-// ── conferir ─────────────────────────────────────────────────────────────────
+// ── Main ─────────────────────────────────────────────────────────────────────
 async function conferir(){
-  var btn = document.getElementById('btn-conferir');
-  var spin = document.getElementById('spinner');
-  var msg = document.getElementById('status-msg');
-  btn.disabled = true; spin.classList.add('on');
+  var btn=document.getElementById('btnc');
+  var sp=document.getElementById('spin');
+  var msg=document.getElementById('smsg');
+  btn.disabled=true; sp.classList.add('on');
 
   try{
-    msg.textContent = 'Lendo PDF do sistema…';
-    var pdfText = await extractPdf(pdfFile);
-    rawPdfText = pdfText;
-    var preview = document.getElementById('preview-box');
-    if(preview.classList.contains('on')) preview.textContent = pdfText.slice(0,3000)+'…';
+    // --- Sistema PDF ---
+    msg.textContent='Lendo PDF do sistema (todas as páginas)…';
+    var lines1=await pdfToLines(f1);
+    raw1=lines1.join('\n');
+    document.getElementById('log1').textContent='✓ '+lines1.filter(function(l){return l==='--- PAGE BREAK ---';}).length+' página(s) lida(s)';
+    if(document.getElementById('dbg1').classList.contains('on'))
+      document.getElementById('dbg1').textContent=raw1.slice(0,4000);
 
-    pdfData = parseSistema(pdfText);
-    var nSis = Object.keys(pdfData).length;
-    msg.textContent = 'Sistema: '+nSis+' nota(s) encontrada(s). Lendo Excel…';
+    var sisMap=parseSistema(lines1);
+    var nSis=Object.keys(sisMap).length;
+    document.getElementById('log1').textContent='✓ '+nSis+' nota(s) encontrada(s) no PDF';
 
-    var xlsAb = await xlsFile.arrayBuffer();
-    xlsData = parseExcel(xlsAb);
-    msg.textContent = 'Cronograma: '+xlsData.length+' NF(s). Comparando…';
+    // --- Fornecedor PDF ---
+    msg.textContent='Lendo PDF do fornecedor…';
+    var lines2=await pdfToLines(f2);
+    raw2=lines2.join('\n');
+    document.getElementById('log2').textContent='✓ '+lines2.filter(function(l){return l==='--- PAGE BREAK ---';}).length+' página(s) lida(s)';
+    if(document.getElementById('dbg2').classList.contains('on'))
+      document.getElementById('dbg2').textContent=raw2.slice(0,4000);
 
-    allRows = compare(pdfData, xlsData);
+    var fornList=parseFornecedor(lines2);
+    document.getElementById('log2').textContent='✓ '+fornList.length+' nota(s) encontrada(s) no PDF';
+
+    if(nSis===0){
+      msg.textContent='⚠ Nenhuma nota extraída do PDF do sistema. Clique em "ver texto extraído" para verificar.';
+      return;
+    }
+    if(fornList.length===0){
+      msg.textContent='⚠ Nenhuma nota extraída do PDF do fornecedor. Clique em "ver texto extraído" para verificar.';
+      return;
+    }
+
+    msg.textContent='Comparando '+nSis+' (sistema) × '+fornList.length+' (fornecedor)…';
+    allRows=compare(sisMap, fornList);
     populateFilters(allRows);
     renderTable(allRows);
     updateSummary(allRows);
 
     document.getElementById('summary').classList.add('on');
-    document.getElementById('filter-bar').classList.add('on');
-    document.getElementById('tbl-section').classList.add('on');
-    msg.textContent = 'Concluído — '+allRows.length+' registro(s) processados.';
+    document.getElementById('fbar').classList.add('on');
+    document.getElementById('tsec').classList.add('on');
+    msg.textContent='Concluído — '+allRows.length+' registro(s).';
 
   } catch(err){
-    msg.textContent = 'Erro: '+err.message;
+    msg.textContent='Erro: '+err.message;
     console.error(err);
   } finally{
-    btn.disabled = false; spin.classList.remove('on');
+    btn.disabled=false; sp.classList.remove('on');
   }
 }
 
 // ── Filters ──────────────────────────────────────────────────────────────────
 function populateFilters(rows){
-  var polos={}, fats={};
+  var polos={};
   rows.forEach(function(r){
-    if(r.poloCrono && r.poloCrono!=='—') polos[r.poloCrono]=1;
-    if(r.poloSis && r.poloSis!=='—') polos[r.poloSis]=1;
-    if(r.fat && r.fat!=='—') fats[r.fat]=1;
+    if(r.poloF&&r.poloF!=='—') polos[r.poloF]=1;
+    if(r.poloS&&r.poloS!=='—') polos[r.poloS]=1;
   });
-  var sel = document.getElementById('f-polo');
-  sel.innerHTML = '<option value="">Todos os Polos</option>';
+  var sel=document.getElementById('fp');
+  sel.innerHTML='<option value="">Todos os Polos</option>';
   Object.keys(polos).sort().forEach(function(p){
-    var o=document.createElement('option'); o.value=p; o.textContent=p; sel.appendChild(o);
-  });
-  var sf = document.getElementById('f-fat');
-  sf.innerHTML = '<option value="">Todos</option>';
-  Object.keys(fats).sort().forEach(function(f){
-    var o=document.createElement('option'); o.value=f; o.textContent=f; sf.appendChild(o);
+    var o=document.createElement('option');o.value=p;o.textContent=p;sel.appendChild(o);
   });
 }
 
-['f-polo','f-fat','f-status','f-nf'].forEach(function(id){
-  document.getElementById(id).addEventListener('input', applyFilters);
+['fp','fs','fn'].forEach(function(id){
+  document.getElementById(id).addEventListener('input',applyF);
 });
 
-function applyFilters(){
-  var polo   = document.getElementById('f-polo').value;
-  var fat    = document.getElementById('f-fat').value;
-  var status = document.getElementById('f-status').value;
-  var nf     = document.getElementById('f-nf').value.trim().replace(/^0+/,'');
-  var filtered = allRows.filter(function(r){
-    if(polo   && r.poloCrono!==polo && r.poloSis!==polo) return false;
-    if(fat    && r.fat!==fat) return false;
+function applyF(){
+  var polo=document.getElementById('fp').value;
+  var status=document.getElementById('fs').value;
+  var nf=document.getElementById('fn').value.trim().replace(/^0+/,'');
+  var f=allRows.filter(function(r){
+    if(polo && r.poloF!==polo && r.poloS!==polo) return false;
     if(status && r.status!==status) return false;
-    if(nf     && r.nfCron.replace(/^0+/,'').indexOf(nf)<0) return false;
+    if(nf && r.nf.replace(/^0+/,'').indexOf(nf)<0) return false;
     return true;
   });
-  renderTable(filtered);
-  updateSummary(filtered);
+  renderTable(f);
+  updateSummary(f);
 }
 
-function clearFilters(){
-  ['f-polo','f-fat','f-status'].forEach(function(id){ document.getElementById(id).value=''; });
-  document.getElementById('f-nf').value='';
+function clearF(){
+  ['fp','fs'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('fn').value='';
   renderTable(allRows);
   updateSummary(allRows);
 }
 
-// ── Render table ──────────────────────────────────────────────────────────────
-var statusLabel = {
-  ok:          '<span class="badge ok">✅ Lançada</span>',
-  faltando:    '<span class="badge faltando">❌ Faltando</span>',
-  diverg:      '<span class="badge diverg">⚠ Divergência</span>',
-  'somente-sis':'<span class="badge somente-sis">📄 Só no sistema</span>'
-};
+// ── Render ────────────────────────────────────────────────────────────────────
+var slabel={ok:'<span class="bk ok">✅ Lançada</span>',fa:'<span class="bk fa">❌ Faltando</span>',dv:'<span class="bk dv">⚠ Divergência</span>',ss:'<span class="bk ss">📄 Só no sistema</span>'};
 
 function renderTable(rows){
-  var html = '';
+  var h='';
   rows.forEach(function(r){
-    var diffCell = '—';
+    var dc='—';
     if(r.diff!==null){
-      if(r.diff<0) diffCell='<span class="diff-neg">'+r.diff+'</span>';
-      else if(r.diff>0) diffCell='<span class="diff-pos">+'+r.diff+'</span>';
-      else diffCell='<span class="diff-zero">0</span>';
+      if(r.diff<0) dc='<span class="dn">'+r.diff+'</span>';
+      else if(r.diff>0) dc='<span class="dp">+'+r.diff+'</span>';
+      else dc='<span class="dz2">0</span>';
     }
-    html += '<tr>'
-      +'<td>'+esc(r.poloCrono)+'</td>'
-      +'<td>'+esc(r.fat)+'</td>'
-      +'<td><strong>'+esc(r.nfCron)+'</strong></td>'
-      +'<td>'+(r.qtdPrev!==null?fmtNum(r.qtdPrev):'—')+'</td>'
-      +'<td>'+esc(r.poloSis)+'</td>'
-      +'<td>'+(r.qtdSis!==null?fmtNum(r.qtdSis):'—')+'</td>'
-      +'<td>'+fmtBR(r.valor)+'</td>'
-      +'<td>'+diffCell+'</td>'
-      +'<td>'+(statusLabel[r.status]||r.status)+'</td>'
+    h+='<tr>'
+      +'<td><strong>'+esc(r.nf)+'</strong></td>'
+      +'<td>'+esc(r.poloF)+'</td>'
+      +'<td>'+(r.qtF!==null?fmtN(r.qtF):'—')+'</td>'
+      +'<td>'+fmtBR(r.total)+'</td>'
+      +'<td>'+esc(r.poloS)+'</td>'
+      +'<td>'+(r.qtS!==null?fmtN(r.qtS):'—')+'</td>'
+      +'<td>'+dc+'</td>'
+      +'<td>'+(slabel[r.status]||r.status)+'</td>'
       +'</tr>';
   });
-  document.getElementById('tbody').innerHTML = html || '<tr><td colspan="9" style="text-align:center;padding:24px;color:#9ab0c8">Nenhum resultado encontrado.</td></tr>';
-  document.getElementById('row-count').textContent = rows.length+' resultado(s)';
+  document.getElementById('tb').innerHTML=h||'<tr><td colspan="8" style="text-align:center;padding:20px;color:#9ab0c8">Nenhum resultado.</td></tr>';
+  document.getElementById('rc').textContent=rows.length+' resultado(s)';
 }
 
 function updateSummary(rows){
-  var total=0, ok=0, falt=0, div=0;
+  var tot=0,ok=0,fa=0,dv=0;
   rows.forEach(function(r){
-    if(r.status==='somente-sis') return;
-    total++;
+    if(r.status==='ss') return;
+    tot++;
     if(r.status==='ok') ok++;
-    else if(r.status==='faltando') falt++;
-    else if(r.status==='diverg') div++;
+    else if(r.status==='fa') fa++;
+    else if(r.status==='dv') dv++;
   });
-  document.getElementById('c-total').textContent = total;
-  document.getElementById('c-ok').textContent = ok;
-  document.getElementById('c-ok-pct').textContent = total ? Math.round(ok/total*100)+'%' : '';
-  document.getElementById('c-falt').textContent = falt;
-  document.getElementById('c-falt-pct').textContent = total ? Math.round(falt/total*100)+'%' : '';
-  document.getElementById('c-div').textContent = div;
+  document.getElementById('ct').textContent=tot;
+  document.getElementById('co').textContent=ok;
+  document.getElementById('cop').textContent=tot?Math.round(ok/tot*100)+'%':'';
+  document.getElementById('cf').textContent=fa;
+  document.getElementById('cfp').textContent=tot?Math.round(fa/tot*100)+'%':'';
+  document.getElementById('cd').textContent=dv;
 }
 
-// ── CSV export ────────────────────────────────────────────────────────────────
+// ── CSV ───────────────────────────────────────────────────────────────────────
 function exportCSV(){
   var BOM='﻿';
-  var hdr=['Polo (Cronograma)','Faturamento','Nº NF','Qtd Prevista','Polo (Sistema)','Qtd Sistema','Valor Nota','Dif. Sacas','Status'];
-  var statusPT={ok:'Lançada',faltando:'Faltando',diverg:'Divergência','somente-sis':'Só no sistema'};
-  var rows = allRows.map(function(r){
-    return [
-      r.poloCrono, r.fat, r.nfCron,
-      r.qtdPrev!==null?r.qtdPrev:'',
-      r.poloSis,
-      r.qtdSis!==null?r.qtdSis:'',
-      r.valor!==null?fmtBR(r.valor):'',
-      r.diff!==null?r.diff:'',
-      statusPT[r.status]||r.status
-    ].map(function(v){ return '"'+String(v).replace(/"/g,'""')+'"'; }).join(';');
+  var h=['Nº NF','Polo (Cronograma)','QT Sacos (Crono)','Total (Crono)','Polo (Sistema)','Quant (Sistema)','Dif. Sacas','Status'];
+  var sp={ok:'Lançada',fa:'Faltando',dv:'Divergência',ss:'Só no sistema'};
+  var rows=allRows.map(function(r){
+    return [r.nf,r.poloF,r.qtF!==null?r.qtF:'',fmtBR(r.total),r.poloS,r.qtS!==null?r.qtS:'',r.diff!==null?r.diff:'',sp[r.status]||r.status]
+      .map(function(v){return '"'+String(v).replace(/"/g,'""')+'"';}).join(';');
   });
-  var csv = BOM+[hdr.join(';')].concat(rows).join('\r\n');
+  var csv=BOM+[h.join(';')].concat(rows).join('\r\n');
   var a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
   a.download='conferencia_nf_'+new Date().toISOString().slice(0,10)+'.csv';
   a.click();
 }
 
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
-function togglePreview(){
-  var b=document.getElementById('preview-box');
-  b.classList.toggle('on');
-  if(b.classList.contains('on') && rawPdfText) b.textContent=rawPdfText.slice(0,3000)+'…';
+function toggleDbg(n){
+  var el=document.getElementById('dbg'+n);
+  el.classList.toggle('on');
+  if(el.classList.contains('on')){
+    var raw=n===1?raw1:raw2;
+    el.textContent=raw?raw.slice(0,5000)+'\n…(truncado)':'(ainda não processado — clique em Conferir primeiro)';
+  }
 }
 </script>
 </body>

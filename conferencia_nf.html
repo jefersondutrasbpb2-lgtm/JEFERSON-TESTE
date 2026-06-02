@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conferência de Notas Fiscais</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f0f4f8;
+    color: #1a2533;
+    min-height: 100vh;
+  }
+
+  header {
+    background: linear-gradient(135deg, #1a3a5c 0%, #24527a 100%);
+    color: #fff;
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  }
+  header .logo {
+    width: 44px; height: 44px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+  }
+  header h1 { font-size: 1.35rem; font-weight: 700; letter-spacing: 0.02em; }
+  header p  { font-size: 0.82rem; opacity: 0.78; margin-top: 2px; }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 28px 20px 48px; }
+
+  /* Upload zones */
+  .upload-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+  @media(max-width:680px){ .upload-grid{ grid-template-columns:1fr; } }
+
+  .upload-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+    padding: 20px;
+  }
+  .upload-card h2 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1a3a5c;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .upload-card h2 .badge {
+    font-size: 0.7rem; font-weight: 600;
+    background: #e8f0fe; color: #1a3a5c;
+    border-radius: 20px; padding: 2px 8px;
+  }
+
+  .drop-zone {
+    border: 2px dashed #b0c4d8;
+    border-radius: 10px;
+    padding: 28px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+    background: #f7fafd;
+    position: relative;
+  }
+  .drop-zone:hover, .drop-zone.drag-over {
+    border-color: #1a3a5c;
+    background: #eaf1f8;
+  }
+  .drop-zone input[type=file] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .drop-zone .icon { font-size: 2.2rem; margin-bottom: 8px; }
+  .drop-zone p  { font-size: 0.85rem; color: #5a7090; line-height: 1.5; }
+  .drop-zone strong { color: #1a3a5c; }
+
+  .file-list {
+    margin-top: 10px;
+    display: flex; flex-direction: column; gap: 4px;
+    max-height: 120px; overflow-y: auto;
+  }
+  .file-pill {
+    background: #e8f0fe;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 0.78rem;
+    color: #1a3a5c;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px;
+  }
+  .file-pill .fname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-pill .rem {
+    cursor: pointer; color: #c0392b; font-weight: 700; flex-shrink: 0;
+    background: none; border: none; font-size: 0.9rem; line-height: 1;
+  }
+
+  /* Action row */
+  .action-row {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 28px; flex-wrap: wrap;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 26px; border-radius: 8px;
+    font-size: 0.92rem; font-weight: 700;
+    cursor: pointer; border: none; transition: filter .15s, transform .1s;
+    letter-spacing: 0.02em;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: linear-gradient(135deg,#1a3a5c,#2563a8); color:#fff; }
+  .btn-primary:hover { filter: brightness(1.1); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; filter: none; }
+  .btn-success { background: linear-gradient(135deg,#1a6e3c,#27ae60); color:#fff; }
+  .btn-success:hover { filter: brightness(1.1); }
+
+  /* Spinner */
+  .spinner {
+    display: none;
+    width: 22px; height: 22px;
+    border: 3px solid rgba(26,58,92,0.2);
+    border-top-color: #1a3a5c;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+  .spinner.visible { display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  #statusMsg {
+    font-size: 0.83rem; color: #5a7090;
+  }
+
+  /* Summary cards */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media(max-width:720px){ .summary-grid{ grid-template-columns:1fr 1fr; } }
+  @media(max-width:420px){ .summary-grid{ grid-template-columns:1fr; } }
+
+  .summary-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+    padding: 18px 16px;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+    border-top: 4px solid #b0c4d8;
+  }
+  .summary-card.total   { border-top-color: #1a3a5c; }
+  .summary-card.ok      { border-top-color: #27ae60; }
+  .summary-card.div     { border-top-color: #e67e22; }
+  .summary-card.notfound{ border-top-color: #c0392b; }
+  .summary-card .num {
+    font-size: 2.1rem; font-weight: 800; line-height: 1;
+  }
+  .summary-card.total   .num { color: #1a3a5c; }
+  .summary-card.ok      .num { color: #27ae60; }
+  .summary-card.div     .num { color: #e67e22; }
+  .summary-card.notfound .num { color: #c0392b; }
+  .summary-card .label { font-size: 0.8rem; color: #6a7f90; font-weight: 600; }
+
+  /* Results table */
+  .results-section {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+    overflow: hidden;
+  }
+  .results-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #e8eef4;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+  }
+  .results-header h3 { font-size: 1rem; font-weight: 700; color: #1a3a5c; }
+
+  .table-wrap { overflow-x: auto; }
+  table {
+    width: 100%; border-collapse: collapse; font-size: 0.85rem;
+  }
+  thead th {
+    background: #f0f4f8;
+    color: #1a3a5c;
+    font-weight: 700;
+    padding: 10px 14px;
+    text-align: left;
+    white-space: nowrap;
+    border-bottom: 2px solid #d0dae4;
+  }
+  tbody tr { border-bottom: 1px solid #eef2f6; }
+  tbody tr:hover { background: #f7fafd; }
+  tbody td { padding: 10px 14px; vertical-align: middle; }
+
+  .status-badge {
+    display: inline-block;
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .badge-ok        { background:#d5f5e3; color:#1a6e3c; }
+  .badge-div       { background:#fdebd0; color:#a04000; }
+  .badge-notfound  { background:#fadbd8; color:#922b21; }
+  .badge-report    { background:#d6eaf8; color:#154360; }
+
+  .diff-val { color: #c0392b; font-weight: 700; }
+
+  /* Empty state */
+  .empty-state {
+    padding: 48px 20px;
+    text-align: center;
+    color: #8a9ab0;
+    font-size: 0.9rem;
+  }
+  .empty-state .icon { font-size: 3rem; margin-bottom: 10px; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #f0f4f8; }
+  ::-webkit-scrollbar-thumb { background: #b0c4d8; border-radius: 3px; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">📄</div>
+  <div>
+    <h1>Conferência de Notas Fiscais</h1>
+    <p>Comparação DANFE × Relatório do Fornecedor</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Upload zones -->
+  <div class="upload-grid">
+    <div class="upload-card">
+      <h2>📑 DANFEs <span class="badge">Múltiplos PDFs</span></h2>
+      <div class="drop-zone" id="dropDanfe">
+        <input type="file" id="inputDanfe" accept=".pdf" multiple>
+        <div class="icon">📂</div>
+        <p><strong>Arraste os PDFs aqui</strong><br>ou clique para selecionar</p>
+      </div>
+      <div class="file-list" id="listDanfe"></div>
+    </div>
+
+    <div class="upload-card">
+      <h2>📊 Relatório do Fornecedor <span class="badge">1 PDF</span></h2>
+      <div class="drop-zone" id="dropReport">
+        <input type="file" id="inputReport" accept=".pdf">
+        <div class="icon">📋</div>
+        <p><strong>Arraste o relatório aqui</strong><br>ou clique para selecionar</p>
+      </div>
+      <div class="file-list" id="listReport"></div>
+    </div>
+  </div>
+
+  <!-- Action row -->
+  <div class="action-row">
+    <button class="btn btn-primary" id="btnConferir" disabled>
+      🔍 Conferir Notas
+    </button>
+    <div class="spinner" id="spinner"></div>
+    <span id="statusMsg"></span>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="summary-grid hidden" id="summarySection">
+    <div class="summary-card total">
+      <div class="num" id="cTotal">0</div>
+      <div class="label">TOTAL DE NFs</div>
+    </div>
+    <div class="summary-card ok">
+      <div class="num" id="cOk">0</div>
+      <div class="label">OK / CONFERIDO</div>
+    </div>
+    <div class="summary-card div">
+      <div class="num" id="cDiv">0</div>
+      <div class="label">DIVERGÊNCIAS</div>
+    </div>
+    <div class="summary-card notfound">
+      <div class="num" id="cNot">0</div>
+      <div class="label">NÃO ENCONTRADAS</div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="results-section">
+    <div class="results-header">
+      <h3>📋 Resultado da Conferência</h3>
+      <button class="btn btn-success hidden" id="btnExport">
+        ⬇ Exportar CSV
+      </button>
+    </div>
+    <div id="resultsBody">
+      <div class="empty-state">
+        <div class="icon">🔎</div>
+        <div>Faça o upload dos arquivos e clique em <strong>Conferir Notas</strong> para iniciar.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+// ─── PDF.js worker ───────────────────────────────────────────────────────────
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ─── State ────────────────────────────────────────────────────────────────────
+let danfeFiles   = [];
+let reportFile   = null;
+let lastResults  = [];
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function parseBR(str) {
+  if (!str) return null;
+  // Remove R$, spaces, then convert pt-BR format
+  const clean = str.replace(/R\$\s*/g,'').trim()
+                   .replace(/\./g,'').replace(',','.');
+  const v = parseFloat(clean);
+  return isNaN(v) ? null : v;
+}
+
+function normalizeNF(str) {
+  if (!str) return null;
+  // Strip dots, spaces, leading zeros
+  return String(str).replace(/[\.\s]/g,'').replace(/^0+/,'') || '0';
+}
+
+function fmtBR(num) {
+  if (num === null || num === undefined) return 'N/D';
+  return num.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function fmtQty(num) {
+  if (num === null || num === undefined) return 'N/D';
+  return num.toLocaleString('pt-BR', {minimumFractionDigits:0, maximumFractionDigits:4});
+}
+
+// ─── PDF text extraction ─────────────────────────────────────────────────────
+async function extractText(file) {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+  let text = '';
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    const pageText = content.items.map(it => it.str).join(' ');
+    text += pageText + '\n';
+  }
+  return text;
+}
+
+// ─── DANFE extraction ─────────────────────────────────────────────────────────
+function extractDanfe(text) {
+  const upper = text.toUpperCase();
+
+  // --- NF Number ---
+  let nfRaw = null;
+
+  // Pattern 1: Nº 000.000.000 or Nº 000 000 000
+  const p1 = upper.match(/N[ºO°]\.?\s*(\d{3}[\. ]\d{3}[\. ]\d{3})/);
+  if (p1) nfRaw = p1[1];
+
+  // Pattern 2: Nº followed by 6-9 digit number
+  if (!nfRaw) {
+    const p2 = upper.match(/N[ºO°]\.?\s*(\d{6,9})/);
+    if (p2) nfRaw = p2[1];
+  }
+
+  // Pattern 3: NÚMERO: 123456
+  if (!nfRaw) {
+    const p3 = upper.match(/N[ÚU]MERO\s*[:\-]?\s*(\d{3,9})/);
+    if (p3) nfRaw = p3[1];
+  }
+
+  // Pattern 4: from 44-digit access key (chave de acesso) chars 25-34
+  if (!nfRaw) {
+    const keyMatch = upper.match(/\b(\d{44})\b/);
+    if (keyMatch) {
+      nfRaw = keyMatch[1].substring(25, 34);
+    }
+  }
+
+  // Also try: standalone label "NF-E" or "NOTA FISCAL" followed by number
+  if (!nfRaw) {
+    const p5 = upper.match(/(?:NF-?E?|NOTA FISCAL(?:\s+ELETR[ÔO]NICA)?)\s*N[ºO°]?\s*[:\-]?\s*(\d{3,9})/);
+    if (p5) nfRaw = p5[1];
+  }
+
+  const nf = normalizeNF(nfRaw);
+
+  // --- Value ---
+  let valor = null;
+  const valPatterns = [
+    /VALOR\s+TOTAL\s+DA\s+NOTA\s*:?\s*R?\$?\s*([\d\.]+,\d{2})/,
+    /VALOR\s+TOTAL\s*:?\s*R?\$?\s*([\d\.]+,\d{2})/,
+    /TOTAL\s+DA\s+NOTA\s*:?\s*R?\$?\s*([\d\.]+,\d{2})/,
+    /TOTAL\s+GERAL\s*:?\s*R?\$?\s*([\d\.]+,\d{2})/,
+    /TOTAL\s*:?\s*R?\$?\s*([\d\.]+,\d{2})/,
+  ];
+  for (const pat of valPatterns) {
+    const m = upper.match(pat);
+    if (m) { valor = parseBR(m[1]); break; }
+  }
+
+  // --- Quantity ---
+  let qtd = null;
+  const qtdPatterns = [
+    /QUANTIDADE\s*(?:TOTAL)?\s*:?\s*([\d\.]+(?:,\d+)?)/,
+    /QTDE?\s*:?\s*([\d\.]+(?:,\d+)?)/,
+    /QTD\.?\s*:?\s*([\d\.]+(?:,\d+)?)/,
+    /PESO\s+L[IÍ]QUIDO\s*:?\s*([\d\.]+(?:,\d+)?)/,
+    /PESO\s+BRUTO\s*:?\s*([\d\.]+(?:,\d+)?)/,
+  ];
+  for (const pat of qtdPatterns) {
+    const m = upper.match(pat);
+    if (m) { qtd = parseBR(m[1]); break; }
+  }
+
+  return { nf, valor, qtd, raw: { nfRaw, nf } };
+}
+
+// ─── Supplier report extraction ───────────────────────────────────────────────
+function extractReport(text) {
+  const lines = text.split(/\n/);
+  const entries = {};
+
+  // Money pattern: BR format with cents
+  const moneyRe = /(\d{1,3}(?:\.\d{3})*,\d{2})/g;
+  // NF number: 6-9 digits (standalone or with context)
+  const nfRe = /\b(\d{6,9})\b/;
+
+  for (const line of lines) {
+    const upper = line.toUpperCase();
+
+    // Skip header lines / garbage
+    if (/^\s*$/.test(line)) continue;
+
+    const nfMatch = line.match(nfRe);
+    if (!nfMatch) continue;
+
+    const nfRaw = nfMatch[1];
+    // Skip if looks like a year or common non-NF number
+    if (/^(19|20)\d{2}$/.test(nfRaw)) continue;
+    // Skip very short in context that looks like quantity only
+    const nf = normalizeNF(nfRaw);
+    if (!nf || nf === '0') continue;
+
+    const moneyMatches = [...line.matchAll(moneyRe)];
+    if (moneyMatches.length === 0) continue;
+
+    // First money value = valor, second = may be total or qty context
+    const valor = parseBR(moneyMatches[0][1]);
+    const qtd   = moneyMatches.length > 1 ? parseBR(moneyMatches[moneyMatches.length-1][1]) : null;
+
+    if (!entries[nf]) {
+      entries[nf] = { nf, valor, qtd };
+    } else {
+      // If same NF appears multiple times, keep higher valor (likely a total line)
+      if (valor !== null && (entries[nf].valor === null || valor > entries[nf].valor)) {
+        entries[nf].valor = valor;
+      }
+    }
+  }
+
+  // Second pass: try to find lines with explicit NF labels
+  const nfLabelRe = /N[ºOo°]\.?\s*(\d{3}[\. ]\d{3}[\. ]\d{3}|\d{6,9})/i;
+  for (const line of lines) {
+    const lMatch = line.match(nfLabelRe);
+    if (!lMatch) continue;
+    const nf = normalizeNF(lMatch[1]);
+    if (!nf || nf === '0') continue;
+    const moneyMatches = [...line.matchAll(moneyRe)];
+    if (moneyMatches.length === 0) continue;
+    const valor = parseBR(moneyMatches[0][1]);
+    const qtd   = moneyMatches.length > 1 ? parseBR(moneyMatches[moneyMatches.length-1][1]) : null;
+    if (!entries[nf]) {
+      entries[nf] = { nf, valor, qtd };
+    } else if (valor !== null && (entries[nf].valor === null || valor > entries[nf].valor)) {
+      entries[nf].valor = valor;
+    }
+  }
+
+  return entries;
+}
+
+// ─── Comparison ───────────────────────────────────────────────────────────────
+const TOLERANCE = 0.02;
+
+function compare(danfeList, reportMap) {
+  const results = [];
+  const reportNFs = new Set(Object.keys(reportMap));
+  const seenNFs   = new Set();
+
+  for (const d of danfeList) {
+    if (!d.nf) {
+      results.push({
+        nf: '?', filename: d.filename,
+        valorNF: d.valor, valorRel: null,
+        qtdNF: d.qtd, qtdRel: null,
+        status: 'nao_encontrada',
+        note: 'NF não identificada no PDF'
+      });
+      continue;
+    }
+
+    seenNFs.add(d.nf);
+    const rep = reportMap[d.nf];
+
+    if (!rep) {
+      results.push({
+        nf: d.nf, filename: d.filename,
+        valorNF: d.valor, valorRel: null,
+        qtdNF: d.qtd, qtdRel: null,
+        status: 'nao_encontrada'
+      });
+      continue;
+    }
+
+    // Compare
+    const valOk = (d.valor === null || rep.valor === null)
+      ? true
+      : Math.abs(d.valor - rep.valor) <= TOLERANCE;
+
+    const qtdOk = (d.qtd === null || rep.qtd === null)
+      ? true
+      : Math.abs(d.qtd - rep.qtd) <= TOLERANCE;
+
+    results.push({
+      nf: d.nf, filename: d.filename,
+      valorNF: d.valor, valorRel: rep.valor,
+      qtdNF: d.qtd, qtdRel: rep.qtd,
+      status: (valOk && qtdOk) ? 'ok' : 'divergencia'
+    });
+  }
+
+  // Report-only entries
+  for (const nf of reportNFs) {
+    if (!seenNFs.has(nf)) {
+      const rep = reportMap[nf];
+      results.push({
+        nf, filename: '—',
+        valorNF: null, valorRel: rep.valor,
+        qtdNF: null, qtdRel: rep.qtd,
+        status: 'somente_relatorio'
+      });
+    }
+  }
+
+  // Sort: divergencias first, then nao_encontrada, then somente_relatorio, then ok
+  const order = { divergencia:0, nao_encontrada:1, somente_relatorio:2, ok:3 };
+  results.sort((a,b) => (order[a.status]??9) - (order[b.status]??9));
+
+  return results;
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────────
+function renderResults(results) {
+  lastResults = results;
+
+  const counts = { total:results.length, ok:0, divergencia:0, nao_encontrada:0 };
+  for (const r of results) {
+    if (r.status === 'ok') counts.ok++;
+    else if (r.status === 'divergencia') counts.divergencia++;
+    else if (r.status === 'nao_encontrada' || r.status === 'somente_relatorio') counts.nao_encontrada++;
+  }
+
+  document.getElementById('cTotal').textContent = counts.total;
+  document.getElementById('cOk').textContent    = counts.ok;
+  document.getElementById('cDiv').textContent   = counts.divergencia;
+  document.getElementById('cNot').textContent   = counts.nao_encontrada;
+  document.getElementById('summarySection').classList.remove('hidden');
+
+  const statusLabel = {
+    ok:               '<span class="status-badge badge-ok">✔ OK</span>',
+    divergencia:      '<span class="status-badge badge-div">⚠ Divergência</span>',
+    nao_encontrada:   '<span class="status-badge badge-notfound">✘ Não encontrada</span>',
+    somente_relatorio:'<span class="status-badge badge-report">📄 Só no relatório</span>',
+  };
+
+  function cell(nfVal, repVal) {
+    if (nfVal === null && repVal === null) return '<td>N/D</td><td>N/D</td>';
+    const nfTxt  = nfVal  !== null ? fmtBR(nfVal)  : 'N/D';
+    const repTxt = repVal !== null ? fmtBR(repVal) : 'N/D';
+    const diff = (nfVal !== null && repVal !== null && Math.abs(nfVal-repVal) > TOLERANCE);
+    return `<td>${diff?'<span class="diff-val">':''}${nfTxt}${diff?'</span>':''}</td>`
+          +`<td>${diff?'<span class="diff-val">':''}${repTxt}${diff?'</span>':''}</td>`;
+  }
+
+  function cellQty(nfVal, repVal) {
+    if (nfVal === null && repVal === null) return '<td>N/D</td><td>N/D</td>';
+    const nfTxt  = nfVal  !== null ? fmtQty(nfVal)  : 'N/D';
+    const repTxt = repVal !== null ? fmtQty(repVal) : 'N/D';
+    const diff = (nfVal !== null && repVal !== null && Math.abs(nfVal-repVal) > TOLERANCE);
+    return `<td>${diff?'<span class="diff-val">':''}${nfTxt}${diff?'</span>':''}</td>`
+          +`<td>${diff?'<span class="diff-val">':''}${repTxt}${diff?'</span>':''}</td>`;
+  }
+
+  if (results.length === 0) {
+    document.getElementById('resultsBody').innerHTML =
+      '<div class="empty-state"><div class="icon">🤔</div><div>Nenhum resultado encontrado.</div></div>';
+    return;
+  }
+
+  let rows = '';
+  for (const r of results) {
+    rows += `<tr>
+      <td><strong>${r.nf || '?'}</strong></td>
+      ${cell(r.valorNF, r.valorRel)}
+      ${cellQty(r.qtdNF, r.qtdRel)}
+      <td>${statusLabel[r.status] || r.status}</td>
+      <td style="font-size:0.75rem;color:#7a8fa0;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.filename||''}">${r.filename||'—'}</td>
+    </tr>`;
+  }
+
+  document.getElementById('resultsBody').innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Nº NF</th>
+            <th>Valor NF</th>
+            <th>Valor Relatório</th>
+            <th>Qtd NF</th>
+            <th>Qtd Relatório</th>
+            <th>Status</th>
+            <th>Arquivo</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+
+  document.getElementById('btnExport').classList.remove('hidden');
+}
+
+// ─── CSV Export ───────────────────────────────────────────────────────────────
+function exportCSV() {
+  const BOM = '﻿';
+  const header = ['Nº NF','Valor NF','Valor Relatório','Qtd NF','Qtd Relatório','Status','Arquivo'];
+  const statusPT = {
+    ok:'OK',
+    divergencia:'Divergência',
+    nao_encontrada:'Não encontrada',
+    somente_relatorio:'Só no relatório'
+  };
+  const rows = lastResults.map(r => [
+    r.nf||'',
+    r.valorNF !== null ? fmtBR(r.valorNF) : 'N/D',
+    r.valorRel!== null ? fmtBR(r.valorRel): 'N/D',
+    r.qtdNF   !== null ? fmtQty(r.qtdNF)  : 'N/D',
+    r.qtdRel  !== null ? fmtQty(r.qtdRel) : 'N/D',
+    statusPT[r.status]||r.status,
+    r.filename||''
+  ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(';'));
+
+  const csv = BOM + [header.join(';'), ...rows].join('\r\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'conferencia_nf.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─── File list UI ─────────────────────────────────────────────────────────────
+function renderFileList(containerId, files, onRemove) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+  files.forEach((f, i) => {
+    const pill = document.createElement('div');
+    pill.className = 'file-pill';
+    pill.innerHTML = `<span class="fname" title="${f.name}">📄 ${f.name}</span>
+      <button class="rem" title="Remover">✕</button>`;
+    pill.querySelector('.rem').onclick = () => { onRemove(i); };
+    el.appendChild(pill);
+  });
+}
+
+function updateBtn() {
+  document.getElementById('btnConferir').disabled = !(danfeFiles.length > 0 && reportFile);
+}
+
+// ─── Drop zone setup ──────────────────────────────────────────────────────────
+function setupDrop(dropId, inputId, multi, onFiles) {
+  const drop  = document.getElementById(dropId);
+  const input = document.getElementById(inputId);
+
+  input.addEventListener('change', () => {
+    onFiles([...input.files]);
+    input.value = '';
+  });
+
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('drag-over'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('drag-over'));
+  drop.addEventListener('drop', e => {
+    e.preventDefault();
+    drop.classList.remove('drag-over');
+    const files = [...e.dataTransfer.files].filter(f => f.name.toLowerCase().endsWith('.pdf'));
+    if (files.length) onFiles(files);
+  });
+}
+
+setupDrop('dropDanfe', 'inputDanfe', true, files => {
+  danfeFiles = [...danfeFiles, ...files];
+  renderFileList('listDanfe', danfeFiles, i => {
+    danfeFiles.splice(i, 1);
+    renderFileList('listDanfe', danfeFiles, arguments.callee);
+    updateBtn();
+  });
+  updateBtn();
+});
+
+setupDrop('dropReport', 'inputReport', false, files => {
+  reportFile = files[0];
+  renderFileList('listReport', [reportFile], () => {
+    reportFile = null;
+    renderFileList('listReport', [], ()=>{});
+    updateBtn();
+  });
+  updateBtn();
+});
+
+// ─── Main processing ──────────────────────────────────────────────────────────
+document.getElementById('btnConferir').addEventListener('click', async () => {
+  const btn = document.getElementById('btnConferir');
+  const spinner = document.getElementById('spinner');
+  const statusMsg = document.getElementById('statusMsg');
+
+  btn.disabled = true;
+  spinner.classList.add('visible');
+  statusMsg.textContent = 'Iniciando processamento...';
+
+  try {
+    // Process DANFEs
+    const danfeData = [];
+    for (let i = 0; i < danfeFiles.length; i++) {
+      const f = danfeFiles[i];
+      statusMsg.textContent = `Lendo DANFE ${i+1}/${danfeFiles.length}: ${f.name}`;
+      try {
+        const text = await extractText(f);
+        const extracted = extractDanfe(text);
+        danfeData.push({ ...extracted, filename: f.name });
+      } catch (err) {
+        console.error('Erro no DANFE', f.name, err);
+        danfeData.push({ nf: null, valor: null, qtd: null, filename: f.name, error: err.message });
+      }
+    }
+
+    // Process report
+    statusMsg.textContent = 'Lendo relatório do fornecedor...';
+    let reportMap = {};
+    try {
+      const reportText = await extractText(reportFile);
+      reportMap = extractReport(reportText);
+    } catch (err) {
+      console.error('Erro no relatório', err);
+      statusMsg.textContent = 'Erro ao ler relatório: ' + err.message;
+    }
+
+    statusMsg.textContent = 'Comparando dados...';
+    const results = compare(danfeData, reportMap);
+    renderResults(results);
+    statusMsg.textContent = `Concluído: ${results.length} registro(s) processado(s).`;
+
+  } catch (err) {
+    console.error(err);
+    statusMsg.textContent = 'Erro inesperado: ' + err.message;
+  } finally {
+    btn.disabled = false;
+    spinner.classList.remove('visible');
+  }
+});
+
+document.getElementById('btnExport').addEventListener('click', exportCSV);
+</script>
+</body>
+</html>

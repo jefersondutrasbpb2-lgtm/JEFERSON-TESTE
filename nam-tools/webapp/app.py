@@ -123,8 +123,9 @@ def _run_blend_job(job_id: str):
 
         with _jobs_lock:
             _jobs[job_id]["blend_status"] = "done"
-    except Exception as e:  # noqa: BLE001
-        _log(job_dir, "blend.log", f"ERRO: {e}")
+    except Exception:  # noqa: BLE001
+        import traceback
+        _log(job_dir, "blend.log", "ERRO:\n" + traceback.format_exc())
         with _jobs_lock:
             _jobs[job_id]["blend_status"] = "error"
 

@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NAM Cab Blender — Cabeçote + IR → Modelo A1</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --panel-2: #1f232c;
+    --border: #2a2f3a;
+    --text: #e7e9ee;
+    --muted: #9aa2b1;
+    --accent: #4f8cff;
+    --ok: #35c98c;
+    --err: #ff5d6c;
+    --warn: #f0b429;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  header {
+    padding: 28px 20px 8px;
+    text-align: center;
+  }
+  header h1 { margin: 0 0 6px; font-size: 1.5rem; }
+  header p { margin: 0; color: var(--muted); font-size: 0.95rem; }
+  main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 20px 16px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .step {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    opacity: 0.45;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .step.active { opacity: 1; pointer-events: auto; }
+  .step.done { opacity: 1; pointer-events: auto; border-color: var(--ok); }
+  .step h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.05rem;
+    margin: 0 0 14px;
+  }
+  .badge {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+  .step.done .badge { background: var(--ok); color: #06231a; border-color: var(--ok); }
+  .file-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .file-row:last-child { border-bottom: none; }
+  .file-row label { flex: 1; font-size: 0.92rem; }
+  .file-row small { display: block; color: var(--muted); font-weight: normal; }
+  .file-status { font-size: 0.85rem; color: var(--muted); min-width: 90px; text-align: right; }
+  .file-status.ok { color: var(--ok); }
+  input[type="file"] {
+    color: var(--text);
+    font-size: 0.85rem;
+    max-width: 220px;
+  }
+  button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+  button:disabled { background: #3a3f4b; color: var(--muted); cursor: not-allowed; }
+  button.secondary { background: var(--panel-2); border: 1px solid var(--border); color: var(--text); }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .log-box {
+    background: #0a0c10;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.78rem;
+    color: #b7d3ff;
+    max-height: 220px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    margin-top: 12px;
+    display: none;
+  }
+  .log-box.show { display: block; }
+  audio { width: 100%; margin-top: 10px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 4px; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 0.82rem; color: var(--muted); }
+  .field input, .field select {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 0.9rem;
+  }
+  .hint { color: var(--muted); font-size: 0.82rem; margin-top: 4px; }
+  .progress-outer {
+    background: var(--panel-2);
+    border-radius: 8px;
+    height: 10px;
+    overflow: hidden;
+    margin-top: 12px;
+    border: 1px solid var(--border);
+  }
+  .progress-inner {
+    background: var(--accent);
+    height: 100%;
+    width: 0%;
+    transition: width 0.4s;
+  }
+  .status-line { font-size: 0.85rem; color: var(--muted); margin-top: 6px; }
+  .status-line.err { color: var(--err); }
+  .status-line.ok { color: var(--ok); }
+  .download-btn { background: var(--ok); color: #06231a; font-weight: 600; }
+  label.checkbox { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: var(--muted); }
+  .footer-note { text-align: center; color: var(--muted); font-size: 0.8rem; margin-top: 20px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>NAM Cab Blender</h1>
+  <p>Cabeçote (.nam) + IR de caixa → wet signal → treino local → modelo A1 pronto</p>
+</header>
+<main>
+
+  <section class="step active" id="step1">
+    <h2><span class="badge">1</span> Envie os arquivos</h2>
+    <div class="file-row">
+      <label>Cabeçote (.nam)<br><small>o modelo NAM só do amplificador, sem caixa</small></label>
+      <input type="file" id="file-head" accept=".nam">
+      <span class="file-status" id="status-head">pendente</span>
+    </div>
+    <div class="file-row">
+      <label>IR da caixa (.wav)<br><small>impulse response da caixa que você quer usar</small></label>
+      <input type="file" id="file-ir" accept=".wav">
+      <span class="file-status" id="status-ir">pendente</span>
+    </div>
+    <div class="file-row">
+      <label>Sweep de referência (input.wav)<br><small>o mesmo sweep que gerou seu wet_signal / o T3K-sweep-v3.wav</small></label>
+      <input type="file" id="file-input" accept=".wav">
+      <span class="file-status" id="status-input">pendente</span>
+    </div>
+  </section>
+
+  <section class="step" id="step2">
+    <h2><span class="badge">2</span> Gerar o wet signal</h2>
+    <p class="hint">Roda o sweep pelo cabeçote e convolui com a IR da caixa. Isso substitui o reamp físico.</p>
+    <div class="row">
+      <button id="btn-blend">Gerar wet signal</button>
+      <span class="status-line" id="blend-status"></span>
+    </div>
+    <div class="log-box" id="blend-log"></div>
+    <div id="blend-result" style="display:none">
+      <p class="hint">Confira o resultado antes de treinar:</p>
+      <audio controls id="audio-output"></audio>
+    </div>
+  </section>
+
+  <section class="step" id="step3">
+    <h2><span class="badge">3</span> Configurar e treinar o modelo A1</h2>
+    <p class="hint">Isso treina localmente (mesmo processo do NAMTrainerColab, arquitetura "standard"/A1). Sem GPU, ~50s por época — para 100 épocas espere cerca de 1h30.</p>
+    <div class="grid-2">
+      <div class="field">
+        <label>Nome do modelo</label>
+        <input type="text" id="p-name" value="Meu Rig">
+      </div>
+      <div class="field">
+        <label>Modelado por</label>
+        <input type="text" id="p-modeled-by" value="">
+      </div>
+      <div class="field">
+        <label>Fabricante do equipamento</label>
+        <input type="text" id="p-gear-make" value="">
+      </div>
+      <div class="field">
+        <label>Modelo do equipamento</label>
+        <input type="text" id="p-gear-model" value="">
+      </div>
+      <div class="field">
+        <label>Tipo de equipamento</label>
+        <select id="p-gear-type">
+          <option value="amp_cab" selected>Amp + Caixa (Full Rig)</option>
+          <option value="amp">Só amplificador</option>
+          <option value="pedal">Pedal</option>
+          <option value="pedal_amp">Pedal + Amp</option>
+          <option value="amp_pedal_cab">Amp + Pedal + Caixa</option>
+          <option value="preamp">Pré-amp</option>
+          <option value="studio">Estúdio</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Tipo de tom</label>
+        <select id="p-tone-type">
+          <option value="clean">Clean</option>
+          <option value="overdrive">Overdrive</option>
+          <option value="crunch" selected>Crunch</option>
+          <option value="hi_gain">Hi Gain</option>
+          <option value="fuzz">Fuzz</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Épocas</label>
+        <input type="number" id="p-epochs" value="100" min="1" max="500">
+      </div>
+    </div>
+    <label class="checkbox" style="margin-top:10px">
+      <input type="checkbox" id="p-ignore-checks" checked>
+      Ignorar checagens automáticas de qualidade do sinal (recomendado para reamp sintético)
+    </label>
+    <div class="row" style="margin-top:14px">
+      <button id="btn-train">Iniciar treinamento</button>
+      <span class="status-line" id="train-status"></span>
+    </div>
+    <div class="progress-outer"><div class="progress-inner" id="train-progress-bar"></div></div>
+    <div class="status-line" id="train-progress-text"></div>
+    <div class="log-box" id="train-log"></div>
+  </section>
+
+  <section class="step" id="step4">
+    <h2><span class="badge">4</span> Baixar o modelo</h2>
+    <p class="hint">Seu model.nam (arquitetura A1 / "standard") está pronto. Importe no seu pedal (ex: via SonicLink / Sonicake Manager).</p>
+    <a id="btn-download" href="#"><button class="download-btn">Baixar model.nam</button></a>
+  </section>
+
+</main>
+<p class="footer-note">Processamento roda localmente neste servidor. Nada é enviado para serviços externos.</p>
+
+<script>
+let jobId = null;
+
+async function api(path, opts) {
+  const res = await fetch(path, opts);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'erro desconhecido');
+  return data;
+}
+
+async function ensureJob() {
+  if (jobId) return jobId;
+  const data = await api('/api/job', { method: 'POST' });
+  jobId = data.job_id;
+  return jobId;
+}
+
+function setFileStatus(kind, ok, name) {
+  const el = document.getElementById('status-' + kind);
+  el.textContent = ok ? ('✓ ' + name) : 'pendente';
+  el.classList.toggle('ok', ok);
+}
+
+async function uploadFile(kind, inputEl) {
+  if (!inputEl.files.length) return;
+  await ensureJob();
+  const fd = new FormData();
+  fd.append('file', inputEl.files[0]);
+  try {
+    await api(`/api/job/${jobId}/upload/${kind}`, { method: 'POST', body: fd });
+    setFileStatus(kind, true, inputEl.files[0].name);
+    checkStep1Complete();
+  } catch (e) {
+    alert('Erro ao enviar arquivo: ' + e.message);
+  }
+}
+
+function checkStep1Complete() {
+  const allOk = ['head', 'ir', 'input'].every(k =>
+    document.getElementById('status-' + k).classList.contains('ok'));
+  document.getElementById('step2').classList.toggle('active', allOk);
+}
+
+document.getElementById('file-head').addEventListener('change', e => uploadFile('head', e.target));
+document.getElementById('file-ir').addEventListener('change', e => uploadFile('ir', e.target));
+document.getElementById('file-input').addEventListener('change', e => uploadFile('input', e.target));
+
+document.getElementById('btn-blend').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-blend');
+  btn.disabled = true;
+  document.getElementById('blend-log').classList.add('show');
+  document.getElementById('blend-status').textContent = 'processando...';
+  try {
+    await api(`/api/job/${jobId}/blend`, { method: 'POST' });
+    pollStatus();
+  } catch (e) {
+    document.getElementById('blend-status').textContent = 'erro: ' + e.message;
+    btn.disabled = false;
+  }
+});
+
+document.getElementById('btn-train').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-train');
+  btn.disabled = true;
+  document.getElementById('train-log').classList.add('show');
+  document.getElementById('train-status').textContent = 'iniciando...';
+  const params = {
+    name: document.getElementById('p-name').value,
+    modeled_by: document.getElementById('p-modeled-by').value,
+    gear_make: document.getElementById('p-gear-make').value,
+    gear_model: document.getElementById('p-gear-model').value,
+    gear_type: document.getElementById('p-gear-type').value,
+    tone_type: document.getElementById('p-tone-type').value,
+    epochs: parseInt(document.getElementById('p-epochs').value || '100', 10),
+    ignore_checks: document.getElementById('p-ignore-checks').checked,
+  };
+  try {
+    await api(`/api/job/${jobId}/train`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params),
+    });
+    pollStatus();
+  } catch (e) {
+    document.getElementById('train-status').textContent = 'erro: ' + e.message;
+    btn.disabled = false;
+  }
+});
+
+let polling = false;
+async function pollStatus() {
+  if (!jobId || polling) return;
+  polling = true;
+  try {
+    while (true) {
+      const s = await api(`/api/job/${jobId}/status`);
+
+      document.getElementById('blend-log').textContent = s.blend_log || '';
+      document.getElementById('blend-log').scrollTop = 999999;
+      if (s.blend_status === 'running') {
+        document.getElementById('blend-status').textContent = 'processando...';
+      } else if (s.blend_status === 'done') {
+        document.getElementById('blend-status').textContent = 'concluído';
+        document.getElementById('blend-status').classList.add('ok');
+        document.getElementById('btn-blend').disabled = false;
+        if (s.has_output) {
+          document.getElementById('blend-result').style.display = 'block';
+          document.getElementById('audio-output').src = `/api/job/${jobId}/file/output.wav`;
+        }
+        document.getElementById('step3').classList.add('active');
+      } else if (s.blend_status === 'error') {
+        document.getElementById('blend-status').textContent = 'erro — veja o log abaixo';
+        document.getElementById('blend-status').classList.add('err');
+        document.getElementById('btn-blend').disabled = false;
+      }
+
+      document.getElementById('train-log').textContent = s.train_log || '';
+      document.getElementById('train-log').scrollTop = 999999;
+      if (s.train_progress && s.train_total_epochs) {
+        const pct = Math.min(100, Math.round(100 * (s.train_progress.epoch + 1) / s.train_total_epochs));
+        document.getElementById('train-progress-bar').style.width = pct + '%';
+        document.getElementById('train-progress-text').textContent =
+          `Época ${s.train_progress.epoch + 1} de ${s.train_total_epochs}`;
+      }
+      if (s.train_status === 'running') {
+        document.getElementById('train-status').textContent = 'treinando...';
+      } else if (s.train_status === 'done') {
+        document.getElementById('train-status').textContent = 'concluído';
+        document.getElementById('train-status').classList.add('ok');
+        document.getElementById('train-progress-bar').style.width = '100%';
+        document.getElementById('step4').classList.add('done');
+        document.getElementById('step4').classList.add('active');
+        document.getElementById('btn-download').href = `/api/job/${jobId}/download`;
+      } else if (s.train_status === 'error') {
+        document.getElementById('train-status').textContent = 'erro — veja o log abaixo';
+        document.getElementById('train-status').classList.add('err');
+        document.getElementById('btn-train').disabled = false;
+      }
+
+      const stillRunning = s.blend_status === 'running' || s.train_status === 'running';
+      if (!stillRunning) break;
+      await new Promise(r => setTimeout(r, 3000));
+    }
+  } finally {
+    polling = false;
+  }
+}
+</script>
+</body>
+</html>

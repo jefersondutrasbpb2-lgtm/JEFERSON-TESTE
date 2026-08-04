@@ -40,6 +40,14 @@ from nam.models import init_from_nam
 def load_nam_model(nam_path: str):
     with open(nam_path, "r") as fp:
         config = json.load(fp)
+    if config.get("architecture") == "SlimmableContainer":
+        # Modelos "A2" (ex: exportados pelo Tone3000) empacotam várias
+        # submodelos de qualidades diferentes num container. Usamos o de
+        # maior max_value (melhor qualidade) para a inferência.
+        submodels = config["config"]["submodels"]
+        best = max(submodels, key=lambda s: s["max_value"])
+        print(f"  modelo é um SlimmableContainer (A2); usando submodelo max_value={best['max_value']}")
+        config = best["model"]
     model = init_from_nam(config)
     model.eval()
     return model

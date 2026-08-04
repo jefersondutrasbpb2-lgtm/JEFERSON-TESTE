@@ -37,6 +37,29 @@ from scipy.signal import fftconvolve, resample_poly
 from nam.models import init_from_nam
 
 
+def _upgrade_legacy_wavenet_config(config: dict) -> dict:
+    """
+    Arquivos .nam antigos (arquitetura "standard"/A1 "clássica", ex: os
+    exportados pelo neural-amp-modeler 0.12.x) descrevem o "head" de cada
+    camada com campos soltos (head_size/head_bias) em vez do objeto
+    aninhado {out_channels, kernel_size, bias} que as versões mais novas
+    da lib exigem para leitura. Convertemos aqui para o formato atual.
+    """
+    if config.get("architecture") != "WaveNet":
+        return config
+    layers = config.get("config", {}).get("layers", [])
+    if not layers or "head" in layers[0]:
+        return config  # já está no formato novo, nada a fazer
+    for lc in layers:
+        if "head_size" in lc:
+            lc["head"] = {
+                "out_channels": lc.pop("head_size"),
+                "kernel_size": 1,
+                "bias": lc.pop("head_bias", False),
+            }
+    return config
+
+
 def load_nam_model(nam_path: str):
     with open(nam_path, "r") as fp:
         config = json.load(fp)
@@ -48,6 +71,7 @@ def load_nam_model(nam_path: str):
         best = max(submodels, key=lambda s: s["max_value"])
         print(f"  modelo é um SlimmableContainer (A2); usando submodelo max_value={best['max_value']}")
         config = best["model"]
+    config = _upgrade_legacy_wavenet_config(config)
     model = init_from_nam(config)
     model.eval()
     return model

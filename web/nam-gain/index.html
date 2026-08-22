@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<title>NAM Gain</title>
+<meta name="description" content="Sobe (ou desce) o volume de saída de capturas .nam direto no navegador, sem alterar o tom." />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔊</text></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@500;600;700&family=Public+Sans:wght@400;500;600&display=swap"
+  rel="stylesheet"
+/>
+<style>
+  /* Homenagem deliberada a hardware de pedal multi-efeitos: metal escovado, tela
+     OLED, chips coloridos de bloco de sinal, botoes de footswitch. Mundo visual
+     unico e proposital (like a studio product shot) -- nao segue tema claro/escuro
+     do visualizador, mas define cor e fundo de forma explicita para funcionar em
+     qualquer fundo do host. */
+  :root {
+    --backdrop: #cfd0d1;
+    --backdrop-2: #b9bbbd;
+
+    --chassis-1: #6b7078;
+    --chassis-2: #45484e;
+    --chassis-3: #2b2d31;
+    --chassis-shadow: #17181a;
+    --chassis-edge: #8b9096;
+
+    --screen-bg: #050809;
+    --screen-bg-2: #0b1113;
+    --screen-glow: #3fe0ff;
+    --screen-text: #eef8fb;
+    --screen-dim: #5c7278;
+
+    --plate-text: #d7dade;
+    --plate-text-dim: #8a8e94;
+
+    --chip-wn: #ff9a4d;
+    --chip-wn-ink: #2c1400;
+    --chip-lstm: #3fc4ff;
+    --chip-lstm-ink: #00202c;
+    --chip-idle: #6a6e74;
+    --chip-idle-ink: #eceef0;
+    --chip-ok: #38d17e;
+    --chip-ok-ink: #002e14;
+    --chip-err: #ff5c72;
+    --chip-err-ink: #300006;
+
+    --knob-body-1: #2a2c2f;
+    --knob-body-2: #0e0f10;
+    --knob-ring: #82868c;
+    --knob-mark: var(--screen-glow);
+
+    --switch-body-1: #35373b;
+    --switch-body-2: #101112;
+    --switch-ring: #8a8e94;
+    --switch-led-off: #3a2224;
+    --switch-led-on: #3fe0ff;
+
+    --page-text: #24262b;
+    --page-muted: #5c5f66;
+    --page-accent: #0f8fb0;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background:
+      radial-gradient(120% 90% at 50% -10%, var(--backdrop), var(--backdrop-2));
+    color: var(--page-text);
+    font-family: "Public Sans", ui-sans-serif, system-ui, sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 56px 18px 80px;
+  }
+
+  .stack {
+    width: 100%;
+    max-width: 480px;
+  }
+
+  /* ---------- pedal chassis ---------- */
+
+  .pedal {
+    position: relative;
+    background: linear-gradient(155deg, var(--chassis-1) 0%, var(--chassis-2) 38%, var(--chassis-3) 100%);
+    border-radius: 22px;
+    padding: 26px 22px 30px;
+    box-shadow:
+      0 1px 0 var(--chassis-edge) inset,
+      0 30px 60px -20px rgba(0, 0, 0, 0.45),
+      0 8px 18px rgba(0, 0, 0, 0.25);
+  }
+
+  .pedal::before {
+    /* brushed-metal grain */
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 22px;
+    background-image: repeating-linear-gradient(
+      92deg,
+      rgba(255, 255, 255, 0.035) 0px,
+      rgba(255, 255, 255, 0.035) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    pointer-events: none;
+  }
+
+  .jack {
+    position: absolute;
+    top: -7px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 32% 30%, #e9ebee, #9a9ea3 55%, #5c6065 100%);
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.4), 0 0 0 3px var(--chassis-3);
+  }
+  .jack.left { left: 26px; }
+  .jack.right { right: 26px; }
+
+  .screw {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #b9bdc2, #55585d 70%, #303234);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  }
+  .screw::before,
+  .screw::after {
+    content: "";
+    position: absolute;
+    background: #1c1d1f;
+    top: 50%;
+    left: 50%;
+  }
+  .screw::before { width: 8px; height: 1.4px; transform: translate(-50%, -50%) rotate(12deg); }
+  .screw::after { width: 1.4px; height: 8px; transform: translate(-50%, -50%) rotate(12deg); }
+  .screw.tl { top: 16px; left: 16px; }
+  .screw.tr { top: 16px; right: 16px; }
+  .screw.bl { bottom: 16px; left: 16px; }
+  .screw.br { bottom: 16px; right: 16px; }
+
+  .plate-row {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 6px 6px 16px;
+  }
+
+  .plate-row .name {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 700;
+    font-size: 0.98rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--plate-text);
+  }
+
+  .plate-row .model {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 500;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--plate-text-dim);
+  }
+
+  /* ---------- screen ---------- */
+
+  .screen-bezel {
+    position: relative;
+    background: linear-gradient(155deg, #1a1b1d, #060708);
+    border-radius: 12px;
+    padding: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5) inset;
+  }
+
+  .screen {
+    position: relative;
+    background: radial-gradient(120% 140% at 20% 0%, var(--screen-bg-2), var(--screen-bg) 70%);
+    border-radius: 8px;
+    padding: 14px 16px 16px;
+    min-height: 152px;
+    overflow: hidden;
+  }
+
+  .screen::after {
+    /* scanline sheen */
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.025) 0px,
+      rgba(255, 255, 255, 0.025) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    pointer-events: none;
+  }
+
+  .status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: "Share Tech Mono", ui-monospace, monospace;
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+    color: var(--screen-dim);
+    margin-bottom: 10px;
+  }
+
+  .status-bar .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--screen-dim);
+    display: inline-block;
+    margin-right: 5px;
+    vertical-align: middle;
+  }
+  .status-bar .dot.live {
+    background: var(--screen-glow);
+    box-shadow: 0 0 6px var(--screen-glow);
+  }
+
+  .preset-line {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    color: var(--screen-glow);
+    font-family: "Share Tech Mono", monospace;
+    font-size: 0.85rem;
+    text-shadow: 0 0 8px color-mix(in srgb, var(--screen-glow) 55%, transparent);
+  }
+
+  .capture-name {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 1.18rem;
+    color: var(--screen-text);
+    margin-top: 4px;
+    min-height: 1.4em;
+    text-shadow: 0 0 6px rgba(255, 255, 255, 0.15);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 12px;
+    min-height: 22px;
+  }
+
+  .chip {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 700;
+    font-size: 0.68rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--chip-idle);
+    color: var(--chip-idle-ink);
+  }
+  .chip.wn { background: var(--chip-wn); color: var(--chip-wn-ink); }
+  .chip.lstm { background: var(--chip-lstm); color: var(--chip-lstm-ink); }
+  .chip.ok { background: var(--chip-ok); color: var(--chip-ok-ink); }
+  .chip.err { background: var(--chip-err); color: var(--chip-err-ink); }
+
+  .screen-msg {
+    margin-top: 10px;
+    font-family: "Share Tech Mono", monospace;
+    font-size: 0.72rem;
+    line-height: 1.55;
+    color: var(--screen-dim);
+    white-space: pre-wrap;
+  }
+  .screen-msg.err { color: #ff8f9c; }
+
+  /* ---------- control deck: knob + slot ---------- */
+
+  .deck {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    align-items: end;
+    margin-top: 18px;
+  }
+
+  .slot-module {
+    background: var(--chassis-3);
+    border-radius: 12px;
+    padding: 12px 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35) inset;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    text-align: center;
+  }
+
+  .slot-module.drag {
+    box-shadow: 0 0 0 2px var(--screen-glow) inset;
+  }
+
+  .slot-module input[type="file"] {
+    display: none;
+  }
+
+  .slot-label {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 600;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--plate-text-dim);
+  }
+
+  .slot-sub {
+    font-family: "Barlow Condensed", sans-serif;
+    font-size: 0.66rem;
+    color: var(--plate-text-dim);
+    opacity: 0.8;
+    margin-top: 2px;
+  }
+
+  .knob-module {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .knob {
+    width: 74px;
+    height: 74px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 34% 28%, var(--knob-body-1), var(--knob-body-2) 70%);
+    box-shadow:
+      0 0 0 4px var(--chassis-3),
+      0 0 0 5px var(--knob-ring),
+      0 6px 10px rgba(0, 0, 0, 0.4);
+    position: relative;
+    cursor: ns-resize;
+    touch-action: none;
+  }
+
+  .knob::before {
+    /* knurled ridges */
+    content: "";
+    position: absolute;
+    inset: 6px;
+    border-radius: 50%;
+    background-image: repeating-conic-gradient(
+      rgba(255, 255, 255, 0.05) 0deg 4deg,
+      transparent 4deg 8deg
+    );
+  }
+
+  .knob .mark {
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    width: 3px;
+    height: 16px;
+    background: var(--knob-mark);
+    box-shadow: 0 0 5px var(--knob-mark);
+    border-radius: 2px;
+    transform-origin: 50% 31px;
+    transform: translateX(-50%) rotate(0deg);
+  }
+
+  .knob-label {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 600;
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--plate-text-dim);
+  }
+
+  .db-readout {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .db-readout button {
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    border: none;
+    background: var(--chassis-3);
+    color: var(--plate-text);
+    font-family: "Share Tech Mono", monospace;
+    font-size: 0.85rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .db-readout input {
+    width: 46px;
+    text-align: center;
+    background: transparent;
+    border: none;
+    color: var(--screen-glow);
+    font-family: "Share Tech Mono", monospace;
+    font-size: 0.9rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .db-readout input:focus { outline: none; }
+  .db-readout input::-webkit-outer-spin-button,
+  .db-readout input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* ---------- footswitches ---------- */
+
+  .footdeck {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 14px;
+    margin-top: 26px;
+  }
+
+  .fs-icon {
+    color: var(--plate-text-dim);
+    font-size: 1rem;
+    text-align: center;
+  }
+
+  .footswitch-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  button.footswitch {
+    width: 78px;
+    height: 78px;
+    border-radius: 50%;
+    border: none;
+    background: radial-gradient(circle at 35% 28%, var(--switch-body-1), var(--switch-body-2) 75%);
+    box-shadow:
+      0 0 0 4px var(--chassis-3),
+      0 0 0 5px var(--switch-ring),
+      0 5px 0 rgba(0, 0, 0, 0.5),
+      0 8px 14px rgba(0, 0, 0, 0.35);
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.05s ease, box-shadow 0.05s ease;
+  }
+
+  button.footswitch::before {
+    content: "";
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--switch-led-off);
+    transform: translateX(-50%);
+  }
+
+  button.footswitch.ready::before {
+    background: var(--switch-led-on);
+    box-shadow: 0 0 8px var(--switch-led-on);
+  }
+
+  button.footswitch:active:not(:disabled) {
+    transform: translateY(3px);
+    box-shadow:
+      0 0 0 4px var(--chassis-3),
+      0 0 0 5px var(--switch-ring),
+      0 2px 0 rgba(0, 0, 0, 0.5),
+      0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  button.footswitch:disabled {
+    cursor: not-allowed;
+    filter: grayscale(0.6) brightness(0.75);
+  }
+
+  .footswitch-label {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 600;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--plate-text-dim);
+  }
+
+  .brand-plate {
+    text-align: center;
+    margin-top: 22px;
+  }
+
+  .brand-plate .brand {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: 0.14em;
+    color: var(--plate-text);
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4), 0 -1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  /* ---------- page-level copy (outside the pedal) ---------- */
+
+  .caption {
+    font-size: 0.8rem;
+    color: var(--page-muted);
+    line-height: 1.55;
+    margin-top: 18px;
+    padding: 0 6px;
+  }
+
+  .caption strong {
+    color: var(--page-text);
+  }
+
+  .caption.hidden {
+    display: none;
+  }
+
+  details.how {
+    margin-top: 16px;
+    padding: 0 6px;
+  }
+
+  details.how summary {
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: var(--page-muted);
+  }
+
+  details.how summary:hover {
+    color: var(--page-accent);
+  }
+
+  details.how .body {
+    margin-top: 10px;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    color: var(--page-muted);
+  }
+
+  details.how .body code {
+    font-family: "Share Tech Mono", monospace;
+    font-size: 0.78rem;
+    background: rgba(0, 0, 0, 0.06);
+    padding: 1px 5px;
+    border-radius: 4px;
+    color: var(--page-text);
+  }
+</style>
+</head>
+<body>
+
+<div class="stack">
+  <div class="pedal" id="pedal">
+    <span class="jack left"></span><span class="jack right"></span>
+    <span class="screw tl"></span><span class="screw tr"></span><span class="screw bl"></span><span class="screw br"></span>
+
+    <div class="plate-row">
+      <span class="name">Neural Capture Gain Trim</span>
+      <span class="model">MOD NG&#8209;1</span>
+    </div>
+
+    <div class="screen-bezel">
+      <div class="screen">
+        <div class="status-bar">
+          <span><span class="dot" id="live-dot"></span><span id="live-text">standby</span></span>
+          <span id="size-text"></span>
+        </div>
+        <div class="preset-line">▸ <span id="preset-code">G&plus;06</span></div>
+        <div class="capture-name" id="capture-name">sem arquivo carregado</div>
+        <div class="chip-row" id="chip-row"></div>
+        <div class="screen-msg" id="screen-msg"></div>
+      </div>
+    </div>
+
+    <div class="deck">
+      <label class="slot-module" id="slot" for="file-input">
+        <div class="slot-label">carregar captura</div>
+        <div class="slot-sub" id="slot-sub">clique ou arraste um .nam</div>
+        <input type="file" id="file-input" accept=".nam,.json,application/json" />
+      </label>
+
+      <div class="knob-module">
+        <div class="knob" id="knob"><span class="mark" id="knob-mark"></span></div>
+        <div class="knob-label">ganho</div>
+        <div class="db-readout">
+          <button type="button" id="db-minus" aria-label="Diminuir dB">&minus;</button>
+          <input type="number" id="db-input" value="6" step="0.5" inputmode="decimal" aria-label="Ganho em decibéis" />
+          <button type="button" id="db-plus" aria-label="Aumentar dB">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="footdeck">
+      <div class="footswitch-wrap">
+        <button class="footswitch" id="process-btn" disabled></button>
+        <span class="footswitch-label">processar</span>
+      </div>
+      <span class="fs-icon">♪</span>
+      <div class="footswitch-wrap">
+        <button class="footswitch" id="download-btn" disabled></button>
+        <span class="footswitch-label">baixar</span>
+      </div>
+    </div>
+
+    <div class="brand-plate"><span class="brand">NAM GAIN</span></div>
+  </div>
+
+  <details class="how">
+    <summary>como isso funciona</summary>
+    <div class="body">
+      Um arquivo <code>.nam</code> é um JSON com os pesos da rede neural da captura. Em modelos WaveNet, a última
+      etapa antes do áudio sair é multiplicar o sinal por um único número, <code>head_scale</code>. Em modelos LSTM,
+      é uma pequena camada linear no fim. Essa ferramenta só multiplica esse trecho final pelo ganho pedido — o resto
+      da rede (o tom da captura) fica byte a byte igual. Capturas A2 (<code>SlimmableContainer</code>) têm vários
+      sub-modelos embutidos; todos são ajustados juntos e aparecem como os chips coloridos na tela. Tudo roda aqui no
+      seu navegador — o arquivo não sai da sua máquina.
+    </div>
+  </details>
+</div>
+
+<script>
+  (function () {
+    "use strict";
+
+    const dbToLinear = (db) => Math.pow(10, db / 20);
+
+    function boostWavenetNode(node, gain, report, path) {
+      const cfg = node.config;
+      if (!cfg || typeof cfg.head_scale !== "number") {
+        throw new Error(`Config WaveNet sem 'head_scale' em ${path} — formato inesperado.`);
+      }
+      const before = cfg.head_scale;
+      cfg.head_scale = cfg.head_scale * gain;
+      if (Array.isArray(node.weights) && node.weights.length > 0) {
+        node.weights[node.weights.length - 1] = node.weights[node.weights.length - 1] * gain;
+      }
+      report.push({ path, architecture: "WaveNet", detail: `head_scale ${before.toFixed(6)} → ${cfg.head_scale.toFixed(6)}` });
+    }
+
+    function boostLstmNode(node, gain, report, path) {
+      const cfg = node.config;
+      if (!cfg || typeof cfg.hidden_size !== "number") {
+        throw new Error(`Config LSTM sem 'hidden_size' em ${path} — formato inesperado.`);
+      }
+      const hiddenSize = cfg.hidden_size;
+      const outChannels = typeof cfg.out_channels === "number" ? cfg.out_channels : 1;
+      const headLen = outChannels * (hiddenSize + 1);
+      const weights = node.weights;
+      if (!Array.isArray(weights) || weights.length < headLen) {
+        throw new Error(`Pesos LSTM insuficientes em ${path} — formato inesperado.`);
+      }
+      for (let i = weights.length - headLen; i < weights.length; i++) {
+        weights[i] = weights[i] * gain;
+      }
+      report.push({ path, architecture: "LSTM", detail: `camada linear de saída ajustada (hidden_size=${hiddenSize})` });
+    }
+
+    function boostNode(node, gain, report, path) {
+      const arch = node.architecture;
+      if (arch === "WaveNet") {
+        boostWavenetNode(node, gain, report, path);
+      } else if (arch === "LSTM") {
+        boostLstmNode(node, gain, report, path);
+      } else if (arch === "SlimmableContainer") {
+        const submodels = node.config && node.config.submodels;
+        if (!Array.isArray(submodels) || submodels.length === 0) {
+          throw new Error(`SlimmableContainer sem 'submodels' em ${path} — formato inesperado.`);
+        }
+        submodels.forEach((sub, i) => boostNode(sub.model, gain, report, `${path} › submodelo ${i}`));
+      } else {
+        throw new Error(
+          `Arquitetura '${arch}' não suportada por esta ferramenta (só WaveNet, LSTM e SlimmableContainer foram validados).`
+        );
+      }
+    }
+
+    // --- UI wiring ---
+
+    const slot = document.getElementById("slot");
+    const fileInput = document.getElementById("file-input");
+    const slotSub = document.getElementById("slot-sub");
+    const liveDot = document.getElementById("live-dot");
+    const liveText = document.getElementById("live-text");
+    const sizeText = document.getElementById("size-text");
+    const presetCode = document.getElementById("preset-code");
+    const captureName = document.getElementById("capture-name");
+    const chipRow = document.getElementById("chip-row");
+    const screenMsg = document.getElementById("screen-msg");
+    const dbInput = document.getElementById("db-input");
+    const dbMinus = document.getElementById("db-minus");
+    const dbPlus = document.getElementById("db-plus");
+    const knob = document.getElementById("knob");
+    const knobMark = document.getElementById("knob-mark");
+    const processBtn = document.getElementById("process-btn");
+    const downloadBtn = document.getElementById("download-btn");
+
+    let loadedData = null;
+    let loadedName = "";
+    let resultData = null;
+    let resultName = "";
+
+    const DB_MIN = -24;
+    const DB_MAX = 24;
+
+    function clampDb(v) {
+      if (!isFinite(v)) return 6;
+      return Math.max(DB_MIN, Math.min(DB_MAX, v));
+    }
+
+    function updateKnob() {
+      const db = clampDb(parseFloat(dbInput.value));
+      const t = (db - DB_MIN) / (DB_MAX - DB_MIN);
+      const deg = -135 + t * 270;
+      knobMark.style.transform = `translateX(-50%) rotate(${deg}deg)`;
+      const sign = db >= 0 ? "+" : "-";
+      presetCode.textContent = `G${sign}${Math.abs(db).toFixed(db % 1 === 0 ? 0 : 1).padStart(2, "0")}`;
+    }
+
+    function setChips(items) {
+      chipRow.innerHTML = "";
+      items.forEach(({ label, cls }) => {
+        const el = document.createElement("span");
+        el.className = "chip" + (cls ? " " + cls : "");
+        el.textContent = label;
+        chipRow.appendChild(el);
+      });
+    }
+
+    function resetResult() {
+      resultData = null;
+      resultName = "";
+      downloadBtn.disabled = true;
+      downloadBtn.classList.remove("ready");
+    }
+
+    function handleFile(file) {
+      if (!file) return;
+      resetResult();
+      loadedName = file.name;
+      captureName.textContent = file.name;
+      slotSub.textContent = `${(file.size / 1024).toFixed(1)} KB carregado`;
+      sizeText.textContent = `${(file.size / 1024).toFixed(1)}kb`;
+      screenMsg.classList.remove("err");
+      screenMsg.textContent = "";
+      setChips([]);
+      liveDot.classList.remove("live");
+      liveText.textContent = "lendo…";
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          loadedData = JSON.parse(reader.result);
+          processBtn.disabled = false;
+          processBtn.classList.add("ready");
+          liveDot.classList.add("live");
+          liveText.textContent = "pronto";
+        } catch (e) {
+          loadedData = null;
+          processBtn.disabled = true;
+          processBtn.classList.remove("ready");
+          liveText.textContent = "erro";
+          screenMsg.classList.add("err");
+          screenMsg.textContent = "não consegui ler esse arquivo como JSON válido — confira se é mesmo um .nam.";
+        }
+      };
+      reader.onerror = () => {
+        loadedData = null;
+        processBtn.disabled = true;
+        liveText.textContent = "erro";
+        screenMsg.classList.add("err");
+        screenMsg.textContent = "não consegui ler o arquivo do disco.";
+      };
+      reader.readAsText(file);
+    }
+
+    fileInput.addEventListener("change", (e) => {
+      handleFile(e.target.files && e.target.files[0]);
+    });
+
+    ["dragover", "dragenter"].forEach((evt) =>
+      slot.addEventListener(evt, (e) => {
+        e.preventDefault();
+        slot.classList.add("drag");
+      })
+    );
+    ["dragleave", "drop"].forEach((evt) =>
+      slot.addEventListener(evt, (e) => {
+        e.preventDefault();
+        slot.classList.remove("drag");
+      })
+    );
+    slot.addEventListener("drop", (e) => {
+      const file = e.dataTransfer.files && e.dataTransfer.files[0];
+      handleFile(file);
+    });
+
+    dbMinus.addEventListener("click", () => {
+      dbInput.value = clampDb(parseFloat(dbInput.value) - 0.5).toString();
+      updateKnob();
+    });
+    dbPlus.addEventListener("click", () => {
+      dbInput.value = clampDb(parseFloat(dbInput.value) + 0.5).toString();
+      updateKnob();
+    });
+    dbInput.addEventListener("input", updateKnob);
+
+    // drag the knob vertically to change gain
+    let dragStartY = null;
+    let dragStartDb = 0;
+    knob.addEventListener("pointerdown", (e) => {
+      dragStartY = e.clientY;
+      dragStartDb = clampDb(parseFloat(dbInput.value));
+      knob.setPointerCapture(e.pointerId);
+    });
+    knob.addEventListener("pointermove", (e) => {
+      if (dragStartY === null) return;
+      const delta = (dragStartY - e.clientY) / 4; // 4px ≈ 1dB
+      dbInput.value = clampDb(dragStartDb + delta).toString();
+      updateKnob();
+    });
+    knob.addEventListener("pointerup", (e) => {
+      dragStartY = null;
+      try { knob.releasePointerCapture(e.pointerId); } catch (_) {}
+    });
+    knob.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      dbInput.value = clampDb(parseFloat(dbInput.value) - Math.sign(e.deltaY) * 0.5).toString();
+      updateKnob();
+    }, { passive: false });
+
+    processBtn.addEventListener("click", () => {
+      if (!loadedData) return;
+      resetResult();
+      screenMsg.classList.remove("err");
+      try {
+        const gainDb = clampDb(parseFloat(dbInput.value));
+        const gain = dbToLinear(gainDb);
+        const clone = JSON.parse(JSON.stringify(loadedData));
+        const report = [];
+        boostNode(clone, gain, report, "raiz");
+
+        resultData = clone;
+        const base = loadedName.replace(/\.[^./\\]+$/, "") || "captura";
+        const sign = gainDb >= 0 ? "+" : "";
+        resultName = `${base} (${sign}${gainDb}dB).nam`;
+
+        const chips = report.map((r) => ({
+          label: r.architecture === "WaveNet" ? "WN" : "LSTM",
+          cls: r.architecture === "WaveNet" ? "wn" : "lstm",
+        }));
+        chips.push({ label: "OK", cls: "ok" });
+        setChips(chips);
+
+        screenMsg.textContent = report.map((r) => `${r.path.replace("raiz › ", "")}: ${r.detail}`).join("\n");
+        liveText.textContent = "ajustado";
+
+        downloadBtn.disabled = false;
+        downloadBtn.classList.add("ready");
+      } catch (err) {
+        setChips([{ label: "ERRO", cls: "err" }]);
+        screenMsg.classList.add("err");
+        screenMsg.textContent = err.message || String(err);
+        liveText.textContent = "erro";
+      }
+    });
+
+    downloadBtn.addEventListener("click", () => {
+      if (!resultData) return;
+      const blob = new Blob([JSON.stringify(resultData)], { type: "application/octet-stream" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = resultName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    updateKnob();
+  })();
+</script>
+</body>
+</html>

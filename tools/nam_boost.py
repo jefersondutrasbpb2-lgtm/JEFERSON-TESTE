@@ -8,9 +8,19 @@ Nao altera pesos internos, arquitetura, tom ou qualquer outro dado do modelo.
 
 Suporta:
   - arquivos WaveNet "simples" (architecture == "WaveNet")
+  - arquivos LSTM "simples" (architecture == "LSTM")
   - arquivos "SlimmableContainer" (architecture == "SlimmableContainer"),
-    usados nas capturas A2 novas, que contem varios sub-modelos WaveNet
-    em config["submodels"][i]["model"] -- todos sao ajustados igualmente.
+    usados nas capturas A2 novas, que contem varios sub-modelos
+    (WaveNet e/ou LSTM) em config["submodels"][i]["model"] -- todos sao
+    ajustados igualmente.
+
+Confirmado contra o motor de inferencia C++ oficial (NeuralAmpModelerCore,
+github.com/sdatkinson/NeuralAmpModelerCore): em WaveNet, o ultimo peso do
+stream e sempre o head_scale, multiplicado por igual no sinal final
+(model.cpp/a2_fast.cpp); em LSTM, os ultimos out_channels*(hidden_size+1)
+pesos sao a camada linear de saida (head_weight + head_bias), tambem lida
+no final do stream (lstm.cpp). Escalar esses trechos finais reproduz um
+ganho de saida puro, sem tocar em nenhum outro peso do modelo.
 
 Uso:
     python3 nam_boost.py entrada.nam saida.nam --db 6
@@ -41,10 +51,32 @@ def boost_wavenet_node(node: dict, gain: float) -> int:
     return 1
 
 
+def boost_lstm_node(node: dict, gain: float) -> int:
+    """Aplica o ganho a um dicionario com architecture == 'LSTM'."""
+    cfg = node.get("config")
+    if cfg is None or "hidden_size" not in cfg:
+        raise ValueError("Config LSTM sem 'hidden_size' -- formato inesperado.")
+
+    hidden_size = cfg["hidden_size"]
+    out_channels = cfg.get("out_channels", 1)
+    head_len = out_channels * (hidden_size + 1)  # matriz (out_channels x hidden_size) + bias (out_channels)
+
+    weights = node.get("weights")
+    if not weights or len(weights) < head_len:
+        raise ValueError("Pesos LSTM insuficientes para o head esperado -- formato inesperado.")
+
+    for i in range(len(weights) - head_len, len(weights)):
+        weights[i] = weights[i] * gain
+
+    return 1
+
+
 def boost_node(node: dict, gain: float) -> int:
     arch = node.get("architecture")
     if arch == "WaveNet":
         return boost_wavenet_node(node, gain)
+    if arch == "LSTM":
+        return boost_lstm_node(node, gain)
     if arch == "SlimmableContainer":
         submodels = node.get("config", {}).get("submodels")
         if not submodels:

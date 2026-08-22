@@ -8,3 +8,5 @@ dist/
 build/
 .venv/
 venv/
+nam-tools/.venv-train/
+nam-tools/webapp/jobs/

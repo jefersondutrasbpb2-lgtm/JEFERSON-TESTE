@@ -1,0 +1,6 @@
+neural-amp-modeler==0.13
+numpy
+scipy
+soundfile
+torch
+flask

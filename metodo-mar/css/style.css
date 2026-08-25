@@ -345,7 +345,63 @@ p { margin: 0 0 16px; }
 .site-footer__brand .icon { color: var(--gold-500); width: 20px; height: 20px; }
 .site-footer__legal { max-width: 900px; opacity: 0.65; line-height: 1.7; }
 
+/* ---------- textura de grain nas seções escuras ---------- */
+.section--navy, .section--black, .hero {
+  isolation: isolate;
+}
+.section--navy::after, .section--black::after, .hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+  z-index: 0;
+}
+.section--navy > *, .section--black > *, .hero > * { position: relative; z-index: 1; }
+
+/* ---------- entrada escalonada do hero ---------- */
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.hero__logo { animation: rise-in 0.6s ease-out both; animation-delay: 0.05s; }
+.hero h1 { animation: rise-in 0.65s ease-out both; animation-delay: 0.15s; }
+.hero__sub { animation: rise-in 0.6s ease-out both; animation-delay: 0.28s; }
+.hero__stats { animation: rise-in 0.6s ease-out both; animation-delay: 0.4s; }
+.hero__cta { animation: rise-in 0.6s ease-out both; animation-delay: 0.5s; }
+.hero .porthole { animation: rise-in 0.7s ease-out both; animation-delay: 0.35s; }
+
+/* ---------- rotação ambiente da bússola ---------- */
+@keyframes slow-spin { to { transform: rotate(360deg); } }
+.wordmark-wrap .icon { animation: slow-spin 50s linear infinite; }
+
+/* ---------- revelação ao rolar ---------- */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+[data-reveal].is-visible { opacity: 1; transform: translateY(0); }
+
+/* ---------- hover lift em cards ---------- */
+.pilar, .leva-card, .filtro-col, .ticket, .quote-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.pilar:hover { transform: translateY(-4px); box-shadow: 8px 10px 0 var(--gold-500); }
+.leva-card:hover { transform: translateY(-4px) rotate(0deg); box-shadow: 8px 10px 0 var(--gold-500); }
+.filtro-col--yes:hover { transform: translateY(-4px); box-shadow: 7px 9px 0 var(--navy-950); }
+.filtro-col--no:hover { transform: translateY(-4px); box-shadow: 7px 9px 0 var(--paper-line); }
+.pain-item { transition: transform 0.15s ease, border-color 0.15s ease; }
+.pain-item:hover { transform: translateX(4px); border-color: var(--gold-600); }
+.timeline__stop { transition: transform 0.15s ease; }
+.timeline__stop:hover { transform: translateY(-3px); }
+.timeline__stop:hover .time { color: var(--blue-primary); }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .btn { transition: none; }
+  .btn, .pilar, .leva-card, .filtro-col, .ticket, .quote-card, .pain-item, .timeline__stop { transition: none; }
+  .hero__logo, .hero h1, .hero__sub, .hero__stats, .hero__cta, .hero .porthole, .wordmark-wrap .icon { animation: none; }
+  [data-reveal] { opacity: 1; transform: none; transition: none; }
 }

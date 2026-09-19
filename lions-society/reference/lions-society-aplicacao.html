@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lions Society | Mentoria de Moisés Ramos para empresas que já faturam</title>
+<meta name="description" content="Para quem já fatura e sente que a empresa depende demais de você. Mentoria anual com diagnóstico, plano individual e 4 imersões presenciais. Entrada por seleção.">
+<meta property="og:title" content="Lions Society | Mentoria de Moisés Ramos para empresas que já faturam">
+<meta property="og:description" content="Mentoria anual com diagnóstico, plano individual, 4 imersões presenciais e acompanhamento direto de Moisés Ramos. Entrada por seleção.">
+<meta property="og:type" content="website">
+<!-- TROCAR: adicione aqui a imagem de compartilhamento (1200x630) -->
+<!-- <meta property="og:image" content="https://SEU-DOMINIO/og-lions.jpg"> -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Epilogue:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!--
+  ===================================================================
+  PENDÊNCIAS ANTES DE PUBLICAR (tudo que aparece com a marca "A CONFIRMAR")
+  1. História de origem do Moisés (seção "Com quem você vai sentar")
+  2. Provas dos benefícios e mini-casos (dados reais dos mentorados)
+  3. Autorização de imagem e de exibição de faturamento (mural)
+  4. Carga horária e prazo do primeiro resultado (FAQ)
+  5. Número de vagas e prazo de retorno do time
+  6. Aprovação do Moisés para as frases em primeira pessoa
+  7. Origem do número "mais de 10 mil pessoas impactadas"
+  8. Trocar as imagens marcadas com SLOT IMAGEM pelas fotos reais
+  9. Configurar o destino do formulário (FORM_ENDPOINT, no fim do arquivo)
+  Para esconder as marcas "A CONFIRMAR" na versão final: remova a classe
+  "modo-edicao" da tag <body>.
+  ===================================================================
+-->
+
+<!-- ====== COLE AQUI SEU PIXEL DE RASTREAMENTO (Meta, GA, GTM) ======
+     O evento de Lead é disparado no envio do formulário se o fbq existir. -->
+
+<style>
+/* =====================================================================
+   TOKENS: trocar aqui muda as cores e fontes da página inteira
+   ===================================================================== */
+:root{
+  /* Seções escuras */
+  --bg:#0e0d0b;               /* fundo escuro */
+  --bg-2:#171511;             /* superfície um degrau acima */
+  --line:rgba(244,241,234,.16);
+  --ink:#f4f1ea;              /* texto principal no escuro */
+  --ink-soft:rgba(244,241,234,.78);
+
+  /* Seções claras */
+  --paper:#f2f2f2;
+  --paper-2:#e6e6e4;
+  --paper-line:rgba(20,17,10,.18);
+  --paper-ink:#14110a;
+  --paper-soft:#48443b;
+
+  /* Marca */
+  --gold:#e2c24f;             /* dourado: botão de ação e destaques no escuro */
+  --gold-ink:#14110a;         /* texto sobre o dourado */
+  --gold-deep:#7a5b00;        /* dourado escurecido: texto e ícone sobre fundo claro */
+  --danger:#b3261e;
+
+  --cta:var(--gold);
+  --on-cta:var(--gold-ink);
+
+  --font-display:'Anton', 'Arial Narrow', sans-serif;
+  --font-body:'Epilogue', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+
+  --radius:14px;
+  --maxw:1120px;
+  --read:680px;
+
+  --fs-hero:clamp(2.75rem, 12vw, 5.5rem);
+  --fs-h2:clamp(1.9rem, 5.5vw, 3.1rem);
+  --fs-h3:clamp(1.3rem, 3.4vw, 1.75rem);
+  --fs-body:clamp(1.0625rem, 2.4vw, 1.1875rem);
+  --fs-small:.9375rem;
+  --fs-stat:clamp(2.6rem, 9vw, 4.75rem);
+}
+
+/* =====================================================================
+   BASE (mobile primeiro)
+   ===================================================================== */
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--font-body);font-size:var(--fs-body);line-height:1.6;
+  padding-bottom:84px; /* espaço para a barra fixa do celular */
+}
+img,svg{max-width:100%}
+h1,h2,h3{font-family:var(--font-display);font-weight:400;line-height:1.08;margin:0;text-wrap:balance;letter-spacing:.002em}
+p{margin:0 0 1em}
+a{color:inherit}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.wrap{width:100%;max-width:var(--maxw);margin-inline:auto;padding-inline:20px}
+.read{max-width:var(--read)}
+.center{text-align:center;margin-inline:auto}
+.sec{padding-block:clamp(3.5rem, 9vw, 7rem)}
+.dark{background:var(--bg);color:var(--ink)}
+.dark-2{background:var(--bg-2);color:var(--ink)}
+.light{background:var(--paper);color:var(--paper-ink)}
+.light .soft{color:var(--paper-soft)}
+.dark .soft{color:var(--ink-soft)}
+h2{font-size:var(--fs-h2);margin-bottom:.6em}
+h3{font-size:var(--fs-h3)}
+
+.skip{position:absolute;left:12px;top:-60px;background:var(--gold);color:var(--gold-ink);padding:12px 16px;border-radius:8px;font-weight:700;z-index:200}
+.skip:focus{top:12px}
+
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.light :focus-visible{outline-color:var(--paper-ink)}
+
+/* ---------- ícones (sprite SVG) ---------- */
+.ic{width:24px;height:24px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ic-lg{width:32px;height:32px}
+
+/* ---------- botão de ação: mesma cor e mesmo peso em toda a página ---------- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:12px;
+  min-height:58px;padding:0 30px;width:100%;
+  background:var(--cta);color:var(--on-cta);
+  font-family:var(--font-body);font-weight:800;font-size:1.0625rem;line-height:1.2;text-align:center;
+  border:0;border-radius:var(--radius);cursor:pointer;text-decoration:none;
+  transition:transform .15s ease, filter .15s ease;
+}
+.btn:hover{filter:brightness(1.08)}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+.btn .ic{width:22px;height:22px;stroke-width:2.6}
+.light .btn:focus-visible{outline-color:var(--paper-ink)}
+.btn-sm{min-height:44px;padding:0 20px;width:auto;font-size:.9375rem}
+.cta-block{margin-top:2.25rem;display:grid;gap:12px;justify-items:center}
+.cta-block .btn{max-width:460px}
+.reducer{font-size:var(--fs-small);text-align:center;max-width:460px;margin:0}
+
+/* ---------- marca "A CONFIRMAR" (só aparece no modo edição) ---------- */
+.pendente{
+  display:block;margin:12px 0 0;padding:10px 14px;border-radius:10px;
+  border:1px dashed currentColor;font-size:.9375rem;line-height:1.45;font-weight:600;
+  background:rgba(226,194,79,.14);color:inherit;
+}
+.light .pendente{background:rgba(122,91,0,.10);color:var(--gold-deep)}
+.dark .pendente,.dark-2 .pendente{color:var(--gold)}
+.pendente b{text-transform:uppercase;letter-spacing:.04em;margin-right:6px}
+body:not(.modo-edicao) .pendente,
+body:not(.modo-edicao) .pendente-bloco{display:none !important}
+
+/* ---------- slot de imagem ---------- */
+.img-slot{
+  position:relative;display:grid;place-items:center;text-align:center;padding:16px;
+  border:1px dashed rgba(226,194,79,.55);border-radius:var(--radius);
+  background:linear-gradient(160deg,#1c1913,#14120e);color:var(--ink-soft);font-size:.9375rem;
+  overflow:hidden;
+}
+.light .img-slot{background:linear-gradient(160deg,#dcdcd9,#e9e9e7);border-color:var(--paper-line);color:var(--paper-soft)}
+.img-slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ratio-45{aspect-ratio:4/5}
+.ratio-1{aspect-ratio:1/1}
+.ratio-169{aspect-ratio:16/10}
+.ratio-916{aspect-ratio:9/16}
+
+/* =====================================================================
+   TOPO
+   ===================================================================== */
+.top{position:sticky;top:0;z-index:60;background:rgba(14,13,11,.94);border-bottom:1px solid var(--line)}
+.top-in{display:flex;align-items:center;justify-content:space-between;min-height:64px}
+.brand{font-family:var(--font-display);font-size:1.45rem;letter-spacing:.06em;text-decoration:none;color:var(--ink)}
+
+/* =====================================================================
+   1. HERO
+   ===================================================================== */
+.hero{padding-block:clamp(2.25rem, 7vw, 5rem) clamp(3rem,8vw,5.5rem)}
+.hero-grid{display:grid;gap:2.25rem}
+.hero h1{font-size:var(--fs-hero);margin-bottom:.5em}
+.hero .sub{font-size:clamp(1.125rem,2.8vw,1.35rem);color:var(--ink-soft);max-width:34em;margin-bottom:1.75rem}
+.hero .btn{max-width:460px}
+.hero .reducer{text-align:left;margin-top:12px;color:var(--ink-soft)}
+.selos{list-style:none;padding:0;margin:1.75rem 0 0;display:grid;gap:10px}
+.selos li{display:flex;gap:12px;align-items:center;font-size:var(--fs-small);font-weight:600;color:var(--ink)}
+.selos .ic{color:var(--gold)}
+.hero-media{max-width:440px;width:100%;justify-self:center}
+
+/* =====================================================================
+   2. FAIXA DE NÚMEROS
+   ===================================================================== */
+.band{background:var(--gold);color:var(--gold-ink);padding-block:clamp(1.75rem,5vw,3rem)}
+.band-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem 1rem;text-align:center}
+.stat b{display:block;font-family:var(--font-display);font-weight:400;font-size:var(--fs-stat);line-height:1}
+.stat span{display:block;margin-top:.4rem;font-size:.9375rem;font-weight:600;line-height:1.35}
+
+/* =====================================================================
+   3. ESPELHO
+   ===================================================================== */
+.scenes{list-style:none;padding:0;margin:2rem 0 0;display:grid}
+.scenes li{display:flex;gap:16px;align-items:flex-start;padding-block:20px;border-top:1px solid var(--line)}
+.scenes li:last-child{border-bottom:1px solid var(--line)}
+.scenes .ico{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:rgba(226,194,79,.14);color:var(--gold);flex:0 0 auto}
+.scenes p{margin:0;font-size:clamp(1.0625rem,2.6vw,1.2rem)}
+.punch{font-family:var(--font-display);font-size:clamp(1.55rem,5vw,2.4rem);line-height:1.15;margin:2.25rem 0 1.25rem;text-wrap:balance}
+.pergunta{font-size:clamp(1.15rem,3vw,1.4rem);font-weight:600;max-width:32em;margin:0}
+.destaque{
+  font-family:var(--font-display);font-size:clamp(1.9rem,6.2vw,3.4rem);line-height:1.15;text-wrap:balance;
+  color:var(--gold);margin:clamp(2.5rem,7vw,4rem) 0;
+}
+.light .destaque{color:var(--gold-deep)}
+.callout{
+  display:grid;gap:14px;background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);
+  padding:clamp(1.25rem,4vw,2rem);align-items:center;
+}
+.callout .big{font-family:var(--font-display);font-size:clamp(3.4rem,13vw,6rem);line-height:.95;color:var(--gold)}
+.callout .big small{display:block;font-family:var(--font-body);font-size:1rem;font-weight:700;color:var(--ink-soft);margin-top:.35rem;letter-spacing:0}
+.callout p{margin:0}
+.ponte{margin:2.25rem 0 0;font-size:clamp(1.1rem,2.8vw,1.3rem);font-weight:600}
+
+/* =====================================================================
+   4. PADRÕES (claro)
+   ===================================================================== */
+.padroes{margin-top:2rem}
+.padrao{display:grid;gap:12px;padding-block:28px;border-top:1px solid var(--paper-line)}
+.padrao:last-of-type{border-bottom:1px solid var(--paper-line)}
+.padrao h3{font-size:clamp(1.45rem,4vw,2.1rem);line-height:1.12}
+.padrao p{margin:0;color:var(--paper-soft)}
+.assina{
+  margin-top:2.5rem;background:var(--paper-2);border:1px solid var(--paper-line);border-radius:var(--radius);
+  padding:clamp(1.25rem,4vw,2.25rem);
+}
+.assina p{margin:0 0 .8em;font-size:clamp(1.1rem,2.6vw,1.3rem);font-weight:500}
+.assina cite{font-style:normal;font-weight:800;font-size:1rem;color:var(--gold-deep)}
+
+/* =====================================================================
+   5. CAMINHO (passos numerados: sequência real)
+   ===================================================================== */
+.steps{list-style:none;margin:2.25rem 0 0;padding:0;display:grid;gap:0;counter-reset:passo}
+.steps li{position:relative;display:grid;grid-template-columns:52px 1fr;gap:0 18px;padding-bottom:2rem}
+.steps li:last-child{padding-bottom:0}
+.steps li::before{
+  counter-increment:passo;content:counter(passo);
+  width:52px;height:52px;border-radius:50%;display:grid;place-items:center;
+  background:var(--gold);color:var(--gold-ink);font-family:var(--font-display);font-size:1.5rem;
+}
+.steps li::after{content:"";position:absolute;left:25px;top:56px;bottom:4px;width:1px;background:var(--line)}
+.steps li:last-child::after{display:none}
+.steps h3{font-family:var(--font-body);font-weight:800;font-size:clamp(1.15rem,3vw,1.4rem);line-height:1.25;margin:.3rem 0 .4rem}
+.steps p{margin:0;color:var(--ink-soft)}
+.steps .c2{grid-column:2}
+
+/* =====================================================================
+   6. BENEFÍCIOS (claro)
+   ===================================================================== */
+.benes{display:grid;gap:0;margin-top:1rem}
+.bene{padding-block:30px;border-top:1px solid var(--paper-line)}
+.bene .ic{color:var(--gold-deep)}
+.bene h3{font-size:clamp(1.5rem,4vw,2rem);margin:.7rem 0 .6rem}
+.bene p{margin:0;color:var(--paper-soft)}
+
+/* =====================================================================
+   7. O QUE VEM DENTRO
+   ===================================================================== */
+.dentro{list-style:none;margin:2rem 0 0;padding:0;display:grid}
+.dentro li{display:flex;gap:16px;align-items:flex-start;padding-block:20px;border-top:1px solid var(--line)}
+.dentro li:last-child{border-bottom:1px solid var(--line)}
+.dentro .ic{color:var(--gold);margin-top:2px}
+.dentro b{color:var(--ink)}
+.dentro span{color:var(--ink-soft)}
+
+/* =====================================================================
+   8. PROVA
+   ===================================================================== */
+.rail{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:20px;padding-bottom:14px;margin-inline:-20px;padding-inline:20px;-webkit-overflow-scrolling:touch}
+.rail>*{flex:0 0 82%;scroll-snap-align:start}
+.case{background:#fff;border:1px solid var(--paper-line);border-radius:var(--radius);padding:18px;display:grid;gap:12px}
+.case p{margin:0;font-size:1rem;color:var(--paper-soft)}
+.case b{color:var(--paper-ink)}
+.case .who{font-family:var(--font-display);font-size:1.35rem;color:var(--paper-ink);line-height:1.15}
+.pendente-bloco{margin-bottom:clamp(2.5rem,7vw,4rem)}
+.sub-h{font-size:var(--fs-h3);margin:clamp(2.5rem,7vw,4rem) 0 .5em}
+.mural{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:1.25rem}
+.mural .m1{grid-column:1 / -1}
+.videos{margin-top:1.5rem}
+.videos>*{flex-basis:46%}
+
+/* =====================================================================
+   9. PRA QUEM É
+   ===================================================================== */
+.pq{display:grid;gap:18px;margin-top:2rem}
+.pq-col{border-radius:var(--radius);padding:clamp(1.25rem,4vw,2rem)}
+.pq-sim{background:rgba(226,194,79,.09);border:1px solid rgba(226,194,79,.45)}
+.pq-nao{background:transparent;border:1px solid var(--line)}
+.pq-col h3{font-family:var(--font-body);font-weight:800;font-size:1.15rem;margin-bottom:1rem}
+.pq-col ul{list-style:none;margin:0;padding:0;display:grid;gap:16px}
+.pq-col li{display:flex;gap:14px;align-items:flex-start}
+.pq-sim .ic{color:var(--gold)}
+.pq-nao .ic{color:var(--ink-soft)}
+.pq-nao li{color:var(--ink-soft)}
+
+/* =====================================================================
+   10. MOISÉS (claro)
+   ===================================================================== */
+.moises{display:grid;gap:2rem;align-items:start}
+.moises-media{max-width:420px;width:100%;justify-self:center}
+.mini-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:1.5rem 0}
+.mini-stats div{background:var(--paper-2);border:1px solid var(--paper-line);border-radius:12px;padding:14px 16px}
+.mini-stats b{display:block;font-family:var(--font-display);font-weight:400;font-size:2.1rem;line-height:1;color:var(--paper-ink)}
+.mini-stats span{font-size:.9375rem;color:var(--paper-soft);font-weight:600}
+.moises .destaque{font-size:clamp(1.6rem,4.6vw,2.4rem);margin:2rem 0 0}
+
+/* =====================================================================
+   11. INVESTIMENTO + SELEÇÃO
+   ===================================================================== */
+.callout-2{display:grid;gap:14px;margin:2rem 0;background:var(--bg-2);border:1px solid rgba(226,194,79,.45);border-radius:var(--radius);padding:clamp(1.25rem,4vw,2rem);align-items:center}
+.callout-2 .big{font-family:var(--font-display);font-size:clamp(3rem,11vw,5rem);line-height:1;color:var(--gold)}
+.callout-2 p{margin:0}
+.steps-3{margin-top:1.75rem}
+.divisor{height:1px;background:var(--line);margin-block:clamp(3rem,8vw,5rem)}
+
+/* =====================================================================
+   12. FAQ (claro)
+   ===================================================================== */
+.faq{margin-top:1.5rem;border-top:1px solid var(--paper-line)}
+.faq-item{border-bottom:1px solid var(--paper-line)}
+.faq-q{
+  width:100%;display:flex;align-items:center;justify-content:space-between;gap:16px;
+  min-height:64px;padding:16px 0;background:none;border:0;cursor:pointer;text-align:left;
+  font-family:var(--font-body);font-weight:700;font-size:clamp(1.05rem,2.6vw,1.2rem);line-height:1.35;color:var(--paper-ink);
+}
+.faq-q .ic{transition:transform .2s ease;color:var(--gold-deep)}
+.faq-q[aria-expanded="true"] .ic{transform:rotate(180deg)}
+.faq-a{padding:0 0 22px;color:var(--paper-soft)}
+.faq-a p{margin:0 0 .6em}
+
+/* =====================================================================
+   13. FECHAMENTO
+   ===================================================================== */
+.fecho{text-align:center}
+.fecho h2{font-size:clamp(1.85rem,5.6vw,3.3rem);max-width:20em;margin-inline:auto}
+.ps{max-width:var(--read);margin:2.5rem auto 0;text-align:left;background:var(--bg-2);border:1px solid var(--line);border-radius:var(--radius);padding:clamp(1.1rem,3.5vw,1.75rem)}
+.ps p{margin:0 0 .6em;color:var(--ink-soft)}
+.ps b{color:var(--ink)}
+.ps .assinatura{font-weight:800;color:var(--ink);margin:.4rem 0 0}
+
+/* ---------- rodapé ---------- */
+.foot{background:#080807;color:var(--ink-soft);padding-block:2rem;font-size:.9375rem}
+.foot .wrap{display:grid;gap:10px}
+.foot a{color:var(--ink-soft)}
+.foot nav{display:flex;flex-wrap:wrap;gap:6px 20px}
+.foot nav a{display:inline-flex;align-items:center;min-height:44px}
+
+/* ---------- barra fixa do celular ---------- */
+.sticky{
+  position:fixed;left:0;right:0;bottom:0;z-index:70;padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+  background:rgba(14,13,11,.96);border-top:1px solid var(--line);
+  transform:translateY(110%);transition:transform .25s ease;
+}
+.sticky.on{transform:translateY(0)}
+.sticky .btn{max-width:none}
+
+/* =====================================================================
+   FORMULÁRIO (janela)
+   ===================================================================== */
+dialog{
+  width:min(560px, calc(100% - 24px));max-height:calc(100dvh - 24px);overflow:auto;padding:0;
+  border:0;border-radius:18px;background:var(--paper);color:var(--paper-ink);
+}
+dialog::backdrop{background:rgba(0,0,0,.76)}
+.dlg-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:20px 20px 0}
+.dlg-head h2{font-size:1.9rem;margin:0}
+.dlg-close{width:44px;height:44px;border-radius:50%;border:0;background:var(--paper-2);color:var(--paper-ink);cursor:pointer;display:grid;place-items:center}
+.dlg-close:focus-visible{outline-color:var(--paper-ink)}
+form{padding:16px 20px 22px;display:grid;gap:14px}
+.field{display:grid;gap:6px}
+.field label{font-weight:700;font-size:.9375rem}
+.field .req{color:var(--danger)}
+.control{
+  width:100%;min-height:52px;padding:0 14px;border-radius:10px;border:1.5px solid #8a867c;background:#fff;
+  font-family:var(--font-body);font-size:1rem;color:var(--paper-ink);
+}
+.control:focus-visible{outline:3px solid var(--paper-ink);outline-offset:2px}
+.control[aria-invalid="true"]{border-color:var(--danger);border-width:2px}
+.phone{display:flex;gap:0}
+.phone .pre{display:grid;place-items:center;padding:0 14px;background:var(--paper-2);border:1.5px solid #8a867c;border-right:0;border-radius:10px 0 0 10px;font-weight:700}
+.phone .control{border-radius:0 10px 10px 0}
+.err{display:none;align-items:center;gap:8px;color:var(--danger);font-size:.9375rem;font-weight:600}
+.err.on{display:flex}
+.err .ic{width:18px;height:18px}
+.micro{margin:0;font-size:.9375rem;color:var(--paper-soft);text-align:center}
+.form-status{margin:0;text-align:center;font-weight:700;color:var(--danger);min-height:1.4em}
+.dlg-ok{padding:28px 22px 32px;text-align:left}
+.dlg-ok .ic{width:44px;height:44px;color:var(--gold-deep);margin-bottom:12px}
+.dlg-ok h2{font-size:1.9rem;margin-bottom:.5em}
+.dlg-ok p{color:var(--paper-soft)}
+
+/* =====================================================================
+   DESKTOP (só adiciona o que muda)
+   ===================================================================== */
+@media (min-width:768px){
+  body{padding-bottom:0}
+  .sticky{display:none}
+  .btn{width:auto;min-width:340px}
+  .btn-sm{min-width:0}
+  .cta-block .btn{width:auto}
+  .band-grid{grid-template-columns:repeat(4,1fr)}
+  .padrao{grid-template-columns:5fr 7fr;gap:40px;align-items:start}
+  .benes{grid-template-columns:repeat(3,1fr);gap:40px}
+  .bene{border-top:2px solid var(--paper-ink);padding-top:26px}
+  .dentro{grid-template-columns:1fr 1fr;column-gap:56px}
+  .dentro li:nth-last-child(2){border-bottom:1px solid var(--line)}
+  .pq{grid-template-columns:1fr 1fr}
+  .callout{grid-template-columns:auto 1fr;gap:32px}
+  .callout-2{grid-template-columns:auto 1fr;gap:32px}
+  .steps-3{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+  .steps-3 li{grid-template-columns:1fr;padding-bottom:0}
+  .steps-3 li::after{display:none}
+  .steps-3 li::before{margin-bottom:14px}
+  .steps-3 .c2{grid-column:1}
+  .rail{overflow:visible;margin-inline:0;padding-inline:0;display:grid;grid-template-columns:repeat(3,1fr)}
+  .rail>*{flex:initial}
+  .videos>*{flex-basis:auto}
+  .videos{max-width:720px}
+  .mural{grid-template-columns:repeat(4,1fr)}
+  .mural .m1{grid-column:span 2;grid-row:span 2}
+}
+@media (min-width:960px){
+  .hero-grid{grid-template-columns:1.15fr .85fr;gap:4rem;align-items:center}
+  .hero-media{justify-self:end}
+  .moises{grid-template-columns:.8fr 1.2fr;gap:4rem}
+  .moises-media{justify-self:start;position:sticky;top:96px}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{transition:none !important;animation:none !important}
+}
+</style>
+</head>
+
+<body class="modo-edicao">
+<a class="skip" href="#conteudo">Ir para o conteúdo</a>
+
+<!-- Sprite de ícones (SVG inline). Usado em toda a página. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.5 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.5 15"/></symbol>
+    <symbol id="i-money" viewBox="0 0 24 24"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+    <symbol id="i-award" viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"/><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></symbol>
+    <symbol id="i-clip" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></symbol>
+    <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8z"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M10 9l5 3-5 3z"/></symbol>
+  </defs>
+</svg>
+
+<!-- ============================ TOPO ============================ -->
+<header class="top">
+  <div class="wrap top-in">
+    <!-- TROCAR o texto pelo logo: <img src="logo-lions.svg" alt="Lions Society" height="32"> -->
+    <a class="brand" href="#topo" aria-label="Lions Society, início da página">Lions Society</a>
+    <button class="btn btn-sm" type="button" data-open-form>Aplicar</button>
+  </div>
+</header>
+
+<main id="conteudo">
+
+<!-- ============================ 1. HERO ============================ -->
+<section class="hero dark" id="topo">
+  <div class="wrap hero-grid">
+    <div>
+      <!-- Manchetes alternativas para teste A/B no Meta Ads:
+           - Você chega primeiro, sai por último, e a empresa ainda depende de você. Existe um motivo.
+           - Quando foi a última vez que você passou um dia inteiro sem que a empresa precisasse de uma resposta sua?
+           - Leve a empresa dos 5 para os 6 dígitos por mês sem depender de mais horas suas. -->
+      <h1>Quanto mais você resolve, menos a sua empresa cresce.</h1>
+      <p class="sub">Leve a empresa dos 5 para os 6 dígitos por mês com número real, um time que decide sem esperar por você e uma mesa com quem carrega o mesmo peso. Mentoria anual Lions Society, por seleção.</p>
+      <button class="btn" type="button" data-open-form data-hero-cta>Quero aplicar para uma vaga <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+      <p class="reducer">Formulário de poucos minutos. Entrada por processo seletivo. Aplicar não custa nada e não compromete você com nada.</p>
+      <ul class="selos">
+        <li><svg class="ic" aria-hidden="true"><use href="#i-users"/></svg>Conduzida por Moisés Ramos</li>
+        <li><svg class="ic" aria-hidden="true"><use href="#i-globe"/></svg>Integrante da MLS</li>
+        <li><svg class="ic" aria-hidden="true"><use href="#i-award"/></svg>Mais de 10 mil pessoas impactadas em 10 anos</li>
+      </ul>
+    </div>
+    <div class="hero-media">
+      <!-- SLOT IMAGEM: retrato do Moisés Ramos em imersão ou no palco, com pessoas ao fundo, vertical 4:5.
+           Opção: trocar por vídeo de 30 a 40 segundos (roteiro na copy). TROCAR por <img src="..." alt="Moisés Ramos em imersão da Lions Society"> -->
+      <div class="img-slot ratio-45" role="img" aria-label="Foto do Moisés Ramos em imersão ou no palco"><span>Foto do Moisés Ramos<br>(vertical 4:5)</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ 2. NÚMEROS ============================ -->
+<section class="band" aria-label="Números da Lions Society">
+  <div class="wrap band-grid">
+    <div class="stat"><b>+10 mil</b><span>pessoas impactadas em treinamentos</span></div>
+    <div class="stat"><b>10 anos</b><span>de trabalho como mentor</span></div>
+    <div class="stat"><b>100</b><span>pessoas ativas na Lions Society</span></div>
+    <div class="stat"><b>4</b><span>imersões presenciais por ano, em São Paulo, Gramado e Natal</span></div>
+  </div>
+</section>
+
+<!-- ============================ 3. ESPELHO ============================ -->
+<section class="sec dark">
+  <div class="wrap read">
+    <h2>Se esse retrato é o seu, continue lendo</h2>
+    <ul class="scenes">
+      <li><span class="ico"><svg class="ic" aria-hidden="true"><use href="#i-clock"/></svg></span><p>Você chega antes de todo mundo e sai depois. Sabe o preço de cada coisa, o humor de cada cliente e o motivo de cada atraso. Quando algo dá errado, todo mundo sabe a quem ligar.</p></li>
+      <li><span class="ico"><svg class="ic" aria-hidden="true"><use href="#i-refresh"/></svg></span><p>Você já tentou delegar. Explicou, acompanhou, corrigiu e, no fim, refez a parte que importava, porque assim saía mais rápido.</p></li>
+      <li><span class="ico"><svg class="ic" aria-hidden="true"><use href="#i-money"/></svg></span><p>O faturamento entra, e o lucro não acompanha. Você abre o financeiro com a sensação de que trabalha cada vez mais pra sobrar quase a mesma coisa.</p></li>
+      <li><span class="ico"><svg class="ic" aria-hidden="true"><use href="#i-phone"/></svg></span><p>Domingo à noite, a família na sala, e o celular acende com uma dúvida do time que ninguém mais resolve.</p></li>
+    </ul>
+    <p class="punch">Você tem orgulho do que construiu. E cansaço de carregar isso todos os dias.</p>
+    <p class="pergunta">Quando foi a última vez que você passou um dia inteiro sem que a empresa precisasse de uma resposta sua?</p>
+
+    <p class="destaque">O esforço tem um teto, e o teto é o número de horas do seu dia.</p>
+
+    <div class="callout">
+      <div class="big">250+<small>horas por ano</small></div>
+      <p>Faça a conta: 1 hora por dia resolvendo o que o time poderia resolver dá mais de 250 horas por ano. São mais de seis semanas de trabalho corrido, todo ano, gastas em decisão que não precisava passar por você.</p>
+    </div>
+
+    <p class="ponte">O que segura tudo isso raramente é o que você imagina.</p>
+    <div class="cta-block">
+      <button class="btn" type="button" data-open-form>Quero organizar o meu crescimento <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ 4. PADRÕES ============================ -->
+<section class="sec light">
+  <div class="wrap">
+    <h2>Cinco padrões que quase ninguém conta</h2>
+    <div class="padroes">
+      <div class="padrao">
+        <h3>Quanto mais indispensável você é, menos a empresa cresce.</h3>
+        <p>Cada decisão que só você resolve vira um teto. A empresa cresce até onde a sua agenda aguenta e para. Ser a pessoa mais importante da operação dá orgulho, e é o que trava o salto.</p>
+      </div>
+      <div class="padrao">
+        <h3>O seu time não decide porque você resolve rápido demais.</h3>
+        <p>Durante anos, a resposta mais rápida foi a sua, e o time aprendeu que perguntar é o caminho mais curto. Isso é sinal de competência sua, e é exatamente o que mantém as decisões na sua mesa.</p>
+      </div>
+      <div class="padrao">
+        <h3>Vender mais raramente resolve lucro apertado.</h3>
+        <p>Numa operação sem estrutura, mais venda traz mais retrabalho, mais atraso e mais desconto pra apagar incêndio. O faturamento sobe, a margem fica onde estava e a sua agenda piora.</p>
+      </div>
+      <div class="padrao">
+        <h3>Mais uma tática solta não muda o resultado.</h3>
+        <p>Curso, ferramenta, estratégia da moda: sem o diagnóstico do seu caso, cada uma é um chute. Informação você já tem de sobra. Falta decisão com número na mesa.</p>
+      </div>
+      <div class="padrao">
+        <h3>Quem lidera empresa costuma ter ao redor só gente que depende das suas decisões.</h3>
+        <p>Time, clientes, família. Falta uma mesa com quem carrega o mesmo peso e já passou pelo tamanho de problema que você enfrenta agora.</p>
+      </div>
+    </div>
+    <div class="assina read">
+      <p>Eu vejo esses cinco padrões em empresas de segmentos que não têm nada a ver umas com as outras. Depois de 10 anos de mentoria, o desenho é fácil de reconhecer. E dá pra desfazer.</p>
+      <cite>Moisés Ramos</cite>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ 5. O QUE MUDA NO SEU ANO ============================ -->
+<section class="sec dark">
+  <div class="wrap read">
+    <h2>O que muda no seu ano</h2>
+    <p class="soft">Cada trava pede uma resposta diferente. Por isso o ano tem quatro frentes, todas trabalhando ao mesmo tempo.</p>
+    <ol class="steps">
+      <li>
+        <h3>Você vê o negócio com número.</h3>
+        <p class="c2">No diagnóstico, eu e o meu time olhamos com lupa números, processos, time e o seu papel dentro da empresa. Você sai com um plano individual e metas de crescimento. Sem o número na mesa, qualquer plano vira palpite.</p>
+      </li>
+      <li>
+        <h3>Você deixa de decidir no escuro.</h3>
+        <p class="c2">Eu acompanho a execução de perto, com sessões online ao vivo e plataforma com aulas gravadas. Quando aparecer uma decisão difícil, você tem com quem pensar.</p>
+      </li>
+      <li>
+        <h3>Você senta com quem carrega o mesmo peso.</h3>
+        <p class="c2">São 4 imersões presenciais, em São Paulo, Gramado e Natal, com dias inteiros de trabalho ao lado de quem enfrenta desafios parecidos com os seus.</p>
+      </li>
+      <li>
+        <h3>Seu time passa a andar sem você.</h3>
+        <p class="c2">Treinamento para a equipe e para quem apoia você, porque o crescimento da empresa passa pelo time e passa pela casa.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============================ 6. BENEFÍCIOS ============================ -->
+<section class="sec light">
+  <div class="wrap">
+    <h2 class="sr-only">Benefícios</h2>
+    <div class="benes">
+      <div class="bene">
+        <svg class="ic ic-lg" aria-hidden="true"><use href="#i-chart"/></svg>
+        <h3>Um fim de mês que não surpreende</h3>
+        <p>Preço, contratação e investimento passam a sair de número real. Você deixa de abrir o financeiro com o estômago apertado.</p>
+        <p class="pendente"><b>A confirmar</b> Prova: número ou caso de margem/lucro de uma pessoa da mentoria.</p>
+      </div>
+      <div class="bene">
+        <svg class="ic ic-lg" aria-hidden="true"><use href="#i-users"/></svg>
+        <h3>Um time que resolve, e um domingo sem o celular tocando</h3>
+        <p>Com a equipe treinada e alinhada, a rotina deixa de parar na sua mesa. Você recupera as horas da conta lá de cima.</p>
+        <p class="pendente"><b>A confirmar</b> Prova: empresa em que o time passou a decidir sem consultar.</p>
+      </div>
+      <div class="bene">
+        <svg class="ic ic-lg" aria-hidden="true"><use href="#i-lock"/></svg>
+        <h3>Uma mesa onde você não precisa ser a pessoa mais forte da sala</h3>
+        <p>Todo dia, na empresa, essa pessoa é você. Aqui, você está no meio de gente do seu nível, dentro de um grupo fechado e de uma rede com mais de 100 clubes.</p>
+        <p class="pendente"><b>A confirmar</b> Prova: negócio, parceria ou contratação que nasceu dentro do grupo.</p>
+      </div>
+    </div>
+    <div class="cta-block">
+      <button class="btn" type="button" data-open-form>Quero crescer sem carregar tudo <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ 7. O QUE VEM DENTRO ============================ -->
+<section class="sec dark">
+  <div class="wrap">
+    <h2>O que vem dentro</h2>
+    <ul class="dentro">
+      <li><svg class="ic" aria-hidden="true"><use href="#i-clip"/></svg><span><b>Diagnóstico e plano individual:</b> análise do seu negócio, com plano de ação e metas de crescimento.</span></li>
+      <li><svg class="ic" aria-hidden="true"><use href="#i-chat"/></svg><span><b>Acompanhamento direto</b> comigo.</span></li>
+      <li><svg class="ic" aria-hidden="true"><use href="#i-pin"/></svg><span><b>4 imersões presenciais</b> em São Paulo, Gramado e Natal.</span></li>
+      <li><svg class="ic" aria-hidden="true"><use href="#i-monitor"/></svg><span><b>Sessões online ao vivo</b> e plataforma com conteúdo gravado.</span></li>
+      <li><svg class="ic" aria-hidden="true"><use href="#i-home"/></svg><span><b>Treinamento para o time e para a família.</b></span></li>
+      <li><svg class="ic" aria-hidden="true"><use href="#i-award"/></svg><span><b>Conversas com especialistas</b> em vendas, gestão, marketing e liderança.</span></li>
+      <li><svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg><span><b>Grupo fechado</b> com quem lidera empresas e joga o mesmo jogo.</span></li>
+      <li><svg class="ic" aria-hidden="true"><use href="#i-globe"/></svg><span><b>Acesso à rede da MLS,</b> com eventos e oportunidades dentro da liga.</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================ 8. PROVA ============================ -->
+<section class="sec light">
+  <div class="wrap">
+    <!-- Bloco de mini-casos: só aparece no modo edição enquanto os dados não chegam.
+         Quando tiver os casos reais, troque a classe "pendente-bloco" por nada e preencha os campos. -->
+    <div class="pendente-bloco">
+      <h2>Gente que estava no seu lugar</h2>
+      <div class="rail">
+        <article class="case">
+          <div class="img-slot ratio-1" role="img" aria-label="Foto da pessoa da mentoria"><span>Foto (1:1)</span></div>
+          <p class="who">[NOME], [SEGMENTO], [CIDADE]</p>
+          <p><b>Antes:</b> [como estava a empresa: faturamento, equipe, o que travava]</p>
+          <p><b>O que fez:</b> [ação concreta dentro da mentoria]</p>
+          <p><b>Resultado:</b> [número que mudou] em [prazo]</p>
+          <p>"[frase curta da pessoa, com a reação dela]"</p>
+        </article>
+        <article class="case">
+          <div class="img-slot ratio-1" role="img" aria-label="Foto da pessoa da mentoria"><span>Foto (1:1)</span></div>
+          <p class="who">[NOME], [SEGMENTO], [CIDADE]</p>
+          <p><b>Antes:</b> [como estava a empresa]</p>
+          <p><b>O que fez:</b> [ação concreta]</p>
+          <p><b>Resultado:</b> [número que mudou] em [prazo]</p>
+          <p>"[frase curta da pessoa]"</p>
+        </article>
+        <article class="case">
+          <div class="img-slot ratio-1" role="img" aria-label="Foto da pessoa da mentoria"><span>Foto (1:1)</span></div>
+          <p class="who">[NOME], [SEGMENTO], [CIDADE]</p>
+          <p><b>Antes:</b> [como estava a empresa]</p>
+          <p><b>O que fez:</b> [ação concreta]</p>
+          <p><b>Resultado:</b> [número que mudou] em [prazo]</p>
+          <p>"[frase curta da pessoa]"</p>
+        </article>
+      </div>
+    </div>
+
+    <h3 class="sub-h" style="margin-top:0">Faturamento anual, mostrado por quem está dentro</h3>
+    <p class="soft read">Nos eventos do Moisés, as pessoas da mentoria mostram o faturamento anual da própria empresa. Aqui estão os registros, com nome, segmento e cidade em cada foto.</p>
+    <!-- SLOTS IMAGEM: fotos dos mentorados mostrando o faturamento anual nos eventos.
+         Legenda de cada foto: nome, segmento e cidade. TROCAR cada slot por <img src="..." alt="Nome, segmento, cidade mostrando o faturamento anual"> -->
+    <div class="mural">
+      <div class="img-slot ratio-169 m1" role="img" aria-label="Foto de evento com faturamento anual, destaque"><span>Foto de evento em destaque</span></div>
+      <div class="img-slot ratio-1" role="img" aria-label="Foto de evento com faturamento anual"><span>Foto</span></div>
+      <div class="img-slot ratio-1" role="img" aria-label="Foto de evento com faturamento anual"><span>Foto</span></div>
+      <div class="img-slot ratio-1" role="img" aria-label="Foto de evento com faturamento anual"><span>Foto</span></div>
+      <div class="img-slot ratio-1" role="img" aria-label="Foto de evento com faturamento anual"><span>Foto</span></div>
+    </div>
+    <!-- SLOTS VÍDEO: 3 depoimentos curtos, verticais 9:16. Legenda destacando o trecho em que a pessoa cita o que mudou. -->
+    <div class="rail videos">
+      <div class="img-slot ratio-916" role="img" aria-label="Vídeo de depoimento 1"><span><svg class="ic ic-lg" aria-hidden="true"><use href="#i-play"/></svg><br>Depoimento 1</span></div>
+      <div class="img-slot ratio-916" role="img" aria-label="Vídeo de depoimento 2"><span><svg class="ic ic-lg" aria-hidden="true"><use href="#i-play"/></svg><br>Depoimento 2</span></div>
+      <div class="img-slot ratio-916" role="img" aria-label="Vídeo de depoimento 3"><span><svg class="ic ic-lg" aria-hidden="true"><use href="#i-play"/></svg><br>Depoimento 3</span></div>
+    </div>
+    <p class="pendente"><b>A confirmar</b> Autorização de uso de imagem e de exibição do faturamento de cada pessoa.</p>
+    <div class="cta-block">
+      <button class="btn" type="button" data-open-form>Quero aplicar para uma vaga <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ 9. PRA QUEM É ============================ -->
+<section class="sec dark">
+  <div class="wrap">
+    <h2>Pra quem é e pra quem não é</h2>
+    <p class="soft read">Eu monto o grupo por perfil. Por isso, confira os dois lados antes de aplicar.</p>
+    <div class="pq">
+      <div class="pq-col pq-sim">
+        <h3>É pra você se:</h3>
+        <ul>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span>Você responde pela empresa, tem poder de decisão e a equipe tem no mínimo 3 pessoas</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span>O negócio já vende de forma recorrente, e a meta é chegar aos 6 dígitos por mês</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span>Você resolve tudo mais rápido que qualquer outra pessoa da empresa, e sabe que isso virou o gargalo</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span>Você já pensou em contratar alguém melhor que você e travou na ideia de perder o controle</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span>Você olha para quem cresce mais rápido no seu mercado e quer entender o que existe de diferente lá</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg><span>Você topa abrir o negócio para um diagnóstico e decidir com número</span></li>
+        </ul>
+      </div>
+      <div class="pq-col pq-nao">
+        <h3>Não é pra você se:</h3>
+        <ul>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span>Você está começando e ainda busca as primeiras vendas</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span>Você procura fórmula pronta sem mexer no que faz hoje</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span>Você vai decidir só pelo preço</span></li>
+          <li><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span>A agenda não comporta as imersões presenciais</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="cta-block">
+      <button class="btn" type="button" data-open-form>Quero aplicar para uma vaga <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ 10. COM QUEM VOCÊ VAI SENTAR ============================ -->
+<section class="sec light">
+  <div class="wrap moises">
+    <div class="moises-media">
+      <!-- SLOT IMAGEM: retrato do Moisés com a identidade da Lions Society, vertical 4:5, fundo neutro.
+           TROCAR por <img src="..." alt="Moisés Ramos, mentor da Lions Society"> -->
+      <div class="img-slot ratio-45" role="img" aria-label="Retrato do Moisés Ramos"><span>Retrato do Moisés<br>(vertical 4:5)</span></div>
+    </div>
+    <div>
+      <h2>Com quem você vai sentar</h2>
+      <p>Eu sou Moisés Ramos, CEO da MR3 Comunicação e sócio do Instituto Êxito de Empreendedorismo. Em 10 anos como mentor, impactei mais de 10 mil pessoas que lideram empresas, em treinamentos que eu mesmo desenvolvi. Na Lions Society, são 100, e o acompanhamento é direto comigo.</p>
+      <div class="mini-stats">
+        <div><b>+10 mil</b><span>em treinamentos</span></div>
+        <div><b>100</b><span>na Lions Society</span></div>
+      </div>
+      <p>A mentoria faz parte da MLS, a maior liga de mentorias da América Latina, fundada por Flávio Augusto, Joel Jota e Caio Carneiro. Eu integro essa liga, e você entra numa rede com mais de 100 clubes empresariais no país.</p>
+      <p class="destaque">Eu conheço o peso de carregar uma empresa. Por isso o trabalho começa pelo seu número.</p>
+      <p class="pendente"><b>A confirmar</b> 2 a 3 frases de origem do Moisés, sobre o que ele viveu quando também carregava a empresa nas costas. Um áudio de 2 a 3 minutos resolve, e vira texto mantendo a fala dele.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ 11. INVESTIMENTO + SELEÇÃO ============================ -->
+<section class="sec dark">
+  <div class="wrap read">
+    <h2>O que esse ano representa</h2>
+    <p>Um ano vai passar de qualquer jeito. Quanto custa mais um ano igual ao último, com o lucro apertado e você no centro de todas as decisões?</p>
+    <div class="callout-2">
+      <div class="big">R$&nbsp;12 mil</div>
+      <p>Numa empresa que fatura R$&nbsp;100 mil por mês, cada ponto percentual de margem a mais são R$&nbsp;12 mil por ano. É esse tipo de conta que eu coloco na mesa com você.</p>
+    </div>
+    <p>A Lions Society é um investimento de alto valor. Eu prefiro apresentar o valor ao vivo, depois de entender o seu negócio, pra você decidir com contexto.</p>
+
+    <div class="divisor" role="presentation"></div>
+
+    <h2>Como funciona a seleção</h2>
+    <ol class="steps steps-3">
+      <li>
+        <h3>Você preenche o formulário.</h3>
+        <p class="c2">Leva poucos minutos.</p>
+      </li>
+      <li>
+        <h3>Meu time entra em contato pelo WhatsApp</h3>
+        <p class="c2">para entender o momento da sua empresa.</p>
+      </li>
+      <li>
+        <h3>Você conversa comigo ou com o meu time,</h3>
+        <p class="c2">presencial ou online. Ali eu apresento a mentoria em detalhe e o investimento.</p>
+      </li>
+    </ol>
+    <p style="margin-top:2rem">Eu monto o grupo pela sinergia entre as pessoas que estão nele, então nem toda aplicação vira vaga. Aplicar não custa nada e não compromete você com nada.</p>
+    <div class="cta-block">
+      <button class="btn" type="button" data-open-form>Quero aplicar para uma vaga <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ 12. FAQ ============================ -->
+<section class="sec light">
+  <div class="wrap read">
+    <h2>Perguntas frequentes</h2>
+    <div class="faq">
+      <div class="faq-item">
+        <button class="faq-q" type="button" aria-expanded="false" aria-controls="faq-1" id="faq-b1">Quanto custa a mentoria? <svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></button>
+        <div class="faq-a" id="faq-1" role="region" aria-labelledby="faq-b1" hidden>
+          <p>É um investimento de alto valor, e eu apresento na reunião, depois de entender o seu negócio. A mentoria não combina com quem decide só pelo preço.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" type="button" aria-expanded="false" aria-controls="faq-2" id="faq-b2">Como vou tirar tempo pra mentoria se já não tenho tempo pra nada? <svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></button>
+        <div class="faq-a" id="faq-2" role="region" aria-labelledby="faq-b2" hidden>
+          <p>A mentoria existe pra devolver horas, e a conta lá de cima mostra por quê.</p>
+          <p class="pendente"><b>A confirmar</b> Carga horária real das sessões online e das tarefas entre encontros.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" type="button" aria-expanded="false" aria-controls="faq-3" id="faq-b3">Qual o tamanho mínimo da empresa? <svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></button>
+        <div class="faq-a" id="faq-3" role="region" aria-labelledby="faq-b3" hidden>
+          <p>Equipe de pelo menos 3 pessoas e faturamento recorrente. Quem está nas primeiras vendas ainda não está no momento da Lions Society, e prefiro dizer isso já.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" type="button" aria-expanded="false" aria-controls="faq-4" id="faq-b4">Como funcionam as viagens? <svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></button>
+        <div class="faq-a" id="faq-4" role="region" aria-labelledby="faq-b4" hidden>
+          <p>São 4 imersões presenciais por ano, em São Paulo, Gramado e Natal. O resto do ano acontece nas sessões online ao vivo e na plataforma.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" type="button" aria-expanded="false" aria-controls="faq-5" id="faq-b5">O que acontece com o meu time? <svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></button>
+        <div class="faq-a" id="faq-5" role="region" aria-labelledby="faq-b5" hidden>
+          <p>Ele recebe treinamento dentro da mentoria, junto com quem apoia você em casa.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" type="button" aria-expanded="false" aria-controls="faq-6" id="faq-b6">Quando aparecem os primeiros resultados? <svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></button>
+        <div class="faq-a" id="faq-6" role="region" aria-labelledby="faq-b6" hidden>
+          <p>Depende do ponto de partida da empresa. O diagnóstico define metas e prazos para o seu caso.</p>
+          <p class="pendente"><b>A confirmar</b> Prazo típico, se o Moisés tiver esse dado.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ 13. FECHAMENTO ============================ -->
+<section class="sec dark fecho">
+  <div class="wrap">
+    <h2>Você construiu uma empresa que fatura. Agora ela precisa de um ano diferente do último: com estrutura, número e gente ao lado. Como você quer que ele seja?</h2>
+    <div class="cta-block">
+      <button class="btn" type="button" data-open-form data-final-cta>Quero um ano diferente pra minha empresa <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+      <p class="reducer soft">Formulário de poucos minutos. Aplicar não custa nada e não compromete você com nada.</p>
+    </div>
+    <div class="ps">
+      <p><b>P.S.</b> Eu limito as vagas e monto o grupo por seleção. Aplicar hoje é o primeiro passo pra sentar comigo e ver, com o seu número na mesa, o que faz sentido pro seu negócio.</p>
+      <p class="pendente"><b>A confirmar</b> Número de vagas da turma atual.</p>
+      <p class="assinatura">Moisés Ramos</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============================ RODAPÉ ============================ -->
+<footer class="foot">
+  <div class="wrap">
+    <p style="margin:0">Copyright 2026 © Âncora X. Todos os direitos reservados.</p>
+    <!-- TROCAR os # pelos links reais -->
+    <nav aria-label="Links legais">
+      <a href="#">Termos de Uso</a>
+      <a href="#">Política de Privacidade</a>
+      <a href="#">Política de Cookies</a>
+    </nav>
+  </div>
+</footer>
+
+<!-- Barra fixa do celular: aparece depois do primeiro botão e some perto do fechamento -->
+<div class="sticky" id="barra-fixa">
+  <button class="btn" type="button" data-open-form>Quero aplicar para uma vaga <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+</div>
+
+<!-- ============================ FORMULÁRIO (janela) ============================ -->
+<dialog id="janela-form" aria-labelledby="form-titulo">
+  <div id="form-area">
+    <div class="dlg-head">
+      <h2 id="form-titulo">Aplique para uma vaga</h2>
+      <button class="dlg-close" type="button" data-close aria-label="Fechar formulário"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+    <form id="form-aplicacao" novalidate>
+      <div class="field">
+        <label for="f-nome">Qual o seu nome completo? <span class="req" aria-hidden="true">*</span></label>
+        <input class="control" id="f-nome" name="nome" type="text" autocomplete="name" required aria-describedby="e-nome">
+        <p class="err" id="e-nome"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span>Informe o seu nome completo.</span></p>
+      </div>
+      <div class="field">
+        <label for="f-empresa">Nome da empresa <span class="req" aria-hidden="true">*</span></label>
+        <input class="control" id="f-empresa" name="empresa" type="text" autocomplete="organization" required aria-describedby="e-empresa">
+        <p class="err" id="e-empresa"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span>Informe o nome da empresa.</span></p>
+      </div>
+      <div class="field">
+        <label for="f-email">Seu melhor e-mail <span class="req" aria-hidden="true">*</span></label>
+        <input class="control" id="f-email" name="email" type="email" autocomplete="email" required aria-describedby="e-email">
+        <p class="err" id="e-email"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span>Informe um e-mail válido.</span></p>
+      </div>
+      <div class="field">
+        <label for="f-whats">Qual o seu número de WhatsApp? <span class="req" aria-hidden="true">*</span></label>
+        <div class="phone">
+          <span class="pre" aria-hidden="true">+55</span>
+          <input class="control" id="f-whats" name="whatsapp" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="(00) 00000-0000" required aria-describedby="e-whats">
+        </div>
+        <p class="err" id="e-whats"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span>Informe o DDD e o número.</span></p>
+      </div>
+      <div class="field">
+        <label for="f-insta">Qual o @ do Instagram da sua empresa? <span class="req" aria-hidden="true">*</span></label>
+        <input class="control" id="f-insta" name="instagram" type="text" autocomplete="off" autocapitalize="none" placeholder="@suaempresa" required aria-describedby="e-insta">
+        <p class="err" id="e-insta"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span>Informe o @ do Instagram da empresa.</span></p>
+      </div>
+      <div class="field">
+        <label for="f-fat">Qual o faturamento mensal do seu negócio? <span class="req" aria-hidden="true">*</span></label>
+        <!-- TROCAR as faixas pelas opções reais do formulário atual, se forem diferentes -->
+        <select class="control" id="f-fat" name="faturamento" required aria-describedby="e-fat">
+          <option value="">Selecione</option>
+          <option>Até R$ 10 mil por mês</option>
+          <option>De R$ 10 mil a R$ 30 mil por mês</option>
+          <option>De R$ 30 mil a R$ 50 mil por mês</option>
+          <option>De R$ 50 mil a R$ 100 mil por mês</option>
+          <option>De R$ 100 mil a R$ 300 mil por mês</option>
+          <option>De R$ 300 mil a R$ 500 mil por mês</option>
+          <option>Acima de R$ 500 mil por mês</option>
+        </select>
+        <p class="err" id="e-fat"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span>Selecione a faixa de faturamento.</span></p>
+      </div>
+      <div class="field">
+        <label for="f-dec">Você responde pela empresa? <span class="req" aria-hidden="true">*</span></label>
+        <select class="control" id="f-dec" name="decisao" required aria-describedby="e-dec">
+          <option value="">Selecione</option>
+          <option>Sim, tenho a decisão final</option>
+          <option>Divido a decisão com sócios</option>
+          <option>Não tenho a decisão final</option>
+        </select>
+        <p class="err" id="e-dec"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg><span>Selecione uma opção.</span></p>
+      </div>
+
+      <!-- Campos ocultos de origem (preenchidos por script com os parâmetros da URL do anúncio) -->
+      <input type="hidden" name="utm_source"><input type="hidden" name="utm_medium"><input type="hidden" name="utm_campaign">
+      <input type="hidden" name="utm_content"><input type="hidden" name="utm_term"><input type="hidden" name="fbclid">
+      <input type="hidden" name="pagina" value="lions-society-aplicacao">
+
+      <button class="btn" type="submit" id="btn-enviar">Quero aplicar para uma vaga</button>
+      <p class="form-status" id="form-status" role="alert" aria-live="assertive"></p>
+      <p class="micro">Meu time entra em contato pelo WhatsApp.</p>
+      <p class="pendente"><b>A confirmar</b> Prazo de retorno do time.</p>
+    </form>
+  </div>
+
+  <div class="dlg-ok" id="form-ok" hidden tabindex="-1">
+    <svg class="ic" aria-hidden="true"><use href="#i-check"/></svg>
+    <h2>Aplicação recebida</h2>
+    <p>Meu time vai falar com você pelo WhatsApp para entender o momento da sua empresa. Enquanto isso, separe o número do faturamento e o tamanho do time, porque é com eles na mesa que a nossa conversa começa.</p>
+    <button class="btn" type="button" data-close>Fechar</button>
+  </div>
+</dialog>
+
+<script>
+/* =====================================================================
+   CONFIGURAÇÃO (o único ponto que você precisa editar no JavaScript)
+   ===================================================================== */
+var CONFIG = {
+  /* Endereço que recebe o formulário (webhook do CRM, Make, Zapier, planilha, etc.).
+     Enquanto estiver vazio, o envio só é simulado no modo edição e falha na versão final,
+     para nenhuma aplicação se perder sem aviso. */
+  FORM_ENDPOINT: "",
+  /* Evento enviado ao pixel do Meta quando a aplicação é enviada com sucesso */
+  PIXEL_EVENT: "Lead"
+};
+
+/* =====================================================================
+   FORMULÁRIO: abre e fecha a janela
+   ===================================================================== */
+(function(){
+  var dlg = document.getElementById('janela-form');
+  var area = document.getElementById('form-area');
+  var ok = document.getElementById('form-ok');
+  var ultimoBotao = null;
+
+  document.querySelectorAll('[data-open-form]').forEach(function(b){
+    b.addEventListener('click', function(){
+      ultimoBotao = b;
+      area.hidden = false; ok.hidden = true;
+      if (typeof dlg.showModal === 'function') { dlg.showModal(); } else { dlg.setAttribute('open',''); }
+      document.body.style.overflow = 'hidden';
+      var primeiro = document.getElementById('f-nome'); if (primeiro) primeiro.focus();
+    });
+  });
+  function fechar(){
+    if (dlg.open) dlg.close();
+    document.body.style.overflow = '';
+    if (ultimoBotao) ultimoBotao.focus();
+  }
+  document.querySelectorAll('[data-close]').forEach(function(b){ b.addEventListener('click', fechar); });
+  /* clique fora da janela fecha */
+  dlg.addEventListener('click', function(e){ if (e.target === dlg) fechar(); });
+  dlg.addEventListener('close', function(){ document.body.style.overflow = ''; });
+})();
+
+/* =====================================================================
+   FORMULÁRIO: máscara do WhatsApp e do @ do Instagram
+   ===================================================================== */
+(function(){
+  var w = document.getElementById('f-whats');
+  w.addEventListener('input', function(){
+    var d = w.value.replace(/\D/g,'').slice(0,11), r = d;
+    if (d.length > 2)  r = '(' + d.slice(0,2) + ') ' + d.slice(2);
+    if (d.length > 7)  r = '(' + d.slice(0,2) + ') ' + d.slice(2,7) + '-' + d.slice(7);
+    w.value = r;
+  });
+  var i = document.getElementById('f-insta');
+  i.addEventListener('blur', function(){
+    var v = i.value.trim().replace(/^https?:\/\/(www\.)?instagram\.com\//i,'').replace(/\/$/,'');
+    if (v && v.charAt(0) !== '@') v = '@' + v;
+    i.value = v;
+  });
+})();
+
+/* =====================================================================
+   FORMULÁRIO: origem do anúncio (utm e fbclid ficam salvos junto da aplicação)
+   ===================================================================== */
+(function(){
+  var p = new URLSearchParams(window.location.search);
+  ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','fbclid'].forEach(function(k){
+    var el = document.querySelector('input[name="'+k+'"]');
+    if (el && p.get(k)) el.value = p.get(k);
+  });
+})();
+
+/* =====================================================================
+   FORMULÁRIO: validação e envio
+   ===================================================================== */
+(function(){
+  var form = document.getElementById('form-aplicacao');
+  var status = document.getElementById('form-status');
+  var btn = document.getElementById('btn-enviar');
+  var area = document.getElementById('form-area');
+  var ok = document.getElementById('form-ok');
+
+  var regras = [
+    {id:'f-nome',  erro:'e-nome',  valido:function(v){ return v.trim().split(/\s+/).length >= 2 && v.trim().length >= 5; }},
+    {id:'f-empresa', erro:'e-empresa', valido:function(v){ return v.trim().length >= 2; }},
+    {id:'f-email', erro:'e-email', valido:function(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()); }},
+    {id:'f-whats', erro:'e-whats', valido:function(v){ var n = v.replace(/\D/g,''); return n.length === 10 || n.length === 11; }},
+    {id:'f-insta', erro:'e-insta', valido:function(v){ return v.trim().replace('@','').length >= 2; }},
+    {id:'f-fat',   erro:'e-fat',   valido:function(v){ return v !== ''; }},
+    {id:'f-dec',   erro:'e-dec',   valido:function(v){ return v !== ''; }}
+  ];
+
+  function checar(r){
+    var el = document.getElementById(r.id), msg = document.getElementById(r.erro);
+    var certo = r.valido(el.value);
+    el.setAttribute('aria-invalid', certo ? 'false' : 'true');
+    msg.classList.toggle('on', !certo);
+    return certo;
+  }
+  regras.forEach(function(r){
+    var el = document.getElementById(r.id);
+    el.addEventListener('blur', function(){ if (el.value !== '') checar(r); });
+    el.addEventListener('input', function(){ if (el.getAttribute('aria-invalid') === 'true') checar(r); });
+  });
+
+  function sucesso(){
+    /* evento do pixel do Meta, se estiver instalado */
+    if (typeof window.fbq === 'function') { try { window.fbq('track', CONFIG.PIXEL_EVENT); } catch(e){} }
+    area.hidden = true; ok.hidden = false; ok.focus();
+  }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    status.textContent = '';
+    var primeiroErro = null;
+    regras.forEach(function(r){ if (!checar(r) && !primeiroErro) primeiroErro = document.getElementById(r.id); });
+    if (primeiroErro) { primeiroErro.focus(); return; }
+
+    var dados = {};
+    new FormData(form).forEach(function(v,k){ dados[k] = v; });
+    dados.enviado_em = new Date().toISOString();
+
+    btn.disabled = true; btn.textContent = 'Enviando...';
+
+    if (!CONFIG.FORM_ENDPOINT) {
+      /* Sem destino configurado */
+      console.warn('FORM_ENDPOINT vazio. Dados que seriam enviados:', dados);
+      if (document.body.classList.contains('modo-edicao')) {
+        sucesso();                       /* simulação para você ver a tela final */
+      } else {
+        status.textContent = 'Não foi possível enviar agora. Tente novamente em instantes.';
+      }
+      btn.disabled = false; btn.textContent = 'Quero aplicar para uma vaga';
+      return;
+    }
+
+    fetch(CONFIG.FORM_ENDPOINT, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(dados)
+    }).then(function(res){
+      if (!res.ok) throw new Error('Falha ' + res.status);
+      sucesso();
+    }).catch(function(err){
+      console.error(err);
+      status.textContent = 'Não foi possível enviar agora. Confira a conexão e tente novamente.';
+    }).finally(function(){
+      btn.disabled = false; btn.textContent = 'Quero aplicar para uma vaga';
+    });
+  });
+})();
+
+/* =====================================================================
+   PERGUNTAS FREQUENTES: clica na pergunta, abre a resposta
+   ===================================================================== */
+(function(){
+  document.querySelectorAll('.faq-q').forEach(function(b){
+    b.addEventListener('click', function(){
+      var aberto = b.getAttribute('aria-expanded') === 'true';
+      b.setAttribute('aria-expanded', String(!aberto));
+      document.getElementById(b.getAttribute('aria-controls')).hidden = aberto;
+    });
+  });
+})();
+
+/* =====================================================================
+   BARRA FIXA DO CELULAR: aparece depois do primeiro botão,
+   some enquanto o botão do fechamento estiver na tela
+   ===================================================================== */
+(function(){
+  var barra = document.getElementById('barra-fixa');
+  var hero = document.querySelector('[data-hero-cta]');
+  var fim = document.querySelector('[data-final-cta]');
+  if (!barra || !hero || !('IntersectionObserver' in window)) return;
+  var heroVisivel = true, fimVisivel = false;
+  function atualizar(){ barra.classList.toggle('on', !heroVisivel && !fimVisivel); }
+  new IntersectionObserver(function(e){ heroVisivel = e[0].isIntersecting; atualizar(); }).observe(hero);
+  if (fim) new IntersectionObserver(function(e){ fimVisivel = e[0].isIntersecting; atualizar(); }).observe(fim);
+})();
+</script>
+</body>
+</html>

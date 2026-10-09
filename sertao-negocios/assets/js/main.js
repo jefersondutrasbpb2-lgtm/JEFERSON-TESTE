@@ -168,7 +168,7 @@
   gsap.set('.hero__topo', { xPercent: -50, yPercent: -50, x: 0, y: 0 });
   gsap.timeline({ scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true } })
     .to('.hero__inner', { yPercent: -14, opacity: .15, ease: 'none' }, 0)
-    .to('.hero__horizon', { yPercent: 28, ease: 'none' }, 0)
+    .to('.hero__horizon', { yPercent: 12, ease: 'none' }, 0)
     .to('.hero__topo', { scale: 1.25, rotate: 6, ease: 'none' }, 0)
     .fromTo('.hero__frieze', { yPercent: 0, opacity: 1 }, { yPercent: 120, opacity: 0, ease: 'none', immediateRender: false }, 0);
 

@@ -49,6 +49,15 @@ As imagens ainda aparecem quebradas nesse teste, e tudo bem: os endereços são 
 
 Se tudo isso funcionar, o resto da página funciona. Se algo falhar, veja "Se algo não funcionar" no fim deste guia.
 
+## Encaixe automático
+
+O código de Scripts (`99-scripts.html`) ajusta sozinho cada bloco que recebe uma seção do kit:
+- estica o elemento para a largura total da tela;
+- deixa o bloco com a altura real do conteúdo, no computador e no celular;
+- troca o corte (`overflow: hidden`) das caixas em volta por um corte que não quebra os efeitos de "ficar parado".
+
+Por isso a altura que você der ao bloco e ao elemento no editor não importa. Deixe qualquer altura que caiba na tela do editor.
+
 ## Passo 2 · Configure a página
 
 - **Fundo da página:** `#090c3a` (azul-noite).

@@ -223,8 +223,11 @@ kit_js = prefix_js(js)
 kit_js = must_replace(kit_js, "(() => {\n  'use strict';", "const __snRun = () => {\n  'use strict';")
 if not kit_js.rstrip().endswith("})();"):
     fail("fim do main.js inesperado")
+fit_js = (ROOT / "tools/gp_fit.js").read_text()
 kit_js = kit_js.rstrip()[:-len("})();")] + (
-    "};\n  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', __snRun);\n  else __snRun();\n")
+    "};\n" + fit_js +
+    "  const __snBoot = () => { __snFit(); __snRun(); };\n"
+    "  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', __snBoot);\n  else __snBoot();\n")
 kit_js = "{\n" + kit_js + "}\n"
 
 scripts = f"""<!-- Sertão Negócios 2026 · 99 SCRIPTS · GreatPages: Configurações > Javascript & CSS > Adicionar código (tipo Funcionamento) -->

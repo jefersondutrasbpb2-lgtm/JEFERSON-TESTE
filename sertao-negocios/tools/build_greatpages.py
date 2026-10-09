@@ -207,6 +207,13 @@ HEADER_NOTE = "<!-- Sertão Negócios 2026 · bloco {name} · GreatPages: Adicio
 for k in list(blocks):
     blocks[k] = HEADER_NOTE.format(name=k) + img_paths(prefix_html(blocks[k])) + "\n"
 
+# Bloco 11 no GreatPages: o formulário é o nativo do GreatPages, encaixado no cartão do kit
+_slot = (ROOT / "tools/gp_form_slot.html").read_text().rstrip("\n")
+_b11 = blocks["11-inscricao"]
+_i = _b11.index('      <div class="sn-form-card" data-reveal>')
+_j = _b11.rindex("  </section>") + len("  </section>")
+blocks["11-inscricao"] = _b11[:_i] + _slot + _b11[_j:]
+
 # ---------------------------------------------------------------------------
 # 4. Cabeçalho e scripts
 # ---------------------------------------------------------------------------

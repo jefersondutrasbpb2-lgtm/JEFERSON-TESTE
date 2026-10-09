@@ -97,18 +97,18 @@ Onde cada imagem é usada:
 
 Copie sempre o arquivo **inteiro**, do primeiro ao último caractere.
 
-## Passo 5 · Formulário
+## Passo 5 · Formulário (nativo do GreatPages)
 
-O formulário do bloco 11 valida os campos e dispara os eventos de conversão, mas só envia os dados quando você informa para onde.
-No `99-scripts.html`, preencha `leadEndpoint` com a URL do webhook do seu CRM ou automação (Make, Zapier, n8n, RD Station, Google Apps Script…).
-Enquanto estiver vazio, o envio é **simulado**: aparece "Cadastro recebido", mas o lead não é salvo.
+O bloco 11 usa o **formulário do próprio GreatPages**: os leads ficam no painel dele, com as integrações e notificações.
 
-- Webhook que recebe JSON: deixe `payloadFormat: 'json'` e `requestMode: 'cors'`.
-- Google Apps Script ou webhook sem CORS: use `payloadFormat: 'form'` e `requestMode: 'no-cors'`.
+1. Cole `11-inscricao.html` no elemento HTML/CSS do bloco 11.
+2. No **mesmo bloco 11**, adicione o elemento **Formulário** do GreatPages. A posição e o tamanho no editor não importam: na página publicada ele é movido para dentro do cartão branco e ganha o visual do projeto.
+3. Campos sugeridos: Nome, WhatsApp, E-mail, Cidade (opcional) e **"Tenho interesse em"** (seleção ou múltipla escolha com as opções **Ingresso Smart**, **Ingresso VIP** e **Expor (estande)**), mais a autorização de LGPD.
+4. Texto do botão sugerido: **Quero garantir minha prioridade**.
+5. Confira se o elemento Formulário está visível também no modo **Mobile**.
 
-Campos enviados: `nome`, `whatsapp`, `email`, `cidade`, `interesse` (`smart`, `vip` ou `expositor`), `consentimento`, as UTMs, `pagina` e `enviado_em`.
-
-**Alternativa:** usar o formulário nativo do GreatPages, que já se integra às ferramentas de leads dele. Nesse caso, no bloco 11, coloque o formulário do GreatPages no lugar do formulário do kit. O visual fica por conta dos estilos do GreatPages.
+Os botões "Quero o Smart", "Quero o VIP" e "Quero expor minha empresa" marcam a opção certa no campo "Tenho interesse em", desde que as opções tenham essas palavras.
+A mensagem de sucesso, as notificações e as integrações são configuradas no próprio GreatPages.
 
 ## Passo 6 · SEO e rastreamento
 

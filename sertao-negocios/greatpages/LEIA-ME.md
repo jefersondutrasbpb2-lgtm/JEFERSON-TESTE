@@ -8,11 +8,11 @@ Os blocos já vêm preparados para não conflitar com o estilo do GreatPages: to
 | Arquivo | Onde colar no GreatPages | Quantas vezes |
 |---|---|---|
 | `teste-diagnostico.html` | Elemento **HTML/CSS** numa página de rascunho (veja o passo 0) | Só no teste |
-| `00-cabecalho.html` | **Configurações (engrenagem) → Javascript & CSS → Adicionar código**, tipo **Funcionamento**, nome "Sertão Negócios · Estilos" | Uma vez |
+| `00-estilos-1.html`, `00-estilos-2.html`, `00-estilos-3.html` | **Configurações (engrenagem) → Javascript & CSS → Adicionar código**, tipo **Funcionamento**, um código por arquivo, nomes "Sertão Negócios · Estilos 1", "2" e "3", criados nessa ordem | Uma vez cada |
 | `01-topo.html` … `13-rodape.html` | **Adicionar bloco** → elemento **HTML/CSS**, um arquivo por bloco, nesta ordem | Um por bloco |
 | `99-scripts.html` | **Configurações → Javascript & CSS → Adicionar código**, tipo **Funcionamento**, nome "Sertão Negócios · Scripts" | Uma vez |
 
-Use sempre o tipo **Funcionamento** nos dois códigos. Os tipos "Estatísticas" e "Marketing" podem ficar bloqueados até o visitante aceitar os cookies (LGPD), e a página ficaria sem estilo e sem animação.
+Use sempre o tipo **Funcionamento** nos quatro códigos. Os tipos "Estatísticas" e "Marketing" podem ficar bloqueados até o visitante aceitar os cookies (LGPD), e a página ficaria sem estilo e sem animação.
 | `imagens/` | Biblioteca de mídia do GreatPages | 12 imagens da página + 1 de compartilhamento |
 
 Ordem das seções: 01 topo · 02 proposta · 03 história · 04 região (mapa) · 05 por que participar · 06 palestrantes · 07 programação · 08 experiência · 09 ingressos · 10 realização · 11 inscrição · 12 final · 13 rodapé.
@@ -32,7 +32,7 @@ Com isso eu sei se o elemento HTML/CSS do GreatPages comporta os efeitos do kit,
 
 Antes de montar tudo, crie uma página de rascunho só com:
 
-1. `00-cabecalho.html` em Configurações → Javascript & CSS (tipo Funcionamento);
+1. os três `00-estilos-*.html` em Configurações → Javascript & CSS (tipo Funcionamento), na ordem 1, 2, 3;
 2. uma seção com `01-topo.html`;
 3. uma seção com `03-historia.html`;
 4. `99-scripts.html` em Configurações → Javascript & CSS (tipo Funcionamento).
@@ -92,7 +92,7 @@ Onde cada imagem é usada:
 
 ## Passo 4 · Cole os blocos
 
-1. Em Configurações → Javascript & CSS, adicione `00-cabecalho.html` e `99-scripts.html` como dois códigos do tipo Funcionamento.
+1. Em Configurações → Javascript & CSS, adicione `00-estilos-1.html`, `00-estilos-2.html`, `00-estilos-3.html` e `99-scripts.html` como quatro códigos do tipo Funcionamento, nessa ordem.
 2. Crie os 13 blocos na ordem e cole um arquivo em cada elemento HTML/CSS.
 
 Copie sempre o arquivo **inteiro**, do primeiro ao último caractere.
@@ -128,8 +128,8 @@ Também falta completar a **política de privacidade** (bloco 13) com razão soc
 | Sintoma | Causa provável | O que fazer |
 |---|---|---|
 | Nada anima e a rolagem não é suave | Os scripts não rodaram | Confira se `99-scripts.html` foi adicionado em Configurações → Javascript & CSS com o tipo **Funcionamento**. |
-| Página sem estilo (texto preto, sem cores) | O código de estilos não foi aplicado | Confira se `00-cabecalho.html` está em Configurações → Javascript & CSS com o tipo **Funcionamento**. Se o campo recusar por tamanho, cole-o num elemento HTML/CSS no **primeiro** bloco. |
-| Faixas vazias entre as seções ou cantos arredondados cortados | Espaçamento ou recorte das seções do GreatPages | Zere o espaçamento das seções. Se continuar, adicione ao fim do `00-cabecalho.html`: `<style>:root{--sn-overlap:0px}</style>` |
+| Página sem estilo (texto preto, sem cores) | O código de estilos não foi aplicado | Confira se os três `00-estilos-*.html` estão em Configurações → Javascript & CSS com o tipo **Funcionamento** e se cada um termina em `</style>` (o 3 termina em `</script>`). |
+| Faixas vazias entre as seções ou cantos arredondados cortados | Espaçamento ou recorte das seções do GreatPages | Zere o espaçamento das seções. Se continuar, adicione ao fim do `00-estilos-3.html`: `<style>:root{--sn-overlap:0px}</style>` |
 | Na história do Sertão a imagem não fica parada, ou o mapa não fica fixo enquanto se desenha | Alguma caixa do GreatPages em volta da seção corta o conteúdo | Me mande o link do teste. Dá para ajustar com um CSS específico para o GreatPages. |
 | Barra de navegação ou botão fixo do celular rolando junto com a página | Alguma caixa do GreatPages com animação ou efeito em volta do bloco | Desligue animações de entrada da seção e do elemento. |
 | Botões ou títulos com fonte ou cor diferentes | Estilo do tema do GreatPages se sobrepondo | Me mande o link e eu reforço as regras do kit. |

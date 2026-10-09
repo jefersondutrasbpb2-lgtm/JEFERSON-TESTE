@@ -2,7 +2,7 @@
 """Gera o kit GreatPages a partir da landing page (index.html + CSS + JS).
 
 O kit separa a página em blocos para colar em elementos HTML do GreatPages:
-  00-cabecalho.html   CSS, fontes e marcação inicial (cole uma vez, no cabeçalho)
+  00-estilos-1..3.html  CSS (compactado e dividido em 3), fontes e marcação inicial
   01..13-*.html        uma seção por arquivo (cole em ordem, um elemento HTML por seção)
   99-scripts.html      bibliotecas, configuração e animações (cole uma vez, no fim da página)
 
@@ -243,6 +243,43 @@ scripts = f"""<!-- Sertão Negócios 2026 · 99 SCRIPTS · GreatPages: Configura
 {kit_js}</script>
 """
 
+# Estilos em 3 códigos menores: o campo de código do GreatPages fica no limite com ~50 mil caracteres
+def minify_css(c):
+    c = re.sub(r"/\*.*?\*/", "", c, flags=re.S)
+    c = re.sub(r"\s+", " ", c)
+    c = re.sub(r"\s*([{};,])\s*", r"\1", c)
+    return c.replace(";}", "}").replace("}", "}\n").strip()  # uma regra por linha
+
+
+def split_rules(c, n):
+    """Divide em n partes de tamanho parecido, sempre no fim de uma regra de nível superior."""
+    cuts, depth = [], 0
+    for i, ch in enumerate(c):
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                cuts.append(i + 1)
+    if depth != 0:
+        fail("chaves desbalanceadas no CSS")
+    chunks, last = [], 0
+    for k in range(1, n):
+        cut = min(cuts, key=lambda x: abs(x - len(c) * k / n))
+        chunks.append(c[last:cut])
+        last = cut
+    chunks.append(c[last:])
+    return chunks
+
+
+css_parts = split_rules(minify_css(kit_css), 3)
+NOTE = "<!-- Sertão Negócios 2026 · ESTILOS {i} de 3 · GreatPages: Configurações > Javascript & CSS > Adicionar código (tipo Funcionamento), na ordem 1, 2, 3 -->\n"
+head_parts = [
+    NOTE.format(i=1) + head[head.index("<link"):head.index("<style>")] + "<style>" + css_parts[0] + "</style>\n",
+    NOTE.format(i=2) + "<style>" + css_parts[1] + "</style>\n",
+    NOTE.format(i=3) + "<style>" + css_parts[2] + "</style>\n" + ld_json + "\n",
+]
+
 # ---------------------------------------------------------------------------
 # 5. Links das imagens já enviadas ao GreatPages (greatpages/links-imagens.json)
 # ---------------------------------------------------------------------------
@@ -263,7 +300,8 @@ if OUT.exists():
         p.unlink()
     shutil.rmtree(OUT / "imagens", ignore_errors=True)
 OUT.mkdir(exist_ok=True)
-(OUT / "00-cabecalho.html").write_text(apply_links(head))
+for i, part in enumerate(head_parts, 1):
+    (OUT / f"00-estilos-{i}.html").write_text(apply_links(part))
 for k, v in blocks.items():
     (OUT / f"{k}.html").write_text(apply_links(v))
 (OUT / "99-scripts.html").write_text(scripts)

@@ -1,0 +1,78 @@
+<!-- Sertão Negócios 2026 · bloco 11-inscricao · cole num elemento HTML, numa seção de largura total e sem espaçamento -->
+<section class="sn sn-signup" id="inscricao" data-theme="dark" aria-labelledby="signup-title">
+    <div class="sn-signup__bg" aria-hidden="true"><svg class="sn-topo" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice"><g fill="none" stroke="currentColor" stroke-width="1"><use href="#topo-g"/></g></svg></div>
+    <div class="sn-wrap sn-signup__inner">
+      <div class="sn-signup__copy">
+        <p class="sn-kicker"><span class="sn-kicker__num">10</span>Inscrição</p>
+        <h2 class="sn-h-display" id="signup-title" data-split>Garanta sua prioridade no Sertão Negócios.</h2>
+        <p class="sn-signup__lead" data-reveal>Cadastre-se para receber em primeira mão as informações de ingressos e lotes, ou para falar com a organização sobre a área de estandes.</p>
+        <ul class="sn-signup__facts" data-reveal>
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg>03 e 04 de dezembro de 2026</li>
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg>Auditório do Sebrae, Patos-PB</li>
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg>Rick Chester, Rossandro Klinjey e Moisés Ramos</li>
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg>10 cases de empresários da região</li>
+        </ul>
+      </div>
+
+      <div class="sn-form-card" data-reveal>
+        <form class="sn-form" id="lead-form" novalidate data-form>
+          <div class="sn-field">
+            <label for="f-nome">Nome completo</label>
+            <input id="f-nome" name="nome" type="text" autocomplete="name" required minlength="3" placeholder="Como você se chama?">
+            <p class="sn-field__error" id="e-nome" aria-live="polite"></p>
+          </div>
+          <div class="sn-field">
+            <label for="f-whatsapp">WhatsApp</label>
+            <input id="f-whatsapp" name="whatsapp" type="tel" inputmode="tel" autocomplete="tel-national" required placeholder="(83) 90000-0000" data-mask="phone">
+            <p class="sn-field__error" id="e-whatsapp" aria-live="polite"></p>
+          </div>
+          <div class="sn-field">
+            <label for="f-email">E-mail</label>
+            <input id="f-email" name="email" type="email" autocomplete="email" required placeholder="voce@empresa.com.br">
+            <p class="sn-field__error" id="e-email" aria-live="polite"></p>
+          </div>
+          <div class="sn-field">
+            <label for="f-cidade">Cidade <span class="sn-field__opt">(opcional)</span></label>
+            <input id="f-cidade" name="cidade" type="text" autocomplete="address-level2" placeholder="Ex.: Patos-PB">
+          </div>
+
+          <fieldset class="sn-field sn-field--choices">
+            <legend>Tenho interesse em</legend>
+            <div class="sn-choices">
+              <label class="sn-choice"><input type="radio" name="interesse" value="smart" required><span>Ingresso Smart</span></label>
+              <label class="sn-choice"><input type="radio" name="interesse" value="vip"><span>Ingresso VIP</span></label>
+              <label class="sn-choice"><input type="radio" name="interesse" value="expositor"><span>Expor (estande)</span></label>
+            </div>
+            <p class="sn-field__error" id="e-interesse" aria-live="polite"></p>
+          </fieldset>
+
+          <div class="sn-field sn-field--consent">
+            <label class="sn-consent">
+              <input type="checkbox" name="consentimento" value="sim" required>
+              <span>Autorizo o uso dos meus dados para receber comunicações sobre o Sertão Negócios, conforme a <button type="button" class="sn-linklike" data-open-privacy>política de privacidade</button>.</span>
+            </label>
+            <p class="sn-field__error" id="e-consentimento" aria-live="polite"></p>
+          </div>
+
+          <!-- Campos de rastreamento preenchidos automaticamente -->
+          <input type="hidden" name="utm_source"><input type="hidden" name="utm_medium"><input type="hidden" name="utm_campaign"><input type="hidden" name="utm_content"><input type="hidden" name="utm_term"><input type="hidden" name="pagina">
+          <!-- Honeypot anti-spam -->
+          <div class="sn-hp" aria-hidden="true"><label>Não preencha<input type="text" name="empresa_site" tabindex="-1" autocomplete="off"></label></div>
+
+          <button class="sn-btn sn-btn--sol sn-btn--lg sn-btn--block sn-form__submit" type="submit">
+            <span class="sn-form__label">Quero garantir minha prioridade</span>
+            <span class="sn-form__spinner" aria-hidden="true"></span>
+          </button>
+          <p class="sn-form__status" role="status" aria-live="polite"></p>
+          <p class="sn-form__safe"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5z"/></svg>Seus dados estão protegidos e não serão compartilhados com terceiros.</p>
+        </form>
+
+        <div class="sn-form-success" hidden tabindex="-1" data-success>
+          <svg class="sn-form-success__icon" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="none" stroke="currentColor" stroke-width="2"/><use href="#i-check"/></svg>
+          <h3>Cadastro recebido<span data-success-name></span>!</h3>
+          <p>A equipe do Sertão Negócios vai entrar em contato pelos canais informados com as informações de ingressos e lotes.</p>
+          <a class="sn-btn sn-btn--light" href="#inicio">Voltar ao início</a>
+        </div>
+      </div>
+    </div>
+  </section>

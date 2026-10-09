@@ -8,6 +8,10 @@ Página de captura do **Sertão Negócios 2026**, que acontece em 03 e 04 de dez
 python3 -m http.server 8080 --directory sertao-negocios
 ```
 
+## Kit GreatPages
+
+A pasta `greatpages/` traz a mesma página dividida em blocos para colar em elementos HTML do GreatPages, com o passo a passo em `greatpages/LEIA-ME.md`. Ela é gerada por `python3 tools/build_greatpages.py`; rode de novo depois de qualquer mudança na página.
+
 ## Antes de publicar
 
 1. **Formulário:** em `assets/js/config.js`, preencha `leadEndpoint` com a URL do seu webhook ou CRM. Com o campo vazio, a página roda em modo de demonstração: o envio é simulado e um aviso aparece no console.

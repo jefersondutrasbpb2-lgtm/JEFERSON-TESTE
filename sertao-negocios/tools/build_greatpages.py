@@ -133,6 +133,13 @@ if n_overlap < 10:
     fail("sobreposição entre seções não encontrada no CSS")
 kit_css = kit_css.replace("margin-top: calc(var(--radius-lg) * -1);", "margin-top: calc(var(--sn-overlap) * -1);")
 kit_css = prefix_selectors(kit_css)
+# rem -> px: o GreatPages muda o tamanho de fonte base da página (html), o que encolheria todo texto medido em rem
+def _rem_to_px(m):
+    v = float(m.group(1)) * 16
+    return (f"{v:.2f}".rstrip("0").rstrip(".")) + "px"
+kit_css = re.sub(r"(?<![\w.-])(\d*\.?\d+)rem\b", _rem_to_px, kit_css)
+if re.search(r"\d\s*rem\b", kit_css):
+    fail("sobrou unidade rem no CSS do kit")
 # .sn é a classe-raiz (não prefixar a si mesma)
 kit_css = kit_css.replace(".sn-sn", ".sn")
 

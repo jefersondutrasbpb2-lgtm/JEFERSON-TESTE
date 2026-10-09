@@ -28,14 +28,14 @@
       .sn-gp-form__wait { color: var(--tinta-2); font-size: 14.4px; text-align: center; padding: 24px 0; }
       .sn-gp-form .sn-gp-moved { position: static !important; inset: auto !important; transform: none !important; width: 100% !important; height: auto !important; min-height: 0 !important; max-width: none !important; margin: 0 !important; padding: 0 !important; background: transparent !important; box-shadow: none !important; border: 0 !important; overflow: visible !important; }
       .sn-gp-form .sn-gp-moved * { box-sizing: border-box !important; max-width: 100%; }
-      .sn-gp-form .sn-gp-moved div { background-color: transparent !important; background-image: none !important; border-color: transparent !important; box-shadow: none !important; }
+      .sn-gp-form .sn-gp-moved div:not(.iti *) { background-color: transparent !important; background-image: none !important; border-color: transparent !important; box-shadow: none !important; }
       .sn-gp-form .sn-gp-moved div:has(form), .sn-gp-form .sn-gp-moved div:has(> form) { padding: 0 !important; margin: 0 !important; width: 100% !important; height: auto !important; }
       .sn-gp-form .sn-gp-moved [style*="position: absolute"]:not(.iti *):not(.iti__flag-container):not(.iti__country-container), .sn-gp-form .sn-gp-moved [style*="position:absolute"]:not(.iti *):not(.iti__flag-container):not(.iti__country-container) { position: relative !important; left: auto !important; top: auto !important; }
       .sn-gp-form form, .sn-gp-form .elemento_formulario { position: relative !important; inset: auto !important; transform: none !important; }
       .sn-gp-form form { display: grid !important; gap: 16px !important; width: 100% !important; height: auto !important; margin: 0 !important; padding: 0 !important; background: transparent !important; border: 0 !important; box-shadow: none !important; }
       .sn-gp-form label, .sn-gp-form legend { display: block; font-family: var(--font-body) !important; font-weight: 800 !important; font-size: 14.4px !important; line-height: 1.4 !important; letter-spacing: normal !important; text-transform: none !important; color: var(--tinta) !important; margin: 0 0 8px !important; }
       .sn-gp-form p, .sn-gp-form span, .sn-gp-form small, .sn-gp-form a { font-family: var(--font-body) !important; color: var(--tinta-2); }
-      .sn-gp-form input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="hidden"]), .sn-gp-form select, .sn-gp-form textarea {
+      .sn-gp-form input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="hidden"]):not(.iti__search-input), .sn-gp-form select, .sn-gp-form textarea {
         display: block; width: 100% !important; height: auto !important; min-height: 56px !important; padding: 0 18px !important; margin: 0 !important;
         border-radius: 14px !important; border: 1.5px solid rgb(13 15 46 / .16) !important; background: #faf8f4 !important; box-shadow: none !important; outline: none;
         font-family: var(--font-body) !important; font-size: 16px !important; font-weight: 600 !important; line-height: 1.3 !important; color: var(--tinta) !important; text-align: left !important;
@@ -47,14 +47,14 @@
       .sn-gp-form input:hover, .sn-gp-form select:hover, .sn-gp-form textarea:hover { border-color: rgb(13 15 46 / .32) !important; }
       .sn-gp-form input:focus, .sn-gp-form select:focus, .sn-gp-form textarea:focus { border-color: var(--cobalto) !important; background: #fff !important; box-shadow: 0 0 0 4px rgb(42 48 224 / .16) !important; }
       .sn-gp-form input[type="checkbox"], .sn-gp-form input[type="radio"] { width: 20px !important; height: 20px !important; min-height: 0 !important; accent-color: var(--cobalto); margin: 0 8px 0 0 !important; vertical-align: middle; }
-      .sn-gp-form button, .sn-gp-form input[type="submit"], .sn-gp-form input[type="button"] {
+      .sn-gp-form button:not(.iti *), .sn-gp-form input[type="submit"], .sn-gp-form input[type="button"] {
         display: flex !important; align-items: center; justify-content: center; width: 100% !important; height: auto !important; min-height: 58px !important; padding: 16px 28px !important; margin: 6px 0 0 !important;
         border: 0 !important; border-radius: 999px !important; background: var(--sol-btn) !important; color: #fff !important; cursor: pointer;
         font-family: var(--font-body) !important; font-weight: 800 !important; font-size: 16.8px !important; line-height: 1.2 !important; letter-spacing: -.005em !important; text-transform: none !important;
         box-shadow: 0 10px 30px -10px rgb(224 43 27 / .7) !important; transition: transform .5s var(--ease), box-shadow .5s var(--ease);
       }
-      .sn-gp-form button:hover, .sn-gp-form input[type="submit"]:hover { transform: translateY(-2px); box-shadow: 0 18px 40px -12px rgb(224 43 27 / .85) !important; }
-      .sn-gp-form button *, .sn-gp-form button span { color: #fff !important; font: inherit !important; }
+      .sn-gp-form button:not(.iti *):hover, .sn-gp-form input[type="submit"]:hover { transform: translateY(-2px); box-shadow: 0 18px 40px -12px rgb(224 43 27 / .85) !important; }
+      .sn-gp-form button:not(.iti *) *, .sn-gp-form button:not(.iti *) span { color: #fff !important; font: inherit !important; }
       /* Estrutura do formulário do GreatPages */
       .sn-gp-form fieldset { position: static !important; left: auto !important; width: 100% !important; margin: 0 !important; padding: 0 !important; border: 0 !important; min-width: 0 !important; display: grid !important; gap: 14px !important; }
       .sn-gp-form .gpc_campos { padding: 0 !important; margin: 0 !important; width: 100% !important; float: none !important; }
@@ -69,15 +69,24 @@
       /* Telefone internacional: seletor de país (bandeira) dentro do campo */
       .sn-gp-form .iti { display: block !important; width: 100% !important; }
       .sn-gp-form .iti__flag-container, .sn-gp-form .iti__country-container { padding-left: 8px; }
+      .sn-gp-form .iti button, .sn-gp-form .iti__selected-country, .sn-gp-form .iti__selected-flag {
+        display: flex !important; align-items: center; gap: 6px; height: 100% !important; min-height: 0 !important; width: auto !important; margin: 0 !important; padding: 0 10px 0 14px !important;
+        background: transparent !important; border: 0 !important; border-radius: 14px 0 0 14px !important; box-shadow: none !important; transform: none !important; cursor: pointer;
+      }
+      .sn-gp-form .iti button:hover, .sn-gp-form .iti__selected-country:hover { background: rgb(13 15 46 / .05) !important; }
+      .sn-gp-form .iti__selected-dial-code, .sn-gp-form .iti__dial-code { color: var(--tinta) !important; -webkit-text-fill-color: var(--tinta) !important; font-family: var(--font-body) !important; font-size: 16px !important; font-weight: 600 !important; }
+      .sn-gp-form .iti__arrow { border-top-color: var(--tinta-2) !important; }
+      .sn-gp-form .iti__search-input { width: 100% !important; min-height: 40px !important; padding: 0 12px !important; border: 1px solid rgb(13 15 46 / .16) !important; border-radius: 10px !important; font-family: var(--font-body) !important; font-size: 15px !important; -webkit-text-fill-color: var(--tinta) !important; color: var(--tinta) !important; }
+      .sn-gp-form .iti__country-list, .sn-gp-form .iti__dropdown-content { background: #fff !important; color: var(--tinta) !important; border-radius: 12px; }
       .sn-gp-form .iti__country-list { z-index: 30 !important; max-width: min(340px, 80vw); font-family: var(--font-body) !important; }
-      .sn-gp-form .sn-gp-moved .gpc_botao, .sn-gp-form .gpc_botao {
+      .sn-gp-form .sn-gp-moved div.gpc_botao.gpc_botao, .sn-gp-form div.gpc_botao.gpc_botao {
         position: relative !important; left: auto !important; float: none !important; display: flex !important; align-items: center; justify-content: center;
         width: 100% !important; height: auto !important; min-height: 58px !important; line-height: 1.2 !important; padding: 0 !important; margin: 6px 0 0 !important;
         border: 0 !important; border-radius: 999px !important; background: var(--sol-btn) !important; overflow: hidden; cursor: pointer;
         box-shadow: 0 10px 30px -10px rgb(224 43 27 / .7) !important; transition: transform .5s var(--ease), box-shadow .5s var(--ease);
       }
-      .sn-gp-form .sn-gp-moved .gpc_botao:hover { transform: translateY(-2px); box-shadow: 0 18px 40px -12px rgb(224 43 27 / .85) !important; background: var(--sol-btn) !important; }
-      .sn-gp-form .sn-gp-moved .gpc_botao > span { display: flex !important; align-items: center; justify-content: center; width: 100%; min-height: 58px; padding: 16px 28px; background: transparent !important; }
+      .sn-gp-form .sn-gp-moved div.gpc_botao.gpc_botao:hover { transform: translateY(-2px); box-shadow: 0 18px 40px -12px rgb(224 43 27 / .85) !important; background: var(--sol-btn) !important; }
+      .sn-gp-form .sn-gp-moved div.gpc_botao.gpc_botao > span { display: flex !important; align-items: center; justify-content: center; width: 100%; min-height: 58px; padding: 16px 28px; background: transparent !important; }
       .sn-gp-form .gpc_botao_texto { color: #fff !important; -webkit-text-fill-color: #fff !important; font-family: var(--font-body) !important; font-weight: 800 !important; font-size: 16.8px !important; line-height: 1.2 !important; letter-spacing: -.005em !important; text-transform: none !important; }
     </style>
 

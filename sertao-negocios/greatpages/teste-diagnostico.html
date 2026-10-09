@@ -1,0 +1,34 @@
+<!-- Sertão Negócios · TESTE DE DIAGNÓSTICO · cole num elemento HTML/CSS, publique e mande um print -->
+<div id="sn-probe" style="font:15px/1.5 system-ui,sans-serif;background:#090c3a;color:#fff;padding:24px;border-radius:14px;width:100%;box-sizing:border-box">
+  <p style="margin:0 0 8px;font-weight:800;font-size:18px">Teste Sertão Negócios</p>
+  <p style="margin:0 0 12px;color:#9fd8ff">Se a caixa abaixo ficar vazia, o GreatPages não roda scripts dentro deste elemento.</p>
+  <pre id="sn-probe-out" style="white-space:pre-wrap;margin:0 0 16px;padding:12px;background:#121666;border-radius:8px;font:13px/1.5 ui-monospace,monospace;min-height:40px"></pre>
+  <div style="position:relative;height:1400px;border-radius:10px;background:linear-gradient(#2a30e0,#ff3d2e);padding:16px;box-sizing:border-box">
+    <div style="position:sticky;top:90px;display:inline-block;padding:10px 14px;background:#fff;color:#090c3a;border-radius:999px;font-weight:800">Eu devo ficar parado enquanto você rola</div>
+    <div style="position:absolute;left:16px;bottom:16px;font-weight:800">Fim do teste (1.400 px de altura)</div>
+  </div>
+</div>
+<div id="sn-probe-fixed" style="position:fixed;left:12px;bottom:12px;z-index:99999;padding:8px 12px;border-radius:999px;background:#e02b1b;color:#fff;font:700 13px system-ui,sans-serif">Fixo na tela</div>
+<script>
+(function () {
+  var el = document.getElementById('sn-probe'), out = [];
+  function desc(n) {
+    var c = (typeof n.className === 'string' && n.className.trim()) ? '.' + n.className.trim().split(/\s+/).slice(0, 2).join('.') : '';
+    return n.tagName.toLowerCase() + (n.id ? '#' + n.id : '') + c;
+  }
+  out.push('Scripts no elemento: SIM');
+  out.push('Dentro de iframe: ' + (window.self !== window.top ? 'SIM' : 'não'));
+  out.push('Largura da tela: ' + window.innerWidth + 'px · largura do elemento: ' + el.offsetWidth + 'px');
+  var issues = [], a = el.parentElement, i = 0;
+  while (a && a !== document.documentElement && i < 40) {
+    var cs = getComputedStyle(a);
+    if (cs.overflowX !== 'visible' || cs.overflowY !== 'visible') issues.push('overflow ' + cs.overflowX + '/' + cs.overflowY + ' em ' + desc(a) + ' (altura ' + a.offsetHeight + 'px)');
+    if (cs.transform !== 'none') issues.push('transform em ' + desc(a));
+    if (cs.filter !== 'none' || (cs.willChange || '').indexOf('transform') > -1) issues.push('filter/will-change em ' + desc(a));
+    if (cs.position === 'absolute' || cs.position === 'fixed') issues.push('position ' + cs.position + ' em ' + desc(a) + ' (altura ' + a.offsetHeight + 'px)');
+    a = a.parentElement; i++;
+  }
+  out.push('Caixas em volta com efeitos: ' + (issues.length ? '\n - ' + issues.join('\n - ') : 'nenhuma'));
+  document.getElementById('sn-probe-out').textContent = out.join('\n');
+})();
+</script>

@@ -5,23 +5,39 @@ Os blocos já vêm preparados para não conflitar com o estilo do GreatPages: to
 
 ## O que tem aqui
 
-| Arquivo | Onde colar | Quantas vezes |
+| Arquivo | Onde colar no GreatPages | Quantas vezes |
 |---|---|---|
-| `00-cabecalho.html` | Campo de códigos do **cabeçalho** da página (head) | Uma vez |
-| `01-topo.html` … `13-rodape.html` | Um **elemento HTML** por arquivo, cada um na sua seção, nesta ordem | Um por seção |
-| `99-scripts.html` | Campo de códigos do **fim da página** (antes de `</body>`) | Uma vez |
+| `teste-diagnostico.html` | Elemento **HTML/CSS** numa página de rascunho (veja o passo 0) | Só no teste |
+| `00-cabecalho.html` | **Configurações (engrenagem) → Javascript & CSS → Adicionar código**, tipo **Funcionamento**, nome "Sertão Negócios · Estilos" | Uma vez |
+| `01-topo.html` … `13-rodape.html` | **Adicionar bloco** → elemento **HTML/CSS**, um arquivo por bloco, nesta ordem | Um por bloco |
+| `99-scripts.html` | **Configurações → Javascript & CSS → Adicionar código**, tipo **Funcionamento**, nome "Sertão Negócios · Scripts" | Uma vez |
+
+Use sempre o tipo **Funcionamento** nos dois códigos. Os tipos "Estatísticas" e "Marketing" podem ficar bloqueados até o visitante aceitar os cookies (LGPD), e a página ficaria sem estilo e sem animação.
 | `imagens/` | Biblioteca de mídia do GreatPages | 12 imagens da página + 1 de compartilhamento |
 
 Ordem das seções: 01 topo · 02 proposta · 03 história · 04 região (mapa) · 05 por que participar · 06 palestrantes · 07 programação · 08 experiência · 09 ingressos · 10 realização · 11 inscrição · 12 final · 13 rodapé.
 
-## Passo 1 · Faça primeiro o teste rápido
+## Passo 0 · Diagnóstico (2 minutos)
+
+1. Crie uma página de rascunho, adicione um bloco e, dentro dele, um elemento **HTML/CSS**.
+2. Cole o conteúdo de `teste-diagnostico.html`.
+3. Adicione um segundo bloco qualquer embaixo, com um texto.
+4. Publique, abra a página no navegador e role até o fim do teste.
+5. Mande um print da caixa azul-escura com o texto do teste e diga se:
+   - o selo branco "Eu devo ficar parado" acompanhou a rolagem;
+   - o selo vermelho "Fixo na tela" ficou parado no canto da tela;
+   - o degradê de 1.400 px apareceu inteiro ou ficou cortado / por cima do bloco de baixo.
+
+Com isso eu sei se o elemento HTML/CSS do GreatPages comporta os efeitos do kit, e ajusto o que for preciso antes de você montar tudo.
+
+## Passo 1 · Faça o teste rápido
 
 Antes de montar tudo, crie uma página de rascunho só com:
 
-1. `00-cabecalho.html` no cabeçalho;
+1. `00-cabecalho.html` em Configurações → Javascript & CSS (tipo Funcionamento);
 2. uma seção com `01-topo.html`;
 3. uma seção com `03-historia.html`;
-4. `99-scripts.html` no fim da página.
+4. `99-scripts.html` em Configurações → Javascript & CSS (tipo Funcionamento).
 
 Publique e abra no navegador (no celular também). Confira:
 
@@ -69,9 +85,8 @@ Onde cada imagem é usada:
 
 ## Passo 4 · Cole os blocos
 
-1. Cole `00-cabecalho.html` no campo de códigos do cabeçalho.
-2. Crie as 13 seções na ordem e cole um arquivo em cada elemento HTML.
-3. Cole `99-scripts.html` no campo de códigos do fim da página.
+1. Em Configurações → Javascript & CSS, adicione `00-cabecalho.html` e `99-scripts.html` como dois códigos do tipo Funcionamento.
+2. Crie os 13 blocos na ordem e cole um arquivo em cada elemento HTML/CSS.
 
 Copie sempre o arquivo **inteiro**, do primeiro ao último caractere.
 
@@ -105,8 +120,8 @@ Também falta completar a **política de privacidade** (bloco 13) com razão soc
 
 | Sintoma | Causa provável | O que fazer |
 |---|---|---|
-| Nada anima e a rolagem não é suave | Os scripts não rodaram | Confira se `99-scripts.html` está no campo de **fim da página**, não num elemento HTML. |
-| Página sem estilo (texto preto, sem cores) | O cabeçalho não foi aplicado | Confira o campo do cabeçalho. Se o GreatPages limitar o tamanho desse campo, cole o `00-cabecalho.html` num elemento HTML no **topo** da página. |
+| Nada anima e a rolagem não é suave | Os scripts não rodaram | Confira se `99-scripts.html` foi adicionado em Configurações → Javascript & CSS com o tipo **Funcionamento**. |
+| Página sem estilo (texto preto, sem cores) | O código de estilos não foi aplicado | Confira se `00-cabecalho.html` está em Configurações → Javascript & CSS com o tipo **Funcionamento**. Se o campo recusar por tamanho, cole-o num elemento HTML/CSS no **primeiro** bloco. |
 | Faixas vazias entre as seções ou cantos arredondados cortados | Espaçamento ou recorte das seções do GreatPages | Zere o espaçamento das seções. Se continuar, adicione ao fim do `00-cabecalho.html`: `<style>:root{--sn-overlap:0px}</style>` |
 | Na história do Sertão a imagem não fica parada, ou o mapa não fica fixo enquanto se desenha | Alguma caixa do GreatPages em volta da seção corta o conteúdo | Me mande o link do teste. Dá para ajustar com um CSS específico para o GreatPages. |
 | Barra de navegação ou botão fixo do celular rolando junto com a página | Alguma caixa do GreatPages com animação ou efeito em volta do bloco | Desligue animações de entrada da seção e do elemento. |

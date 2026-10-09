@@ -196,7 +196,7 @@ dialog = add_root_class(dialog)
 blocks["01-topo"] = "\n\n".join([sprite, skip, nav, blocks["01-topo"]])
 blocks["13-rodape"] = "\n\n".join([footer, dock, dialog])
 
-HEADER_NOTE = "<!-- Sertão Negócios 2026 · bloco {name} · cole num elemento HTML, numa seção de largura total e sem espaçamento -->\n"
+HEADER_NOTE = "<!-- Sertão Negócios 2026 · bloco {name} · GreatPages: Adicionar bloco > elemento HTML/CSS -->\n"
 for k in list(blocks):
     blocks[k] = HEADER_NOTE.format(name=k) + img_paths(prefix_html(blocks[k])) + "\n"
 
@@ -204,7 +204,7 @@ for k in list(blocks):
 # 4. Cabeçalho e scripts
 # ---------------------------------------------------------------------------
 ld_json = re.search(r'<script type="application/ld\+json">.*?</script>', html, re.S).group(0)
-head = f"""<!-- Sertão Negócios 2026 · 00 CABEÇALHO · cole UMA vez no campo de códigos do cabeçalho (head) da página -->
+head = f"""<!-- Sertão Negócios 2026 · 00 ESTILOS · GreatPages: Configurações > Javascript & CSS > Adicionar código (tipo Funcionamento) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Manrope:wght@400..800&display=swap">
@@ -227,7 +227,7 @@ kit_js = kit_js.rstrip()[:-len("})();")] + (
     "};\n  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', __snRun);\n  else __snRun();\n")
 kit_js = "{\n" + kit_js + "}\n"
 
-scripts = f"""<!-- Sertão Negócios 2026 · 99 SCRIPTS · cole UMA vez no campo de códigos do fim da página (antes de </body>) -->
+scripts = f"""<!-- Sertão Negócios 2026 · 99 SCRIPTS · GreatPages: Configurações > Javascript & CSS > Adicionar código (tipo Funcionamento) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/SplitText.min.js"></script>
@@ -244,7 +244,7 @@ scripts = f"""<!-- Sertão Negócios 2026 · 99 SCRIPTS · cole UMA vez no campo
 # 5. Gravação
 # ---------------------------------------------------------------------------
 if OUT.exists():
-    for p in OUT.glob("*.html"):
+    for p in OUT.glob("[0-9][0-9]-*.html"):  # preserva teste-diagnostico.html
         p.unlink()
     shutil.rmtree(OUT / "imagens", ignore_errors=True)
 OUT.mkdir(exist_ok=True)

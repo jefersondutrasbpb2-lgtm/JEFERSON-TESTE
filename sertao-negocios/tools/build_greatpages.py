@@ -114,10 +114,10 @@ html.lenis, html.lenis body { height: auto; }
 :where(.sn) :is(img, svg) { display: block; max-width: 100%; }
 :where(.sn) img { height: auto; border: 0; }
 :where(.sn) a { color: inherit; }
-:where(.sn) :is(h1, h2, h3, p, ul, ol, dl, dd, figure) { margin: 0; }
+:where(.sn) :is(h1, h2, h3, h4, p, ul, ol, dl, dt, dd, li, figure, figcaption, a, span, label, legend, time, small, strong, em, blockquote) { margin: 0; }
 /* Neutraliza estilos genéricos de texto do construtor (mesma especificidade de um seletor de tag) */
 :where(.sn) :is(h1, h2, h3, h4, p, li, a, span, dt, dd, label, legend, time, figcaption, button, input) { color: inherit; font-family: inherit; text-shadow: none; }
-:where(.sn) :is(p, li, a, span, dt, dd, label, legend, time, figcaption) { font-size: inherit; line-height: inherit; letter-spacing: inherit; text-transform: inherit; font-weight: inherit; }
+:where(.sn) :is(div, section, header, footer, article, aside, nav, figure, form, fieldset, ul, ol, dl, p, li, a, span, dt, dd, label, legend, time, figcaption, small, blockquote) { font-size: inherit; line-height: inherit; letter-spacing: inherit; text-transform: inherit; font-weight: inherit; text-align: inherit; }
 :where(.sn) :is(ul, ol) { padding: 0; list-style: none; }
 :where(.sn) button { font: inherit; color: inherit; }
 :where(.sn) :focus-visible { outline: 3px solid var(--ceu); outline-offset: 3px; border-radius: 6px; }
@@ -279,7 +279,67 @@ def split_rules(c, n):
     return chunks
 
 
-css_parts = split_rules(minify_css(kit_css), 3)
+BOOST = ":not(#sn-x)"  # soma o peso de um #id a todo seletor do kit, sem mudar a ordem entre as regras dele
+
+
+def _split_top(text, sep):
+    out, depth, cur = [], 0, ""
+    for ch in text:
+        if ch in "([":
+            depth += 1
+        elif ch in ")]":
+            depth -= 1
+        if ch == sep and depth == 0:
+            out.append(cur)
+            cur = ""
+        else:
+            cur += ch
+    out.append(cur)
+    return out
+
+
+def _boost_selector(sel):
+    sel = sel.strip()
+    depth = 0
+    for i, ch in enumerate(sel):
+        if ch in "([":
+            depth += 1
+        elif ch in ")]":
+            depth -= 1
+        elif depth == 0 and sel.startswith("::", i):
+            return sel[:i] + BOOST + sel[i:]
+    return sel + BOOST
+
+
+def boost_css(c):
+    """Aumenta a especificidade de todas as regras (o CSS do GreatPages vence seletores de classe)."""
+    out, i, stack, start = [], 0, [], 0
+    while i < len(c):
+        ch = c[i]
+        if ch == "{":
+            prelude = c[start:i]
+            lead = prelude[:len(prelude) - len(prelude.lstrip())]
+            pre = prelude.strip()
+            if pre.startswith("@"):
+                stack.append("keyframes" if "keyframes" in pre.split()[0] else "at")
+                out.append(prelude + "{")
+            elif stack and stack[-1] == "keyframes":
+                stack.append("frame")
+                out.append(prelude + "{")
+            else:
+                stack.append("rule")
+                out.append(lead + ",".join(_boost_selector(x) for x in _split_top(pre, ",")) + "{")
+            start = i + 1
+        elif ch == "}":
+            out.append(c[start:i + 1])
+            stack.pop()
+            start = i + 1
+        i += 1
+    out.append(c[start:])
+    return "".join(out)
+
+
+css_parts = split_rules(boost_css(minify_css(kit_css)), 3)
 NOTE = "<!-- Sertão Negócios 2026 · ESTILOS {i} de 3 · GreatPages: Configurações > Javascript & CSS > Adicionar código (tipo Funcionamento), na ordem 1, 2, 3 -->\n"
 head_parts = [
     NOTE.format(i=1) + head[head.index("<link"):head.index("<style>")] + "<style>" + css_parts[0] + "</style>\n",

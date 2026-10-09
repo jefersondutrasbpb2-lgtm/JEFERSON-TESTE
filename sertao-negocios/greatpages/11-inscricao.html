@@ -30,7 +30,7 @@
       .sn-gp-form .sn-gp-moved * { box-sizing: border-box !important; max-width: 100%; }
       .sn-gp-form .sn-gp-moved div { background-color: transparent !important; background-image: none !important; border-color: transparent !important; box-shadow: none !important; }
       .sn-gp-form .sn-gp-moved div:has(form), .sn-gp-form .sn-gp-moved div:has(> form) { padding: 0 !important; margin: 0 !important; width: 100% !important; height: auto !important; }
-      .sn-gp-form .sn-gp-moved [style*="position: absolute"], .sn-gp-form .sn-gp-moved [style*="position:absolute"] { position: relative !important; left: auto !important; top: auto !important; }
+      .sn-gp-form .sn-gp-moved [style*="position: absolute"]:not(.iti *):not(.iti__flag-container):not(.iti__country-container), .sn-gp-form .sn-gp-moved [style*="position:absolute"]:not(.iti *):not(.iti__flag-container):not(.iti__country-container) { position: relative !important; left: auto !important; top: auto !important; }
       .sn-gp-form form, .sn-gp-form .elemento_formulario { position: relative !important; inset: auto !important; transform: none !important; }
       .sn-gp-form form { display: grid !important; gap: 16px !important; width: 100% !important; height: auto !important; margin: 0 !important; padding: 0 !important; background: transparent !important; border: 0 !important; box-shadow: none !important; }
       .sn-gp-form label, .sn-gp-form legend { display: block; font-family: var(--font-body) !important; font-weight: 800 !important; font-size: 14.4px !important; line-height: 1.4 !important; letter-spacing: normal !important; text-transform: none !important; color: var(--tinta) !important; margin: 0 0 8px !important; }
@@ -66,6 +66,10 @@
       .sn-gp-form .gpc_campos-campo-opcao input { flex: none; margin: 2px 0 0 !important; }
       .sn-gp-form .gpc_campos-campo-opcao label { display: inline !important; margin: 0 !important; font-weight: 500 !important; font-size: 14px !important; line-height: 1.5 !important; color: var(--tinta-2) !important; cursor: pointer; }
       .sn-gp-form .gpc_campos-erro { color: var(--sol-ink) !important; font-size: 13.6px !important; font-weight: 700 !important; }
+      /* Telefone internacional: seletor de país (bandeira) dentro do campo */
+      .sn-gp-form .iti { display: block !important; width: 100% !important; }
+      .sn-gp-form .iti__flag-container, .sn-gp-form .iti__country-container { padding-left: 8px; }
+      .sn-gp-form .iti__country-list { z-index: 30 !important; max-width: min(340px, 80vw); font-family: var(--font-body) !important; }
       .sn-gp-form .sn-gp-moved .gpc_botao, .sn-gp-form .gpc_botao {
         position: relative !important; left: auto !important; float: none !important; display: flex !important; align-items: center; justify-content: center;
         width: 100% !important; height: auto !important; min-height: 58px !important; line-height: 1.2 !important; padding: 0 !important; margin: 6px 0 0 !important;
@@ -112,7 +116,17 @@
         slot.innerHTML = '';
         slot.appendChild(w);
         moved = true;
+        fixPhone();
+        var k = 0, iv = setInterval(function () { fixPhone(); if (++k > 15) clearInterval(iv); }, 400);
         return true;
+      }
+      // Campo de telefone com seletor de país: recuo do texto acompanha a largura da bandeira
+      function fixPhone() {
+        slot.querySelectorAll('.iti').forEach(function (iti) {
+          var flag = iti.querySelector('.iti__flag-container, .iti__country-container, .iti__selected-country');
+          var input = iti.querySelector('input');
+          if (flag && input && flag.offsetWidth) input.style.setProperty('padding-left', (flag.offsetWidth + 10) + 'px', 'important');
+        });
       }
       function start() {
         if (move()) return;

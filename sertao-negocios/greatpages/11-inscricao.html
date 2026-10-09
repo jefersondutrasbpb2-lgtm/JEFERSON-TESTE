@@ -31,6 +31,7 @@
       .sn-gp-form .sn-gp-moved div { background-color: transparent !important; background-image: none !important; border-color: transparent !important; box-shadow: none !important; }
       .sn-gp-form .sn-gp-moved div:has(form), .sn-gp-form .sn-gp-moved div:has(> form) { padding: 0 !important; margin: 0 !important; width: 100% !important; height: auto !important; }
       .sn-gp-form .sn-gp-moved [style*="position: absolute"], .sn-gp-form .sn-gp-moved [style*="position:absolute"] { position: relative !important; left: auto !important; top: auto !important; }
+      .sn-gp-form form, .sn-gp-form .elemento_formulario { position: relative !important; inset: auto !important; transform: none !important; }
       .sn-gp-form form { display: grid !important; gap: 16px !important; width: 100% !important; height: auto !important; margin: 0 !important; padding: 0 !important; background: transparent !important; border: 0 !important; box-shadow: none !important; }
       .sn-gp-form label, .sn-gp-form legend { display: block; font-family: var(--font-body) !important; font-weight: 800 !important; font-size: 14.4px !important; line-height: 1.4 !important; letter-spacing: normal !important; text-transform: none !important; color: var(--tinta) !important; margin: 0 0 8px !important; }
       .sn-gp-form p, .sn-gp-form span, .sn-gp-form small, .sn-gp-form a { font-family: var(--font-body) !important; color: var(--tinta-2); }
@@ -54,6 +55,26 @@
       }
       .sn-gp-form button:hover, .sn-gp-form input[type="submit"]:hover { transform: translateY(-2px); box-shadow: 0 18px 40px -12px rgb(224 43 27 / .85) !important; }
       .sn-gp-form button *, .sn-gp-form button span { color: #fff !important; font: inherit !important; }
+      /* Estrutura do formulário do GreatPages */
+      .sn-gp-form fieldset { position: static !important; left: auto !important; width: 100% !important; margin: 0 !important; padding: 0 !important; border: 0 !important; min-width: 0 !important; display: grid !important; gap: 14px !important; }
+      .sn-gp-form .gpc_campos { padding: 0 !important; margin: 0 !important; width: 100% !important; float: none !important; }
+      .sn-gp-form .gpc_campos-titulo.esconder, .sn-gp-form .esconder { display: none !important; }
+      .sn-gp-form .gpc_campos-texto:empty, .sn-gp-form .gpc_campos-erro:empty { display: none !important; }
+      .sn-gp-form input.gpc_campo, .sn-gp-form .gpc_campo { -webkit-text-fill-color: var(--tinta) !important; }
+      .sn-gp-form input::placeholder, .sn-gp-form textarea::placeholder { -webkit-text-fill-color: rgb(13 15 46 / .45) !important; }
+      .sn-gp-form .gpc_campos-campo-opcao { display: flex !important; align-items: flex-start; gap: 10px; color: var(--tinta-2) !important; }
+      .sn-gp-form .gpc_campos-campo-opcao input { flex: none; margin: 2px 0 0 !important; }
+      .sn-gp-form .gpc_campos-campo-opcao label { display: inline !important; margin: 0 !important; font-weight: 500 !important; font-size: 14px !important; line-height: 1.5 !important; color: var(--tinta-2) !important; cursor: pointer; }
+      .sn-gp-form .gpc_campos-erro { color: var(--sol-ink) !important; font-size: 13.6px !important; font-weight: 700 !important; }
+      .sn-gp-form .sn-gp-moved .gpc_botao, .sn-gp-form .gpc_botao {
+        position: relative !important; left: auto !important; float: none !important; display: flex !important; align-items: center; justify-content: center;
+        width: 100% !important; height: auto !important; min-height: 58px !important; line-height: 1.2 !important; padding: 0 !important; margin: 6px 0 0 !important;
+        border: 0 !important; border-radius: 999px !important; background: var(--sol-btn) !important; overflow: hidden; cursor: pointer;
+        box-shadow: 0 10px 30px -10px rgb(224 43 27 / .7) !important; transition: transform .5s var(--ease), box-shadow .5s var(--ease);
+      }
+      .sn-gp-form .sn-gp-moved .gpc_botao:hover { transform: translateY(-2px); box-shadow: 0 18px 40px -12px rgb(224 43 27 / .85) !important; background: var(--sol-btn) !important; }
+      .sn-gp-form .sn-gp-moved .gpc_botao > span { display: flex !important; align-items: center; justify-content: center; width: 100%; min-height: 58px; padding: 16px 28px; background: transparent !important; }
+      .sn-gp-form .gpc_botao_texto { color: #fff !important; -webkit-text-fill-color: #fff !important; font-family: var(--font-body) !important; font-weight: 800 !important; font-size: 16.8px !important; line-height: 1.2 !important; letter-spacing: -.005em !important; text-transform: none !important; }
     </style>
 
     <!-- Coloca o formulário do GreatPages (elemento "Formulário" neste mesmo bloco) dentro do cartão -->

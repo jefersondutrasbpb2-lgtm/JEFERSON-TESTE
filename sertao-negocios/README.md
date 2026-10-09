@@ -49,4 +49,4 @@ Os links podem pré-selecionar o interesse com `?interesse=vip`. As UTMs da URL 
 ## Conteúdo
 
 Todas as informações vêm do *Projeto Geral* e do *Plano Sertão Negócios 2026 (ajustado)*. Valores de lote, nomes dos 10 empresários e a grade detalhada ainda não foram definidos nesses documentos, por isso não aparecem na página.
-As fotos dos palestrantes e da cidade foram recortadas das artes do plano. Para melhorar a nitidez em telas grandes, substitua `assets/img/speaker-*.webp` e `assets/img/patos-*.webp` pelos arquivos originais em alta resolução.
+As fotos dos palestrantes e da cidade foram enviadas pela organização. Os palestrantes tiveram o fundo removido. A foto do Rossandro chegou em baixa resolução (450×600 px); vale trocar `assets/img/speaker-rossandro.webp` pelo original em alta assim que houver.

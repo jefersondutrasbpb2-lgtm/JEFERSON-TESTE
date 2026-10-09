@@ -228,6 +228,9 @@ head = f"""<!-- Sertão Negócios 2026 · 00 ESTILOS · GreatPages: Configuraç�
 
 kit_js = prefix_js(js)
 kit_js = must_replace(kit_js, "(() => {\n  'use strict';", "const __snRun = () => {\n  'use strict';")
+# Expõe o Lenis para o encaixe automático avisar quando a altura da página mudar
+kit_js = must_replace(kit_js, "      lenis.on('scroll', ScrollTrigger.update);",
+                      "      window.__snLenis = lenis;\n      lenis.on('scroll', ScrollTrigger.update);")
 if not kit_js.rstrip().endswith("})();"):
     fail("fim do main.js inesperado")
 fit_js = (ROOT / "tools/gp_fit.js").read_text()

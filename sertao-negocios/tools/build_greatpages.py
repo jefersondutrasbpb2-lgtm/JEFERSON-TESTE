@@ -244,16 +244,28 @@ scripts = f"""<!-- Sertão Negócios 2026 · 99 SCRIPTS · GreatPages: Configura
 """
 
 # ---------------------------------------------------------------------------
-# 5. Gravação
+# 5. Links das imagens já enviadas ao GreatPages (greatpages/links-imagens.json)
+# ---------------------------------------------------------------------------
+import json
+links_file = OUT / "links-imagens.json"
+links = json.loads(links_file.read_text()) if links_file.exists() else {}
+
+def apply_links(text):
+    for name, url in links.items():
+        text = text.replace(IMG_TOKEN + name, url)
+    return text
+
+# ---------------------------------------------------------------------------
+# 6. Gravação
 # ---------------------------------------------------------------------------
 if OUT.exists():
     for p in OUT.glob("[0-9][0-9]-*.html"):  # preserva teste-diagnostico.html
         p.unlink()
     shutil.rmtree(OUT / "imagens", ignore_errors=True)
 OUT.mkdir(exist_ok=True)
-(OUT / "00-cabecalho.html").write_text(head)
+(OUT / "00-cabecalho.html").write_text(apply_links(head))
 for k, v in blocks.items():
-    (OUT / f"{k}.html").write_text(v)
+    (OUT / f"{k}.html").write_text(apply_links(v))
 (OUT / "99-scripts.html").write_text(scripts)
 
 used = sorted(set(re.findall(re.escape(IMG_TOKEN) + r"([\w.-]+)", head + "".join(blocks.values()))))
@@ -269,5 +281,11 @@ if leftover:
     fail(f"classes sem prefixo no HTML: {sorted(set(leftover))[:10]}")
 if "assets/" in "".join(blocks.values()):
     fail("ainda há caminhos assets/ nos blocos")
+pending = {}
+for p in sorted(OUT.glob("[0-9][0-9]-*.html")):
+    left = sorted(set(re.findall(re.escape(IMG_TOKEN) + r"([\w.-]+)", p.read_text())))
+    if left:
+        pending[p.name] = left
+print("Imagens ainda sem link:", pending if pending else "nenhuma")
 print(f"Kit gerado em {OUT.relative_to(ROOT.parent)}: {len(blocks)} blocos, {len(used)} imagens, "
       f"{len(kit_css)//1024} KB de CSS, {len(classes)} classes prefixadas.")

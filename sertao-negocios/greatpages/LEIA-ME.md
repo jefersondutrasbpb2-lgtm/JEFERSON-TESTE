@@ -22,11 +22,9 @@ Ordem das seções: 01 topo · 02 proposta · 03 história · 04 região (mapa) 
 1. Crie uma página de rascunho, adicione um bloco e, dentro dele, um elemento **HTML/CSS**.
 2. Cole o conteúdo de `teste-diagnostico.html`.
 3. Adicione um segundo bloco qualquer embaixo, com um texto.
-4. Publique, abra a página no navegador e role até o fim do teste.
-5. Mande um print da caixa azul-escura com o texto do teste e diga se:
-   - o selo branco "Eu devo ficar parado" acompanhou a rolagem;
-   - o selo vermelho "Fixo na tela" ficou parado no canto da tela;
-   - o degradê de 1.400 px apareceu inteiro ou ficou cortado / por cima do bloco de baixo.
+4. Publique e abra o **link publicado** (não a pré-visualização do editor).
+5. Role a página até o fim do degradê azul→vermelho e volte para a caixa azul-escura.
+6. Clique em **Copiar resultado** e cole o texto na conversa.
 
 Com isso eu sei se o elemento HTML/CSS do GreatPages comporta os efeitos do kit, e ajusto o que for preciso antes de você montar tudo.
 

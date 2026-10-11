@@ -1,0 +1,60 @@
+import { site, fullAddress, mapsDirectionsUrl } from "@/content/site";
+import { Section } from "@/components/ui/Section";
+import { Eyebrow } from "@/components/ui/Eyebrow";
+import { Button } from "@/components/ui/Button";
+import { MapEmbed } from "@/components/ui/MapEmbed";
+import { Pending } from "@/components/ui/Pending";
+
+export function Visite({ index = "09" }: { index?: string }) {
+  return (
+    <Section id="visite" tone="sand" labelledBy="visite-title" className="visite">
+      <div className="container visite__grid">
+        <div className="visite__copy">
+          <div data-reveal>
+            <Eyebrow index={index}>Venha nos visitar</Eyebrow>
+          </div>
+          <h2 id="visite-title" className="h1" data-split>
+            Há um lugar para você <em>caminhar conosco.</em>
+          </h2>
+          <p className="lead lead--wide" data-reveal>
+            Será uma alegria receber sua visita e compartilhar um tempo de comunhão e ensino da Palavra de Deus.
+          </p>
+
+          <ul className="visite__info" data-reveal="stagger">
+            <li>
+              <span className="visite__label">Endereço</span>
+              <span>
+                {fullAddress} <Pending show={site.address.pending} />
+              </span>
+            </li>
+            <li>
+              <span className="visite__label">Telefone</span>
+              <span>
+                <a href={site.phone.href}>{site.phone.display}</a> <Pending show={site.phone.pending} />
+              </span>
+            </li>
+            <li>
+              <span className="visite__label">E-mail</span>
+              <span>
+                <a href={`mailto:${site.email.value}`}>{site.email.value}</a> <Pending show={site.email.pending} />
+              </span>
+            </li>
+          </ul>
+
+          <div className="btn-row" data-reveal>
+            <Button href={mapsDirectionsUrl} icon="arrow-up-right" external>
+              Como chegar
+            </Button>
+            <Button href="/contato/" variant="text">
+              Fale conosco
+            </Button>
+          </div>
+        </div>
+
+        <div className="visite__map" data-reveal>
+          <MapEmbed />
+        </div>
+      </div>
+    </Section>
+  );
+}

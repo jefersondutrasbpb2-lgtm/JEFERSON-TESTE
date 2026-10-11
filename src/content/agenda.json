@@ -1,0 +1,54 @@
+{
+  "_instrucoes": "Programação regular (weekly) e eventos (events). Datas no formato AAAA-MM-DD e horários HH:MM. Remova 'pending' após confirmar cada item com a liderança. Eventos com 'example: true' só aparecem no modo de revisão.",
+  "weekly": [
+    {
+      "id": "domingo-manha",
+      "day": "Domingo",
+      "dayIndex": 0,
+      "time": "09:00",
+      "title": "Culto dominical — manhã",
+      "description": "Adoração, oração e ministração da Palavra.",
+      "pending": true
+    },
+    {
+      "id": "domingo-noite",
+      "day": "Domingo",
+      "dayIndex": 0,
+      "time": "19:00",
+      "title": "Culto dominical — noite",
+      "description": "Culto público de adoração e pregação do Evangelho.",
+      "pending": true
+    },
+    {
+      "id": "quarta",
+      "day": "Quarta-feira",
+      "dayIndex": 3,
+      "time": "19:30",
+      "title": "Estudo bíblico e oração",
+      "description": "Estudo das Escrituras e reunião de oração da igreja.",
+      "pending": true
+    }
+  ],
+  "events": [
+    {
+      "id": "exemplo-aniversario",
+      "date": "2026-12-13",
+      "time": "19:00",
+      "title": "Culto de ação de graças — aniversário da igreja",
+      "location": "Templo da IEC Pombal",
+      "description": "Exemplo de evento para visualização do layout. Substitua pela programação oficial.",
+      "category": "Celebração",
+      "example": true
+    },
+    {
+      "id": "exemplo-missoes",
+      "date": "2026-11-21",
+      "time": "19:00",
+      "title": "Noite missionária",
+      "location": "Templo da IEC Pombal",
+      "description": "Exemplo de evento para visualização do layout. Substitua pela programação oficial.",
+      "category": "Missões",
+      "example": true
+    }
+  ]
+}

@@ -38,7 +38,7 @@
       "location": "Templo da IEC Pombal",
       "description": "Com alegria e gratidão a Deus, convidamos você e sua família para celebrarmos juntos a posse pastoral do Pr. Felipe Oliveira.",
       "category": "Celebração",
-      "highlight": true,
+      "highlight": false,
       "verse": {
         "text": "Grandes coisas fez o Senhor por nós, e, por isso, estamos alegres.",
         "ref": "Salmo 126.3"

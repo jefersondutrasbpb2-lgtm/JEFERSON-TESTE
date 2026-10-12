@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "npx serve out",
     "typecheck": "tsc --noEmit",
-    "geo": "node scripts/build-geo.mjs"
+    "geo": "node scripts/build-geo.mjs",
+    "preview:build": "node scripts/build-preview.mjs"
   },
   "dependencies": {
     "@fontsource-variable/bricolage-grotesque": "^5.3.0",

@@ -1,10 +1,11 @@
 "use client";
 
-import Link from "next/link";
+import { SiteLink } from "@/components/ui/SiteLink";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { mainNav, site, visitCta, fullAddress } from "@/content/site";
 import { getLenis } from "@/lib/lenis";
+import { routeFromPathname } from "@/lib/links";
 import { Icon } from "@/components/ui/Icon";
 import { BrandLogo } from "./BrandLogo";
 
@@ -12,7 +13,7 @@ const isCurrent = (pathname: string, href: string) =>
   href === "/" ? pathname === "/" : pathname.startsWith(href.replace(/\/$/, ""));
 
 export function Header() {
-  const pathname = usePathname() || "/";
+  const pathname = routeFromPathname(usePathname() || "/");
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
@@ -95,30 +96,30 @@ export function Header() {
       data-open={open || undefined}
     >
       <div className="site-header__bar container">
-        <Link href="/" className="site-header__brand" aria-label={`${site.name} — página inicial`} title="Página inicial">
+        <SiteLink href="/" className="site-header__brand" aria-label={`${site.name} — página inicial`} title="Página inicial">
           <BrandLogo />
-        </Link>
+        </SiteLink>
 
         <nav className="nav-desktop" aria-label="Navegação principal">
           <ul>
             {mainNav.slice(1).map((item) => (
               <li key={item.href}>
-                <Link
+                <SiteLink
                   href={item.href}
                   className="nav-desktop__link"
                   aria-current={isCurrent(pathname, item.href) ? "page" : undefined}
                 >
                   {item.short ?? item.label}
-                </Link>
+                </SiteLink>
               </li>
             ))}
           </ul>
         </nav>
 
         <div className="site-header__actions">
-          <Link href={visitCta.href} className="btn btn--solid btn--sm site-header__cta">
+          <SiteLink href={visitCta.href} className="btn btn--solid btn--sm site-header__cta">
             <span className="btn__label">{visitCta.label}</span>
-          </Link>
+          </SiteLink>
           <button
             ref={toggleRef}
             type="button"
@@ -150,7 +151,7 @@ export function Header() {
             <ol>
               {mainNav.map((item, i) => (
                 <li key={item.href} style={{ "--i": i } as React.CSSProperties}>
-                  <Link
+                  <SiteLink
                     href={item.href}
                     className="site-menu__link"
                     aria-current={isCurrent(pathname, item.href) ? "page" : undefined}
@@ -159,18 +160,18 @@ export function Header() {
                     <span className="site-menu__num">{String(i + 1).padStart(2, "0")}</span>
                     <span className="site-menu__label">{item.label}</span>
                     {item.description && <span className="site-menu__desc">{item.description}</span>}
-                  </Link>
+                  </SiteLink>
                 </li>
               ))}
             </ol>
           </nav>
           <div className="site-menu__aside">
-            <Link href={visitCta.href} className="btn btn--solid" onClick={() => close(false)}>
+            <SiteLink href={visitCta.href} className="btn btn--solid" onClick={() => close(false)}>
               <span className="btn__label">{visitCta.label}</span>
               <span className="btn__icon" aria-hidden="true">
                 <Icon name="arrow-right" size={16} />
               </span>
-            </Link>
+            </SiteLink>
             <p className="small muted">{fullAddress}</p>
             <p className="xs muted">Fundada em {site.foundedLabel}</p>
           </div>

@@ -1,0 +1,35 @@
+<title>Site IEC Pombal</title>
+<meta name="robots" content="noindex">
+<style>
+  :root {
+    --navy: #0b2447;
+    --paper: #f7f5f0;
+    --muted: #a9b8cc;
+    --sun: #ffcc00;
+    color-scheme: dark;
+  }
+  body {
+    background: var(--navy);
+    color: var(--paper);
+    font-family: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding-inline: 16px;
+  }
+  main { display: grid; gap: 1rem; justify-items: center; text-align: center; padding-block: 3rem; }
+  .kicker { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--sun); }
+  h1 { margin: 0; font-size: clamp(1.6rem, 1.2rem + 2vw, 2.4rem); line-height: 1.1; text-wrap: balance; }
+  p { margin: 0; color: var(--muted); max-width: 40ch; }
+  a { display: inline-block; margin-top: 0.5rem; padding: 0.9rem 1.5rem; border-radius: 999px; background: var(--paper); color: var(--navy); font-weight: 700; text-decoration: none; }
+  a:focus-visible { outline: 2px solid var(--sun); outline-offset: 3px; }
+</style>
+<main>
+  <p class="kicker">Prévia privada · versão em revisão</p>
+  <h1>Igreja Evangélica Congregacional de Pombal</h1>
+  <p>Abrindo o site…</p>
+  <a href="inicio.html">Abrir o site</a>
+</main>
+<script>
+  try { location.replace("inicio.html"); } catch (e) {}
+</script>

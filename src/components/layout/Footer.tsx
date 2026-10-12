@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { SiteLink } from "@/components/ui/SiteLink";
 import { mainNav, site, visitCta, fullAddress, mapsDirectionsUrl } from "@/content/site";
 import { scriptures } from "@/content/fe";
 import { Icon } from "@/components/ui/Icon";
@@ -34,11 +34,11 @@ export function Footer() {
             <ul>
               {mainNav.map((item) => (
                 <li key={item.href}>
-                  <Link href={item.href}>{item.label}</Link>
+                  <SiteLink href={item.href}>{item.label}</SiteLink>
                 </li>
               ))}
               <li>
-                <Link href={visitCta.href}>{visitCta.label}</Link>
+                <SiteLink href={visitCta.href}>{visitCta.label}</SiteLink>
               </li>
             </ul>
           </nav>
@@ -95,7 +95,7 @@ export function Footer() {
             © {year} {site.name}.
           </p>
           <p>
-            <Link href="/contato/#privacidade">Privacidade e proteção de dados</Link>
+            <SiteLink href="/contato/#privacidade">Privacidade e proteção de dados</SiteLink>
           </p>
         </div>
       </div>

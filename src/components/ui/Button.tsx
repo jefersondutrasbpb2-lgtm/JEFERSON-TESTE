@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { SiteLink } from "@/components/ui/SiteLink";
 import { Icon, type IconName } from "./Icon";
 
 type Props = {
@@ -31,8 +31,8 @@ export function Button({ href, children, variant = "solid", icon = "arrow-right"
     );
   }
   return (
-    <Link className={cls} href={href}>
+    <SiteLink className={cls} href={href}>
       {content}
-    </Link>
+    </SiteLink>
   );
 }

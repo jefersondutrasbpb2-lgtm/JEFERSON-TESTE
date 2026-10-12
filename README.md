@@ -42,6 +42,9 @@ npm run build      # gera o site estático em out/
 npm run typecheck
 ```
 
+Para gerar uma prévia com páginas planas e caminhos relativos (útil para visualizar o site fora do domínio
+definitivo), use `npm run preview:build`; a saída fica em `preview/`.
+
 O conteúdo de `out/` pode ser hospedado em qualquer serviço estático (Vercel, Netlify, Cloudflare Pages, GitHub Pages,
 hospedagem tradicional).
 

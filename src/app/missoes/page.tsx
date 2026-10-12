@@ -145,6 +145,9 @@ export default function MissoesPage() {
             <div className="prose" data-reveal>
               <p>{bomSamaritano.summary}</p>
               <p>
+                {bomSamaritano.activities} <Pending show={bomSamaritano.pending} label="descrição a confirmar" />
+              </p>
+              <p>
                 O nome do projeto remete à parábola contada por Jesus ({bomSamaritano.reference}), que nos ensina a
                 enxergar e cuidar de quem está ao nosso lado.
               </p>
@@ -159,7 +162,7 @@ export default function MissoesPage() {
           <div className="bs__media">
             <Photo
               image={media.bomSamaritano}
-              slot="O Bom Samaritano — imagens autorizadas, sem identificação das crianças"
+              slot="O Bom Samaritano"
               ratio="4 / 5"
               mask="up"
               parallax={6}
@@ -168,6 +171,15 @@ export default function MissoesPage() {
         </div>
 
         <div className="container">
+          <p className="bs__entity small" data-reveal>
+            {bomSamaritano.entity}
+          </p>
+          <div className="bs__gallery">
+            <Photo image={media.bsEquipe} slot="Equipe do projeto" caption="Equipe do CEDIBS" ratio="4 / 5" mask="up" sizes="(min-width: 900px) 25vw, 50vw" />
+            <Photo image={media.bsConsulta} slot="Atendimento" caption="Atendimentos de saúde" ratio="4 / 5" mask="up" maskDelay={0.08} sizes="(min-width: 900px) 25vw, 50vw" />
+            <Photo image={media.bsCuidado} slot="Cuidado com bebês" caption="Acompanhamento de bebês" ratio="4 / 5" mask="up" maskDelay={0.16} sizes="(min-width: 900px) 25vw, 50vw" />
+            <Photo image={media.bsAcolhimento} slot="Acolhimento" caption="Acolhimento das famílias" ratio="4 / 5" mask="up" maskDelay={0.24} sizes="(min-width: 900px) 25vw, 50vw" />
+          </div>
           <div className="bs__privacy" data-reveal>
             <h3 className="h4">Cuidado com a imagem das crianças</h3>
             <p className="small">

@@ -610,7 +610,7 @@
 .bs__privacy {
   display: grid;
   gap: 0.6rem;
-  margin-top: clamp(3rem, 6vw, 5rem);
+  margin-top: clamp(2.5rem, 5vw, 4rem);
   padding: 1.5rem;
   border: 1px solid var(--tone-line);
   border-radius: var(--radius-sm);
@@ -936,4 +936,30 @@
 }
 .event__verse {
   font-family: var(--ff-display);
+}
+
+/* ---------- Galeria O Bom Samaritano ---------- */
+
+.bs__entity {
+  margin-top: clamp(3rem, 6vw, 5rem);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--tone-muted);
+}
+.bs__gallery {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(0.75rem, 1.5vw, 1.5rem);
+  margin-top: 1.5rem;
+}
+@media (min-width: 900px) {
+  .bs__gallery {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .bs__gallery > :nth-child(even) {
+    margin-top: 3rem;
+  }
+}
+.bs__gallery .photo__caption {
+  color: var(--tone-muted);
 }

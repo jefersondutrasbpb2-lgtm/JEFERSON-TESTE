@@ -12,7 +12,7 @@ export function Servico() {
         <div className="servico__media">
           <Photo
             image={media.bomSamaritano}
-            slot="Atividades do projeto O Bom Samaritano — somente imagens autorizadas"
+            slot="Atividades do projeto O Bom Samaritano"
             ratio="4 / 5"
             parallax={6}
             mask="up"
@@ -29,6 +29,7 @@ export function Servico() {
               dedicado ao cuidado de crianças e de suas famílias — expressão concreta do amor ao próximo ensinado por
               Jesus.
             </p>
+            <p>{bomSamaritano.activities}</p>
           </div>
 
           <div className="servico__stat" data-reveal>

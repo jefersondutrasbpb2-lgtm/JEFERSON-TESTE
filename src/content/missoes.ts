@@ -104,7 +104,11 @@ export const missionFields: MissionField[] = [
 
 export const bomSamaritano = {
   name: "O Bom Samaritano",
+  entity: "CEDIBS — Centro de Desenvolvimento Integral “O Bom Samaritano” de Pombal-PB",
   place: "Comunidade de Carvalhadas — Pombal, PB",
+  /** Atividades vistas nas fotografias do projeto; confirmar a descrição com a coordenação. */
+  activities:
+    "Por meio do CEDIBS, o projeto oferece atendimentos de saúde, acompanhamento do desenvolvimento de bebês e crianças e apoio às famílias.",
   summary:
     "Projeto social abrigado e apoiado pela igreja na comunidade de Carvalhadas, dedicado ao cuidado de crianças e de suas famílias.",
   reach: "mais de 200 crianças",

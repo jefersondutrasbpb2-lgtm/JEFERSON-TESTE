@@ -89,7 +89,10 @@ Espaços reservados aguardando imagens reais e autorizadas (`src/content/media.t
 - [ ] Registros da fundação (fotografias ou documentos de 1970)
 - [ ] Documento histórico digitalizado (ata ou registro)
 - [ ] Campos missionários: Rio Purus e Caicó
-- [ ] O Bom Samaritano (sem identificação das crianças, salvo autorização)
+- [x] O Bom Samaritano — fotos aplicadas na página inicial e em Missões (atendimento, equipe, acolhimento e
+      acompanhamento de bebês). **Confirmar a autorização dos responsáveis** para as imagens com bebês e crianças
+- [ ] Confirmar o nome oficial "CEDIBS — Centro de Desenvolvimento Integral “O Bom Samaritano” de Pombal-PB" (lido
+      na camiseta da equipe) e a descrição das atividades → `src/content/missoes.ts`
 - [x] Entrada do templo
 
 ## Para publicar

@@ -1,7 +1,9 @@
 /* ==========================================================================
    Design tokens — IEC Pombal
-   Paleta enxuta: papel (base clara), areia (memória), tinta (autoridade),
-   verde profundo (serviço) e dourado envelhecido (detalhes históricos).
+   Paleta derivada da identidade oficial (azul #195691 e amarelo #FFCC00):
+   papel (base clara), areia (memória), azul profundo (autoridade), azul
+   institucional (destaques), verde profundo (serviço) e dourado solar
+   (detalhes sobre fundos escuros).
    ========================================================================== */
 
 :root {
@@ -10,22 +12,24 @@
   --c-paper-2: #efe9dc;
   --c-sand: #e7decb;
   --c-sand-2: #d9ccb2;
-  --c-ink: #111b24;
-  --c-ink-2: #18252f;
-  --c-ink-3: #22323e;
+  --c-ink: #0e1f31;
+  --c-ink-2: #142a40;
+  --c-ink-3: #1d3651;
+  --c-brand: #195691;         /* azul oficial do logotipo */
+  --c-brand-sun: #ffcc00;     /* amarelo oficial do logotipo (uso mínimo) */
   --c-green: #1e3a33;
   --c-green-2: #264840;
-  --c-gold: #c8a96e;          /* sobre fundos escuros */
-  --c-gold-ink: #7a5c2b;      /* texto dourado sobre fundos claros (AA) */
-  --c-gold-line: #b39058;     /* linhas e detalhes gráficos */
+  --c-gold: #e2b33c;          /* dourado solar, sobre fundos escuros */
+  --c-gold-ink: #7a5c2b;      /* ocre de arquivo sobre fundos claros (AA) */
+  --c-gold-line: #c99a35;     /* linhas e detalhes gráficos */
 
   /* Texto */
-  --c-text: #1a2129;
+  --c-text: #142131;
   --c-text-muted: #56606a;
   --c-text-inv: #f5f1e8;
   --c-text-inv-muted: #a9b2ba;
-  --c-line: rgb(26 33 41 / 0.14);
-  --c-line-strong: rgb(26 33 41 / 0.32);
+  --c-line: rgb(20 33 49 / 0.14);
+  --c-line-strong: rgb(20 33 49 / 0.32);
   --c-line-inv: rgb(245 241 232 / 0.16);
 
   /* Tipografia */
@@ -73,7 +77,7 @@
   --radius-sm: 2px;
   --radius: 4px;
   --radius-pill: 999px;
-  --shadow-soft: 0 1px 2px rgb(17 27 36 / 0.06), 0 12px 40px -12px rgb(17 27 36 / 0.18);
+  --shadow-soft: 0 1px 2px rgb(14 31 49 / 0.06), 0 12px 40px -12px rgb(14 31 49 / 0.18);
 
   /* Movimento */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -95,21 +99,23 @@
   --tone-fg: var(--c-text);
   --tone-muted: var(--c-text-muted);
   --tone-line: var(--c-line);
-  --tone-accent: var(--c-gold-ink);
+  --tone-accent: var(--c-brand);
   --tone-surface: var(--c-sand);
   --slot-bg:
-    repeating-linear-gradient(135deg, transparent 0 14px, rgb(26 33 41 / 0.035) 14px 15px),
+    repeating-linear-gradient(135deg, transparent 0 14px, rgb(20 33 49 / 0.035) 14px 15px),
     radial-gradient(120% 90% at 30% 20%, var(--c-paper-2), var(--c-sand) 60%, var(--c-sand-2));
   --slot-fg: var(--c-text-muted);
   --pending-fg: #833a10;
   --pending-bg: rgb(255 214 170 / 0.45);
-  --c-focus: #b07a1f;
+  --c-focus: var(--c-brand);
+  --logo-light: block;
+  --logo-dark: none;
 }
 [data-tone="sand"] {
   --tone-bg: var(--c-sand);
   --tone-surface: var(--c-paper-2);
   --slot-bg:
-    repeating-linear-gradient(135deg, transparent 0 14px, rgb(26 33 41 / 0.04) 14px 15px),
+    repeating-linear-gradient(135deg, transparent 0 14px, rgb(20 33 49 / 0.04) 14px 15px),
     radial-gradient(120% 90% at 30% 20%, var(--c-paper), var(--c-paper-2) 55%, var(--c-sand-2));
 }
 [data-tone="ink"],
@@ -127,6 +133,8 @@
   --pending-fg: #f2c48f;
   --pending-bg: rgb(242 196 143 / 0.1);
   --c-focus: var(--c-gold);
+  --logo-light: none;
+  --logo-dark: block;
 }
 [data-tone="green"] {
   --tone-bg: var(--c-green);

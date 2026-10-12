@@ -3,7 +3,7 @@ import { mainNav, site, visitCta, fullAddress, mapsDirectionsUrl } from "@/conte
 import { scriptures } from "@/content/fe";
 import { Icon } from "@/components/ui/Icon";
 import { Pending } from "@/components/ui/Pending";
-import { Wordmark } from "./Wordmark";
+import { BrandLogo } from "./BrandLogo";
 
 export function Footer() {
   const year = new Date().getFullYear();
@@ -22,7 +22,7 @@ export function Footer() {
 
         <div className="site-footer__grid">
           <div className="site-footer__brand">
-            <Wordmark />
+            <BrandLogo />
             <p className="small muted">
               Fundada em {site.foundedLabel}.<br />
               {site.city} — {site.state}, {site.region}.

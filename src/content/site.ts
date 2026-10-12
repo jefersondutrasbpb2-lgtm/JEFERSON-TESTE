@@ -39,7 +39,7 @@ export const site = {
   email: { value: "sec.iec.2017@gmail.com", pending: true },
 
   social: [
-    { id: "instagram", label: "Instagram", handle: "@iecdepombal", href: "https://www.instagram.com/iecdepombal/", pending: true },
+    { id: "instagram", label: "Instagram", handle: "@iecdepombal", href: "https://www.instagram.com/iecdepombal/", pending: false },
     { id: "youtube", label: "YouTube", handle: "Canal a informar", href: "", pending: true },
   ],
 } as const;

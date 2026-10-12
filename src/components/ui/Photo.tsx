@@ -1,7 +1,16 @@
 import { asset } from "@/lib/asset";
 import { reviewMode } from "@/content/site";
 
-export type ImageData = { src: string; alt: string; width: number; height: number };
+export type ImageData = {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  /** Versões em outras larguras, para srcset responsivo */
+  variants?: { src: string; width: number }[];
+  /** Ponto focal do recorte (object-position), ex.: "50% 40%" */
+  focus?: string;
+};
 
 type Props = {
   /** Imagem real autorizada. Quando ausente, exibe um espaço reservado. */
@@ -17,6 +26,8 @@ type Props = {
   mask?: "up" | "left" | "center";
   maskDelay?: number;
   maskOnLoad?: boolean;
+  /** Atributo sizes da imagem (largura exibida) */
+  sizes?: string;
 };
 
 /**
@@ -36,11 +47,19 @@ export function Photo({
   mask,
   maskDelay,
   maskOnLoad,
+  sizes = "(min-width: 1000px) 50vw, 100vw",
 }: Props) {
   const inner = image ? (
     <img
       className="photo__img"
       src={asset(image.src)}
+      srcSet={
+        image.variants?.length
+          ? [...image.variants, { src: image.src, width: image.width }].map((v) => `${asset(v.src)} ${v.width}w`).join(", ")
+          : undefined
+      }
+      sizes={image.variants?.length ? sizes : undefined}
+      style={image.focus ? { objectPosition: image.focus } : undefined}
       alt={image.alt}
       width={image.width}
       height={image.height}

@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { mainNav, site, visitCta, fullAddress } from "@/content/site";
 import { getLenis } from "@/lib/lenis";
 import { Icon } from "@/components/ui/Icon";
-import { Wordmark } from "./Wordmark";
+import { BrandLogo } from "./BrandLogo";
 
 const isCurrent = (pathname: string, href: string) =>
   href === "/" ? pathname === "/" : pathname.startsWith(href.replace(/\/$/, ""));
@@ -95,8 +95,8 @@ export function Header() {
       data-open={open || undefined}
     >
       <div className="site-header__bar container">
-        <Link href="/" className="site-header__brand" aria-label={`${site.name} — página inicial`}>
-          <Wordmark />
+        <Link href="/" className="site-header__brand" aria-label={`${site.name} — página inicial`} title="Página inicial">
+          <BrandLogo />
         </Link>
 
         <nav className="nav-desktop" aria-label="Navegação principal">

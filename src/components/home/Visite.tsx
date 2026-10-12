@@ -4,6 +4,8 @@ import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Button } from "@/components/ui/Button";
 import { MapEmbed } from "@/components/ui/MapEmbed";
 import { Pending } from "@/components/ui/Pending";
+import { Photo } from "@/components/ui/Photo";
+import { media } from "@/content/media";
 
 export function Visite({ index = "09" }: { index?: string }) {
   return (
@@ -51,8 +53,18 @@ export function Visite({ index = "09" }: { index?: string }) {
           </div>
         </div>
 
-        <div className="visite__map" data-reveal>
-          <MapEmbed />
+        <div className="visite__media">
+          <Photo
+            image={media.fachadaRua}
+            slot="Fachada do templo"
+            ratio="16 / 10"
+            mask="up"
+            parallax={5}
+            caption="Templo da IEC Pombal"
+          />
+          <div className="visite__map" data-reveal>
+            <MapEmbed />
+          </div>
         </div>
       </div>
     </Section>

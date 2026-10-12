@@ -6,6 +6,8 @@ import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Icon } from "@/components/ui/Icon";
 import { Pending } from "@/components/ui/Pending";
 import { MapEmbed } from "@/components/ui/MapEmbed";
+import { Photo } from "@/components/ui/Photo";
+import { media } from "@/content/media";
 import { ContactForm } from "@/components/forms/ContactForm";
 import { PrayerForm } from "@/components/forms/PrayerForm";
 
@@ -139,6 +141,7 @@ export default function ContatoPage() {
             <p className="h3 serif" data-reveal>
               {site.address.street} — {site.address.district}, {site.address.city} — {site.address.state}
             </p>
+            <Photo image={media.visitaEntrada} slot="Entrada do templo" ratio="4 / 3" mask="up" />
           </div>
           <div data-reveal>
             <MapEmbed />

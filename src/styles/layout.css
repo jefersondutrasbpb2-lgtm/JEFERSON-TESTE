@@ -81,7 +81,9 @@ html[data-header-tone="sand"] .site-header[data-tone] {
   --tone-fg: var(--c-text);
   --tone-muted: var(--c-text-muted);
   --tone-line: var(--c-line);
-  --tone-accent: var(--c-gold-ink);
+  --tone-accent: var(--c-brand);
+  --logo-light: block;
+  --logo-dark: none;
 }
 html[data-header-tone="sand"] .site-header[data-tone] {
   --tone-bg: var(--c-sand);
@@ -93,6 +95,8 @@ html[data-header-tone="green"] .site-header[data-tone] {
   --tone-muted: var(--c-text-inv-muted);
   --tone-line: var(--c-line-inv);
   --tone-accent: var(--c-gold);
+  --logo-light: none;
+  --logo-dark: block;
 }
 html[data-header-tone="green"] .site-header[data-tone] {
   --tone-bg: var(--c-green);
@@ -116,6 +120,12 @@ html[data-header-tone="green"] .site-header[data-tone] {
 }
 .site-header[data-open] {
   color: var(--c-text-inv);
+  --logo-light: none;
+  --logo-dark: block;
+}
+html .site-header[data-open][data-tone] {
+  --logo-light: none;
+  --logo-dark: block;
 }
 .site-header[data-open]::before {
   opacity: 0;
@@ -136,22 +146,30 @@ html[data-header-tone="green"] .site-header[data-tone] {
   flex-shrink: 0;
 }
 
-.wordmark {
-  display: grid;
-  line-height: 1.05;
+.brand-logo {
+  display: block;
+  line-height: 0;
 }
-.wordmark__top {
-  font-size: 0.66rem;
-  font-weight: 600;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  opacity: 0.72;
+.brand-logo__img {
+  height: var(--logo-h, 2.6rem);
+  width: auto;
+  max-width: none;
 }
-.wordmark__name {
-  font-family: var(--ff-serif);
-  font-size: 1.32rem;
-  font-weight: 600;
-  letter-spacing: -0.005em;
+.brand-logo__img--light {
+  display: var(--logo-light, block);
+}
+.brand-logo__img--dark {
+  display: var(--logo-dark, none);
+  /* a versão branca não tem o símbolo; compensa a altura visual */
+  height: calc(var(--logo-h, 2.6rem) * 0.92);
+}
+.site-header .brand-logo {
+  --logo-h: 2.35rem;
+}
+@media (min-width: 640px) {
+  .site-header .brand-logo {
+    --logo-h: 2.6rem;
+  }
 }
 
 .nav-desktop {
@@ -388,8 +406,8 @@ html.menu-open {
   gap: 1rem;
   align-content: start;
 }
-.site-footer__brand .wordmark__name {
-  font-size: 1.7rem;
+.site-footer__brand .brand-logo {
+  --logo-h: 3.4rem;
 }
 .site-footer__title {
   font-family: var(--ff-sans);

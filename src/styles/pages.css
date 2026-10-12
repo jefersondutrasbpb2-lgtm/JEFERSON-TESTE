@@ -243,8 +243,8 @@
   vector-effect: non-scaling-stroke;
 }
 .minimap__states path.is-highlight {
-  fill: rgb(200 169 110 / 0.1);
-  stroke: rgb(200 169 110 / 0.55);
+  fill: rgb(226 179 60 / 0.1);
+  stroke: rgb(226 179 60 / 0.55);
 }
 .minimap__routes path {
   fill: none;
@@ -287,7 +287,7 @@
   padding: clamp(1.5rem, 1rem + 2vw, 2.75rem);
   background: var(--c-paper);
   border: 1px solid var(--c-line);
-  box-shadow: 0 1px 0 rgb(26 33 41 / 0.04), 0 22px 50px -30px rgb(60 40 10 / 0.35);
+  box-shadow: 0 1px 0 rgb(20 33 49 / 0.04), 0 22px 50px -30px rgb(60 40 10 / 0.35);
 }
 .record::before {
   content: "";

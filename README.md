@@ -80,10 +80,19 @@ alterar os componentes.
 ### Fotografias
 
 1. Coloque as imagens em `public/images/` (preferencialmente **WebP ou AVIF**, até ~2400 px no maior lado).
-2. Preencha a entrada correspondente em `src/content/media.ts` com `src`, `alt`, `width` e `height`.
+2. Preencha a entrada correspondente em `src/content/media.ts` com `src`, `alt`, `width` e `height` (opcionalmente
+   `variants` com versões menores, para carregamento responsivo).
 
 Enquanto uma imagem não existir, o site mostra um espaço reservado descrevendo a fotografia esperada. **Não use imagens
 geradas por IA como se fossem registros reais da igreja.** Fotos de crianças exigem autorização dos responsáveis (LGPD).
+
+### Identidade visual
+
+O logotipo oficial está em `public/brand/` (versão azul para fundos claros e versão branca para fundos escuros) e é
+exibido por `src/components/layout/BrandLogo.tsx`, que escolhe a versão conforme o tom da seção. O ícone do site
+(`src/app/icon.png` e `apple-icon.png`) usa o símbolo da cruz e do sol. A paleta deriva das cores oficiais: o azul
+`#195691` é o destaque sobre fundos claros e um dourado solar, derivado do amarelo `#FFCC00`, é usado sobre fundos
+escuros.
 
 ### Modo de revisão
 

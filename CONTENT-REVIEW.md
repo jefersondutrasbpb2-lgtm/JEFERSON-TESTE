@@ -20,14 +20,15 @@ Marque cada item ao validar com a liderança e atualize o arquivo indicado.
 
 Os dados abaixo vieram de uma versão anterior do site e **não foram verificados**:
 
-- [ ] Endereço: Rua Afro Bandeira, 265 — Centro, Pombal — PB, 58840-000 → `src/content/site.ts`
+- [ ] Endereço: Rua Afro Bandeira, 265 — Centro, Pombal — PB, 58840-000 (o número 265 aparece na fachada; falta
+      confirmar o nome da rua e o CEP) → `src/content/site.ts`
 - [ ] Telefone: (83) 3431-3165 → `src/content/site.ts`
 - [ ] E-mail: sec.iec.2017@gmail.com → `src/content/site.ts`
-- [ ] Instagram: @iecdepombal → `src/content/site.ts`
+- [x] Instagram: @iecdepombal (confirmado)
 - [ ] Canal do YouTube (não informado) → `src/content/site.ts` e `src/content/mensagens.json` (`channelUrl`)
 - [ ] Domínio oficial do site → variável `NEXT_PUBLIC_SITE_URL`
-- [ ] Logotipo oficial, se existir (hoje o site usa apenas uma assinatura tipográfica provisória) →
-      `src/components/layout/Wordmark.tsx`
+- [x] Logotipo oficial — aplicado no cabeçalho e no rodapé (versão azul em fundos claros, versão branca em fundos
+      escuros) e no ícone do site → `public/brand/`, `src/components/layout/BrandLogo.tsx`, `src/app/icon.png`
 - [ ] Liderança atual (o site não indica pastor atual; a lista histórica termina em Marcone de Carvalho Santana)
 
 ## 3. Horários e programação
@@ -74,14 +75,16 @@ Os dados abaixo vieram de uma versão anterior do site e **não foram verificado
 
 Espaços reservados aguardando imagens reais e autorizadas (`src/content/media.ts`):
 
-- [ ] Fachada ou interior do templo (abertura da homepage)
+- [x] Fachada do templo — aplicada na abertura da homepage, na seção de visita, na página "Planeje sua visita", no
+      contato e na imagem de compartilhamento (Open Graph)
 - [ ] Congregação em culto
 - [ ] Registros da fundação (fotografias ou documentos de 1970)
 - [ ] Documento histórico digitalizado (ata ou registro)
 - [ ] Campos missionários: Rio Purus e Caicó
 - [ ] O Bom Samaritano (sem identificação das crianças, salvo autorização)
 - [ ] Vida comunitária: culto, estudo bíblico, comunhão, música e jovens
-- [ ] Entrada do templo / recepção a visitantes
+- [x] Entrada do templo
+- [ ] Interior do templo / congregação em culto
 
 ## Para publicar
 

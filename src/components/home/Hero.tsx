@@ -10,11 +10,11 @@ export function Hero() {
       <div className="container hero__grid">
         <div className="hero__copy">
           <p className="hero__kicker" data-reveal data-load="">
-            <span>{site.name}</span>
-            <span className="hero__kicker-sep" aria-hidden="true" />
             <span>
-              {site.city} — {site.state}
+              {site.city} — Paraíba
             </span>
+            <span className="hero__kicker-sep" aria-hidden="true" />
+            <span>Desde 1970</span>
           </p>
 
           <h1 id="hero-title" className="display hero__title" data-split="load">

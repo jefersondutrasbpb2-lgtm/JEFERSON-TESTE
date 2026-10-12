@@ -161,8 +161,11 @@ export default function VisitePage() {
               </Button>
             </div>
           </div>
-          <div data-reveal>
-            <MapEmbed />
+          <div className="visite__media">
+            <Photo image={media.fachadaRua} slot="Fachada do templo" ratio="16 / 10" mask="up" parallax={5} />
+            <div data-reveal>
+              <MapEmbed />
+            </div>
           </div>
         </div>
       </Section>

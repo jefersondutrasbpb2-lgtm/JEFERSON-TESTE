@@ -19,8 +19,6 @@ export default function MensagensPage() {
     <>
       <PageHero
         tone="paper"
-        index="Palavra"
-        eyebrow="Mensagens e ensino bíblico"
         title={
           <>
             Ouvir, estudar <em>e guardar a Palavra.</em>

@@ -187,9 +187,6 @@ export function Story() {
               <div className="story__inline-visual" aria-hidden="true">
                 {c.visual}
               </div>
-              <p className="story__kicker">
-                <span className="numeral">{String(i + 1).padStart(2, "0")}</span> {c.kicker}
-              </p>
               <h2 className="h2 story__title" data-split>
                 {c.title}
               </h2>

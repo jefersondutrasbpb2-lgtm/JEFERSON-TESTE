@@ -1,6 +1,5 @@
 import { messages, channelUrl } from "@/content/data";
 import { Section } from "@/components/ui/Section";
-import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Button } from "@/components/ui/Button";
 import { MessageCard } from "@/components/ui/MessageCard";
 
@@ -11,9 +10,6 @@ export function Mensagens() {
       <div className="container">
         <header className="section-head section-head--split">
           <div className="section-head__main">
-            <div data-reveal>
-              <Eyebrow index="06">Mensagens e ensino bíblico</Eyebrow>
-            </div>
             <h2 id="mensagens-title" className="h2" data-split>
               A Palavra pregada, <em>semana após semana.</em>
             </h2>

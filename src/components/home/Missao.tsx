@@ -1,5 +1,4 @@
 import { Section } from "@/components/ui/Section";
-import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Button } from "@/components/ui/Button";
 import { MissionAtlas } from "@/components/maps/MissionAtlas";
 
@@ -9,9 +8,6 @@ export function Missao() {
       <div className="container">
         <header className="section-head section-head--split">
           <div className="section-head__main">
-            <div data-reveal>
-              <Eyebrow index="04">Uma igreja em missão</Eyebrow>
-            </div>
             <h2 id="missao-title" className="h2" data-split>
               Do Sertão da Paraíba <em>às margens do Purus.</em>
             </h2>

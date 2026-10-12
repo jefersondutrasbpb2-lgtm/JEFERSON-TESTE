@@ -1,5 +1,4 @@
 import type { Scripture } from "@/content/fe";
-import { Pending } from "./Pending";
 
 export function ScriptureQuote({ verse, size = "md" }: { verse: Scripture; size?: "md" | "lg" }) {
   return (
@@ -11,7 +10,7 @@ export function ScriptureQuote({ verse, size = "md" }: { verse: Scripture; size?
         <p>{verse.text}</p>
       </blockquote>
       <figcaption className="scripture__ref">
-        {verse.ref} <span className="scripture__version">· {verse.version}</span> <Pending show={verse.pending} label="texto sugerido" />
+        {verse.ref} <span className="scripture__version">· {verse.version}</span>
       </figcaption>
     </figure>
   );

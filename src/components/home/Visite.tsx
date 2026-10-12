@@ -1,20 +1,16 @@
 import { site, fullAddress, mapsDirectionsUrl } from "@/content/site";
 import { Section } from "@/components/ui/Section";
-import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Button } from "@/components/ui/Button";
 import { MapEmbed } from "@/components/ui/MapEmbed";
 import { Pending } from "@/components/ui/Pending";
 import { Photo } from "@/components/ui/Photo";
 import { media } from "@/content/media";
 
-export function Visite({ index = "09" }: { index?: string }) {
+export function Visite() {
   return (
     <Section id="visite" tone="sand" labelledBy="visite-title" className="visite">
       <div className="container visite__grid">
         <div className="visite__copy">
-          <div data-reveal>
-            <Eyebrow index={index}>Venha nos visitar</Eyebrow>
-          </div>
           <h2 id="visite-title" className="h1" data-split>
             Há um lugar para você <em>caminhar conosco.</em>
           </h2>

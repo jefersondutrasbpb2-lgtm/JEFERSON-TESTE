@@ -1,7 +1,6 @@
 import { founding } from "@/content/historia";
 import { media } from "@/content/media";
 import { Section } from "@/components/ui/Section";
-import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Button } from "@/components/ui/Button";
 import { Photo } from "@/components/ui/Photo";
 
@@ -14,9 +13,6 @@ export function Historia1970() {
 
       <div className="container h1970__grid">
         <div className="h1970__head">
-          <div data-reveal>
-            <Eyebrow index="02">Uma história que começou em 1970</Eyebrow>
-          </div>
           <h2 id="h1970-title" className="h2" data-split>
             Tudo começou em uma casa, <em>numa reunião de irmãos.</em>
           </h2>

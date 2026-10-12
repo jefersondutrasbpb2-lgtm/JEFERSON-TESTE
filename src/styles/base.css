@@ -205,29 +205,6 @@ h1, h2, h3, h4, h5, h6 {
 .accent { color: var(--tone-accent); }
 .nowrap { white-space: nowrap; }
 
-.eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.85rem;
-  font-family: var(--ff-sans);
-  font-size: var(--fs-eyebrow);
-  font-weight: 600;
-  letter-spacing: var(--tracking-eyebrow);
-  text-transform: uppercase;
-  color: var(--tone-accent);
-}
-.eyebrow__index {
-  font-variant-numeric: tabular-nums;
-  color: var(--tone-muted);
-  font-weight: 500;
-}
-.eyebrow__rule {
-  width: 2.5rem;
-  height: 1px;
-  background: currentColor;
-  opacity: 0.6;
-}
-
 .numeral {
   font-family: var(--ff-display);
   font-variant-numeric: lining-nums;

@@ -1,7 +1,6 @@
 import { scriptures } from "@/content/fe";
 import { media } from "@/content/media";
 import { Section } from "@/components/ui/Section";
-import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Button } from "@/components/ui/Button";
 import { Photo } from "@/components/ui/Photo";
 import { ScriptureQuote } from "@/components/ui/ScriptureQuote";
@@ -11,9 +10,6 @@ export function Essencia() {
     <Section id="essencia" tone="paper" labelledBy="essencia-title" className="essencia">
       <div className="container essencia__grid">
         <div className="essencia__head">
-          <div data-reveal>
-            <Eyebrow index="01">Nossa essência</Eyebrow>
-          </div>
           <h2 id="essencia-title" className="h2" data-split>
             Uma igreja firmada na <em>Palavra</em> e centrada em Jesus Cristo.
           </h2>

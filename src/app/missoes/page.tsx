@@ -3,7 +3,6 @@ import { bomSamaritano, kindLabel, missionFields } from "@/content/missoes";
 import { media } from "@/content/media";
 import { PageHero } from "@/components/ui/PageHero";
 import { Section } from "@/components/ui/Section";
-import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Photo } from "@/components/ui/Photo";
 import { Button } from "@/components/ui/Button";
 import { Pending } from "@/components/ui/Pending";
@@ -27,8 +26,6 @@ export default function MissoesPage() {
     <>
       <PageHero
         tone="paper"
-        index="Missão"
-        eyebrow="Missões e ação social"
         title={
           <>
             Uma igreja enviada <em>para além de seus muros.</em>
@@ -41,9 +38,6 @@ export default function MissoesPage() {
         <div className="container">
           <header className="section-head section-head--split">
             <div className="section-head__main">
-              <div data-reveal>
-                <Eyebrow index="Mapa">Campos e trabalhos</Eyebrow>
-              </div>
               <h2 id="atlas-title" className="h2" data-split>
                 Onde a Palavra <em>tem sido semeada.</em>
               </h2>
@@ -63,9 +57,6 @@ export default function MissoesPage() {
         <div className="container">
           <div className="fields__block">
             <div className="fields__head">
-              <div data-reveal>
-                <Eyebrow index="I">Sertão Paraibano</Eyebrow>
-              </div>
               <h2 id="sertao-title" className="h2" data-split>
                 Igrejas organizadas <em>na região.</em>
               </h2>
@@ -88,9 +79,6 @@ export default function MissoesPage() {
 
           <div className="fields__block">
             <div className="fields__head">
-              <div data-reveal>
-                <Eyebrow index="II">Pombal e região</Eyebrow>
-              </div>
               <h2 className="h2" data-split>
                 Congregação e <em>comunidades rurais.</em>
               </h2>
@@ -117,9 +105,6 @@ export default function MissoesPage() {
       <Section tone="sand" labelledBy="campos-title" className="far-fields">
         <div className="container">
           <header className="section-head">
-            <div data-reveal>
-              <Eyebrow index="III">Campos missionários</Eyebrow>
-            </div>
             <h2 id="campos-title" className="h2" data-split>
               Missionários que <em>a igreja apoia.</em>
             </h2>
@@ -151,9 +136,6 @@ export default function MissoesPage() {
       <Section id="bom-samaritano" tone="green" labelledBy="bs-title" className="bs">
         <div className="container bs__grid">
           <div className="bs__copy">
-            <div data-reveal>
-              <Eyebrow index="IV">Ação social</Eyebrow>
-            </div>
             <h2 id="bs-title" className="h1" data-split>
               {bomSamaritano.name}
             </h2>
@@ -200,9 +182,6 @@ export default function MissoesPage() {
       <Section tone="paper" labelledBy="apoiar-title" className="support">
         <div className="container support__grid">
           <div>
-            <div data-reveal>
-              <Eyebrow>Caminhe conosco</Eyebrow>
-            </div>
             <h2 id="apoiar-title" className="h2" data-split>
               Ore, acompanhe <em>e participe.</em>
             </h2>

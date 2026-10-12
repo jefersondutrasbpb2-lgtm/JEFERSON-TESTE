@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { fullAddress, mapsDirectionsUrl, site } from "@/content/site";
 import { PageHero } from "@/components/ui/PageHero";
 import { Section } from "@/components/ui/Section";
-import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Icon } from "@/components/ui/Icon";
 import { Pending } from "@/components/ui/Pending";
 import { MapEmbed } from "@/components/ui/MapEmbed";
@@ -22,8 +21,6 @@ export default function ContatoPage() {
     <>
       <PageHero
         tone="paper"
-        index="Fale conosco"
-        eyebrow="Contato"
         title={
           <>
             Estamos aqui <em>para ouvir você.</em>
@@ -93,9 +90,6 @@ export default function ContatoPage() {
           </aside>
 
           <div className="contact__form">
-            <div data-reveal>
-              <Eyebrow index="01">Mensagem</Eyebrow>
-            </div>
             <h2 className="h2 contact__title" data-split>
               Escreva <em>para nós.</em>
             </h2>
@@ -107,9 +101,6 @@ export default function ContatoPage() {
       <Section id="oracao" tone="ink" labelledBy="oracao-title" className="prayer">
         <div className="container prayer__grid">
           <div className="prayer__intro">
-            <div data-reveal>
-              <Eyebrow index="02">Pedido de oração</Eyebrow>
-            </div>
             <h2 id="oracao-title" className="h2" data-split>
               Podemos orar <em>por você?</em>
             </h2>
@@ -135,9 +126,6 @@ export default function ContatoPage() {
       <Section tone="sand" className="section--tight">
         <div className="container visite__grid">
           <div className="visite__copy">
-            <div data-reveal>
-              <Eyebrow index="03">Onde estamos</Eyebrow>
-            </div>
             <p className="h3 font-display" data-reveal>
               {site.address.street} — {site.address.district}, {site.address.city} — {site.address.state}
             </p>

@@ -3,7 +3,6 @@ import { ministries } from "@/content/ministerios";
 import { reviewMode } from "@/content/site";
 import { PageHero } from "@/components/ui/PageHero";
 import { Section } from "@/components/ui/Section";
-import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Button } from "@/components/ui/Button";
 import { Pending } from "@/components/ui/Pending";
 
@@ -19,8 +18,6 @@ export default function MinisteriosPage() {
     <>
       <PageHero
         tone="paper"
-        index="Vida da igreja"
-        eyebrow="Ministérios"
         title={
           <>
             Muitos dons, <em>um só corpo.</em>
@@ -31,7 +28,7 @@ export default function MinisteriosPage() {
           <p className="small muted">
             “Servi uns aos outros, cada um conforme o dom que recebeu.”
             <br />
-            <span className="xs">1 Pedro 4.10 · ARA</span> <Pending label="texto sugerido" />
+            <span className="xs">1 Pedro 4.10 · ARA</span>
           </p>
         }
       />
@@ -44,7 +41,6 @@ export default function MinisteriosPage() {
           <ol className="ministries__list">
             {ministries.map((m, i) => (
               <li key={m.id} id={m.id} className="ministry" data-reveal>
-                <span className="ministry__num numeral">{String(i + 1).padStart(2, "0")}</span>
                 <h3 className="ministry__title h3">{m.title}</h3>
                 <div className="ministry__body">
                   <p>{m.summary}</p>
@@ -75,9 +71,6 @@ export default function MinisteriosPage() {
       <Section tone="ink" labelledBy="servir-title" className="serve-call">
         <div className="container serve-call__grid">
           <div>
-            <div data-reveal>
-              <Eyebrow>Participe</Eyebrow>
-            </div>
             <h2 id="servir-title" className="h2" data-split>
               Há um lugar para você <em>servir.</em>
             </h2>

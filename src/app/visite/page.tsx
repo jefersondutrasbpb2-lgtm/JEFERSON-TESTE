@@ -3,7 +3,6 @@ import { fullAddress, mapsDirectionsUrl, site } from "@/content/site";
 import { media } from "@/content/media";
 import { PageHero } from "@/components/ui/PageHero";
 import { Section } from "@/components/ui/Section";
-import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Button } from "@/components/ui/Button";
 import { Photo } from "@/components/ui/Photo";
 import { Pending } from "@/components/ui/Pending";
@@ -59,8 +58,6 @@ export default function VisitePage() {
     <>
       <PageHero
         tone="paper"
-        index="Boas-vindas"
-        eyebrow="Planeje sua visita"
         title={
           <>
             Será uma alegria <em>receber você.</em>
@@ -83,9 +80,6 @@ export default function VisitePage() {
       <Section id="horarios" tone="paper" labelledBy="horarios-title" className="section--tight">
         <div className="container agenda__grid">
           <div className="agenda__head">
-            <div data-reveal>
-              <Eyebrow index="01">Horários</Eyebrow>
-            </div>
             <h2 id="horarios-title" className="h2" data-split>
               Quando nos <em>reunimos</em>
             </h2>
@@ -97,9 +91,6 @@ export default function VisitePage() {
       <Section tone="sand" labelledBy="esperar-title" className="expect">
         <div className="container expect__grid">
           <div className="expect__head">
-            <div data-reveal>
-              <Eyebrow index="02">O que esperar</Eyebrow>
-            </div>
             <h2 id="esperar-title" className="h2" data-split>
               Sua primeira visita, <em>passo a passo.</em>
             </h2>
@@ -122,9 +113,6 @@ export default function VisitePage() {
       <Section tone="paper" labelledBy="faq-title" className="section--tight">
         <div className="container agenda__grid">
           <div className="agenda__head">
-            <div data-reveal>
-              <Eyebrow index="03">Dúvidas frequentes</Eyebrow>
-            </div>
             <h2 id="faq-title" className="h2" data-split>
               Perguntas <em>comuns</em>
             </h2>
@@ -143,9 +131,6 @@ export default function VisitePage() {
       <Section tone="ink" labelledBy="local-title" className="location">
         <div className="container visite__grid">
           <div className="visite__copy">
-            <div data-reveal>
-              <Eyebrow index="04">Localização</Eyebrow>
-            </div>
             <h2 id="local-title" className="h2" data-split>
               Em Pombal, <em>Paraíba.</em>
             </h2>

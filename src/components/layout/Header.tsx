@@ -157,7 +157,6 @@ export function Header() {
                     aria-current={isCurrent(pathname, item.href) ? "page" : undefined}
                     onClick={() => close(false)}
                   >
-                    <span className="site-menu__num">{String(i + 1).padStart(2, "0")}</span>
                     <span className="site-menu__label">{item.label}</span>
                     {item.description && <span className="site-menu__desc">{item.description}</span>}
                   </SiteLink>

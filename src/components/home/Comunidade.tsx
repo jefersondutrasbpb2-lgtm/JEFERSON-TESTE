@@ -1,6 +1,5 @@
 import { media } from "@/content/media";
 import { Section } from "@/components/ui/Section";
-import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Photo } from "@/components/ui/Photo";
 
 const tiles = [
@@ -17,9 +16,6 @@ export function Comunidade() {
       <div className="container">
         <header className="section-head section-head--split">
           <div className="section-head__main">
-            <div data-reveal>
-              <Eyebrow index="07">Nossa comunidade</Eyebrow>
-            </div>
             <h2 id="comunidade-title" className="h2" data-split>
               Uma família da fé, <em>reunida ao redor da Palavra.</em>
             </h2>

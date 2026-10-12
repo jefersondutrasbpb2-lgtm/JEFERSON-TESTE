@@ -1,5 +1,4 @@
 import { Section } from "@/components/ui/Section";
-import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Button } from "@/components/ui/Button";
 import { WeeklySchedule } from "@/components/ui/WeeklySchedule";
 
@@ -14,9 +13,6 @@ export function Cultos() {
     <Section id="cultos" tone="paper" labelledBy="cultos-title" className="cultos">
       <div className="container cultos__grid">
         <div className="cultos__head">
-          <div data-reveal>
-            <Eyebrow index="08">Cultos e programações</Eyebrow>
-          </div>
           <h2 id="cultos-title" className="h2" data-split>
             Reunidos para <em>adorar a Deus.</em>
           </h2>

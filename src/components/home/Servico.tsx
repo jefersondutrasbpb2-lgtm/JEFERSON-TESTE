@@ -1,7 +1,6 @@
 import { bomSamaritano } from "@/content/missoes";
 import { media } from "@/content/media";
 import { Section } from "@/components/ui/Section";
-import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Button } from "@/components/ui/Button";
 import { Photo } from "@/components/ui/Photo";
 import { Pending } from "@/components/ui/Pending";
@@ -21,9 +20,6 @@ export function Servico() {
         </div>
 
         <div className="servico__copy">
-          <div data-reveal>
-            <Eyebrow index="05">Fé que também se expressa em serviço</Eyebrow>
-          </div>
           <h2 id="servico-title" className="h2" data-split>
             O Bom Samaritano, <em>em Carvalhadas.</em>
           </h2>

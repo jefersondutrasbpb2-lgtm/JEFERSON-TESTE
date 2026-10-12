@@ -5,7 +5,6 @@ import { asset } from "@/lib/asset";
 import { media } from "@/content/media";
 import { PageHero } from "@/components/ui/PageHero";
 import { Section } from "@/components/ui/Section";
-import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Photo } from "@/components/ui/Photo";
 import { Button } from "@/components/ui/Button";
 import { ScriptureQuote } from "@/components/ui/ScriptureQuote";
@@ -23,8 +22,6 @@ export default function QuemSomosPage() {
     <>
       <PageHero
         tone="paper"
-        index="Identidade"
-        eyebrow="Quem somos"
         title={
           <>
             Firmados nas Escrituras, <em>centrados em Cristo.</em>
@@ -39,9 +36,6 @@ export default function QuemSomosPage() {
             <Photo image={media.congregacao} slot="Congregação em culto" ratio="4 / 5" parallax={6} mask="up" />
           </div>
           <div className="identity__copy">
-            <div data-reveal>
-              <Eyebrow>Nossa missão</Eyebrow>
-            </div>
             <h2 id="missao-title" className="h2" data-split>
               Glorificar a Deus, anunciar o Evangelho, <em>servir ao próximo.</em>
             </h2>
@@ -65,9 +59,6 @@ export default function QuemSomosPage() {
         <div className="container">
           <header className="section-head section-head--split">
             <div className="section-head__main">
-              <div data-reveal>
-                <Eyebrow index="Reforma">As cinco solas</Eyebrow>
-              </div>
               <h2 id="solas-title" className="h2" data-split>
                 Uma herança <em>reformada.</em>
               </h2>
@@ -81,7 +72,6 @@ export default function QuemSomosPage() {
           <ol className="solas__list">
             {solas.map((s, i) => (
               <li key={s.latin} className="solas__item" data-reveal data-delay={String(i * 0.04)}>
-                <span className="solas__num numeral">{String(i + 1).padStart(2, "0")}</span>
                 <div className="solas__name">
                   <h3 className="solas__latin">{s.latin}</h3>
                   <p className="solas__pt">{s.pt}</p>
@@ -98,9 +88,6 @@ export default function QuemSomosPage() {
         <div className="container">
           <header className="section-head section-head--split">
             <div className="section-head__main">
-              <div data-reveal>
-                <Eyebrow index="Fé e prática">No que cremos e como vivemos</Eyebrow>
-              </div>
               <h2 id="cremos-title" className="h2" data-split>
                 Convicções que <em>orientam a vida da igreja.</em>
               </h2>
@@ -114,7 +101,6 @@ export default function QuemSomosPage() {
           <div className="cards cards--3" data-reveal="stagger">
             {pillars.map((p, i) => (
               <article key={p.title} className="card">
-                <p className="card__index">{String(i + 1).padStart(2, "0")}</p>
                 <h3 className="card__title font-display">{p.title}</h3>
                 <p className="card__text">{p.text}</p>
               </article>
@@ -136,9 +122,6 @@ export default function QuemSomosPage() {
             />
           </figure>
           <div className="leadership__copy">
-            <div data-reveal>
-              <Eyebrow index="Liderança">Pastor eleito</Eyebrow>
-            </div>
             <h2 id="lideranca-title" className="h2" data-split>
               {currentPastor.title} <em>{currentPastor.name}</em>
             </h2>
@@ -158,9 +141,6 @@ export default function QuemSomosPage() {
       <Section tone="sand" labelledBy="tradicao-title" className="tradition">
         <div className="container tradition__grid">
           <div>
-            <div data-reveal>
-              <Eyebrow index="Tradição">Congregacional</Eyebrow>
-            </div>
             <h2 id="tradicao-title" className="h2" data-split>
               {congregationalNote.title}
             </h2>

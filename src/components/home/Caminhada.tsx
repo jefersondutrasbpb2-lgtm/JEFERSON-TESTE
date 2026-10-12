@@ -1,17 +1,13 @@
 import { milestones } from "@/content/historia";
 import { reviewMode } from "@/content/site";
 import { Section } from "@/components/ui/Section";
-import { Eyebrow } from "@/components/ui/Eyebrow";
 
-export function Caminhada({ index = "03" }: { index?: string }) {
+export function Caminhada() {
   return (
     <Section tone="paper" labelledBy="caminhada-title" className="caminhada">
       <div className="container">
         <header className="section-head section-head--split">
           <div className="section-head__main">
-            <div data-reveal>
-              <Eyebrow index={index}>Nossa caminhada</Eyebrow>
-            </div>
             <h2 id="caminhada-title" className="h2" data-split>
               Marcos de uma trajetória <em>de fidelidade.</em>
             </h2>

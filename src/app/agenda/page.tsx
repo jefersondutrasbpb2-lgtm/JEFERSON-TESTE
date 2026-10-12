@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { events, formatTime, parseDate } from "@/content/data";
 import { PageHero } from "@/components/ui/PageHero";
 import { Section } from "@/components/ui/Section";
-import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Button } from "@/components/ui/Button";
 import { WeeklySchedule } from "@/components/ui/WeeklySchedule";
 
@@ -17,8 +16,6 @@ export default function AgendaPage() {
     <>
       <PageHero
         tone="paper"
-        index="Programação"
-        eyebrow="Agenda"
         title={
           <>
             Tempo de adorar, <em>aprender e servir.</em>
@@ -30,9 +27,6 @@ export default function AgendaPage() {
       <Section tone="paper" labelledBy="semana-title" className="section--tight agenda-week">
         <div className="container agenda__grid">
           <div className="agenda__head">
-            <div data-reveal>
-              <Eyebrow index="Semanal">Programação regular</Eyebrow>
-            </div>
             <h2 id="semana-title" className="h2" data-split>
               Toda semana
             </h2>
@@ -44,9 +38,6 @@ export default function AgendaPage() {
       <Section tone="sand" labelledBy="eventos-title" className="agenda-events">
         <div className="container agenda__grid">
           <div className="agenda__head">
-            <div data-reveal>
-              <Eyebrow index="Calendário">Próximos eventos</Eyebrow>
-            </div>
             <h2 id="eventos-title" className="h2" data-split>
               Eventos e <em>celebrações</em>
             </h2>

@@ -3,7 +3,6 @@ import { currentPastor, firstBoard, firstCouncil, founding, pastors, pastorsNote
 import { media } from "@/content/media";
 import { PageHero } from "@/components/ui/PageHero";
 import { Section } from "@/components/ui/Section";
-import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Photo } from "@/components/ui/Photo";
 import { Button } from "@/components/ui/Button";
 import { Pending } from "@/components/ui/Pending";
@@ -25,8 +24,6 @@ export default function HistoriaPage() {
     <>
       <PageHero
         tone="paper"
-        index="Desde 1970"
-        eyebrow="Nossa história"
         title={
           <>
             Uma história de fé que começou <em>em um lar.</em>
@@ -57,9 +54,6 @@ export default function HistoriaPage() {
         <div className="container">
           <header className="section-head section-head--split">
             <div className="section-head__main">
-              <div data-reveal>
-                <Eyebrow index="Registro">Os primeiros passos</Eyebrow>
-              </div>
               <h2 id="registros-title" className="h2" data-split>
                 Os nomes que <em>lançaram as bases.</em>
               </h2>
@@ -119,9 +113,6 @@ export default function HistoriaPage() {
       <Section id="pastores" tone="paper" labelledBy="pastores-title" className="pastors">
         <div className="container pastors__grid">
           <div className="pastors__head">
-            <div data-reveal>
-              <Eyebrow index="Liderança">A liderança ao longo do tempo</Eyebrow>
-            </div>
             <h2 id="pastores-title" className="h2" data-split>
               Pastores que serviram <em>a esta igreja.</em>
             </h2>
@@ -145,14 +136,11 @@ export default function HistoriaPage() {
         </div>
       </Section>
 
-      <Caminhada index="Linha do tempo" />
+      <Caminhada />
 
       <Section tone="ink" labelledBy="acervo-title" className="archive-call">
         <div className="container archive-call__grid">
           <div>
-            <div data-reveal>
-              <Eyebrow index="Memória">Acervo histórico</Eyebrow>
-            </div>
             <h2 id="acervo-title" className="h2" data-split>
               Ajude-nos a <em>preservar esta memória.</em>
             </h2>

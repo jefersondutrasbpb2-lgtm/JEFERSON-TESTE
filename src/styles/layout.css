@@ -329,17 +329,10 @@ html .site-header[data-open][data-tone] {
 }
 .site-menu__link {
   display: grid;
-  grid-template-columns: 2.5rem 1fr;
+  grid-template-columns: 1fr;
   align-items: baseline;
-  column-gap: 0.5rem;
   padding-block: 0.7rem;
   text-decoration: none;
-}
-.site-menu__num {
-  font-size: 0.72rem;
-  font-variant-numeric: tabular-nums;
-  color: var(--c-gold);
-  letter-spacing: 0.1em;
 }
 .site-menu__label {
   font-family: var(--ff-display);
@@ -348,7 +341,6 @@ html .site-header[data-open][data-tone] {
   transition: transform 0.5s var(--ease-out), color var(--dur);
 }
 .site-menu__desc {
-  grid-column: 2;
   font-size: 0.82rem;
   color: var(--c-text-inv-muted);
 }

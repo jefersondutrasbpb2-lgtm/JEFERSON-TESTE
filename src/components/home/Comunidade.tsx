@@ -4,11 +4,11 @@ import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Photo } from "@/components/ui/Photo";
 
 const tiles = [
-  { key: "comunidadeCulto", slot: "Culto de domingo", ratio: "4 / 5", cls: "mosaic__a" },
-  { key: "comunidadeEstudo", slot: "Estudo bíblico", ratio: "1 / 1", cls: "mosaic__b" },
-  { key: "comunidadeComunhao", slot: "Comunhão entre irmãos", ratio: "3 / 2", cls: "mosaic__c" },
-  { key: "comunidadeLouvor", slot: "Música e cânticos", ratio: "4 / 5", cls: "mosaic__d" },
-  { key: "comunidadeJovens", slot: "Encontro de jovens", ratio: "1 / 1", cls: "mosaic__e" },
+  { key: "louvor", slot: "Louvor", caption: "Louvor", ratio: "4 / 5", cls: "mosaic__a" },
+  { key: "leitura", slot: "Leitura", caption: "Leitura", ratio: "1 / 1", cls: "mosaic__b" },
+  { key: "oracao", slot: "Oração", caption: "Oração", ratio: "3 / 2", cls: "mosaic__c" },
+  { key: "congregacao", slot: "Adoração congregacional", caption: "Adoração congregacional", ratio: "4 / 5", cls: "mosaic__d" },
+  { key: "criancas", slot: "Crianças na igreja", caption: "As crianças na vida da igreja", ratio: "1 / 1", cls: "mosaic__e" },
 ];
 
 export function Comunidade() {
@@ -37,7 +37,9 @@ export function Comunidade() {
               className={t.cls}
               image={media[t.key]}
               slot={t.slot}
+              caption={t.caption}
               ratio={t.ratio}
+              sizes="(min-width: 900px) 33vw, 50vw"
               parallax={i % 2 ? 5 : 8}
               mask={i % 2 ? "left" : "up"}
               maskDelay={i * 0.08}

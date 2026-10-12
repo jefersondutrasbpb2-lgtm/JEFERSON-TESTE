@@ -34,7 +34,7 @@ export default function QuemSomosPage() {
       <Section tone="paper" labelledBy="missao-title" className="identity section--tight">
         <div className="container identity__grid">
           <div className="identity__media">
-            <Photo image={media.interiorTemplo} slot="Bíblia aberta sobre o púlpito, durante o culto" ratio="4 / 5" parallax={6} mask="up" />
+            <Photo image={media.congregacao} slot="Congregação em culto" ratio="4 / 5" parallax={6} mask="up" />
           </div>
           <div className="identity__copy">
             <div data-reveal>

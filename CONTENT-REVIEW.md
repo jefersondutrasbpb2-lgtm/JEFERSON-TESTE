@@ -69,7 +69,9 @@ Os dados abaixo vieram de uma versão anterior do site e **não foram verificado
 - [ ] Serviço de envio dos formulários (Formspree, Getform ou próprio) → variáveis `NEXT_PUBLIC_CONTACT_ENDPOINT` e
       `NEXT_PUBLIC_PRAYER_ENDPOINT`
 - [ ] Texto de privacidade validado pela liderança (e, se possível, por assessoria jurídica) → `src/app/contato/page.tsx`
-- [ ] Autorizações de uso de imagem, especialmente de crianças e adolescentes
+- [ ] Autorizações de uso de imagem, especialmente de crianças e adolescentes. O site já publica fotos de pessoas
+      identificáveis, inclusive crianças (leitura, oração e "as crianças na vida da igreja", na homepage); confirme
+      que os responsáveis autorizaram o uso no site → `src/content/media.ts`
 
 ## 7. Fotografias e acervo
 
@@ -77,14 +79,13 @@ Espaços reservados aguardando imagens reais e autorizadas (`src/content/media.t
 
 - [x] Fachada do templo — aplicada na abertura da homepage, na seção de visita, na página "Planeje sua visita", no
       contato e na imagem de compartilhamento (Open Graph)
-- [ ] Congregação em culto
+- [x] Congregação em culto, pregação, louvor, leitura, oração e crianças — aplicadas em "Nossa essência",
+      "Quem somos" e "Nossa comunidade"
 - [ ] Registros da fundação (fotografias ou documentos de 1970)
 - [ ] Documento histórico digitalizado (ata ou registro)
 - [ ] Campos missionários: Rio Purus e Caicó
 - [ ] O Bom Samaritano (sem identificação das crianças, salvo autorização)
-- [ ] Vida comunitária: culto, estudo bíblico, comunhão, música e jovens
 - [x] Entrada do templo
-- [ ] Interior do templo / congregação em culto
 
 ## Para publicar
 

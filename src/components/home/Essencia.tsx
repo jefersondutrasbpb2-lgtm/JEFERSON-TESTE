@@ -39,7 +39,7 @@ export function Essencia() {
         </div>
 
         <div className="essencia__media">
-          <Photo image={media.interiorTemplo} slot="Congregação reunida no templo, em culto" ratio="4 / 5" parallax={7} mask="up" />
+          <Photo image={media.pregacao} slot="Pregação da Palavra" ratio="4 / 5" parallax={7} mask="up" />
         </div>
 
         <div className="essencia__verse">

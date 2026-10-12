@@ -68,10 +68,10 @@ img {
 
 h1, h2, h3, h4, h5, h6 {
   margin: 0;
-  font-family: var(--ff-serif);
-  font-weight: 500;
+  font-family: var(--ff-display);
+  font-weight: 600;
   line-height: var(--lh-heading);
-  letter-spacing: -0.012em;
+  letter-spacing: -0.02em;
   text-wrap: balance;
 }
 p {
@@ -147,8 +147,9 @@ a {
 .h2,
 .h3,
 .h4 {
-  font-family: var(--ff-serif);
-  font-weight: 500;
+  font-family: var(--ff-display);
+  font-weight: 600;
+  font-optical-sizing: auto;
   font-feature-settings: normal;
   text-wrap: balance;
 }
@@ -157,20 +158,21 @@ h1, h2, h3, h4, h5, h6 {
 }
 .display {
   font-size: var(--fs-display);
-  line-height: 0.98;
-  letter-spacing: -0.025em;
-  font-weight: 500;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  font-weight: 650;
 }
-.h1 { font-size: var(--fs-h1); line-height: 1.02; letter-spacing: -0.022em; }
-.h2 { font-size: var(--fs-h2); line-height: 1.04; letter-spacing: -0.018em; }
-.h3 { font-size: var(--fs-h3); line-height: 1.12; }
-.h4 { font-size: var(--fs-h4); line-height: 1.2; font-weight: 600; }
+.h1 { font-size: var(--fs-h1); line-height: 0.98; letter-spacing: -0.035em; }
+.h2 { font-size: var(--fs-h2); line-height: 1.02; letter-spacing: -0.03em; }
+.h3 { font-size: var(--fs-h3); line-height: 1.1; letter-spacing: -0.02em; }
+.h4 { font-size: var(--fs-h4); line-height: 1.2; letter-spacing: -0.01em; }
 
+/* Destaque dentro de títulos: cor da identidade, peso mais leve */
 .display em,
 .h1 em,
 .h2 em,
 .h3 em {
-  font-style: italic;
+  font-style: normal;
   font-weight: 400;
   color: var(--tone-accent);
 }
@@ -198,7 +200,7 @@ h1, h2, h3, h4, h5, h6 {
 .muted { color: var(--tone-muted); }
 .small { font-size: var(--fs-small); }
 .xs { font-size: var(--fs-xs); }
-.serif { font-family: var(--ff-serif); }
+.font-display { font-family: var(--ff-display); }
 .italic { font-style: italic; }
 .accent { color: var(--tone-accent); }
 .nowrap { white-space: nowrap; }
@@ -227,7 +229,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .numeral {
-  font-family: var(--ff-serif);
+  font-family: var(--ff-display);
   font-variant-numeric: lining-nums;
   font-feature-settings: "lnum";
 }

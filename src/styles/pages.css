@@ -26,7 +26,7 @@
 }
 .hero-facts dd {
   margin: 0;
-  font-family: var(--ff-serif);
+  font-family: var(--ff-display);
   font-size: 1.6rem;
   color: var(--tone-accent);
   text-align: right;
@@ -199,19 +199,17 @@
   gap: 0.15rem;
 }
 .story-visual--names li {
-  font-family: var(--ff-serif);
-  font-size: clamp(1.05rem, 0.9rem + 0.6vw, 1.5rem);
+  font-family: var(--ff-display);
+  font-size: clamp(0.98rem, 0.88rem + 0.45vw, 1.3rem);
   line-height: 1.35;
   color: var(--tone-fg);
 }
 .story-visual--names li:nth-child(odd) {
   color: var(--tone-muted);
-  font-style: italic;
 }
 .story-visual__latin {
-  font-family: var(--ff-serif);
+  font-family: var(--ff-display);
   font-size: clamp(3rem, 2rem + 4.5vw, 6.5rem);
-  font-style: italic;
   line-height: 1;
   color: var(--c-gold);
 }
@@ -237,14 +235,14 @@
   overflow: visible;
 }
 .minimap__states path {
-  fill: rgb(245 241 232 / 0.03);
-  stroke: rgb(245 241 232 / 0.2);
+  fill: rgb(247 245 240 / 0.03);
+  stroke: rgb(247 245 240 / 0.2);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
 }
 .minimap__states path.is-highlight {
-  fill: rgb(226 179 60 / 0.1);
-  stroke: rgb(226 179 60 / 0.55);
+  fill: rgb(255 204 0 / 0.1);
+  stroke: rgb(255 204 0 / 0.55);
 }
 .minimap__routes path {
   fill: none;
@@ -287,7 +285,7 @@
   padding: clamp(1.5rem, 1rem + 2vw, 2.75rem);
   background: var(--c-paper);
   border: 1px solid var(--c-line);
-  box-shadow: 0 1px 0 rgb(20 33 49 / 0.04), 0 22px 50px -30px rgb(60 40 10 / 0.35);
+  box-shadow: 0 1px 0 rgb(16 32 58 / 0.04), 0 22px 50px -30px rgb(60 40 10 / 0.35);
 }
 .record::before {
   content: "";
@@ -324,8 +322,8 @@
 }
 .record__group li,
 .record__board li > span:last-child {
-  font-family: var(--ff-serif);
-  font-size: 1.25rem;
+  font-family: var(--ff-display);
+  font-size: 1.05rem;
   line-height: 1.3;
 }
 .record__board li {
@@ -363,8 +361,8 @@
 .pastors__list li {
   padding-block: 1.1rem;
   border-bottom: 1px solid var(--tone-line);
-  font-family: var(--ff-serif);
-  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2.25rem);
+  font-family: var(--ff-display);
+  font-size: clamp(1.25rem, 1.05rem + 0.9vw, 1.8rem);
   line-height: 1.15;
   transition: color 0.3s, padding 0.5s var(--ease-out);
 }
@@ -454,7 +452,6 @@
 }
 .solas__latin {
   font-size: clamp(2rem, 1.5rem + 2.2vw, 3.6rem);
-  font-style: italic;
   font-weight: 400;
   line-height: 1;
 }
@@ -643,9 +640,8 @@
   justify-items: start;
 }
 .bs__place {
-  font-family: var(--ff-serif);
-  font-size: 1.4rem;
-  font-style: italic;
+  font-family: var(--ff-display);
+  font-size: 1.2rem;
   color: var(--c-gold);
 }
 .bs__privacy {
@@ -927,4 +923,54 @@
   justify-items: start;
   min-height: 50vh;
   align-content: center;
+}
+
+/* ---------- Pastor eleito ---------- */
+
+.pastors__list li.pastors__current {
+  color: var(--tone-accent);
+}
+.pastors__status {
+  display: block;
+  margin-top: 0.35rem;
+  font-family: var(--ff-sans);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--tone-muted);
+}
+.story-visual--names li.story-visual__current {
+  margin-top: 0.4rem;
+  color: var(--c-gold);
+}
+.leadership__grid {
+  display: grid;
+  gap: 2.5rem;
+  align-items: center;
+}
+@media (min-width: 900px) {
+  .leadership__grid {
+    grid-template-columns: minmax(0, 0.6fr) minmax(0, 1.4fr);
+    column-gap: clamp(2.5rem, 6vw, 6rem);
+  }
+}
+.leadership__photo {
+  aspect-ratio: 4 / 5;
+  max-width: 22rem;
+  overflow: hidden;
+  border-radius: 999px 999px var(--radius) var(--radius);
+}
+.leadership__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.leadership__copy {
+  display: grid;
+  gap: 1.5rem;
+  justify-items: start;
+}
+.event__verse {
+  font-family: var(--ff-display);
 }

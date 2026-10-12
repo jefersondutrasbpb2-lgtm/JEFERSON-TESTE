@@ -72,7 +72,7 @@ export default function ContatoPage() {
               </li>
               {site.social.map((s) => (
                 <li key={s.id}>
-                  <Icon name={s.id as "instagram" | "youtube"} />
+                  <Icon name={s.id} />
                   <div>
                     <p className="channels__label">{s.label}</p>
                     <p>
@@ -138,7 +138,7 @@ export default function ContatoPage() {
             <div data-reveal>
               <Eyebrow index="03">Onde estamos</Eyebrow>
             </div>
-            <p className="h3 serif" data-reveal>
+            <p className="h3 font-display" data-reveal>
               {site.address.street} — {site.address.district}, {site.address.city} — {site.address.state}
             </p>
             <Photo image={media.visitaEntrada} slot="Entrada do templo" ratio="4 / 3" mask="up" />

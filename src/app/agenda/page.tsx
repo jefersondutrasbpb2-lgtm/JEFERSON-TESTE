@@ -72,6 +72,11 @@ export default function AgendaPage() {
                         {e.location && <span>{e.location}</span>}
                       </p>
                       {e.description && <p className="small muted">{e.description}</p>}
+                      {e.verse && (
+                        <p className="small event__verse">
+                          “{e.verse.text}” <span className="muted">— {e.verse.ref}</span>
+                        </p>
+                      )}
                       {e.example && <span className="pending">exemplo de layout</span>}
                     </div>
                   </li>
@@ -88,7 +93,7 @@ export default function AgendaPage() {
 
       <Section tone="ink" className="section--tight cta-band">
         <div className="container cta-band__inner">
-          <p className="h3 serif" data-reveal>
+          <p className="h3 font-display" data-reveal>
             Primeira vez por aqui?
           </p>
           <div data-reveal>

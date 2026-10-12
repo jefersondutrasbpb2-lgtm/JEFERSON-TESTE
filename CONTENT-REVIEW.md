@@ -20,16 +20,21 @@ Marque cada item ao validar com a liderança e atualize o arquivo indicado.
 
 Os dados abaixo vieram de uma versão anterior do site e **não foram verificados**:
 
-- [ ] Endereço: Rua Afro Bandeira, 265 — Centro, Pombal — PB, 58840-000 (o número 265 aparece na fachada; falta
-      confirmar o nome da rua e o CEP) → `src/content/site.ts`
+- [ ] **Endereço — divergência:** o convite da posse pastoral traz "Rua Afro Bandeira, nº **264**, **Nova Vida**",
+      enquanto a placa na fachada mostra **265** e a versão antiga do site dizia "Centro". O site usa hoje
+      "Rua Afro Bandeira, 265 — Nova Vida, Pombal — PB, 58840-000". Confirmar número e bairro → `src/content/site.ts`
 - [ ] Telefone: (83) 3431-3165 → `src/content/site.ts`
 - [ ] E-mail: sec.iec.2017@gmail.com → `src/content/site.ts`
 - [x] Instagram: @iecdepombal (confirmado)
-- [ ] Canal do YouTube (não informado) → `src/content/site.ts` e `src/content/mensagens.json` (`channelUrl`)
+- [x] YouTube e Facebook: @iecdepombal (conforme o convite oficial). Conferir se os endereços
+      youtube.com/@iecdepombal e facebook.com/iecdepombal abrem os perfis corretos → `src/content/site.ts`
+- [ ] Endereço do canal para a biblioteca de mensagens → `src/content/mensagens.json` (`channelUrl`)
 - [ ] Domínio oficial do site → variável `NEXT_PUBLIC_SITE_URL`
 - [x] Logotipo oficial — aplicado no cabeçalho e no rodapé (versão azul em fundos claros, versão branca em fundos
       escuros) e no ícone do site → `public/brand/`, `src/components/layout/BrandLogo.tsx`, `src/app/icon.png`
-- [ ] Liderança atual (o site não indica pastor atual; a lista histórica termina em Marcone de Carvalho Santana)
+- [x] Liderança atual: Pr. Felipe Oliveira, pastor eleito, posse em 14/10/2026 (convite oficial). Exibido em
+      "Quem somos", na lista de pastores e no destaque da página inicial → `src/content/historia.ts`
+- [ ] Após a posse, atualizar o status de "Pastor eleito" para "Pastor" → `src/content/historia.ts`
 
 ## 3. Horários e programação
 

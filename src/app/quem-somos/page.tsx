@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { congregationalNote, pillars, scriptures, solas } from "@/content/fe";
+import { currentPastor } from "@/content/historia";
+import { asset } from "@/lib/asset";
 import { media } from "@/content/media";
 import { PageHero } from "@/components/ui/PageHero";
 import { Section } from "@/components/ui/Section";
@@ -113,10 +115,42 @@ export default function QuemSomosPage() {
             {pillars.map((p, i) => (
               <article key={p.title} className="card">
                 <p className="card__index">{String(i + 1).padStart(2, "0")}</p>
-                <h3 className="card__title serif">{p.title}</h3>
+                <h3 className="card__title font-display">{p.title}</h3>
                 <p className="card__text">{p.text}</p>
               </article>
             ))}
+          </div>
+        </div>
+      </Section>
+
+      <Section tone="ink" labelledBy="lideranca-title" className="leadership">
+        <div className="container leadership__grid">
+          <figure className="leadership__photo" data-mask="up">
+            <img
+              src={asset(currentPastor.image.src)}
+              alt={`${currentPastor.title} ${currentPastor.name}`}
+              width={currentPastor.image.width}
+              height={currentPastor.image.height}
+              loading="lazy"
+              decoding="async"
+            />
+          </figure>
+          <div className="leadership__copy">
+            <div data-reveal>
+              <Eyebrow index="Liderança">Pastor eleito</Eyebrow>
+            </div>
+            <h2 id="lideranca-title" className="h2" data-split>
+              {currentPastor.title} <em>{currentPastor.name}</em>
+            </h2>
+            <p className="prose" data-reveal>
+              Eleito pela igreja, o {currentPastor.title} {currentPastor.name} toma posse como pastor da IEC Pombal em{" "}
+              {currentPastor.installationLabel}, dando continuidade a uma trajetória pastoral iniciada em 1970.
+            </p>
+            <div className="btn-row" data-reveal>
+              <Button href="/nossa-historia/#pastores" variant="outline">
+                Pastores ao longo da história
+              </Button>
+            </div>
           </div>
         </div>
       </Section>

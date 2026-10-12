@@ -62,6 +62,16 @@ export const pastors = [
   "Marcone de Carvalho Santana",
 ];
 
+/** Pastor eleito pela igreja (convite oficial da posse pastoral). */
+export const currentPastor = {
+  name: "Felipe Oliveira",
+  title: "Pr.",
+  status: "Pastor eleito",
+  installationISO: "2026-10-14",
+  installationLabel: "14 de outubro de 2026",
+  image: { src: "/images/pr-felipe-oliveira.webp", width: 620, height: 775 },
+};
+
 export const pastorsNote =
   "Relação conforme os registros históricos disponíveis. A numeração original dos pastorados apresenta uma lacuna; por isso, esta lista pode não estar completa e não informa períodos.";
 

@@ -21,6 +21,10 @@ export type EventItem = {
   description?: string;
   category?: string;
   example?: boolean;
+  /** Destacar na página inicial até a data do evento */
+  highlight?: boolean;
+  verse?: { text: string; ref: string };
+  image?: string;
 };
 
 export type Message = {

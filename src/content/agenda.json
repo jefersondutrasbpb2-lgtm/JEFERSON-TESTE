@@ -31,6 +31,21 @@
   ],
   "events": [
     {
+      "id": "posse-pastoral-2026",
+      "date": "2026-10-14",
+      "time": "19:00",
+      "title": "Culto de Posse Pastoral do Pr. Felipe Oliveira",
+      "location": "Templo da IEC Pombal",
+      "description": "Com alegria e gratidão a Deus, convidamos você e sua família para celebrarmos juntos a posse pastoral do Pr. Felipe Oliveira.",
+      "category": "Celebração",
+      "highlight": true,
+      "verse": {
+        "text": "Grandes coisas fez o Senhor por nós, e, por isso, estamos alegres.",
+        "ref": "Salmo 126.3"
+      },
+      "image": "/images/pr-felipe-oliveira.webp"
+    },
+    {
       "id": "exemplo-aniversario",
       "date": "2026-12-13",
       "time": "19:00",

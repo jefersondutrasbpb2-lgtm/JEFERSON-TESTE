@@ -2,7 +2,7 @@
    Página inicial
    ========================================================================== */
 
-/* ---------- 01 · Hero ---------- */
+/* ---------- 01 · Hero (fotografia em tela cheia) ---------- */
 
 .hero {
   position: relative;
@@ -11,34 +11,95 @@
   grid-template-rows: 1fr auto;
   padding-top: calc(var(--header-h) + clamp(2rem, 4vw, 4rem));
   overflow: hidden;
+  isolation: isolate;
 }
-.hero::after {
-  /* luz cinematográfica discreta */
-  content: "";
+.hero__bg {
   position: absolute;
   inset: 0;
+  z-index: -2;
+  overflow: hidden;
+}
+.hero__bg-inner {
+  position: absolute;
+  inset: -8% 0;
+}
+.hero__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 55% 45%;
+  filter: saturate(0.95) contrast(1.02);
+}
+html.motion .hero__img {
+  animation: hero-zoom 2.4s var(--ease-out) both;
+}
+@keyframes hero-zoom {
+  from { transform: scale(1.12); opacity: 0.4; }
+  to { transform: scale(1); opacity: 1; }
+}
+/* Véu de leitura.
+   Celular: a foto ocupa a parte superior e se funde ao azul sob o texto.
+   Desktop: foto à direita, véu denso à esquerda, sob o texto. */
+.hero__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
   pointer-events: none;
-  background:
-    radial-gradient(60% 55% at 78% 40%, rgb(226 179 60 / 0.13), transparent 70%),
-    radial-gradient(50% 60% at 0% 100%, rgb(30 58 51 / 0.35), transparent 70%);
+}
+@media (max-width: 999px) {
+  .hero {
+    padding-top: 50svh;
+  }
+  .hero__bg {
+    bottom: auto;
+    height: 64svh;
+  }
+  .hero__img {
+    object-position: 50% 30%;
+  }
+  .hero__bg::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgb(11 36 71 / 0.6) 0%,
+      rgb(11 36 71 / 0) 20%,
+      rgb(11 36 71 / 0) 45%,
+      rgb(11 36 71 / 0.85) 75%,
+      rgb(11 36 71 / 1) 100%
+    );
+  }
+}
+@media (min-width: 1000px) {
+  .hero__bg {
+    left: 18%;
+  }
+  .hero__img {
+    object-position: 50% 45%;
+  }
+  .hero__scrim {
+    background:
+      linear-gradient(90deg, rgb(11 36 71 / 1) 0%, rgb(11 36 71 / 0.97) 18%, rgb(11 36 71 / 0.82) 34%, rgb(11 36 71 / 0.35) 52%, rgb(11 36 71 / 0) 70%),
+      linear-gradient(180deg, rgb(11 36 71 / 0.6) 0%, rgb(11 36 71 / 0) 22%, rgb(11 36 71 / 0) 70%, rgb(11 36 71 / 0.85) 100%);
+  }
 }
 .hero__grid {
   position: relative;
   z-index: 1;
   display: grid;
-  gap: 3rem;
   align-items: center;
 }
-@media (min-width: 1000px) {
+@media (max-width: 999px) {
   .hero__grid {
-    grid-template-columns: minmax(0, 1.45fr) minmax(0, 0.8fr);
-    column-gap: clamp(3rem, 6vw, 7rem);
+    align-items: start;
   }
 }
 .hero__copy {
   display: grid;
-  gap: clamp(1.5rem, 1rem + 1.5vw, 2.25rem);
+  gap: clamp(1.25rem, 0.9rem + 1.4vw, 2.1rem);
   justify-items: start;
+  max-width: 44rem;
 }
 .hero__kicker {
   display: flex;
@@ -46,7 +107,7 @@
   align-items: center;
   gap: 0.6rem 1rem;
   font-size: var(--fs-eyebrow);
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
   color: var(--c-gold);
@@ -55,51 +116,20 @@
   width: 2.5rem;
   height: 1px;
   background: currentColor;
-  opacity: 0.6;
+  opacity: 0.7;
 }
 .hero__title {
-  max-width: 11ch;
+  max-width: 12ch;
+  text-shadow: 0 2px 30px rgb(11 36 71 / 0.35);
 }
 .hero__lead {
-  color: var(--c-text-inv-muted);
+  color: rgb(247 245 240 / 0.86);
   max-width: 34ch;
-}
-.hero__media {
-  position: relative;
-  width: min(100%, 26rem);
-  justify-self: center;
-  padding: clamp(0.75rem, 1.5vw, 1.25rem);
-}
-@media (min-width: 1000px) {
-  .hero__media {
-    width: 100%;
-    max-width: 30rem;
-    justify-self: end;
-  }
-}
-@media (max-width: 999px) {
-  .hero__media {
-    width: min(62%, 17rem);
-    order: -1;
-    justify-self: end;
-    margin-right: -0.5rem;
-  }
-}
-.hero__arch .photo__frame {
-  border-radius: 999px 999px var(--radius-sm) var(--radius-sm);
-}
-.hero__arch-lines {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  color: var(--c-gold-line);
-  opacity: 0.85;
-  pointer-events: none;
 }
 .hero__foot {
   position: relative;
   z-index: 1;
+  color: var(--c-text-inv);
   display: flex;
   flex-wrap: wrap;
   align-items: end;
@@ -138,6 +168,72 @@
 }
 @media (max-width: 640px) {
   .hero__foot-item--coords { display: none; }
+}
+
+/* ---------- Destaque: próximo evento ---------- */
+
+.destaque__grid {
+  display: grid;
+  gap: 2.5rem;
+  align-items: center;
+}
+@media (min-width: 900px) {
+  .destaque__grid {
+    grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
+    column-gap: clamp(2.5rem, 6vw, 6rem);
+  }
+}
+.destaque__media {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  max-width: 26rem;
+  overflow: hidden;
+  border-radius: 999px 999px var(--radius) var(--radius);
+  box-shadow: 0 30px 60px -30px rgb(0 0 0 / 0.5);
+}
+.destaque__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.destaque__copy {
+  display: grid;
+  gap: 1.4rem;
+  justify-items: start;
+}
+.destaque__copy h2 {
+  max-width: 16ch;
+}
+.destaque__kicker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.7rem;
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--c-gold);
+}
+.destaque__verse {
+  padding-left: 1.1rem;
+  border-left: 2px solid var(--c-gold);
+}
+.destaque__verse p {
+  font-family: var(--ff-display);
+  font-size: clamp(1.1rem, 1rem + 0.5vw, 1.4rem);
+  line-height: 1.35;
+}
+.destaque__verse cite {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: var(--fs-xs);
+  font-style: normal;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--tone-muted);
+}
+.destaque__place {
+  color: var(--tone-muted);
 }
 
 /* ---------- 02 · Essência ---------- */
@@ -189,13 +285,13 @@
   user-select: none;
 }
 .h1970__mega span {
-  font-family: var(--ff-serif);
+  font-family: var(--ff-display);
   font-size: var(--fs-mega);
   font-weight: 500;
   line-height: 0.8;
   letter-spacing: -0.04em;
   color: transparent;
-  -webkit-text-stroke: 1px rgb(226 179 60 / 0.32);
+  -webkit-text-stroke: 1px rgb(255 204 0 / 0.32);
   white-space: nowrap;
 }
 .h1970__grid {
@@ -252,8 +348,8 @@
   gap: 0.4rem 1rem;
 }
 .fact__value--name {
-  font-family: var(--ff-serif);
-  font-size: clamp(1.5rem, 1.3rem + 0.8vw, 2rem);
+  font-family: var(--ff-display);
+  font-size: clamp(1.3rem, 1.15rem + 0.6vw, 1.7rem);
   color: var(--tone-fg);
 }
 .fact__unit {
@@ -330,9 +426,8 @@ html:not(.js) .timeline__node {
   gap: 1rem;
 }
 .timeline__roman {
-  font-family: var(--ff-serif);
+  font-family: var(--ff-display);
   font-size: 1.1rem;
-  font-style: italic;
   color: var(--tone-accent);
 }
 .timeline__date {
@@ -445,8 +540,8 @@ html:not(.js) .timeline__node {
   stroke-linejoin: round;
 }
 .atlas__states path.is-highlight {
-  fill: rgb(226 179 60 / 0.1);
-  stroke: rgb(226 179 60 / 0.55);
+  fill: rgb(255 204 0 / 0.1);
+  stroke: rgb(255 204 0 / 0.55);
 }
 .atlas__state-label {
   font-family: var(--ff-sans);
@@ -493,7 +588,7 @@ html:not(.js) .atlas__route {
   fill: var(--c-gold);
 }
 .atlas__halo {
-  fill: rgb(226 179 60 / 0.16);
+  fill: rgb(255 204 0 / 0.16);
   transform: scale(0.4);
   opacity: 0;
   transition: transform 0.5s var(--ease-out), opacity 0.5s;
@@ -524,9 +619,8 @@ html:not(.js) .atlas__route {
   stroke-linejoin: round;
 }
 .atlas__label--hub {
-  font-family: var(--ff-serif);
+  font-family: var(--ff-display);
   font-size: 24px;
-  font-style: italic;
   fill: var(--c-gold);
 }
 .atlas__legend {
@@ -558,8 +652,8 @@ html:not(.js) .atlas__route {
   transition: padding 0.4s var(--ease-out), color 0.3s;
 }
 .atlas__item-name {
-  font-family: var(--ff-serif);
-  font-size: 1.3rem;
+  font-family: var(--ff-display);
+  font-size: 1.1rem;
   line-height: 1.2;
 }
 .atlas__item-place {
@@ -590,8 +684,8 @@ html:not(.js) .atlas__route {
   color: var(--tone-accent);
 }
 .atlas__detail-name {
-  font-family: var(--ff-serif);
-  font-size: 1.5rem;
+  font-family: var(--ff-display);
+  font-size: 1.3rem;
   line-height: 1.2;
 }
 .atlas__detail-people {
@@ -728,19 +822,18 @@ html:not(.js) .atlas__route {
   padding: 1.25rem;
   color: var(--c-text-inv);
   background:
-    radial-gradient(90% 120% at 100% 0%, rgb(226 179 60 / 0.22), transparent 60%),
+    radial-gradient(90% 120% at 100% 0%, rgb(255 204 0 / 0.22), transparent 60%),
     linear-gradient(160deg, var(--c-ink-3), var(--c-ink));
 }
 .msg-card__ref {
-  font-family: var(--ff-serif);
-  font-size: 1.4rem;
-  font-style: italic;
+  font-family: var(--ff-display);
+  font-size: 1.15rem;
 }
 .msg-card__num {
-  font-family: var(--ff-serif);
+  font-family: var(--ff-display);
   font-size: 3.5rem;
   line-height: 0.8;
-  color: rgb(226 179 60 / 0.5);
+  color: rgb(255 204 0 / 0.5);
 }
 .msg-card__body {
   display: grid;
@@ -842,8 +935,8 @@ html:not(.js) .atlas__route {
   border-top: 1px solid var(--c-gold-line);
 }
 .tips__title {
-  font-family: var(--ff-serif);
-  font-size: 1.3rem;
+  font-family: var(--ff-display);
+  font-size: 1.1rem;
   font-weight: 600;
 }
 .tips__text {

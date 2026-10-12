@@ -1,18 +1,42 @@
 import { site, visitCta } from "@/content/site";
 import { media } from "@/content/media";
+import { asset } from "@/lib/asset";
 import { Button } from "@/components/ui/Button";
-import { Photo } from "@/components/ui/Photo";
 import { Icon } from "@/components/ui/Icon";
 
+/**
+ * Abertura em tela cheia com a fotografia do templo. Um véu em azul-marinho
+ * (mais denso sob o texto) garante a leitura sem esconder a fachada.
+ */
 export function Hero() {
+  const img = media.heroFachada;
   return (
     <section className="hero section-tone" data-tone="ink" data-tone-section="ink" aria-labelledby="hero-title">
+      {img && (
+        <div className="hero__bg">
+          <div className="hero__bg-inner" data-parallax="7">
+            <img
+              className="hero__img"
+              src={asset(img.src)}
+              srcSet={[...(img.variants ?? []), { src: img.src, width: img.width }]
+                .map((v) => `${asset(v.src)} ${v.width}w`)
+                .join(", ")}
+              sizes="(min-width: 1000px) 82vw, 100vw"
+              alt={img.alt}
+              width={img.width}
+              height={img.height}
+              fetchPriority="high"
+              decoding="async"
+            />
+          </div>
+        </div>
+      )}
+      <div className="hero__scrim" aria-hidden="true" />
+
       <div className="container hero__grid">
         <div className="hero__copy">
           <p className="hero__kicker" data-reveal data-load="">
-            <span>
-              {site.city} — Paraíba
-            </span>
+            <span>{site.city} — Paraíba</span>
             <span className="hero__kicker-sep" aria-hidden="true" />
             <span>Desde 1970</span>
           </p>
@@ -31,30 +55,6 @@ export function Hero() {
               {visitCta.label}
             </Button>
           </div>
-        </div>
-
-        <div className="hero__media" aria-hidden={media.heroFachada ? undefined : true}>
-          <svg className="hero__arch-lines" viewBox="0 0 400 620" fill="none" aria-hidden="true">
-            <path
-              d="M6 620 V206 A194 194 0 0 1 394 206 V620"
-              stroke="currentColor"
-              strokeWidth="1"
-              data-draw="load"
-              data-delay="0.3"
-              data-duration="2.4"
-            />
-          </svg>
-          <Photo
-            className="hero__arch"
-            image={media.heroFachada}
-            slot="Fachada ou interior do templo da IEC Pombal"
-            ratio="400 / 620"
-            priority
-            parallax={6}
-            mask="up"
-            maskOnLoad
-            maskDelay={0.25}
-          />
         </div>
       </div>
 

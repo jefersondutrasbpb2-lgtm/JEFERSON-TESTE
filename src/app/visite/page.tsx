@@ -147,7 +147,7 @@ export default function VisitePage() {
               <Eyebrow index="04">Localização</Eyebrow>
             </div>
             <h2 id="local-title" className="h2" data-split>
-              No Centro de <em>Pombal.</em>
+              Em Pombal, <em>Paraíba.</em>
             </h2>
             <p className="lead lead--wide" data-reveal>
               {fullAddress} <Pending show={site.address.pending} />

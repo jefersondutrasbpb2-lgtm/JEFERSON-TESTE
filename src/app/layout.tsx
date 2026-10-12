@@ -1,9 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import "@fontsource/cormorant-garamond/latin-400.css";
-import "@fontsource/cormorant-garamond/latin-400-italic.css";
-import "@fontsource/cormorant-garamond/latin-500.css";
-import "@fontsource/cormorant-garamond/latin-500-italic.css";
-import "@fontsource/cormorant-garamond/latin-600.css";
+import "@fontsource-variable/bricolage-grotesque/opsz.css";
 import "@fontsource-variable/manrope/wght.css";
 import "@/styles/index.css";
 
@@ -37,8 +33,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f5f1e8" },
-    { media: "(prefers-color-scheme: dark)", color: "#0e1f31" },
+    { media: "(prefers-color-scheme: light)", color: "#f7f5f0" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b2447" },
   ],
   width: "device-width",
   initialScale: 1,

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { firstBoard, firstCouncil, founding, pastors, pastorsNote } from "@/content/historia";
+import { currentPastor, firstBoard, firstCouncil, founding, pastors, pastorsNote } from "@/content/historia";
 import { media } from "@/content/media";
 import { PageHero } from "@/components/ui/PageHero";
 import { Section } from "@/components/ui/Section";
@@ -116,7 +116,7 @@ export default function HistoriaPage() {
         </div>
       </Section>
 
-      <Section tone="paper" labelledBy="pastores-title" className="pastors">
+      <Section id="pastores" tone="paper" labelledBy="pastores-title" className="pastors">
         <div className="container pastors__grid">
           <div className="pastors__head">
             <div data-reveal>
@@ -135,6 +135,12 @@ export default function HistoriaPage() {
                 {p}
               </li>
             ))}
+            <li className="pastors__current">
+              {currentPastor.name}
+              <span className="pastors__status">
+                {currentPastor.status} · posse em {currentPastor.installationLabel}
+              </span>
+            </li>
           </ul>
         </div>
       </Section>

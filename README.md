@@ -30,7 +30,7 @@ passado, presente e missão: tipografia clássica, fotografia documental, mapas 
 - **TypeScript** e **CSS moderno** com design tokens (sem framework CSS)
 - **GSAP 3** + **ScrollTrigger**, **SplitText** e **DrawSVG**
 - **Lenis** para rolagem suave, sincronizada ao ticker do GSAP
-- Fontes auto-hospedadas via Fontsource: **Cormorant Garamond** (títulos) e **Manrope** (texto)
+- Fontes auto-hospedadas via Fontsource: **Bricolage Grotesque** (títulos e destaques) e **Manrope** (texto)
 - Mapas gerados a partir dos limites estaduais do IBGE (`scripts/build-geo.mjs` com `d3-geo`)
 
 ## Como rodar
@@ -90,9 +90,14 @@ geradas por IA como se fossem registros reais da igreja.** Fotos de crianças ex
 
 O logotipo oficial está em `public/brand/` (versão azul para fundos claros e versão branca para fundos escuros) e é
 exibido por `src/components/layout/BrandLogo.tsx`, que escolhe a versão conforme o tom da seção. O ícone do site
-(`src/app/icon.png` e `apple-icon.png`) usa o símbolo da cruz e do sol. A paleta deriva das cores oficiais: o azul
-`#195691` é o destaque sobre fundos claros e um dourado solar, derivado do amarelo `#FFCC00`, é usado sobre fundos
-escuros.
+(`src/app/icon.png` e `apple-icon.png`) usa o símbolo da cruz e do sol. A paleta deriva das cores oficiais: azul-marinho
+`#0B2447` nos blocos escuros, azul `#195691` como destaque sobre fundos claros e em blocos institucionais, e o amarelo
+`#FFCC00` como destaque sobre fundos escuros.
+
+### Destaque de evento
+
+Um evento com `"highlight": true` em `agenda.json` aparece em destaque logo abaixo da abertura da página inicial e
+some automaticamente no dia seguinte à data do evento, sem precisar republicar o site.
 
 ### Modo de revisão
 

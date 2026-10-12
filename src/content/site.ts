@@ -11,6 +11,15 @@ export type Pendable<T> = T & { pending?: boolean };
 /** Ative até que a liderança valide todos os itens marcados como pendentes. */
 export const reviewMode = true;
 
+export type SocialLink = {
+  id: "instagram" | "youtube" | "facebook";
+  label: string;
+  handle: string;
+  /** Vazio enquanto o perfil não for informado */
+  href: string;
+  pending: boolean;
+};
+
 export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, "");
 
 export const site = {
@@ -28,7 +37,7 @@ export const site = {
 
   address: {
     street: "Rua Afro Bandeira, 265",
-    district: "Centro",
+    district: "Nova Vida",
     city: "Pombal",
     state: "PB",
     zip: "58840-000",
@@ -40,8 +49,9 @@ export const site = {
 
   social: [
     { id: "instagram", label: "Instagram", handle: "@iecdepombal", href: "https://www.instagram.com/iecdepombal/", pending: false },
-    { id: "youtube", label: "YouTube", handle: "Canal a informar", href: "", pending: true },
-  ],
+    { id: "youtube", label: "YouTube", handle: "@iecdepombal", href: "https://www.youtube.com/@iecdepombal", pending: false },
+    { id: "facebook", label: "Facebook", handle: "@iecdepombal", href: "https://www.facebook.com/iecdepombal", pending: false },
+  ] as SocialLink[],
 } as const;
 
 export const fullAddress = `${site.address.street} — ${site.address.district}, ${site.address.city} — ${site.address.state}, ${site.address.zip}`;

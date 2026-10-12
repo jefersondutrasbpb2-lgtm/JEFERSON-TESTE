@@ -32,6 +32,15 @@
   background-color: var(--tone-bg);
   color: var(--tone-fg);
 }
+/* Blocos escuros com o brilho azul da identidade (como nas peças oficiais) */
+.section-tone[data-tone="ink"] {
+  background-image:
+    radial-gradient(70% 60% at 15% 0%, rgb(25 86 145 / 0.55), transparent 70%),
+    radial-gradient(60% 50% at 100% 100%, rgb(25 86 145 / 0.25), transparent 70%);
+}
+.section-tone[data-tone="green"] {
+  background-image: radial-gradient(80% 70% at 85% 10%, rgb(255 255 255 / 0.08), transparent 70%);
+}
 
 .section-head {
   display: grid;
@@ -333,8 +342,8 @@ html .site-header[data-open][data-tone] {
   letter-spacing: 0.1em;
 }
 .site-menu__label {
-  font-family: var(--ff-serif);
-  font-size: clamp(1.9rem, 1.3rem + 2.6vw, 3.1rem);
+  font-family: var(--ff-display);
+  font-size: clamp(1.7rem, 1.2rem + 2.2vw, 2.7rem);
   line-height: 1.1;
   transition: transform 0.5s var(--ease-out), color var(--dur);
 }

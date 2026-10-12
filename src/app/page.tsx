@@ -1,4 +1,5 @@
 import { Hero } from "@/components/home/Hero";
+import { Destaque } from "@/components/home/Destaque";
 import { Essencia } from "@/components/home/Essencia";
 import { Historia1970 } from "@/components/home/Historia1970";
 import { Caminhada } from "@/components/home/Caminhada";
@@ -13,6 +14,7 @@ export default function HomePage() {
   return (
     <>
       <Hero />
+      <Destaque />
       <Essencia />
       <Historia1970 />
       <Caminhada />

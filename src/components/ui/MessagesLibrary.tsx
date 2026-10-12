@@ -35,7 +35,7 @@ export function MessagesLibrary({ items }: { items: Message[] }) {
   if (items.length === 0) {
     return (
       <div className="library-empty">
-        <p className="h3 serif">A biblioteca está sendo preparada.</p>
+        <p className="h3 font-display">A biblioteca está sendo preparada.</p>
         <p className="muted">Em breve, pregações e estudos bíblicos estarão disponíveis aqui.</p>
       </div>
     );

@@ -1,4 +1,4 @@
-import { founding, pastors } from "@/content/historia";
+import { currentPastor, founding, pastors } from "@/content/historia";
 import { MiniMap } from "@/components/maps/MiniMap";
 
 type Chapter = {
@@ -66,7 +66,8 @@ const chapters: Chapter[] = [
         </p>
         <p>
           Os registros históricos disponíveis apresentam uma lacuna na numeração dos pastorados; por isso, a relação
-          completa segue em pesquisa e é apresentada mais abaixo sem períodos atribuídos.
+          completa segue em pesquisa e é apresentada mais abaixo sem períodos atribuídos. Em 14 de outubro de 2026, a
+          igreja celebra a posse de seu pastor eleito, o <strong>Pr. Felipe Oliveira</strong>.
         </p>
       </>
     ),
@@ -75,6 +76,7 @@ const chapters: Chapter[] = [
         {pastors.map((p) => (
           <li key={p}>{p}</li>
         ))}
+        <li className="story-visual__current">{currentPastor.name}</li>
       </ul>
     ),
   },

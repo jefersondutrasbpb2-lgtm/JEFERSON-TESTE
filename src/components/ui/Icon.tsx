@@ -8,6 +8,7 @@ type IconName =
   | "phone"
   | "instagram"
   | "youtube"
+  | "facebook"
   | "play"
   | "menu"
   | "close"
@@ -50,6 +51,12 @@ const paths: Record<IconName, React.ReactNode> = {
     <>
       <rect x="2.5" y="5.5" width="19" height="13" rx="3.5" />
       <path d="m10 9 5 3-5 3V9Z" fill="currentColor" />
+    </>
+  ),
+  facebook: (
+    <>
+      <rect x="3.5" y="3.5" width="17" height="17" rx="4.5" />
+      <path d="M15 8.5h-1.5A1.5 1.5 0 0 0 12 10v10.5M9.5 13h5" />
     </>
   ),
   play: <path d="M8 5.5v13l10.5-6.5L8 5.5Z" fill="currentColor" />,

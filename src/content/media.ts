@@ -12,14 +12,15 @@ import type { ImageData } from "@/components/ui/Photo";
  * é obrigatória a autorização dos responsáveis (LGPD, art. 14).
  *
  * Exemplo:
- *   heroFachada: { src: "/images/fachada.webp", alt: "Fachada do templo...", width: 1800, height: 2400 },
+ *   pregacao: { src: "/images/pregacao.webp", alt: "Descrição da cena", width: 1200, height: 1600 },
  */
 export const media: Record<string, ImageData | undefined> = {
   heroFachada: {
-    src: "/images/fachada-arco-726.webp",
-    alt: "Fachada do templo da Igreja Evangélica Congregacional de Pombal, com o letreiro e a cruz sobre a entrada em arcos",
-    width: 726,
+    src: "/images/hero-fachada-2000.webp",
+    alt: "Fachada do templo da Igreja Evangélica Congregacional de Pombal, com o letreiro, a cruz e a entrada em arcos",
+    width: 2000,
     height: 1125,
+    variants: [{ src: "/images/hero-fachada-1200.webp", width: 1200 }],
   },
   fachadaRua: {
     src: "/images/fachada-rua-2000.webp",

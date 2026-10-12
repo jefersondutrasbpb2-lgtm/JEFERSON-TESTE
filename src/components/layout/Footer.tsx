@@ -69,7 +69,7 @@ export function Footer() {
                 s.href ? (
                   <li key={s.id}>
                     <a href={s.href} target="_blank" rel="noopener noreferrer">
-                      <Icon name={s.id as "instagram" | "youtube"} size={18} />
+                      <Icon name={s.id} size={18} />
                       <span>
                         {s.label} <span className="muted">{s.handle}</span>
                       </span>
@@ -79,7 +79,7 @@ export function Footer() {
                   </li>
                 ) : (
                   <li key={s.id} className="muted">
-                    <Icon name={s.id as "instagram" | "youtube"} size={18} />
+                    <Icon name={s.id} size={18} />
                     <span>
                       {s.label} — {s.handle}
                     </span>

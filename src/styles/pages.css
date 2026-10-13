@@ -907,32 +907,92 @@
   margin-top: 0.4rem;
   color: var(--c-gold);
 }
-.leadership__grid {
-  display: grid;
-  gap: 2.5rem;
-  align-items: center;
+/* Pastor: foto sem moldura, sangrando até a borda e fundindo-se ao azul da seção */
+.leadership {
+  padding-block: 0;
+  overflow: hidden;
+  isolation: isolate;
 }
-@media (min-width: 900px) {
-  .leadership__grid {
-    grid-template-columns: minmax(0, 0.6fr) minmax(0, 1.4fr);
-    column-gap: clamp(2.5rem, 6vw, 6rem);
-  }
+.section-tone[data-tone="ink"].leadership {
+  background-image: radial-gradient(60% 55% at 100% 100%, rgb(25 86 145 / 0.3), transparent 70%);
 }
 .leadership__photo {
+  position: relative;
+  z-index: -1;
+  margin: 0;
+  width: 100%;
   aspect-ratio: 4 / 5;
-  max-width: 22rem;
+  max-height: 78svh;
   overflow: hidden;
-  border-radius: 999px 999px var(--radius) var(--radius);
 }
 .leadership__photo img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: 50% 0%;
+  /* Funde a foto ao fundo da seção sem emendas */
+  -webkit-mask-image: linear-gradient(to bottom, #000 50%, rgb(0 0 0 / 0.45) 78%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 50%, rgb(0 0 0 / 0.45) 78%, transparent 100%);
+}
+.leadership__grid {
+  position: relative;
+  margin-top: -5rem;
+  padding-bottom: var(--section-y);
 }
 .leadership__copy {
   display: grid;
   gap: 1.5rem;
   justify-items: start;
+  max-width: 38rem;
+}
+.leadership__title {
+  font-size: clamp(2.6rem, 1.6rem + 4.5vw, 5.6rem);
+  line-height: 0.98;
+}
+.leadership__title em {
+  display: block;
+}
+.leadership__status {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--c-gold);
+}
+@media (min-width: 900px) {
+  .leadership {
+    display: grid;
+    align-items: center;
+    min-height: min(58rem, 94svh);
+  }
+  .leadership__photo {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 55%;
+    height: 100%;
+    max-height: none;
+    aspect-ratio: auto;
+  }
+  .leadership__photo img {
+    -webkit-mask-image:
+      linear-gradient(to right, #000 64%, rgb(0 0 0 / 0.45) 84%, transparent 100%),
+      linear-gradient(to bottom, #000 72%, transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-image:
+      linear-gradient(to right, #000 64%, rgb(0 0 0 / 0.45) 84%, transparent 100%),
+      linear-gradient(to bottom, #000 72%, transparent 100%);
+    mask-composite: intersect;
+  }
+  .leadership__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    margin-top: 0;
+    padding-block: var(--section-y);
+  }
+  .leadership__copy {
+    grid-column: 2;
+    padding-left: clamp(0rem, 2vw, 2rem);
+  }
 }
 .event__verse {
   font-family: var(--ff-display);

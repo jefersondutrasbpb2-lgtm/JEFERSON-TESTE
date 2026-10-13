@@ -69,7 +69,7 @@ export const currentPastor = {
   status: "Pastor eleito",
   installationISO: "2026-10-14",
   installationLabel: "14 de outubro de 2026",
-  image: { src: "/images/pr-felipe-oliveira.webp", width: 620, height: 775 },
+  image: { src: "/images/pr-felipe-oliveira.webp", width: 1122, height: 1402 },
 };
 
 export const pastorsNote =

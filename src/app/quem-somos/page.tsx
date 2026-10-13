@@ -110,21 +110,24 @@ export default function QuemSomosPage() {
       </Section>
 
       <Section tone="ink" labelledBy="lideranca-title" className="leadership">
+        <figure className="leadership__photo" data-mask="up">
+          <img
+            src={asset(currentPastor.image.src)}
+            alt={`${currentPastor.title} ${currentPastor.name}`}
+            width={currentPastor.image.width}
+            height={currentPastor.image.height}
+            loading="lazy"
+            decoding="async"
+          />
+        </figure>
         <div className="container leadership__grid">
-          <figure className="leadership__photo" data-mask="up">
-            <img
-              src={asset(currentPastor.image.src)}
-              alt={`${currentPastor.title} ${currentPastor.name}`}
-              width={currentPastor.image.width}
-              height={currentPastor.image.height}
-              loading="lazy"
-              decoding="async"
-            />
-          </figure>
           <div className="leadership__copy">
-            <h2 id="lideranca-title" className="h2" data-split>
+            <h2 id="lideranca-title" className="h2 leadership__title" data-split>
               {currentPastor.title} <em>{currentPastor.name}</em>
             </h2>
+            <p className="leadership__status" data-reveal>
+              {currentPastor.status} · posse em {currentPastor.installationLabel}
+            </p>
             <p className="prose" data-reveal>
               Eleito pela igreja, o {currentPastor.title} {currentPastor.name} toma posse como pastor da IEC Pombal em{" "}
               {currentPastor.installationLabel}, dando continuidade a uma trajetória pastoral iniciada em 1970.

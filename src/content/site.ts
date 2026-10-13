@@ -41,10 +41,11 @@ export const site = {
     city: "Pombal",
     state: "PB",
     zip: "58840-000",
-    pending: true,
+    pending: false,
   } satisfies Pendable<Record<string, unknown>>,
 
-  phone: { display: "(83) 3431-3165", href: "tel:+558334313165", pending: true },
+  /** Telefone oficial: ainda não há. Preencha { display, href, pending } quando houver. */
+  phone: null as null | { display: string; href: string; pending: boolean },
   email: { value: "sec.iec.2017@gmail.com", pending: true },
 
   social: [

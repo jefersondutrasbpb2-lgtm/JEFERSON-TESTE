@@ -25,12 +25,14 @@ export function Visite() {
                 {fullAddress} <Pending show={site.address.pending} />
               </span>
             </li>
-            <li>
-              <span className="visite__label">Telefone</span>
-              <span>
-                <a href={site.phone.href}>{site.phone.display}</a> <Pending show={site.phone.pending} />
-              </span>
-            </li>
+            {site.phone && (
+              <li>
+                <span className="visite__label">Telefone</span>
+                <span>
+                  <a href={site.phone.href}>{site.phone.display}</a> <Pending show={site.phone.pending} />
+                </span>
+              </li>
+            )}
             <li>
               <span className="visite__label">E-mail</span>
               <span>

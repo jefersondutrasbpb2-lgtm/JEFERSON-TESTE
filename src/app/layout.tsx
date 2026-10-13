@@ -59,7 +59,7 @@ const jsonLd = {
     postalCode: site.address.zip,
     addressCountry: "BR",
   },
-  telephone: site.phone.display,
+  ...(site.phone ? { telephone: site.phone.display } : {}),
   email: site.email.value,
   sameAs: site.social.filter((s) => s.href).map((s) => s.href),
   areaServed: fullAddress,

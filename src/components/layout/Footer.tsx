@@ -49,9 +49,11 @@ export function Footer() {
               <p className="small">
                 {fullAddress} <Pending show={site.address.pending} />
               </p>
-              <p className="small">
-                <a href={site.phone.href}>{site.phone.display}</a> <Pending show={site.phone.pending} />
-              </p>
+              {site.phone && (
+                <p className="small">
+                  <a href={site.phone.href}>{site.phone.display}</a> <Pending show={site.phone.pending} />
+                </p>
+              )}
               <p className="small">
                 <a href={`mailto:${site.email.value}`}>{site.email.value}</a> <Pending show={site.email.pending} />
               </p>

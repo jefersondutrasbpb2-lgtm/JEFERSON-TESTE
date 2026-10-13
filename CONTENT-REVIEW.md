@@ -20,10 +20,8 @@ Marque cada item ao validar com a liderança e atualize o arquivo indicado.
 
 Os dados abaixo vieram de uma versão anterior do site e **não foram verificados**:
 
-- [ ] **Endereço — divergência:** o convite da posse pastoral traz "Rua Afro Bandeira, nº **264**, **Nova Vida**",
-      enquanto a placa na fachada mostra **265** e a versão antiga do site dizia "Centro". O site usa hoje
-      "Rua Afro Bandeira, 265 — Nova Vida, Pombal — PB, 58840-000". Confirmar número e bairro → `src/content/site.ts`
-- [ ] Telefone: (83) 3431-3165 → `src/content/site.ts`
+- [x] Endereço confirmado: Rua Afro Bandeira, 265 — Nova Vida, Pombal — PB, 58840-000
+- [x] Telefone: a igreja ainda não tem um número oficial; o telefone foi retirado do site → `src/content/site.ts`
 - [ ] E-mail: sec.iec.2017@gmail.com → `src/content/site.ts`
 - [x] Instagram: @iecdepombal (confirmado)
 - [x] YouTube e Facebook: @iecdepombal (conforme o convite oficial). Conferir se os endereços

@@ -49,15 +49,17 @@ export default function ContatoPage() {
                   </a>
                 </div>
               </li>
-              <li>
-                <Icon name="phone" />
-                <div>
-                  <p className="channels__label">Telefone</p>
-                  <p>
-                    <a href={site.phone.href}>{site.phone.display}</a> <Pending show={site.phone.pending} />
-                  </p>
-                </div>
-              </li>
+              {site.phone && (
+                <li>
+                  <Icon name="phone" />
+                  <div>
+                    <p className="channels__label">Telefone</p>
+                    <p>
+                      <a href={site.phone.href}>{site.phone.display}</a> <Pending show={site.phone.pending} />
+                    </p>
+                  </div>
+                </li>
+              )}
               <li>
                 <Icon name="mail" />
                 <div>

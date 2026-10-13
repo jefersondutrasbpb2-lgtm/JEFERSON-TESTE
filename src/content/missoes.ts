@@ -131,7 +131,7 @@ export const bomSamaritano = {
     "Projeto social abrigado e apoiado pela igreja, dedicado ao desenvolvimento integral de crianças, adolescentes e jovens e ao cuidado de suas famílias.",
   /** Atividades vistas nas fotografias do projeto; confirmar a descrição com a coordenação. */
   activities:
-    "O CEDIBS oferece atendimentos de saúde, acompanhamento do desenvolvimento de bebês e crianças e apoio às famílias.",
+    "O CEDIBS oferece atendimentos de saúde, acompanhamento do desenvolvimento de bebês e crianças, atividades educativas com ensino bíblico e apoio às famílias.",
   /** Voluntários que atuam como agentes de desenvolvimento. */
   volunteersTitle: "Agentes de desenvolvimento",
   units: [
@@ -154,6 +154,18 @@ export const bomSamaritano = {
       note: "Cerca de 90% da equipe é formada por membros da congregação da Igreja Presbiteriana em Paulista.",
     },
   ] as CedibsUnit[],
+  /** Fotos do carrossel "Fotos do projeto" (arquivos em /public/images). */
+  gallery: [
+    { image: "/images/bs-equipe.webp", alt: "Equipe do CEDIBS reunida na sala de atendimento", caption: "Equipe do CEDIBS" },
+    { image: "/images/bs-ensino-atividade.webp", alt: "Criança faz uma atividade bíblica com lápis de cor; nas imagens, as marcas do CEDIBS e da IEC Pombal", caption: "Ensino bíblico" },
+    { image: "/images/bs-consulta-medica.webp", alt: "Médica do projeto examina uma paciente com o estetoscópio", caption: "Consultas médicas" },
+    { image: "/images/bs-atendimento-familia.webp", alt: "Médica conversa com uma mãe durante o atendimento", caption: "Atendimento às famílias" },
+    { image: "/images/bs-cuidado-bebe.webp", alt: "Voluntária acompanha a pesagem e a medição de um bebê", caption: "Acompanhamento de bebês" },
+    { image: "/images/bs-kits-bebe.webp", alt: "Voluntária segura um bebê ao lado de kits com fraldas preparados para as famílias", caption: "Kits para as famílias" },
+    { image: "/images/bs-familias.webp", alt: "Mãe com a bebê no colo, a médica e outra participante sorriem juntas", caption: "Famílias acompanhadas" },
+    { image: "/images/bs-acolhimento.webp", alt: "Voluntária sorri na recepção, ao lado de kits preparados para as famílias", caption: "Acolhimento" },
+    { image: "/images/bs-consulta.webp", alt: "Atendimento médico no projeto O Bom Samaritano", caption: "Cuidado com a saúde" },
+  ],
   reference: "Lucas 10.25–37",
   /** Somente a descrição das atividades ainda aguarda confirmação. */
   pending: true,

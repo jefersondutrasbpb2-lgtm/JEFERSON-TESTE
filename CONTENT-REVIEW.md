@@ -103,8 +103,9 @@ Espaços reservados aguardando imagens reais e autorizadas (`src/content/media.t
 - [x] Unidade 02 (Paulista): 110 crianças atendidas; cerca de 15 voluntários, ~90% da Igreja Presbiteriana em Paulista
 - [ ] Confirmar: Paulista é o município da Paraíba (ao norte de Pombal)? Os nomes oficiais das igrejas parceiras estão
       corretos? A unidade de Pombal funciona na comunidade de Carvalhadas? → `src/content/missoes.ts`
-- [ ] Confirmar a descrição das atividades (atendimentos de saúde, acompanhamento de bebês e crianças, apoio às
-      famílias) → `src/content/missoes.ts`
+- [ ] Confirmar a descrição das atividades (atendimentos de saúde, acompanhamento de bebês e crianças, atividades
+      educativas com ensino bíblico, apoio às famílias) → `src/content/missoes.ts`
+- [ ] Enviar o logotipo do CEDIBS em arquivo (PNG ou SVG), se quiserem exibi-lo na seção do projeto
 - [x] Entrada do templo
 
 ## Para publicar

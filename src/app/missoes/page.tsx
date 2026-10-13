@@ -176,13 +176,7 @@ export default function MissoesPage() {
             <InstagramCarousel
               feed={instagramFeeds["bom-samaritano"]}
               title="Fotos do projeto"
-              fallback={[
-                { image: "/images/bs-equipe.webp", alt: media.bsEquipe?.alt ?? "", caption: "Equipe do CEDIBS" },
-                { image: "/images/bs-consulta.webp", alt: media.bsConsulta?.alt ?? "", caption: "Atendimentos de saúde" },
-                { image: "/images/bs-cuidado-bebe.webp", alt: media.bsCuidado?.alt ?? "", caption: "Acompanhamento de bebês" },
-                { image: "/images/bs-acolhimento.webp", alt: media.bsAcolhimento?.alt ?? "", caption: "Acolhimento das famílias" },
-                { image: "/images/bs-consulta-familia.webp", alt: media.bomSamaritano?.alt ?? "", caption: "Cuidado com crianças e famílias" },
-              ]}
+              fallback={bomSamaritano.gallery}
             />
           </div>
           <div className="bs__privacy" data-reveal>

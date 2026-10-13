@@ -10,7 +10,7 @@ export function Servico() {
       <div className="container servico__grid">
         <div className="servico__media">
           <Photo
-            image={media.bomSamaritano}
+            image={media.bsEnsino}
             slot="Atividades do projeto O Bom Samaritano"
             ratio="4 / 5"
             parallax={6}

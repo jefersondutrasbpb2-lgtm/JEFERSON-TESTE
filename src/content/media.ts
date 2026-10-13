@@ -83,6 +83,13 @@ export const media: Record<string, ImageData | undefined> = {
     height: 1347,
     focus: "50% 50%",
   },
+  bsEnsino: {
+    src: "/images/bs-ensino-biblico.webp",
+    alt: "Mãos de uma criança respondendo, com lápis de cor, uma atividade bíblica sobre o livro de Provérbios",
+    width: 1080,
+    height: 1349,
+    focus: "50% 50%",
+  },
   bsEquipe: {
     src: "/images/bs-equipe.webp",
     alt: "Equipe do CEDIBS, o Centro de Desenvolvimento Integral O Bom Samaritano, reunida na sala de atendimento",

@@ -106,7 +106,7 @@ export const milestones: { mark: string; date?: string; title: string; text: str
   {
     mark: "VI",
     title: "Missões e ação social",
-    text: "Apoio a missionários na Região Amazônica e em Caicó — RN, e ao projeto social O Bom Samaritano, em Carvalhadas.",
+    text: "Apoio a missionários na Região Amazônica e em Caicó — RN, e ao CEDIBS – Centro de Desenvolvimento Integral O Bom Samaritano, hoje com unidades em Pombal e Paulista.",
   },
   {
     mark: "VII",

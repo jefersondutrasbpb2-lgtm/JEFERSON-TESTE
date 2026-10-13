@@ -59,6 +59,6 @@ export const ministries: Ministry[] = [
   {
     id: "social",
     title: "Ação social",
-    summary: "Serviço ao próximo, com destaque para o projeto O Bom Samaritano, na comunidade de Carvalhadas.",
+    summary: "Serviço ao próximo, com destaque para o CEDIBS – Centro de Desenvolvimento Integral O Bom Samaritano, com unidades em Pombal e Paulista.",
   },
 ];

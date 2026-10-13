@@ -8,12 +8,13 @@ import { Button } from "@/components/ui/Button";
 import { Pending } from "@/components/ui/Pending";
 import { MissionAtlas } from "@/components/maps/MissionAtlas";
 import { InstagramCarousel } from "@/components/ui/InstagramCarousel";
+import { CedibsUnits } from "@/components/ui/CedibsUnits";
 import { instagramFeeds } from "@/content/instagram";
 
 export const metadata: Metadata = {
   title: "Missões e Ação Social",
   description:
-    "Do Sertão Paraibano à Região Amazônica: igrejas organizadas, congregações, comunidades rurais, campos missionários e o projeto social O Bom Samaritano.",
+    "Do Sertão Paraibano à Região Amazônica: igrejas organizadas, congregações, comunidades rurais, campos missionários e o CEDIBS – Centro de Desenvolvimento Integral O Bom Samaritano.",
   alternates: { canonical: "/missoes/" },
 };
 
@@ -138,6 +139,9 @@ export default function MissoesPage() {
       <Section id="bom-samaritano" tone="green" labelledBy="bs-title" className="bs">
         <div className="container bs__grid">
           <div className="bs__copy">
+            <p className="bs__entity" data-reveal>
+              {bomSamaritano.short}
+            </p>
             <h2 id="bs-title" className="h1" data-split>
               {bomSamaritano.name}
             </h2>
@@ -154,12 +158,6 @@ export default function MissoesPage() {
                 enxergar e cuidar de quem está ao nosso lado.
               </p>
             </div>
-            <div className="servico__stat" data-reveal>
-              <p className="servico__stat-value numeral">+200</p>
-              <p className="servico__stat-label">
-                {bomSamaritano.reachLabel} <Pending show={bomSamaritano.pending} />
-              </p>
-            </div>
           </div>
           <div className="bs__media">
             <Photo
@@ -173,9 +171,7 @@ export default function MissoesPage() {
         </div>
 
         <div className="container">
-          <p className="bs__entity small" data-reveal>
-            {bomSamaritano.entity}
-          </p>
+          <CedibsUnits />
           <div data-reveal>
             <InstagramCarousel
               feed={instagramFeeds["bom-samaritano"]}

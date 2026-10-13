@@ -36,6 +36,7 @@ const placeNames: Record<string, string> = {
   catole: "Catolé do Rocha",
   condado: "Condado",
   caico: "Caicó",
+  paulista: "Paulista",
   purus: "Rio Purus",
 };
 

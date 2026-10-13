@@ -12,7 +12,7 @@ export type MissionField = {
   place: string;
   kind: FieldKind;
   /** Chave do ponto no mapa (src/content/geo.generated.ts) */
-  point?: "sousa" | "cajazeiras" | "catole" | "condado" | "caico" | "purus" | "pombal";
+  point?: "sousa" | "cajazeiras" | "catole" | "condado" | "caico" | "purus" | "pombal" | "paulista";
   map: "regional" | "overview";
   summary: string;
   people?: string;
@@ -79,6 +79,15 @@ export const missionFields: MissionField[] = [
     pending: true,
   },
   {
+    id: "cedibs-paulista",
+    name: "Paulista",
+    place: "Paraíba",
+    kind: "social",
+    point: "paulista",
+    map: "regional",
+    summary: "Unidade 02 do CEDIBS – Centro de Desenvolvimento Integral O Bom Samaritano, com 110 crianças atendidas.",
+  },
+  {
     id: "purus",
     name: "Rio Purus",
     place: "Região Amazônica",
@@ -102,18 +111,54 @@ export const missionFields: MissionField[] = [
   },
 ];
 
+export type CedibsUnit = {
+  id: string;
+  label: string;
+  city: string;
+  served: number;
+  servedLabel: string;
+  volunteers: number;
+  note?: string;
+};
+
 export const bomSamaritano = {
   name: "O Bom Samaritano",
-  entity: "CEDIBS — Centro de Desenvolvimento Integral “O Bom Samaritano” de Pombal-PB",
-  place: "Comunidade de Carvalhadas — Pombal, PB",
+  entity: "CEDIBS – Centro de Desenvolvimento Integral O Bom Samaritano",
+  short: "CEDIBS",
   instagram: "obom.samaritano",
+  place: "Pombal e Paulista — PB",
+  summary:
+    "Projeto social abrigado e apoiado pela igreja, dedicado ao desenvolvimento integral de crianças, adolescentes e jovens e ao cuidado de suas famílias.",
   /** Atividades vistas nas fotografias do projeto; confirmar a descrição com a coordenação. */
   activities:
-    "Por meio do CEDIBS, o projeto oferece atendimentos de saúde, acompanhamento do desenvolvimento de bebês e crianças e apoio às famílias.",
-  summary:
-    "Projeto social abrigado e apoiado pela igreja na comunidade de Carvalhadas, dedicado ao cuidado de crianças e de suas famílias.",
-  reach: "mais de 200 crianças",
-  reachLabel: "crianças já atendidas ao longo da história do projeto",
+    "O CEDIBS oferece atendimentos de saúde, acompanhamento do desenvolvimento de bebês e crianças e apoio às famílias.",
+  /** Voluntários que atuam como agentes de desenvolvimento. */
+  volunteersTitle: "Agentes de desenvolvimento",
+  units: [
+    {
+      id: "pombal",
+      label: "Unidade 01",
+      city: "Pombal — PB",
+      served: 330,
+      servedLabel: "crianças, adolescentes e jovens atendidos, de 0 a 22 anos",
+      volunteers: 25,
+      note: "Equipe formada por membros da Igreja Evangélica Congregacional de Pombal, da Assembleia de Deus Missão, da Primeira Igreja Batista de Pombal e da Igreja Presbiteriana.",
+    },
+    {
+      id: "paulista",
+      label: "Unidade 02",
+      city: "Paulista — PB",
+      served: 110,
+      servedLabel: "crianças atendidas",
+      volunteers: 15,
+      note: "Cerca de 90% da equipe é formada por membros da congregação da Igreja Presbiteriana em Paulista.",
+    },
+  ] as CedibsUnit[],
   reference: "Lucas 10.25–37",
+  /** Somente a descrição das atividades ainda aguarda confirmação. */
   pending: true,
 };
+
+export const cedibsTotalServed = bomSamaritano.units.reduce((n, u) => n + u.served, 0);
+export const cedibsTotalVolunteers = bomSamaritano.units.reduce((n, u) => n + u.volunteers, 0);
+

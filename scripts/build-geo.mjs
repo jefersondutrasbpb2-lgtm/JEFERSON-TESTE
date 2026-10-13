@@ -37,6 +37,7 @@ export const PLACES = {
   catole: [-37.7468, -6.3439],
   condado: [-37.6058, -6.9083],
   caico: [-37.0978, -6.4594],
+  paulista: [-37.6194, -6.5917],
   purus: [-64.3, -6.4], // trecho médio do Rio Purus (aproximado)
 };
 

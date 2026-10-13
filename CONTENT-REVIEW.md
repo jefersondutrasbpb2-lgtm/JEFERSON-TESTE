@@ -97,8 +97,14 @@ Espaços reservados aguardando imagens reais e autorizadas (`src/content/media.t
 - [ ] Campos missionários: Rio Purus e Caicó
 - [x] O Bom Samaritano — fotos aplicadas na página inicial e em Missões (atendimento, equipe, acolhimento e
       acompanhamento de bebês). **Confirmar a autorização dos responsáveis** para as imagens com bebês e crianças
-- [ ] Confirmar o nome oficial "CEDIBS — Centro de Desenvolvimento Integral “O Bom Samaritano” de Pombal-PB" (lido
-      na camiseta da equipe) e a descrição das atividades → `src/content/missoes.ts`
+- [x] Nome oficial: CEDIBS – Centro de Desenvolvimento Integral O Bom Samaritano
+- [x] Unidade 01 (Pombal): 330 atendidos de 0 a 22 anos; cerca de 25 voluntários (Congregacional, Assembleia de Deus
+      Missão, Primeira Igreja Batista de Pombal e Presbiteriana)
+- [x] Unidade 02 (Paulista): 110 crianças atendidas; cerca de 15 voluntários, ~90% da Igreja Presbiteriana em Paulista
+- [ ] Confirmar: Paulista é o município da Paraíba (ao norte de Pombal)? Os nomes oficiais das igrejas parceiras estão
+      corretos? A unidade de Pombal funciona na comunidade de Carvalhadas? → `src/content/missoes.ts`
+- [ ] Confirmar a descrição das atividades (atendimentos de saúde, acompanhamento de bebês e crianças, apoio às
+      famílias) → `src/content/missoes.ts`
 - [x] Entrada do templo
 
 ## Para publicar

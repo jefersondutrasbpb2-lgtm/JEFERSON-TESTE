@@ -116,8 +116,8 @@ const chapters: Chapter[] = [
           <strong>Caicó — RN</strong>, com o trabalho do casal <strong>Alberto e Istênia</strong>.
         </p>
         <p>
-          Em Carvalhadas, a igreja abriga e apoia o projeto social <strong>O Bom Samaritano</strong>, com histórico de
-          atendimento a mais de 200 crianças.
+          A igreja também abriga e apoia o <strong>CEDIBS – Centro de Desenvolvimento Integral O Bom Samaritano</strong>,
+          que hoje atende 440 crianças, adolescentes e jovens em suas unidades de Pombal e Paulista.
         </p>
       </>
     ),

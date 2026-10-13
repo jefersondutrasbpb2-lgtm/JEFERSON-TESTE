@@ -1,9 +1,8 @@
-import { bomSamaritano } from "@/content/missoes";
+import { bomSamaritano, cedibsTotalServed } from "@/content/missoes";
 import { media } from "@/content/media";
 import { Section } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
 import { Photo } from "@/components/ui/Photo";
-import { Pending } from "@/components/ui/Pending";
 
 export function Servico() {
   return (
@@ -21,21 +20,23 @@ export function Servico() {
 
         <div className="servico__copy">
           <h2 id="servico-title" className="h2" data-split>
-            O Bom Samaritano, <em>em Carvalhadas.</em>
+            O Bom Samaritano, <em>em Pombal e Paulista.</em>
           </h2>
           <div className="prose" data-reveal>
             <p>
-              Na comunidade de Carvalhadas, a igreja abriga e apoia o projeto social <strong>O Bom Samaritano</strong>,
-              dedicado ao cuidado de crianças e de suas famílias — expressão concreta do amor ao próximo ensinado por
-              Jesus.
+              A igreja abriga e apoia o <strong>{bomSamaritano.entity}</strong>, dedicado ao desenvolvimento integral de
+              crianças, adolescentes e jovens e ao cuidado de suas famílias — expressão concreta do amor ao próximo
+              ensinado por Jesus.
             </p>
-            <p>{bomSamaritano.activities}</p>
           </div>
 
           <div className="servico__stat" data-reveal>
-            <p className="servico__stat-value numeral">+200</p>
+            <p className="servico__stat-value numeral" data-count={cedibsTotalServed}>
+              {cedibsTotalServed}
+            </p>
             <p className="servico__stat-label">
-              {bomSamaritano.reachLabel} <Pending show={bomSamaritano.pending} />
+              crianças, adolescentes e jovens atendidos —{" "}
+              {bomSamaritano.units.map((u) => `${u.served} em ${u.city.replace(" — PB", "")}`).join(" e ")}
             </p>
           </div>
 

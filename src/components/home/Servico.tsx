@@ -44,9 +44,12 @@ export function Servico() {
             autorização dos responsáveis.
           </p>
 
-          <div data-reveal>
+          <div className="btn-row" data-reveal>
             <Button href="/missoes/#bom-samaritano" variant="outline">
               Conheça o projeto
+            </Button>
+            <Button href={`https://www.instagram.com/${bomSamaritano.instagram}/`} variant="text" icon="arrow-up-right" external>
+              @{bomSamaritano.instagram}
             </Button>
           </div>
         </div>

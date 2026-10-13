@@ -7,6 +7,8 @@ import { Photo } from "@/components/ui/Photo";
 import { Button } from "@/components/ui/Button";
 import { Pending } from "@/components/ui/Pending";
 import { MissionAtlas } from "@/components/maps/MissionAtlas";
+import { InstagramCarousel } from "@/components/ui/InstagramCarousel";
+import { instagramFeeds } from "@/content/instagram";
 
 export const metadata: Metadata = {
   title: "Missões e Ação Social",
@@ -174,11 +176,18 @@ export default function MissoesPage() {
           <p className="bs__entity small" data-reveal>
             {bomSamaritano.entity}
           </p>
-          <div className="bs__gallery">
-            <Photo image={media.bsEquipe} slot="Equipe do projeto" caption="Equipe do CEDIBS" ratio="4 / 5" mask="up" sizes="(min-width: 900px) 25vw, 50vw" />
-            <Photo image={media.bsConsulta} slot="Atendimento" caption="Atendimentos de saúde" ratio="4 / 5" mask="up" maskDelay={0.08} sizes="(min-width: 900px) 25vw, 50vw" />
-            <Photo image={media.bsCuidado} slot="Cuidado com bebês" caption="Acompanhamento de bebês" ratio="4 / 5" mask="up" maskDelay={0.16} sizes="(min-width: 900px) 25vw, 50vw" />
-            <Photo image={media.bsAcolhimento} slot="Acolhimento" caption="Acolhimento das famílias" ratio="4 / 5" mask="up" maskDelay={0.24} sizes="(min-width: 900px) 25vw, 50vw" />
+          <div data-reveal>
+            <InstagramCarousel
+              feed={instagramFeeds["bom-samaritano"]}
+              title="O Bom Samaritano no Instagram"
+              fallback={[
+                { image: "/images/bs-equipe.webp", alt: media.bsEquipe?.alt ?? "", caption: "Equipe do CEDIBS" },
+                { image: "/images/bs-consulta.webp", alt: media.bsConsulta?.alt ?? "", caption: "Atendimentos de saúde" },
+                { image: "/images/bs-cuidado-bebe.webp", alt: media.bsCuidado?.alt ?? "", caption: "Acompanhamento de bebês" },
+                { image: "/images/bs-acolhimento.webp", alt: media.bsAcolhimento?.alt ?? "", caption: "Acolhimento das famílias" },
+                { image: "/images/bs-consulta-familia.webp", alt: media.bomSamaritano?.alt ?? "", caption: "Cuidado com crianças e famílias" },
+              ]}
+            />
           </div>
           <div className="bs__privacy" data-reveal>
             <h3 className="h4">Cuidado com a imagem das crianças</h3>

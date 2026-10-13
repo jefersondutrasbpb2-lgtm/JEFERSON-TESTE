@@ -9,7 +9,9 @@
     "start": "npx serve out",
     "typecheck": "tsc --noEmit",
     "geo": "node scripts/build-geo.mjs",
-    "preview:build": "node scripts/build-preview.mjs"
+    "preview:build": "node scripts/build-preview.mjs",
+    "instagram": "node scripts/fetch-instagram.mjs",
+    "prebuild": "node scripts/fetch-instagram.mjs"
   },
   "dependencies": {
     "@fontsource-variable/bricolage-grotesque": "^5.3.0",

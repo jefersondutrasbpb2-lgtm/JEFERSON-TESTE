@@ -78,7 +78,13 @@ Os dados abaixo vieram de uma versão anterior do site e **não foram verificado
       identificáveis, inclusive crianças (leitura, oração e "as crianças na vida da igreja", na homepage); confirme
       que os responsáveis autorizaram o uso no site → `src/content/media.ts`
 
-## 7. Fotografias e acervo
+## 7. Instagram do O Bom Samaritano
+
+- [x] Perfil: @obom.samaritano — carrossel na página de Missões e link na página inicial
+- [ ] Conectar o feed (Behold ou token da Meta) para exibir as publicações automaticamente → veja "Feed do
+      Instagram" no README
+
+## 8. Fotografias e acervo
 
 Espaços reservados aguardando imagens reais e autorizadas (`src/content/media.ts`):
 

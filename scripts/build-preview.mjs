@@ -11,6 +11,7 @@ import { join } from "node:path";
 const OUT = "out";
 const DEST = "preview";
 
+execSync("node scripts/fetch-instagram.mjs", { stdio: "inherit" });
 execSync("npx next build", { stdio: "inherit", env: { ...process.env, NEXT_PUBLIC_PREVIEW_STATIC: "1" } });
 
 rmSync(DEST, { recursive: true, force: true });
@@ -37,7 +38,9 @@ for (const [src, dest] of pages) {
 }
 
 // Arquivos estáticos
-for (const dir of ["brand", "images"]) cpSync(join(OUT, dir), join(DEST, dir), { recursive: true });
+for (const dir of ["brand", "images", "instagram"]) {
+  if (existsSync(join(OUT, dir))) cpSync(join(OUT, dir), join(DEST, dir), { recursive: true });
+}
 for (const f of ["icon.png", "apple-icon.png", "opengraph-image.jpg"]) if (existsSync(join(OUT, f))) cpSync(join(OUT, f), join(DEST, f));
 
 // _next → next/_next (nomes iniciados por "_" não podem ficar na raiz da prévia);

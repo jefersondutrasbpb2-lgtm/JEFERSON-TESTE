@@ -89,6 +89,26 @@ alterar os componentes.
 Enquanto uma imagem não existir, o site mostra um espaço reservado descrevendo a fotografia esperada. **Não use imagens
 geradas por IA como se fossem registros reais da igreja.** Fotos de crianças exigem autorização dos responsáveis (LGPD).
 
+### Feed do Instagram (O Bom Samaritano)
+
+A página de Missões tem um carrossel com as publicações de **@obom.samaritano**. As publicações são baixadas no
+momento do build (`npm run instagram`, que também roda antes de `npm run build`) e as imagens ficam hospedadas no
+próprio site — o visitante não carrega nada do Instagram.
+
+O Instagram não permite ler publicações apenas pelo @: a conta precisa autorizar o acesso uma vez. Há dois caminhos:
+
+1. **Behold (mais simples, plano gratuito):** crie uma conta em behold.so, conecte o Instagram @obom.samaritano,
+   crie um feed do tipo JSON e copie a URL (`https://feeds.behold.so/...`) para a variável
+   `IG_FEED_BOM_SAMARITANO`.
+2. **API oficial da Meta:** crie um app em developers.facebook.com com o produto "Instagram API with Instagram Login",
+   gere um token de longa duração para a conta e coloque em `IG_TOKEN_BOM_SAMARITANO` (o token expira em 60 dias e
+   precisa ser renovado).
+
+Enquanto nenhuma das variáveis estiver configurada, o carrossel mostra as fotos do projeto e um link para o perfil.
+As publicações se atualizam a cada novo build do site; na hospedagem, configure um build agendado (por exemplo,
+diário) para manter o carrossel em dia. Para incluir outro perfil, acrescente-o em `FEEDS` no script e registre o
+arquivo JSON em `src/content/instagram.ts`.
+
 ### Identidade visual
 
 O logotipo oficial está em `public/brand/` (versão azul para fundos claros e versão branca para fundos escuros) e é

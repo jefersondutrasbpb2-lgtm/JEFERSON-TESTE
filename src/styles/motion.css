@@ -6,7 +6,8 @@
 
 html.motion [data-reveal]:not([data-reveal="stagger"]),
 html.motion [data-reveal="stagger"] > *,
-html.motion [data-split] {
+html.motion [data-split],
+html.motion [data-slide] {
   opacity: 0;
 }
 html.motion [data-mask] {
@@ -19,6 +20,7 @@ html.motion:not(.motion-ready) [data-draw] {
 html.motion:not(.motion-ready) [data-reveal]:not([data-reveal="stagger"]),
 html.motion:not(.motion-ready) [data-reveal="stagger"] > *,
 html.motion:not(.motion-ready) [data-split],
+html.motion:not(.motion-ready) [data-slide],
 html.motion:not(.motion-ready) [data-draw] {
   animation: failsafe-reveal 0.6s ease 3.5s forwards;
 }

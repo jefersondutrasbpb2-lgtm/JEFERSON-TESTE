@@ -19,6 +19,7 @@ const num = (v: string | undefined, fallback: number) => {
  *  data-parallax="12"                         deslocamento vertical (yPercent)
  *  data-drift="10"                            deslocamento horizontal (xPercent)
  *  data-mask                                  revelação por máscara
+ *  data-slide="left|right"                    entrada lateral, vindo do lado indicado
  *  data-draw[="scrub"]                        desenho de linhas SVG
  *  data-progress                              linha de progresso (scaleY)
  *  data-count                                 contagem numérica
@@ -149,6 +150,27 @@ export function MotionDirector() {
         });
         tl.fromTo(el, { clipPath: from }, { clipPath: "inset(0% 0% 0% 0%)", duration: 1.5, ease: "expo.inOut" });
         if (img) tl.fromTo(img, { scale: 1.18 }, { scale: 1, duration: 1.9, ease: "expo.out" }, 0.1);
+      });
+
+      // Entrada lateral. Em telas largas, os elementos de uma seção entram
+      // juntos; no celular (empilhados), cada um entra ao chegar à tela.
+      const wide = window.matchMedia("(min-width: 900px)").matches;
+      q<HTMLElement>("[data-slide]").forEach((el) => {
+        const sign = el.dataset.slide === "right" ? 1 : -1;
+        const img = el.querySelector("img");
+        const group = wide ? el.closest("section") : null;
+        const tl = gsap.timeline({
+          delay: num(el.dataset.delay, 0) * (group ? 1 : 0.4),
+          scrollTrigger: group
+            ? { trigger: group, start: "top 65%", once: true }
+            : { trigger: el, start: "top 88%", once: true },
+        });
+        tl.fromTo(
+          el,
+          { opacity: 0, xPercent: sign * num(el.dataset.distance, 35) },
+          { opacity: 1, xPercent: 0, duration: 1.6, ease: "expo.out", clearProps: "transform" },
+        );
+        if (img) tl.fromTo(img, { scale: 1.12 }, { scale: 1, duration: 2, ease: "expo.out", clearProps: "transform" }, 0);
       });
 
       q<HTMLElement>("[data-parallax]").forEach((el) => {

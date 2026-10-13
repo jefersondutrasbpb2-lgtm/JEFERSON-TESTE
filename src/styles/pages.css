@@ -949,6 +949,7 @@
   font-size: clamp(2.6rem, 1.6rem + 4.5vw, 5.6rem);
   line-height: 0.98;
 }
+.leadership__title span,
 .leadership__title em {
   display: block;
 }

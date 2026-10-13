@@ -110,7 +110,7 @@ export default function QuemSomosPage() {
       </Section>
 
       <Section tone="ink" labelledBy="lideranca-title" className="leadership">
-        <figure className="leadership__photo" data-mask="up">
+        <figure className="leadership__photo" data-slide="left">
           <img
             src={asset(currentPastor.image.src)}
             alt={`${currentPastor.title} ${currentPastor.name}`}
@@ -122,17 +122,22 @@ export default function QuemSomosPage() {
         </figure>
         <div className="container leadership__grid">
           <div className="leadership__copy">
-            <h2 id="lideranca-title" className="h2 leadership__title" data-split>
-              {currentPastor.title} <em>{currentPastor.name}</em>
+            <h2 id="lideranca-title" className="h2 leadership__title">
+              <span data-slide="right" data-delay="0.2">
+                {currentPastor.title}
+              </span>{" "}
+              <em data-slide="right" data-delay="0.32">
+                {currentPastor.name}
+              </em>
             </h2>
-            <p className="leadership__status" data-reveal>
+            <p className="leadership__status" data-slide="right" data-distance="12" data-delay="0.5">
               {currentPastor.status} · posse em {currentPastor.installationLabel}
             </p>
-            <p className="prose" data-reveal>
+            <p className="prose" data-slide="right" data-distance="8" data-delay="0.6">
               Eleito pela igreja, o {currentPastor.title} {currentPastor.name} toma posse como pastor da IEC Pombal em{" "}
               {currentPastor.installationLabel}, dando continuidade a uma trajetória pastoral iniciada em 1970.
             </p>
-            <div className="btn-row" data-reveal>
+            <div className="btn-row" data-slide="right" data-distance="8" data-delay="0.7">
               <Button href="/nossa-historia/#pastores" variant="outline">
                 Pastores ao longo da história
               </Button>

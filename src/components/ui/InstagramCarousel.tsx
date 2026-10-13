@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { asset } from "@/lib/asset";
-import { reviewMode } from "@/content/site";
 import { instagramProfileUrl, type InstagramFeed } from "@/content/instagram";
 import { Icon } from "./Icon";
 
@@ -117,12 +116,6 @@ export function InstagramCarousel({ feed, fallback, title = "No Instagram" }: Pr
             ))}
       </ul>
 
-      {!live && reviewMode && (
-        <p className="ig__note xs">
-          <span className="pending">feed a conectar</span> Enquanto o perfil não for conectado, o carrossel mostra fotos do
-          projeto. Depois de conectado, as publicações mais recentes aparecem aqui a cada atualização do site.
-        </p>
-      )}
     </section>
   );
 }

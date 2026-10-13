@@ -179,7 +179,7 @@ export default function MissoesPage() {
           <div data-reveal>
             <InstagramCarousel
               feed={instagramFeeds["bom-samaritano"]}
-              title="O Bom Samaritano no Instagram"
+              title="Fotos do projeto"
               fallback={[
                 { image: "/images/bs-equipe.webp", alt: media.bsEquipe?.alt ?? "", caption: "Equipe do CEDIBS" },
                 { image: "/images/bs-consulta.webp", alt: media.bsConsulta?.alt ?? "", caption: "Atendimentos de saúde" },

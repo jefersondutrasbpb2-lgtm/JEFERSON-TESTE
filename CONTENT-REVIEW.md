@@ -81,8 +81,8 @@ Os dados abaixo vieram de uma versão anterior do site e **não foram verificado
 ## 7. Instagram do O Bom Samaritano
 
 - [x] Perfil: @obom.samaritano — carrossel na página de Missões e link na página inicial
-- [ ] Conectar o feed (Behold ou token da Meta) para exibir as publicações automaticamente → veja "Feed do
-      Instagram" no README
+- [x] Por decisão da igreja, o carrossel exibe apenas as fotos enviadas, sem feed automático. Se um dia quiserem
+      conectar, veja "Feed do Instagram" no README
 
 ## 8. Fotografias e acervo
 

@@ -108,8 +108,9 @@ button { font: inherit; color: inherit; }
   border: 1px solid currentColor; opacity: .9;
 }
 .kicker__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--sol); box-shadow: 0 0 0 4px rgb(255 61 46 / .25); }
-[data-theme="light"] .kicker { color: var(--sol-ink); }
-[data-theme="dark"] .kicker { color: var(--ceu); }
+/* Só seções da página: a página que hospeda o site pode marcar o <html> com data-theme */
+:is(section, footer)[data-theme="light"] .kicker { color: var(--sol-ink); }
+:is(section, footer)[data-theme="dark"] .kicker { color: var(--ceu); }
 
 /* Linhas de SplitText com máscara (o plugin cria .split-line-mask com overflow: clip) */
 .split-line-mask { padding-bottom: .1em; margin-bottom: -.1em; }

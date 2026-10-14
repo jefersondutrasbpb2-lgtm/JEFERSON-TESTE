@@ -96,7 +96,8 @@
   const dock = $('[data-dock]');
   const hero = $('.hero');
   const signup = $('#inscricao');
-  const themed = $$('[data-theme]');
+  // Só as seções da página: quem hospeda o site pode marcar o <html> com data-theme e escurecer o menu no topo
+  const themed = $$('section[data-theme], footer[data-theme]');
   let lastY = window.scrollY;
   let ticking = false;
 

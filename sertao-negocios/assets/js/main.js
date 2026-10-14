@@ -15,10 +15,21 @@
 
   if (!motion) root.classList.add('no-motion');
 
+  /* ---------- Frase principal do topo: versões para teste ----------
+     A versão A está no HTML. Para abrir outra, acrescente ?titulo=b ou ?titulo=c ao link
+     (ex.: anúncios para tráfego frio com a A, mensagens para a base do Moisés com a C). */
+  const HEADLINES = {
+    b: 'Gestão de verdade com <em>Moisés Ramos</em>, em Patos.',
+    c: 'A pré-venda abre primeiro <em>na comunidade.</em>'
+  };
+  const headlineVariant = (new URLSearchParams(location.search).get('titulo') || 'a').toLowerCase();
+  const headline = $('[data-headline]');
+  if (headline && HEADLINES[headlineVariant]) headline.innerHTML = HEADLINES[headlineVariant];
+
   /* ---------- Mensuração ---------- */
   const track = (event, params = {}) => {
     window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({ event, ...params });
+    window.dataLayer.push({ event, titulo: headlineVariant, ...params });
     if (typeof window.gtag === 'function') window.gtag('event', event, params);
   };
 
@@ -54,13 +65,10 @@
   };
 
   /* ---------- Âncoras, CTAs e pré-seleção de interesse ---------- */
+  // Guarda o último interesse clicado (Smart, VIP ou estande) num campo oculto do formulário
   const setInterest = (value) => {
-    const radio = $(`input[name="interesse"][value="${value}"]`);
-    if (radio) {
-      radio.checked = true;
-      radio.closest('.field')?.classList.remove('is-invalid');
-      const err = $('#e-interesse'); if (err) err.textContent = '';
-    }
+    const field = $('[data-form] input[name="interesse"]');
+    if (field) field.value = value;
   };
 
   document.addEventListener('click', (e) => {
@@ -156,7 +164,7 @@
       { opacity: 1, y: 0, scale: 1, rotateX: 0, duration: 1.8 }, 0)
     .fromTo('[data-hero="kicker"]', { opacity: 0, y: 16 }, { opacity: 1, y: 0 }, .25)
     .fromTo('[data-hero="meta"]', { opacity: 0, x: 30 }, { opacity: 1, x: 0 }, .55)
-    .fromTo(['[data-hero="lead"]', '[data-hero="sub"]', '[data-hero="cta"]', '[data-hero="note"]'],
+    .fromTo(['[data-hero="sign"]', '[data-hero="lead"]', '[data-hero="sub"]', '[data-hero="invite"]', '[data-hero="cta"]', '[data-hero="note"]'],
       { opacity: 0, y: 26 }, { opacity: 1, y: 0, stagger: .09 }, .6)
     .from('.hero__frieze', { opacity: 0, y: 24, duration: 1.2 }, .9)
     .from('.hero__horizon', { opacity: 0, y: 40, duration: 2 }, 0);
@@ -164,7 +172,7 @@
     intro.fromTo(topoPaths, { drawSVG: '50% 50%' }, { drawSVG: '0% 100%', duration: 2.4, ease: 'power2.inOut', stagger: { each: .05, from: 'end' } }, 0);
   }
 
-  // Hero → manifesto: profundidade em camadas
+  // Hero → próxima seção: profundidade em camadas
   gsap.set('.hero__topo', { xPercent: -50, yPercent: -50, x: 0, y: 0 });
   gsap.timeline({ scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true } })
     .to('.hero__inner', { yPercent: -14, opacity: .15, ease: 'none' }, 0)
@@ -183,18 +191,6 @@
         })
       });
     });
-
-    // Manifesto: palavras acendem conforme a leitura avança
-    const manifesto = $('[data-words]');
-    if (manifesto) {
-      SplitText.create(manifesto, {
-        type: 'words', wordsClass: 'w', autoSplit: true,
-        onSplit: (self) => gsap.fromTo(self.words, { opacity: .14 }, {
-          opacity: 1, ease: 'none', stagger: .1,
-          scrollTrigger: { trigger: manifesto, start: 'top 78%', end: 'bottom 42%', scrub: .6 }
-        })
-      });
-    }
 
     // Nomes dos palestrantes
     $$('.speaker__name').forEach((el) => {
@@ -228,76 +224,19 @@
 
   /* ---------- Desenho de linhas SVG ---------- */
   if (window.DrawSVGPlugin) {
-    $$('.vis .draw, .benefit__icon .draw').forEach((g) => {
+    $$('.benefit__icon .draw').forEach((g) => {
       const paths = g.matches('path') ? [g] : $$('path, rect, circle', g);
       gsap.fromTo(paths, { drawSVG: '0%' }, {
         drawSVG: '100%', duration: 2, ease: 'power2.inOut', stagger: .15,
-        scrollTrigger: { trigger: g.closest('.chapter, .benefit') || g, start: 'top 70%' }
+        scrollTrigger: { trigger: g.closest('.benefit') || g, start: 'top 70%' }
       });
     });
   }
-
-  /* ---------- História: sticky storytelling ---------- */
-  const rail = $$('.story__rail li');
-  $$('.chapter').forEach((ch, i) => {
-    ScrollTrigger.create({
-      trigger: ch, start: 'top 55%', end: 'bottom 55%',
-      onToggle: (self) => { if (self.isActive) rail.forEach((li, j) => li.classList.toggle('is-active', j === i)); }
-    });
-  });
-
-  mm.add('(min-width: 900px)', () => {
-    $$('.chapter').forEach((ch) => {
-      const vis = $('.vis', ch);
-      const text = $('.chapter__text', ch);
-      gsap.fromTo(vis, { scale: .82, borderRadius: '48px', opacity: .4 }, {
-        scale: 1, borderRadius: '20px', opacity: 1, ease: 'none',
-        scrollTrigger: { trigger: ch, start: 'top bottom', end: 'top 25%', scrub: true }
-      });
-      gsap.fromTo(vis, { scale: 1, opacity: 1 }, {
-        scale: .9, opacity: .25, ease: 'none', immediateRender: false,
-        scrollTrigger: { trigger: ch, start: 'bottom 95%', end: 'bottom 35%', scrub: true }
-      });
-      gsap.fromTo(text, { y: 60 }, { y: -60, ease: 'none', scrollTrigger: { trigger: ch, start: 'top bottom', end: 'bottom top', scrub: true } });
-    });
-    const sun = $('.vis__sun');
-    if (sun) gsap.to(sun, { rotate: 120, ease: 'none', scrollTrigger: { trigger: sun.closest('.chapter'), start: 'top bottom', end: 'bottom top', scrub: true } });
-  });
 
   gsap.from('.stands .mod', {
     opacity: 0, y: 30, scale: .8, transformOrigin: '50% 100%', duration: .9, ease: 'back.out(1.7)', stagger: { each: .05, from: 'random' },
     scrollTrigger: { trigger: '.stands', start: 'top 80%' }
   });
-  gsap.from('.boiada', { opacity: 0, duration: 1.2, scrollTrigger: { trigger: '.vis--rios', start: 'top 60%' } });
-
-  gsap.from('.sectors li', {
-    opacity: 0, y: 24, scale: .9, duration: .9, ease: 'back.out(1.6)', stagger: .07,
-    scrollTrigger: { trigger: '.vis--setores', start: 'top 70%' }
-  });
-
-  /* ---------- Mapa: rede que se desenha ---------- */
-  const mapTl = gsap.timeline({ paused: true });
-  if (window.DrawSVGPlugin) {
-    mapTl.fromTo('.map__br', { drawSVG: '0%' }, { drawSVG: '100%', duration: 1.4, ease: 'power2.inOut' }, 0)
-      .fromTo('.map__links path', { drawSVG: '0%' }, { drawSVG: '100%', duration: 1, stagger: .12, ease: 'power2.out' }, .5);
-  }
-  mapTl
-    .from('.city--hub > circle:not(.hub-pulse)', { scale: 0, transformOrigin: '50% 50%', duration: .8, ease: 'back.out(2)' }, .2)
-    .from('.city:not(.city--hub) circle', { scale: 0, transformOrigin: '50% 50%', duration: .6, ease: 'back.out(2.4)', stagger: .12 }, .7)
-    .from('.city text, .map__br-label', { opacity: 0, y: 8, duration: .6, stagger: .08 }, .8)
-    .from('.map__states text', { opacity: 0, duration: 1 }, 1.2);
-
-  mm.add('(min-width: 1024px)', () => {
-    mapTl.progress(0);
-    ScrollTrigger.create({
-      trigger: '.map__pin', start: 'top top', end: '+=110%', pin: true, scrub: .8, animation: mapTl, anticipatePin: 1
-    });
-    gsap.to('.map__topo', { rotate: 10, scale: 1.08, transformOrigin: '50% 50%', ease: 'none', scrollTrigger: { trigger: '.map', start: 'top bottom', end: 'bottom top', scrub: true } });
-  });
-  mm.add('(max-width: 1023px)', () => {
-    ScrollTrigger.create({ trigger: '.map__fig', start: 'top 75%', once: true, onEnter: () => mapTl.play() });
-  });
-
   /* ---------- Contadores ---------- */
   $$('[data-count]').forEach((el) => {
     const end = parseInt(el.dataset.count, 10);
@@ -345,6 +284,12 @@
     ScrollTrigger.create({ trigger: day, start: 'top 65%', end: 'bottom 35%', toggleClass: { targets: day, className: 'is-active' } });
   });
 
+  /* ---------- Perguntas frequentes: recalcula as posições quando uma resposta abre ---------- */
+  $$('.qa').forEach((qa) => qa.addEventListener('toggle', () => {
+    clearTimeout(qa._t);
+    qa._t = setTimeout(() => ScrollTrigger.refresh(), 60);
+  }));
+
   /* ---------- Final: título com escala ---------- */
   gsap.fromTo('.finale__title', { scale: .9 }, { scale: 1, ease: 'none', scrollTrigger: { trigger: '.finale', start: 'top bottom', end: 'center center', scrub: true } });
 
@@ -390,6 +335,17 @@
     const pre = params.get('interesse');
     if (pre && ['smart', 'vip', 'expositor'].includes(pre)) setInterest(pre);
 
+    // Botão "Entrar no grupo" da mensagem de sucesso
+    const community = $('[data-community]');
+    if (community) {
+      if (CFG.communityUrl) community.href = CFG.communityUrl;
+      community.addEventListener('click', (e) => {
+        track('community_click', { form_id: 'lead-form' });
+        if (typeof window.fbq === 'function') window.fbq('trackCustom', 'EntrouNoGrupo');
+        if (!CFG.communityUrl) { e.preventDefault(); console.warn('[Sertão Negócios] communityUrl não configurado em assets/js/config.js.'); }
+      });
+    }
+
     // Máscara de telefone: (00) 00000-0000
     const phone = form.elements.whatsapp;
     phone.addEventListener('input', () => {
@@ -408,23 +364,19 @@
     const rules = {
       nome: (v) => v.trim().length >= 3 && /\s/.test(v.trim()) ? '' : 'Informe seu nome completo.',
       whatsapp: (v) => { const d = v.replace(/\D/g, ''); return d.length >= 10 && d.length <= 11 ? '' : 'Informe um WhatsApp válido com DDD.'; },
-      email: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()) ? '' : 'Informe um e-mail válido.',
-      interesse: () => form.querySelector('input[name="interesse"]:checked') ? '' : 'Escolha uma opção.',
-      consentimento: () => form.elements.consentimento.checked ? '' : 'É preciso autorizar o contato para continuar.'
+      email: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()) ? '' : 'Informe um e-mail válido.'
     };
 
     const validate = (name) => {
-      const msg = rules[name](form.elements[name].value ?? '');
-      const field = (name === 'interesse' ? $('.field--choices', form) : form.elements[name].closest('.field'));
+      const input = form.elements[name];
+      const msg = rules[name](input.value ?? '');
+      const field = input.closest('.field');
       const err = $(`#e-${name}`);
       field.classList.toggle('is-invalid', !!msg);
-      if (name !== 'interesse' && name !== 'consentimento') field.classList.toggle('is-valid', !msg);
+      field.classList.toggle('is-valid', !msg);
       if (err) err.textContent = msg;
-      const input = name === 'interesse' ? null : form.elements[name];
-      if (input) {
-        input.setAttribute('aria-invalid', msg ? 'true' : 'false');
-        if (err) input.setAttribute('aria-describedby', err.id);
-      }
+      input.setAttribute('aria-invalid', msg ? 'true' : 'false');
+      if (err) input.setAttribute('aria-describedby', err.id);
       return !msg;
     };
 
@@ -432,8 +384,6 @@
       form.elements[n].addEventListener('blur', () => { if (form.elements[n].value) validate(n); });
       form.elements[n].addEventListener('input', () => { if (form.elements[n].closest('.field').classList.contains('is-invalid')) validate(n); });
     });
-    $$('input[name="interesse"]', form).forEach((r) => r.addEventListener('change', () => validate('interesse')));
-    form.elements.consentimento.addEventListener('change', () => validate('consentimento'));
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -456,8 +406,8 @@
       form.setAttribute('aria-busy', 'true');
       try {
         await sendLead(data);
-        track('generate_lead', { form_id: 'lead-form', interesse: data.interesse });
-        if (typeof window.fbq === 'function') window.fbq('track', 'Lead', { content_name: `Sertão Negócios · ${data.interesse}` });
+        track('generate_lead', { form_id: 'lead-form', interesse: data.interesse || 'geral' });
+        if (typeof window.fbq === 'function') window.fbq('track', 'Lead', { content_name: `Sertão Negócios · ${data.interesse || 'pré-venda'}` });
         showSuccess(data.nome);
       } catch (err) {
         console.error(err);

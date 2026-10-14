@@ -12,7 +12,10 @@ window.SN_CONFIG = {
   payloadFormat: 'json',
   requestMode: 'cors',
 
-  // Opcional: após o envio, redireciona para esta URL (página de obrigado, grupo de WhatsApp etc.).
+  // Link da comunidade no WhatsApp: usado no botão "Entrar no grupo" que aparece depois do cadastro.
+  communityUrl: '',
+
+  // Opcional: após o envio, redireciona sozinho para esta URL (página de obrigado, grupo de WhatsApp etc.).
   redirectUrl: '',
   redirectDelayMs: 2200
 };

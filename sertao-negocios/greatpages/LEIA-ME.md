@@ -9,13 +9,46 @@ Os blocos já vêm preparados para não conflitar com o estilo do GreatPages: to
 |---|---|---|
 | `teste-diagnostico.html` | Elemento **HTML/CSS** numa página de rascunho (veja o passo 0) | Só no teste |
 | `00-estilos-1.html`, `00-estilos-2.html`, `00-estilos-3.html` | **Configurações (engrenagem) → Javascript & CSS → Adicionar código**, tipo **Funcionamento**, um código por arquivo, nomes "Sertão Negócios · Estilos 1", "2" e "3", criados nessa ordem | Uma vez cada |
-| `01-topo.html` … `13-rodape.html` | **Adicionar bloco** → elemento **HTML/CSS**, um arquivo por bloco, nesta ordem | Um por bloco |
+| `01-topo.html` … `11-rodape.html` | **Adicionar bloco** → elemento **HTML/CSS**, um arquivo por bloco, nesta ordem | Um por bloco |
 | `99-scripts.html` | **Configurações → Javascript & CSS → Adicionar código**, tipo **Funcionamento**, nome "Sertão Negócios · Scripts" | Uma vez |
 
 Use sempre o tipo **Funcionamento** nos quatro códigos. Os tipos "Estatísticas" e "Marketing" podem ficar bloqueados até o visitante aceitar os cookies (LGPD), e a página ficaria sem estilo e sem animação.
-| `imagens/` | Biblioteca de mídia do GreatPages | 12 imagens da página + 1 de compartilhamento |
+| `imagens/` | Biblioteca de mídia do GreatPages | 10 imagens da página + 1 de compartilhamento |
 
-Ordem das seções: 01 topo · 02 proposta · 03 história · 04 região (mapa) · 05 por que participar · 06 palestrantes · 07 programação · 08 experiência · 09 ingressos · 10 realização · 11 inscrição · 12 final · 13 rodapé.
+Ordem das seções: 01 topo · 02 por que participar · 03 palestrantes · 04 programação · 05 experiência · 06 ingressos · 07 realização · 08 perguntas frequentes · 09 inscrição · 10 final · 11 rodapé.
+
+### Mudança de outubro (copy v1.1): de 13 para 11 blocos
+
+As seções "A proposta", "O Sertão" (história) e "Área de influência" (mapa) saíram da página. Entrou a seção "Perguntas frequentes". Na página que já está montada:
+
+1. Apague os blocos antigos 02 (proposta), 03 (história) e 04 (mapa).
+2. Troque os três códigos de estilos e o código de scripts pelos novos.
+3. Cole de novo o conteúdo de cada bloco com o arquivo novo, na nova numeração (tabela abaixo).
+4. Crie um bloco novo entre "Quem faz" e "Inscrição" e cole nele `08-perguntas.html`.
+
+| Bloco antigo | Arquivo novo |
+|---|---|
+| 01 topo | `01-topo.html` |
+| 02, 03 e 04 | apagar |
+| 05 por que participar | `02-por-que.html` |
+| 06 palestrantes | `03-palestrantes.html` |
+| 07 programação | `04-programacao.html` |
+| 08 experiência | `05-experiencia.html` |
+| 09 ingressos | `06-ingressos.html` |
+| 10 realização | `07-realizacao.html` |
+| (novo) | `08-perguntas.html` |
+| 11 inscrição | `09-inscricao.html` (o elemento Formulário continua no mesmo bloco) |
+| 12 final | `10-final.html` |
+| 13 rodapé | `11-rodape.html` |
+
+### Frase principal do topo (teste A/B sem duplicar a página)
+
+A página abre com a versão A ("Conteúdo de capital, sem sair do Sertão."). Para mostrar outra versão, acrescente ao fim do link:
+
+- `?titulo=b`: "Gestão de verdade com Moisés Ramos, em Patos."
+- `?titulo=c`: "A pré-venda abre primeiro na comunidade."
+
+Se o link já tiver UTMs, use `&titulo=c`. A versão vista vai junto em todos os eventos do `dataLayer` (campo `titulo`).
 
 ## Passo 0 · Diagnóstico (2 minutos)
 
@@ -34,14 +67,13 @@ Antes de montar tudo, crie uma página de rascunho só com:
 
 1. os três `00-estilos-*.html` em Configurações → Javascript & CSS (tipo Funcionamento), na ordem 1, 2, 3;
 2. uma seção com `01-topo.html`;
-3. uma seção com `03-historia.html`;
+3. uma seção com `03-palestrantes.html`;
 4. `99-scripts.html` em Configurações → Javascript & CSS (tipo Funcionamento).
 
 Publique e abra no navegador (no celular também). Confira:
 
 - [ ] O logo, a data e os botões aparecem, e o topo anima ao carregar.
 - [ ] A rolagem fica suave.
-- [ ] Na história do Sertão, no computador, a imagem fica parada enquanto o texto passa ao lado.
 - [ ] A barra de navegação fica fixa no alto e some ao rolar para baixo.
 - [ ] Não há faixa vazia nem corte entre o topo e a seção seguinte.
 
@@ -72,7 +104,7 @@ Por isso a altura que você der ao bloco e ao elemento no editor não importa. D
 
 ## Passo 3 · Suba as imagens
 
-Suba os 12 arquivos de imagem da pasta `imagens/` (o `og-logo.png` é só para o SEO, no passo 6) na biblioteca de mídia do GreatPages e copie o link de cada um.
+Suba os 10 arquivos de imagem da pasta `imagens/` (o `og-logo.png` é só para o SEO, no passo 6) na biblioteca de mídia do GreatPages e copie o link de cada um.
 
 Nos blocos, cada imagem aparece como `IMAGEM/nome-do-arquivo`, por exemplo `IMAGEM/speaker-rick.webp`. Há dois jeitos de trocar:
 
@@ -84,44 +116,46 @@ Onde cada imagem é usada:
 | Imagem | Bloco |
 |---|---|
 | `logo-sertao-negocios.webp` | 00 (pré-carregamento) e 01 |
-| `logo-sertao-negocios-sm.webp` | 01 (navegação) e 13 |
+| `logo-sertao-negocios-sm.webp` | 01 (navegação) e 11 |
 | `patos-aerea.webp` | 01 |
-| `patos-entardecer.webp`, `patos-letreiro.webp` | 03 |
-| `speaker-rick.webp`, `speaker-rossandro.webp`, `speaker-moises.webp` | 06 |
-| `sebrae-patos.webp`, `logo-sebrae.png`, `logo-mr3.png`, `logo-ancora.png` | 10 (logos também no 13) |
+| `speaker-rick.webp`, `speaker-rossandro.webp`, `speaker-moises.webp` | 03 |
+| `sebrae-patos.webp`, `logo-sebrae.png`, `logo-mr3.png`, `logo-ancora.png` | 07 (logos também no 11) |
 
 ## Passo 4 · Cole os blocos
 
 1. Em Configurações → Javascript & CSS, adicione `00-estilos-1.html`, `00-estilos-2.html`, `00-estilos-3.html` e `99-scripts.html` como quatro códigos do tipo Funcionamento, nessa ordem.
-2. Crie os 13 blocos na ordem e cole um arquivo em cada elemento HTML/CSS.
+2. Crie os 11 blocos na ordem e cole um arquivo em cada elemento HTML/CSS.
 
 Copie sempre o arquivo **inteiro**, do primeiro ao último caractere.
 
 ## Passo 5 · Formulário (nativo do GreatPages)
 
-O bloco 11 usa o **formulário do próprio GreatPages**: os leads ficam no painel dele, com as integrações e notificações.
+O bloco 09 usa o **formulário do próprio GreatPages**: os leads ficam no painel dele, com as integrações e notificações.
 
-1. Cole `11-inscricao.html` no elemento HTML/CSS do bloco 11.
-2. No **mesmo bloco 11**, adicione o elemento **Formulário** do GreatPages. A posição e o tamanho no editor não importam: na página publicada ele é movido para dentro do cartão branco e ganha o visual do projeto.
-3. Campos sugeridos: Nome, WhatsApp, E-mail, Cidade (opcional) e **"Tenho interesse em"** (seleção ou múltipla escolha com as opções **Ingresso Smart**, **Ingresso VIP** e **Expor (estande)**), mais a autorização de LGPD.
-4. Texto do botão sugerido: **Quero garantir minha prioridade**.
-5. Confira se o elemento Formulário está visível também no modo **Mobile**.
+1. Cole `09-inscricao.html` no elemento HTML/CSS do bloco 09.
+2. No **mesmo bloco 09**, deixe o elemento **Formulário** do GreatPages. A posição e o tamanho no editor não importam: na página publicada ele é movido para dentro do cartão branco e ganha o visual do projeto.
+3. Campos: **Nome**, **Seu melhor WhatsApp** e **E-mail**.
+4. Texto do botão: **Quero entrar na comunidade**.
+5. Depois do envio, escolha uma das opções do GreatPages:
+   - **redirecionar para o link da comunidade** no WhatsApp; ou
+   - **mensagem de sucesso**: "Cadastro feito. Falta um passo: entre na comunidade pelo botão abaixo.", com o link do grupo.
+   Se puder, redirecione para uma página de obrigado com o Pixel antes do grupo: assim o Lead é medido antes de a pessoa sair da página.
+6. Confira se o elemento Formulário está visível também no modo **Mobile**.
 
-Os botões "Quero o Smart", "Quero o VIP" e "Quero expor minha empresa" marcam a opção certa no campo "Tenho interesse em", desde que as opções tenham essas palavras.
-A mensagem de sucesso, as notificações e as integrações são configuradas no próprio GreatPages.
+O texto "Entrar na comunidade não custa nada…" é colocado sozinho logo acima do botão, e a frase de privacidade fica embaixo do formulário.
 
 ## Passo 6 · SEO e rastreamento
 
 Preencha nas configurações de SEO da página:
 
 - **Título:** `Sertão Negócios 2026 · 03 e 04 de dezembro · Patos-PB`
-- **Descrição:** `Dois dias de palestras com Rick Chester, Rossandro Klinjey e Moisés Ramos, cases reais de empresários do Sertão, networking e área de estandes. 03 e 04 de dezembro, auditório do Sebrae em Patos-PB.`
+- **Descrição:** `Gestão com Moisés Ramos, palestras de Rick Chesther e Rossandro Klinjey e 10 cases do Sertão. 03 e 04 de dezembro, no Sebrae de Patos-PB. Entre na pré-venda.`
 - **Imagem de compartilhamento:** `imagens/og-logo.png`.
 
 Pixel da Meta, Google Analytics e Tag Manager podem ser instalados normalmente pelo GreatPages.
 O kit envia os eventos `cta_click`, `form_start`, `form_error`, `generate_lead` e `form_submit_error` para o `dataLayer`, e `Lead` para o Pixel.
 
-Também falta completar a **política de privacidade** (bloco 13) com razão social, CNPJ e contato do responsável pelos dados.
+Também falta completar a **política de privacidade** (bloco 11) com razão social, CNPJ e contato do responsável pelos dados.
 
 ## Se algo não funcionar
 
@@ -130,7 +164,7 @@ Também falta completar a **política de privacidade** (bloco 13) com razão soc
 | Nada anima e a rolagem não é suave | Os scripts não rodaram | Confira se `99-scripts.html` foi adicionado em Configurações → Javascript & CSS com o tipo **Funcionamento**. |
 | Página sem estilo (texto preto, sem cores) | O código de estilos não foi aplicado | Confira se os três `00-estilos-*.html` estão em Configurações → Javascript & CSS com o tipo **Funcionamento** e se cada um termina em `</style>` (o 3 termina em `</script>`). |
 | Faixas vazias entre as seções ou cantos arredondados cortados | Espaçamento ou recorte das seções do GreatPages | Zere o espaçamento das seções. Se continuar, adicione ao fim do `00-estilos-3.html`: `<style>:root{--sn-overlap:0px}</style>` |
-| Na história do Sertão a imagem não fica parada, ou o mapa não fica fixo enquanto se desenha | Alguma caixa do GreatPages em volta da seção corta o conteúdo | Me mande o link do teste. Dá para ajustar com um CSS específico para o GreatPages. |
+| Ao abrir uma pergunta frequente, o texto de baixo fica cortado | O bloco não acompanhou a nova altura | Confira se o código de Scripts é o novo. Se continuar, me mande o link. |
 | Barra de navegação ou botão fixo do celular rolando junto com a página | Alguma caixa do GreatPages com animação ou efeito em volta do bloco | Desligue animações de entrada da seção e do elemento. |
 | Botões ou títulos com fonte ou cor diferentes | Estilo do tema do GreatPages se sobrepondo | Me mande o link e eu reforço as regras do kit. |
 

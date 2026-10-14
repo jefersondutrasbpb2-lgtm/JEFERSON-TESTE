@@ -25,25 +25,29 @@ A pasta `greatpages/` traz a mesma página dividida em blocos para colar em elem
 
 ### Campos enviados
 
-`nome`, `whatsapp` (só dígitos), `email`, `cidade`, `interesse` (`smart`, `vip` ou `expositor`), `consentimento`, `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `utm_term`, `pagina` e `enviado_em`.
+`nome`, `whatsapp` (só dígitos), `email`, `interesse` (último botão clicado: `smart`, `vip` ou `expositor`; vazio se nenhum), `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `utm_term`, `pagina` e `enviado_em`.
 
-Os links podem pré-selecionar o interesse com `?interesse=vip`. As UTMs da URL são capturadas automaticamente.
+Os links podem marcar o interesse com `?interesse=vip`. As UTMs da URL são capturadas automaticamente.
+Depois do envio aparece o botão "Entrar no grupo", que abre `communityUrl` (em `assets/js/config.js`).
+
+A frase principal do topo tem três versões para teste: a A está no HTML, e `?titulo=b` ou `?titulo=c` no link trocam o texto (veja o início de `assets/js/main.js`).
 
 ## Estrutura e direção
 
 | Seção | Função |
 |---|---|
-| Hero | Logo 3D, data, local e CTA. Linhas topográficas se desenham na entrada e o horizonte de Patos fica em parallax. |
-| 01 A proposta | Manifesto com palavras que acendem conforme a rolagem. |
-| 02 O Sertão | Sticky storytelling em 4 capítulos: pecuária, algodão, Patos e economia de hoje. |
-| 03 Área de influência | Mapa SVG fixado na tela enquanto as conexões e a BR-230 se desenham. |
-| 04 Por que participar | Números com contador, benefícios e público. |
-| 05 Palestrantes | Recortes em PNG/WebP sobre o gradiente pôr do sol, mais os 10 cases. |
-| 06 Programação | Linha do tempo dos dois dias, que se preenche com o scroll. |
-| 07 Experiência | Estrutura do evento e CTA para expositores. |
-| 08 Ingressos | Smart e VIP, com CTAs que pré-selecionam o formulário. |
-| 09 Quem faz | Sebrae, MR3, Âncora e a metodologia PBXP / Summit Paraíba. |
-| 10 Inscrição | Formulário com validação, máscara, LGPD, honeypot e estados de envio. |
+| Hero | Logo 3D, assinatura, frase principal (3 versões), data, local e CTA de pré-venda. Linhas topográficas se desenham na entrada e o horizonte de Patos fica em parallax. |
+| 01 Por que participar | Proposta, números com contador, a dor de viajar até a capital, as quatro frentes, benefícios e público. |
+| 02 No palco | Moisés Ramos em destaque, Rick Chesther e Rossandro Klinjey como convidados, mais os 10 cases. |
+| 03 Programação | Linha do tempo dos dois dias, que se preenche com o scroll. |
+| 04 Experiência | Estrutura do evento e CTA para expositores. |
+| 05 Ingressos | Smart e VIP, mais a caixa de pré-venda na comunidade. |
+| 06 Quem faz | Sebrae, MR3, Âncora e a metodologia PBXP / Summit Paraíba. |
+| 07 Perguntas frequentes | Sete perguntas em sanfona (details/summary). |
+| 08 Inscrição | Nome, WhatsApp e e-mail, com validação, máscara, honeypot, estados de envio e o botão para entrar na comunidade. |
+| Final | Assinatura, CTA e P.S. sobre os 300 lugares. |
+
+A copy segue `copy/copy-revisada-v1.1.md`. As seções da proposta, da história do Sertão e do mapa saíram da página de captura a pedido do realizador.
 
 - **Tipografia:** *Bricolage Grotesque* (eixos de peso e tamanho óptico) nos títulos, com contornos expressivos que conversam com o logo arredondado. *Manrope* no texto, pela ótima legibilidade no mobile. As duas fontes ficam hospedadas localmente.
 - **Paleta:** cobalto da marca, sol/brasa (o gradiente pôr do sol das peças), céu como destaque e areia como respiro editorial.

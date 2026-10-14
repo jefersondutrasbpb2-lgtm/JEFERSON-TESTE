@@ -1,24 +1,26 @@
-<!-- Sertão Negócios 2026 · bloco 11-inscricao · GreatPages: Adicionar bloco > elemento HTML/CSS -->
+<!-- Sertão Negócios 2026 · bloco 09-inscricao · GreatPages: Adicionar bloco > elemento HTML/CSS -->
 <section class="sn sn-signup" id="inscricao" data-theme="dark" aria-labelledby="signup-title">
     <div class="sn-signup__bg" aria-hidden="true"><svg class="sn-topo" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice"><g fill="none" stroke="currentColor" stroke-width="1"><use href="#topo-g"/></g></svg></div>
     <div class="sn-wrap sn-signup__inner">
       <div class="sn-signup__copy">
-        <p class="sn-kicker"><span class="sn-kicker__num">10</span>Inscrição</p>
-        <h2 class="sn-h-display" id="signup-title" data-split>Garanta sua prioridade no Sertão Negócios.</h2>
-        <p class="sn-signup__lead" data-reveal>Cadastre-se para receber em primeira mão as informações de ingressos e lotes, ou para falar com a organização sobre a área de estandes.</p>
+        <p class="sn-kicker"><span class="sn-kicker__num">08</span>Inscrição</p>
+        <h2 class="sn-h-display" id="signup-title" data-split>Entre na comunidade e garanta a pré-venda.</h2>
+        <p class="sn-signup__lead" data-reveal>Cadastre-se para receber a condição de pré-venda e as informações de lotes antes de todo mundo. Também pode usar o cadastro para falar com a organização sobre a área de estandes.</p>
         <ul class="sn-signup__facts" data-reveal>
           <li><svg aria-hidden="true"><use href="#i-check"/></svg>03 e 04 de dezembro de 2026</li>
           <li><svg aria-hidden="true"><use href="#i-check"/></svg>Auditório do Sebrae, Patos-PB</li>
-          <li><svg aria-hidden="true"><use href="#i-check"/></svg>Rick Chester, Rossandro Klinjey e Moisés Ramos</li>
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg>Gestão e empreendedorismo com Moisés Ramos</li>
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg>Rick Chesther e Rossandro Klinjey</li>
           <li><svg aria-hidden="true"><use href="#i-check"/></svg>10 cases de empresários da região</li>
         </ul>
       </div>
 
       <div class="sn-form-card" data-reveal>
+        <p class="sn-form__promise" data-gp-promise>Entrar na comunidade não custa nada e não obriga você a comprar. Você recebe as informações, decide no seu tempo e pode sair do grupo quando quiser.</p>
         <div class="sn-gp-form" data-gp-form-slot>
           <p class="sn-gp-form__wait">Carregando o formulário…</p>
         </div>
-        <p class="sn-form__safe"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5z"/></svg>Seus dados estão protegidos e não serão compartilhados com terceiros.</p>
+        <p class="sn-form__safe"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5z"/></svg>Seus dados estão protegidos e não são compartilhados com terceiros. Ao se cadastrar, você concorda com a nossa <button type="button" class="sn-linklike" data-open-privacy>Política de Privacidade</button>.</p>
       </div>
     </div>
 
@@ -26,6 +28,8 @@
     <style>
       .sn-gp-form { display: block; margin-bottom: 14px; }
       .sn-gp-form__wait { color: var(--tinta-2); font-size: 14.4px; text-align: center; padding: 24px 0; }
+      .sn-form-card > .sn-form__promise { margin-bottom: 16px; }
+      .sn-gp-form .sn-form__promise { margin: 4px 0 0 !important; font-size: 14.4px !important; line-height: 1.5 !important; color: var(--tinta-2) !important; }
       .sn-gp-form .sn-gp-moved { position: static !important; inset: auto !important; transform: none !important; width: 100% !important; height: auto !important; min-height: 0 !important; max-width: none !important; margin: 0 !important; padding: 0 !important; background: transparent !important; box-shadow: none !important; border: 0 !important; overflow: visible !important; }
       .sn-gp-form .sn-gp-moved * { box-sizing: border-box !important; max-width: 100%; }
       .sn-gp-form .sn-gp-moved div:not(.iti *) { background-color: transparent !important; background-image: none !important; border-color: transparent !important; box-shadow: none !important; }
@@ -125,9 +129,16 @@
         slot.innerHTML = '';
         slot.appendChild(w);
         moved = true;
+        placePromise();
         fixPhone();
         var k = 0, iv = setInterval(function () { fixPhone(); if (++k > 15) clearInterval(iv); }, 400);
         return true;
+      }
+      // Texto "Entrar na comunidade não custa nada…" logo acima do botão de envio
+      function placePromise() {
+        var promise = root.querySelector('[data-gp-promise]');
+        var btn = slot.querySelector('.gpc_botao, button[type="submit"], input[type="submit"]');
+        if (promise && btn && btn.parentNode) btn.parentNode.insertBefore(promise, btn);
       }
       // Campo de telefone com seletor de país: recuo do texto acompanha a largura da bandeira
       function fixPhone() {

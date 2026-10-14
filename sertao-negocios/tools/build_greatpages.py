@@ -3,7 +3,7 @@
 
 O kit separa a página em blocos para colar em elementos HTML do GreatPages:
   00-estilos-1..3.html  CSS (compactado e dividido em 3), fontes e marcação inicial
-  01..13-*.html        uma seção por arquivo (cole em ordem, um elemento HTML por seção)
+  01..11-*.html        uma seção por arquivo (cole em ordem, um elemento HTML por seção)
   99-scripts.html      bibliotecas, configuração e animações (cole uma vez, no fim da página)
 
 Para não conflitar com o CSS do GreatPages:
@@ -114,10 +114,10 @@ html.lenis, html.lenis body { height: auto; }
 :where(.sn) :is(img, svg) { display: block; max-width: 100%; }
 :where(.sn) img { height: auto; border: 0; }
 :where(.sn) a { color: inherit; }
-:where(.sn) :is(h1, h2, h3, h4, p, ul, ol, dl, dt, dd, li, figure, figcaption, a, span, label, legend, time, small, strong, em, blockquote) { margin: 0; }
+:where(.sn) :is(h1, h2, h3, h4, p, ul, ol, dl, dt, dd, li, figure, figcaption, a, span, label, legend, time, small, strong, em, blockquote, details, summary) { margin: 0; }
 /* Neutraliza estilos genéricos de texto do construtor (mesma especificidade de um seletor de tag) */
-:where(.sn) :is(h1, h2, h3, h4, p, li, a, span, dt, dd, label, legend, time, figcaption, button, input) { color: inherit; font-family: inherit; text-shadow: none; }
-:where(.sn) :is(div, section, header, footer, article, aside, nav, figure, form, fieldset, ul, ol, dl, p, li, a, span, dt, dd, label, legend, time, figcaption, small, blockquote) { font-size: inherit; line-height: inherit; letter-spacing: inherit; text-transform: inherit; font-weight: inherit; text-align: inherit; }
+:where(.sn) :is(h1, h2, h3, h4, p, li, a, span, dt, dd, label, legend, time, figcaption, button, input, summary) { color: inherit; font-family: inherit; text-shadow: none; }
+:where(.sn) :is(div, section, header, footer, article, aside, nav, figure, form, fieldset, ul, ol, dl, p, li, a, span, dt, dd, label, legend, time, figcaption, small, blockquote, details) { font-size: inherit; line-height: inherit; letter-spacing: inherit; text-transform: inherit; font-weight: inherit; text-align: inherit; }
 :where(.sn) :is(ul, ol) { padding: 0; list-style: none; }
 :where(.sn) button { font: inherit; color: inherit; }
 :where(.sn) :focus-visible { outline: 3px solid var(--ceu); outline-offset: 3px; border-radius: 6px; }
@@ -129,7 +129,7 @@ html.lenis, html.lenis body { height: auto; }
 kit_css = css.replace(base_old, base_new)
 kit_css = re.sub(r"@font-face \{.*?\}\n", "", kit_css, flags=re.S)
 n_overlap = kit_css.count("margin-top: calc(var(--radius-lg) * -1);")
-if n_overlap < 10:
+if n_overlap < 9:
     fail("sobreposição entre seções não encontrada no CSS")
 kit_css = kit_css.replace("margin-top: calc(var(--radius-lg) * -1);", "margin-top: calc(var(--sn-overlap) * -1);")
 kit_css = prefix_selectors(kit_css)
@@ -166,17 +166,15 @@ skip = '<a class="skip" href="#inicio">Pular para o conteúdo</a>'
 nav = between('<header class="nav"', "<main").strip()
 section_markers = [
     ("01-topo", "<!-- ====== 01 HERO", "<!-- ====== 02"),
-    ("02-proposta", "<!-- ====== 02 MANIFESTO", "<!-- ====== 03"),
-    ("03-historia", "<!-- ====== 03 HISTÓRIA", "<!-- ====== 04"),
-    ("04-regiao", "<!-- ====== 04 MAPA", "<!-- ====== 05"),
-    ("05-por-que", "<!-- ====== 05 POR QUE", "<!-- ====== 06"),
-    ("06-palestrantes", "<!-- ====== 06 PALESTRANTES", "<!-- ====== 07"),
-    ("07-programacao", "<!-- ====== 07 PROGRAMAÇÃO", "<!-- ====== 08"),
-    ("08-experiencia", "<!-- ====== 08 EXPERIÊNCIA", "<!-- ====== 09"),
-    ("09-ingressos", "<!-- ====== 09 INGRESSOS", "<!-- ====== 10"),
-    ("10-realizacao", "<!-- ====== 10 REALIZAÇÃO", "<!-- ====== 11"),
-    ("11-inscricao", "<!-- ====== 11 INSCRIÇÃO", "<!-- ====== 12"),
-    ("12-final", "<!-- ====== 12 FINAL", "</main>"),
+    ("02-por-que", "<!-- ====== 02 POR QUE", "<!-- ====== 03"),
+    ("03-palestrantes", "<!-- ====== 03 PALESTRANTES", "<!-- ====== 04"),
+    ("04-programacao", "<!-- ====== 04 PROGRAMAÇÃO", "<!-- ====== 05"),
+    ("05-experiencia", "<!-- ====== 05 EXPERIÊNCIA", "<!-- ====== 06"),
+    ("06-ingressos", "<!-- ====== 06 INGRESSOS", "<!-- ====== 07"),
+    ("07-realizacao", "<!-- ====== 07 REALIZAÇÃO", "<!-- ====== 08"),
+    ("08-perguntas", "<!-- ====== 08 PERGUNTAS", "<!-- ====== 09"),
+    ("09-inscricao", "<!-- ====== 09 INSCRIÇÃO", "<!-- ====== 10"),
+    ("10-final", "<!-- ====== 10 FINAL", "</main>"),
 ]
 blocks = {}
 for name, start, end in section_markers:
@@ -201,18 +199,18 @@ dock = add_root_class(dock)
 dialog = add_root_class(dialog)
 
 blocks["01-topo"] = "\n\n".join([sprite, skip, nav, blocks["01-topo"]])
-blocks["13-rodape"] = "\n\n".join([footer, dock, dialog])
+blocks["11-rodape"] = "\n\n".join([footer, dock, dialog])
 
 HEADER_NOTE = "<!-- Sertão Negócios 2026 · bloco {name} · GreatPages: Adicionar bloco > elemento HTML/CSS -->\n"
 for k in list(blocks):
     blocks[k] = HEADER_NOTE.format(name=k) + img_paths(prefix_html(blocks[k])) + "\n"
 
-# Bloco 11 no GreatPages: o formulário é o nativo do GreatPages, encaixado no cartão do kit
+# Bloco 09 no GreatPages: o formulário é o nativo do GreatPages, encaixado no cartão do kit
 _slot = (ROOT / "tools/gp_form_slot.html").read_text().rstrip("\n")
-_b11 = blocks["11-inscricao"]
+_b11 = blocks["09-inscricao"]
 _i = _b11.index('      <div class="sn-form-card" data-reveal>')
 _j = _b11.rindex("  </section>") + len("  </section>")
-blocks["11-inscricao"] = _b11[:_i] + _slot + _b11[_j:]
+blocks["09-inscricao"] = _b11[:_i] + _slot + _b11[_j:]
 
 # ---------------------------------------------------------------------------
 # 4. Cabeçalho e scripts

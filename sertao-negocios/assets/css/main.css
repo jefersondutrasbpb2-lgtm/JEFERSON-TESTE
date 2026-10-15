@@ -588,6 +588,24 @@ button { font: inherit; color: inherit; }
 .tickets__lead { margin-top: 24px; max-width: 52ch; font-size: clamp(1.05rem, 1rem + .3vw, 1.25rem); color: rgb(255 255 255 / .85); }
 .tickets__lead strong { color: var(--branco); }
 
+/* Lote 0: passos ao lado do celular com os avisos da comunidade */
+.lot { display: grid; gap: clamp(48px, 7vw, 96px); }
+#lote-0 { overflow-x: clip; }
+.lot .tickets__head { margin-bottom: clamp(32px, 4vw, 56px); }
+.lot__phone { position: relative; justify-self: center; width: min(74vw, 400px); margin: 0; }
+/* A imagem tem uma faixa transparente à direita do aparelho (878 de 1086 px): o recorte deixa só o aparelho */
+.lot__phone img { position: relative; z-index: 1; width: 100%; aspect-ratio: 878 / 1448; object-fit: cover; object-position: 0 50%; filter: drop-shadow(0 40px 50px rgb(9 12 58 / .55)); animation: sn-float 7s ease-in-out infinite; }
+.lot__glow { position: absolute; z-index: 0; inset: 8% -18% 4%; border-radius: 50%; background: radial-gradient(closest-side, rgb(255 74 42 / .6), rgb(62 201 245 / .28) 62%, transparent); filter: blur(30px); }
+.lot__tag {
+  position: absolute; z-index: 2; left: -8%; top: 30%;
+  display: inline-flex; align-items: center; gap: 10px; padding: .7em 1.15em; border-radius: 999px;
+  background: var(--branco); color: var(--tinta); font-size: .85rem; font-weight: 800; white-space: nowrap;
+  box-shadow: 0 20px 40px -14px rgb(9 12 58 / .6);
+}
+.lot__dot { width: 10px; height: 10px; border-radius: 50%; background: var(--sol); box-shadow: 0 0 0 0 rgb(255 61 46 / .6); animation: sn-ping 2s ease-out infinite; }
+@keyframes sn-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+@keyframes sn-ping { 0% { box-shadow: 0 0 0 0 rgb(255 61 46 / .55); } 100% { box-shadow: 0 0 0 12px rgb(255 61 46 / 0); } }
+
 /* Lote 0: três passos até a condição de lançamento */
 .steps { display: grid; gap: 14px; }
 .step {
@@ -610,9 +628,17 @@ button { font: inherit; color: inherit; }
 .presale__title { font-family: var(--font-display); font-variation-settings: "opsz" 48; font-weight: 800; font-size: clamp(1.5rem, 1.1rem + 1.4vw, 2.3rem); line-height: 1.05; letter-spacing: -.03em; color: var(--branco); }
 .presale__urgency { font-weight: 800; color: var(--branco); }
 .presale .btn { justify-self: start; }
+.lot + .presale { margin-top: clamp(40px, 6vw, 72px); }
 @media (min-width: 900px) {
   .steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .presale { grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 48px; }
+}
+@media (min-width: 1024px) {
+  .lot { grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); align-items: center; }
+  .lot .steps { grid-template-columns: 1fr; gap: 12px; }
+  .lot .step { grid-template-columns: clamp(96px, 9vw, 140px) 1fr; column-gap: 24px; row-gap: 4px; align-items: center; padding: 22px 28px; border-radius: var(--radius); }
+  .lot .step__n { grid-row: span 2; }
+  .lot__phone { width: min(100%, 420px); }
 }
 
 /* =========================================================

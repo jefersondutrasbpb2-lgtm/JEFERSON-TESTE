@@ -1,9 +1,5 @@
 <!-- Sertão Negócios 2026 · ESTILOS 2 de 3 · GreatPages: Configurações > Javascript & CSS > Adicionar código (tipo Funcionamento), na ordem 1, 2, 3 -->
 <style>
-.sn-stat__l:not(#sn-x){display: block;margin-top: 10px;font-weight: 700;font-size: 15.2px;line-height: 1.3;max-width: 18ch}
-.sn-pain:not(#sn-x){display: grid;gap: 28px;margin-top: clamp(56px,8vw,120px);padding: clamp(28px,4.4vw,64px);border-radius: var(--radius-lg);background: var(--noite);color: var(--branco)}
-.sn-pain__q:not(#sn-x){font-family: var(--font-display);font-variation-settings: "opsz" 72;font-weight: 700;font-size: clamp(27.2px,17.6px + 2.2vw,48px);line-height: 1.04;letter-spacing: -.03em;max-width: 20ch;text-wrap: balance}
-.sn-pain__list:not(#sn-x){display: grid;gap: 4px}
 .sn-pain__list li:not(#sn-x){position: relative;padding: 14px 0 14px 34px;border-top: 1px solid rgb(255 255 255 / .14);color: rgb(255 255 255 / .82)}
 .sn-pain__list li:first-child:not(#sn-x){border-top: 0}
 .sn-pain__list li:not(#sn-x)::before{content: "";position: absolute;left: 0;top: 1.45em;width: 18px;height: 2px;border-radius: 2px;background: var(--sol)}
@@ -137,4 +133,19 @@
 .sn-exp-card--feature .sn-link-arrow:not(#sn-x){justify-self: start;margin-top: 8px;color: var(--branco)}
 @media (min-width: 640px){.sn-exp__grid:not(#sn-x){grid-template-columns: 1fr 1fr}
 .sn-exp-card--feature:not(#sn-x),.sn-exp-card:last-child:not(#sn-x){grid-column: 1 / -1}
-}</style>
+}
+@media (min-width: 1024px){.sn-exp__grid:not(#sn-x){grid-template-columns: repeat(4,minmax(0,1fr));grid-auto-rows: minmax(200px,auto)}
+.sn-exp-card--feature:not(#sn-x){grid-column: 1 / span 2;grid-row: 1 / span 2;grid-template-rows: 1fr auto}
+.sn-exp-card__media:not(#sn-x){aspect-ratio: auto;min-height: 240px}
+.sn-exp-card:last-child:not(#sn-x){grid-column: 1 / -1}
+}
+.sn-tickets:not(#sn-x){position: relative;z-index: 9;margin-top: calc(var(--sn-overlap) * -1);border-radius: var(--radius-lg) var(--radius-lg) 0 0;background: radial-gradient(80% 60% at 80% 20%,var(--cobalto-2),var(--cobalto) 50%,#161b9c);padding-block: var(--section-y)}
+.sn-tickets__head:not(#sn-x){margin-bottom: clamp(48px,7vw,88px)}
+.sn-tickets__head .sn-h-display:not(#sn-x){max-width: 18ch}
+.sn-tickets__lead:not(#sn-x){margin-top: 24px;max-width: 52ch;font-size: clamp(16.8px,16px + .3vw,20px);color: rgb(255 255 255 / .85)}
+.sn-tickets__lead strong:not(#sn-x){color: var(--branco)}
+.sn-lot:not(#sn-x){display: grid;gap: clamp(48px,7vw,96px)}
+#lote-0:not(#sn-x){overflow-x: clip}
+.sn-lot .sn-tickets__head:not(#sn-x){margin-bottom: clamp(32px,4vw,56px)}
+.sn-lot__phone:not(#sn-x){position: relative;justify-self: center;width: min(74vw,400px);margin: 0}
+.sn-lot__phone img:not(#sn-x){position: relative;z-index: 1;width: 100%;aspect-ratio: 878 / 1448;object-fit: cover;object-position: 0 50%;filter: drop-shadow(0 40px 50px rgb(9 12 58 / .55));animation: sn-float 7s ease-in-out infinite}</style>

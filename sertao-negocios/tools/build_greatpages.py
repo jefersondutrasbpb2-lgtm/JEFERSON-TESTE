@@ -383,7 +383,11 @@ for k, v in blocks.items():
 
 used = sorted(set(re.findall(re.escape(IMG_TOKEN) + r"([\w.-]+)", head + "".join(blocks.values()))))
 (OUT / "imagens").mkdir()
+# Fotos que só existem no GreatPages: no projeto há apenas um marcador para a prévia local
+ONLY_ON_GREATPAGES = {"speaker-fabricio.webp"}
 for f in used + ["og-logo.png"]:  # og-logo: imagem de compartilhamento (SEO)
+    if f in ONLY_ON_GREATPAGES:
+        continue
     shutil.copy(ROOT / "assets/img" / f, OUT / "imagens" / f)
 
 # Conferências

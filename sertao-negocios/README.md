@@ -25,9 +25,9 @@ A pasta `greatpages/` traz a mesma página dividida em blocos para colar em elem
 
 ### Campos enviados
 
-`nome`, `whatsapp` (só dígitos), `email`, `interesse` (último botão clicado: `smart`, `vip` ou `expositor`; vazio se nenhum), `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `utm_term`, `pagina` e `enviado_em`.
+`nome`, `whatsapp` (só dígitos), `email`, `interesse` (`expositor` quando a pessoa clica em "Quero expor minha empresa"; vazio nos outros casos), `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `utm_term`, `pagina` e `enviado_em`.
 
-Os links podem marcar o interesse com `?interesse=vip`. As UTMs da URL são capturadas automaticamente.
+Os links podem marcar o interesse com `?interesse=expositor`. As UTMs da URL são capturadas automaticamente.
 Depois do envio aparece o botão "Entrar no grupo", que abre `communityUrl` (em `assets/js/config.js`).
 
 A frase principal do topo tem três versões para teste: a A está no HTML, e `?titulo=b` ou `?titulo=c` no link trocam o texto (veja o início de `assets/js/main.js`).
@@ -36,12 +36,12 @@ A frase principal do topo tem três versões para teste: a A está no HTML, e `?
 
 | Seção | Função |
 |---|---|
-| Hero | Logo 3D, assinatura, frase principal (3 versões), data, local e CTA de pré-venda. Linhas topográficas se desenham na entrada e o horizonte de Patos fica em parallax. |
+| Hero | Logo 3D, assinatura, frase principal (3 versões), data, local e CTA do lote 0. Linhas topográficas se desenham na entrada e o horizonte de Patos fica em parallax. |
 | 01 Por que participar | Proposta, números com contador, a dor de viajar até a capital, as quatro frentes, benefícios e público. |
 | 02 No palco | Moisés Ramos em destaque, Rick Chesther e Rossandro Klinjey como convidados, mais os 10 cases. |
 | 03 Programação | Linha do tempo dos dois dias, que se preenche com o scroll. |
 | 04 Experiência | Estrutura do evento e CTA para expositores. |
-| 05 Ingressos | Smart e VIP, mais a caixa de pré-venda na comunidade. |
+| 05 Lote 0 | Três passos até a condição de lançamento (21 de outubro, na comunidade), mais o aviso dos 300 lugares. Os tipos de ingresso saem da página até o lançamento. |
 | 06 Quem faz | Sebrae, MR3, Âncora e a metodologia PBXP / Summit Paraíba. |
 | 07 Perguntas frequentes | Sete perguntas em sanfona (details/summary). |
 | 08 Inscrição | Nome, WhatsApp e e-mail, com validação, máscara, honeypot, estados de envio e o botão para entrar na comunidade. |

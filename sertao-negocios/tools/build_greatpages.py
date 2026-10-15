@@ -170,7 +170,7 @@ section_markers = [
     ("03-palestrantes", "<!-- ====== 03 PALESTRANTES", "<!-- ====== 04"),
     ("04-programacao", "<!-- ====== 04 PROGRAMAÇÃO", "<!-- ====== 05"),
     ("05-experiencia", "<!-- ====== 05 EXPERIÊNCIA", "<!-- ====== 06"),
-    ("06-ingressos", "<!-- ====== 06 INGRESSOS", "<!-- ====== 07"),
+    ("06-lote-0", "<!-- ====== 06 LOTE 0", "<!-- ====== 07"),
     ("07-realizacao", "<!-- ====== 07 REALIZAÇÃO", "<!-- ====== 08"),
     ("08-perguntas", "<!-- ====== 08 PERGUNTAS", "<!-- ====== 09"),
     ("09-inscricao", "<!-- ====== 09 INSCRIÇÃO", "<!-- ====== 10"),

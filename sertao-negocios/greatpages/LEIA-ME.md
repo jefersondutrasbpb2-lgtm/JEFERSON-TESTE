@@ -15,7 +15,7 @@ Os blocos já vêm preparados para não conflitar com o estilo do GreatPages: to
 Use sempre o tipo **Funcionamento** nos quatro códigos. Os tipos "Estatísticas" e "Marketing" podem ficar bloqueados até o visitante aceitar os cookies (LGPD), e a página ficaria sem estilo e sem animação.
 | `imagens/` | Biblioteca de mídia do GreatPages | 10 imagens da página + 1 de compartilhamento |
 
-Ordem das seções: 01 topo · 02 por que participar · 03 palestrantes · 04 programação · 05 experiência · 06 ingressos · 07 realização · 08 perguntas frequentes · 09 inscrição · 10 final · 11 rodapé.
+Ordem das seções: 01 topo · 02 por que participar · 03 palestrantes · 04 programação · 05 experiência · 06 lote 0 · 07 realização · 08 perguntas frequentes · 09 inscrição · 10 final · 11 rodapé.
 
 ### Mudança de outubro (copy v1.1): de 13 para 11 blocos
 
@@ -34,7 +34,7 @@ As seções "A proposta", "O Sertão" (história) e "Área de influência" (mapa
 | 06 palestrantes | `03-palestrantes.html` |
 | 07 programação | `04-programacao.html` |
 | 08 experiência | `05-experiencia.html` |
-| 09 ingressos | `06-ingressos.html` |
+| 09 ingressos | `06-lote-0.html` (antes `06-ingressos.html`) |
 | 10 realização | `07-realizacao.html` |
 | (novo) | `08-perguntas.html` |
 | 11 inscrição | `09-inscricao.html` (o elemento Formulário continua no mesmo bloco) |
@@ -46,7 +46,7 @@ As seções "A proposta", "O Sertão" (história) e "Área de influência" (mapa
 A página abre com a versão A ("Conteúdo de capital, sem sair do Sertão."). Para mostrar outra versão, acrescente ao fim do link:
 
 - `?titulo=b`: "Gestão de verdade com Moisés Ramos, em Patos."
-- `?titulo=c`: "A pré-venda abre primeiro na comunidade."
+- `?titulo=c`: "O lote 0 abre primeiro na comunidade."
 
 Se o link já tiver UTMs, use `&titulo=c`. A versão vista vai junto em todos os eventos do `dataLayer` (campo `titulo`).
 
@@ -149,7 +149,7 @@ O texto "Entrar na comunidade não custa nada…" é colocado sozinho logo acima
 Preencha nas configurações de SEO da página:
 
 - **Título:** `Sertão Negócios 2026 · 03 e 04 de dezembro · Patos-PB`
-- **Descrição:** `Gestão com Moisés Ramos, palestras de Rick Chesther e Rossandro Klinjey e 10 cases do Sertão. 03 e 04 de dezembro, no Sebrae de Patos-PB. Entre na pré-venda.`
+- **Descrição:** `Gestão com Moisés Ramos, palestras de Rick Chesther e Rossandro Klinjey e 10 cases do Sertão. 03 e 04 de dezembro, no Sebrae de Patos-PB. Lote 0 dia 21/10 na comunidade.`
 - **Imagem de compartilhamento:** `imagens/og-logo.png`.
 
 Pixel da Meta, Google Analytics e Tag Manager podem ser instalados normalmente pelo GreatPages.

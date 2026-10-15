@@ -368,9 +368,6 @@ button { font: inherit; color: inherit; }
 .gain > svg { width: 30px; height: 30px; padding: 4px; border-radius: 50%; background: rgb(42 48 224 / .12); color: var(--cobalto); }
 .gain h3 { font-family: var(--font-display); font-variation-settings: "opsz" 48; font-weight: 700; font-size: clamp(1.15rem, 1rem + .5vw, 1.4rem); line-height: 1.15; letter-spacing: -.02em; margin-bottom: 6px; }
 .gain p { color: var(--tinta-2); font-size: .97rem; }
-.gain--vip { background: var(--cobalto); color: var(--branco); }
-.gain--vip > svg { background: var(--sol-btn); color: var(--branco); }
-.gain--vip p { color: rgb(255 255 255 / .85); }
 
 .audience { margin-top: clamp(56px, 8vw, 104px); padding: clamp(24px, 4vw, 48px); border-radius: var(--radius); background: var(--branco); display: grid; gap: 18px; }
 .audience__title { font-size: .78rem; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: var(--sol-ink); }
@@ -383,8 +380,7 @@ button { font: inherit; color: inherit; }
 
 @media (min-width: 720px) {
   .gains__list { grid-template-columns: 1fr 1fr; }
-  .gain--vip { grid-column: 1 / -1; }
-  .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .stat { padding: 28px 20px 32px; border-right: 1px solid rgb(13 15 46 / .15); }
   .stat:first-child { padding-left: 0; }
   .stat:last-child { border-right: 0; }
@@ -569,12 +565,12 @@ button { font: inherit; color: inherit; }
 .exp-card--feature h3 { font-size: clamp(1.7rem, 1.2rem + 1.6vw, 2.6rem); margin: 0; }
 .exp-card--feature p { color: rgb(255 255 255 / .78); }
 .exp-card--feature .link-arrow { justify-self: start; margin-top: 8px; color: var(--branco); }
-@media (min-width: 640px) { .exp__grid { grid-template-columns: 1fr 1fr; } .exp-card--feature { grid-column: 1 / -1; } }
+@media (min-width: 640px) { .exp__grid { grid-template-columns: 1fr 1fr; } .exp-card--feature, .exp-card:last-child { grid-column: 1 / -1; } }
 @media (min-width: 1024px) {
   .exp__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: minmax(200px, auto); }
   .exp-card--feature { grid-column: 1 / span 2; grid-row: 1 / span 2; grid-template-rows: 1fr auto; }
   .exp-card__media { aspect-ratio: auto; min-height: 240px; }
-  .exp-card:nth-last-child(-n+2) { grid-column: span 2; }
+  .exp-card:last-child { grid-column: 1 / -1; }
 }
 
 /* =========================================================
@@ -588,26 +584,23 @@ button { font: inherit; color: inherit; }
   padding-block: var(--section-y);
 }
 .tickets__head { margin-bottom: clamp(48px, 7vw, 88px); }
-.tickets__head .h-display { max-width: 16ch; }
-.tickets__grid { display: grid; gap: 18px; }
-.ticket {
-  position: relative; display: grid; gap: 28px; align-content: start;
-  padding: clamp(26px, 3.4vw, 48px); border-radius: var(--radius-lg);
+.tickets__head .h-display { max-width: 18ch; }
+.tickets__lead { margin-top: 24px; max-width: 52ch; font-size: clamp(1.05rem, 1rem + .3vw, 1.25rem); color: rgb(255 255 255 / .85); }
+.tickets__lead strong { color: var(--branco); }
+
+/* Lote 0: três passos até a condição de lançamento */
+.steps { display: grid; gap: 14px; }
+.step {
+  display: grid; gap: 10px; align-content: start;
+  padding: clamp(24px, 3vw, 40px); border-radius: var(--radius-lg);
   background: rgb(255 255 255 / .07); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .22);
 }
-.ticket__type { font-family: var(--font-display); font-variation-settings: "opsz" 96; font-weight: 800; font-size: clamp(3rem, 2rem + 4vw, 5.4rem); line-height: .85; letter-spacing: -.05em; }
-.ticket__desc { margin-top: 12px; color: rgb(255 255 255 / .78); }
-.ticket__list { display: grid; gap: 14px; }
-.ticket__list li { position: relative; padding-left: 32px; line-height: 1.45; }
-.ticket__list li::before {
-  content: ""; position: absolute; left: 0; top: .15em; width: 20px; height: 20px; border-radius: 50%;
-  background: var(--ceu) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4 8-9' fill='none' stroke='%23090c3a' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 14px no-repeat;
-}
-.ticket .btn { align-self: end; margin-top: 8px; }
-.ticket--vip { background: var(--branco); color: var(--tinta); box-shadow: 0 40px 80px -40px rgb(9 12 58 / .7); }
-.ticket--vip .ticket__type { background: var(--por-do-sol); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.ticket--vip .ticket__desc { color: var(--tinta-2); }
-.ticket--vip .ticket__list li::before { background-color: var(--sol-btn); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4 8-9' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+.step__n { font-family: var(--font-display); font-variation-settings: "opsz" 96; font-weight: 800; font-size: clamp(2.6rem, 2rem + 2.4vw, 4.2rem); line-height: .9; letter-spacing: -.05em; color: var(--ceu); }
+.step h3 { font-family: var(--font-display); font-variation-settings: "opsz" 48; font-weight: 700; font-size: clamp(1.3rem, 1.1rem + .8vw, 1.8rem); line-height: 1.1; letter-spacing: -.02em; }
+.step p { color: rgb(255 255 255 / .8); }
+.step--date { background: var(--branco); color: var(--tinta); box-shadow: 0 40px 80px -40px rgb(9 12 58 / .7); }
+.step--date .step__n { background: var(--por-do-sol); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.step--date p { color: var(--tinta-2); }
 .presale {
   display: grid; gap: 24px; margin-top: 18px;
   padding: clamp(26px, 3.4vw, 48px); border-radius: var(--radius-lg);
@@ -618,8 +611,7 @@ button { font: inherit; color: inherit; }
 .presale__urgency { font-weight: 800; color: var(--branco); }
 .presale .btn { justify-self: start; }
 @media (min-width: 900px) {
-  .tickets__grid { grid-template-columns: 1fr 1.12fr; align-items: stretch; }
-  .ticket { grid-template-rows: auto 1fr auto; }
+  .steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .presale { grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 48px; }
 }
 

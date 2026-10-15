@@ -20,7 +20,7 @@
      (ex.: anúncios para tráfego frio com a A, mensagens para a base do Moisés com a C). */
   const HEADLINES = {
     b: 'Gestão de verdade com <em>Moisés Ramos</em>, em Patos.',
-    c: 'A pré-venda abre primeiro <em>na comunidade.</em>'
+    c: 'O lote 0 abre primeiro <em>na comunidade.</em>'
   };
   const headlineVariant = (new URLSearchParams(location.search).get('titulo') || 'a').toLowerCase();
   const headline = $('[data-headline]');
@@ -408,7 +408,7 @@
       try {
         await sendLead(data);
         track('generate_lead', { form_id: 'lead-form', interesse: data.interesse || 'geral' });
-        if (typeof window.fbq === 'function') window.fbq('track', 'Lead', { content_name: `Sertão Negócios · ${data.interesse || 'pré-venda'}` });
+        if (typeof window.fbq === 'function') window.fbq('track', 'Lead', { content_name: `Sertão Negócios · ${data.interesse || 'lote 0'}` });
         showSuccess(data.nome);
       } catch (err) {
         console.error(err);

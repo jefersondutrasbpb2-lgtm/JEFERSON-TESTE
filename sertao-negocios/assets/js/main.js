@@ -390,16 +390,25 @@
     });
 
     form.addEventListener('submit', async (e) => {
-      e.preventDefault();
       status.textContent = '';
       const ok = Object.keys(rules).map(validate).every(Boolean);
       if (!ok) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
         const first = $('.is-invalid input', form);
         if (first) first.focus();
         track('form_error', { form_id: 'lead-form' });
         return;
       }
-      if (form.elements.empresa_site.value) return; // honeypot
+      if (form.elements.empresa_site.value) { e.preventDefault(); e.stopImmediatePropagation(); return; } // honeypot
+
+      // Página HTML do GreatPages: o próprio GreatPages recebe o envio e guarda o lead
+      if (CFG.formMode === 'greatpages') {
+        track('generate_lead', { form_id: 'lead-form', interesse: form.elements.interesse.value || 'geral' });
+        if (typeof window.fbq === 'function') window.fbq('track', 'Lead', { content_name: `Sertão Negócios · ${form.elements.interesse.value || 'lote 0'}` });
+        return;
+      }
+      e.preventDefault();
 
       const data = Object.fromEntries(new FormData(form).entries());
       delete data.empresa_site;

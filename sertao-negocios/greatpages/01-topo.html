@@ -18,7 +18,7 @@
 <header class="sn sn-nav" data-nav>
   <div class="sn-nav__inner">
     <a class="sn-nav__brand" href="#inicio" aria-label="Sertão Negócios, voltar ao início">
-      <img src="https://files.greatpages.com.br/images/6419/lDtu4LOzegLMXvDzR1V9siTW.webp" alt="" width="887" height="444">
+      <img src="IMAGEM/logo-sertao-negocios-240.webp" alt="" width="240" height="120">
     </a>
     <nav class="sn-nav__links" aria-label="Seções">
       <a href="#por-que">O evento</a>
@@ -26,7 +26,7 @@
       <a href="#programacao">Programação</a>
       <a href="#lote-0">Lote 0</a>
     </nav>
-    <a class="sn-btn sn-btn--sm sn-btn--sol sn-nav__cta" href="#inscricao" data-cta="nav">Quero o lote 0</a>
+    <a class="sn-btn sn-btn--sm sn-btn--sol sn-nav__cta" href="#cadastro" data-cta="nav">Quero o lote 0</a>
   </div>
 </header>
 
@@ -61,37 +61,46 @@
     </div>
 
     <div class="sn-hero__inner sn-wrap">
-      <p class="sn-kicker sn-hero__kicker" data-hero="kicker"><span class="sn-kicker__dot"></span>Evento empresarial · Patos, Paraíba</p>
-
-      <h1 class="sn-hero__logo" id="hero-title" data-hero="logo">
-        <img src="https://files.greatpages.com.br/images/6419/lDtu4LOzegLMXvDzR1V9siTW.webp" alt="Sertão Negócios" width="1774" height="887" fetchpriority="high" decoding="async">
-      </h1>
-
-      <div class="sn-hero__meta" data-hero="meta">
-        <div class="sn-hero__date">
-          <span class="sn-hero__days">03<i>—</i>04</span>
-          <span class="sn-hero__month">dezembro<br>de 2026</span>
+      <div class="sn-hero__copy">
+        <p class="sn-kicker sn-hero__kicker" data-hero="kicker"><span class="sn-kicker__dot"></span>03 e 04 de dezembro · Patos-PB</p>
+        <div class="sn-hero__logo" data-hero="logo">
+          <img src="https://files.greatpages.com.br/images/6419/lDtu4LOzegLMXvDzR1V9siTW.webp" srcset="IMAGEM/logo-sertao-negocios-440.webp 440w, https://files.greatpages.com.br/images/6419/lDtu4LOzegLMXvDzR1V9siTW.webp 1774w" sizes="(max-width: 899px) 220px, 640px" alt="Sertão Negócios" width="1774" height="887" fetchpriority="high" decoding="async">
         </div>
-        <div class="sn-hero__place">
-          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
-          <span>Sertão da Paraíba<br><strong>Patos-PB</strong></span>
-        </div>
+        <!-- Frase principal: versão A. As versões B e C abrem com ?titulo=b ou ?titulo=c no link (veja main.js) -->
+        <h1 class="sn-hero__lead" id="hero-title" data-hero="lead" data-headline>Conteúdo de capital, <em>sem sair do Sertão.</em></h1>
+        <p class="sn-hero__sub" data-hero="sub">Dois dias com Moisés Ramos, Rick Chesther, Rossandro Klinjey, Padre Fabrício Timóteo e 10 empresários da região.</p>
       </div>
 
-      <div class="sn-hero__copy">
-        <p class="sn-hero__sign" data-hero="sign">A força do Sertão transformada em oportunidades.</p>
-        <!-- Frase principal: versão A. As versões B e C abrem com ?titulo=b ou ?titulo=c no link (veja main.js) -->
-        <p class="sn-hero__lead" data-hero="lead" data-headline>Conteúdo de capital, <em>sem sair do Sertão.</em></p>
-        <p class="sn-hero__sub" data-hero="sub">Dias 03 e 04 de dezembro, em Patos. Gestão e empreendedorismo com Moisés Ramos, palestras de Rick Chesther, Rossandro Klinjey e Padre Fabrício Timóteo, 10 cases de empresários da região, networking e área de estandes.</p>
-        <p class="sn-hero__invite" data-hero="invite">Entre na comunidade: dia 22 de outubro, a condição especial do lote 0 é liberada lá primeiro.</p>
-        <div class="sn-hero__ctas" data-hero="cta">
-          <a class="sn-btn sn-btn--sol sn-btn--lg" href="#inscricao" data-cta="hero">
-            <span>Quero o lote 0</span>
+      <div class="sn-hero__form" id="cadastro" data-hero="cta" data-form-card>
+        <form class="sn-form sn-form--hero" id="lead-form-topo" novalidate data-form>
+          <div class="sn-field">
+            <label class="sn-sr-only" for="h-nome">Nome</label>
+            <input id="h-nome" name="nome" type="text" autocomplete="name" required minlength="3" placeholder="Seu nome completo">
+            <p class="sn-field__error" id="eh-nome" aria-live="polite"></p>
+          </div>
+          <div class="sn-field">
+            <label class="sn-sr-only" for="h-whatsapp">WhatsApp</label>
+            <input id="h-whatsapp" name="whatsapp" type="tel" inputmode="tel" autocomplete="tel-national" required placeholder="Seu WhatsApp com DDD" data-mask="phone">
+            <p class="sn-field__error" id="eh-whatsapp" aria-live="polite"></p>
+          </div>
+          <input type="hidden" name="interesse"><input type="hidden" name="utm_source"><input type="hidden" name="utm_medium"><input type="hidden" name="utm_campaign"><input type="hidden" name="utm_content"><input type="hidden" name="utm_term"><input type="hidden" name="pagina">
+          <div class="sn-hp" aria-hidden="true"><label>Não preencha<input type="text" name="__empresa_site" tabindex="-1" autocomplete="off"></label></div>
+          <button class="sn-btn sn-btn--sol sn-btn--lg sn-btn--block sn-form__submit" type="submit">
+            <span class="sn-form__label">Quero entrar na comunidade</span>
+            <span class="sn-form__spinner" aria-hidden="true"></span>
+          </button>
+          <p class="sn-form__status" role="status" aria-live="polite"></p>
+          <p class="sn-hero__formnote"><strong>Gratuito.</strong> O Lote 0 sai primeiro no grupo, quinta, 22/10, às 8h.</p>
+          <p class="sn-hero__privacy">Ao se cadastrar, você concorda com a <button type="button" class="sn-linklike" data-open-privacy>Política de Privacidade</button>.</p>
+        </form>
+
+        <div class="sn-form-success" hidden tabindex="-1" data-success>
+          <h3>Cadastro feito<span data-success-name></span>!</h3>
+          <a class="sn-btn sn-btn--sol sn-btn--lg sn-btn--block" href="#" data-community>
+            <span>Entrar no grupo agora</span>
             <svg class="sn-btn__icon" aria-hidden="true"><use href="#i-arrow"/></svg>
           </a>
-          <a class="sn-btn sn-btn--ghost sn-btn--lg" href="#programacao" data-cta="hero-programacao">Ver programação</a>
         </div>
-        <p class="sn-hero__note" data-hero="note"><span>Cadastro gratuito · Acesso ao grupo logo após o envio</span><span>São 400 lugares.</span></p>
       </div>
     </div>
 

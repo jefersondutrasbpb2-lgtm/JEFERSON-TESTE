@@ -1,13 +1,5 @@
 <!-- Sertão Negócios 2026 · ESTILOS 3 de 3 · GreatPages: Configurações > Javascript & CSS > Adicionar código (tipo Funcionamento), na ordem 1, 2, 3 -->
 <style>
-.sn-presale__text:not(#sn-x){display: grid;gap: 10px;max-width: 60ch;color: rgb(255 255 255 / .82)}
-.sn-presale__title:not(#sn-x){font-family: var(--font-display);font-variation-settings: "opsz" 48;font-weight: 800;font-size: clamp(24px,17.6px + 1.4vw,36.8px);line-height: 1.05;letter-spacing: -.03em;color: var(--branco)}
-.sn-presale__urgency:not(#sn-x){font-weight: 800;color: var(--branco)}
-.sn-presale .sn-btn:not(#sn-x){justify-self: start}
-.sn-lot + .sn-presale:not(#sn-x){margin-top: clamp(40px,6vw,72px)}
-@media (min-width: 900px){.sn-steps:not(#sn-x){grid-template-columns: repeat(3,minmax(0,1fr))}
-.sn-presale:not(#sn-x){grid-template-columns: minmax(0,1fr) auto;align-items: center;column-gap: 48px}
-}
 @media (min-width: 1024px){.sn-lot:not(#sn-x){grid-template-columns: minmax(0,1.15fr) minmax(0,.85fr);align-items: center}
 .sn-lot .sn-steps:not(#sn-x){grid-template-columns: 1fr;gap: 12px}
 .sn-lot .sn-step:not(#sn-x){grid-template-columns: clamp(96px,9vw,140px) 1fr;column-gap: 24px;row-gap: 4px;align-items: center;padding: 22px 28px;border-radius: var(--radius)}
@@ -118,14 +110,13 @@
 }
 @media (min-width: 900px){.sn-footer__inner:not(#sn-x){grid-template-columns: 1.2fr 1.4fr 1fr;align-items: start}
 }
-.sn-dock:not(#sn-x){position: fixed;left: 12px;right: 12px;bottom: calc(12px + env(safe-area-inset-bottom));z-index: 60;display: flex;align-items: center;justify-content: space-between;gap: 12px;padding: 8px 8px 8px 18px;border-radius: 999px;background: rgb(9 12 58 / .86);-webkit-backdrop-filter: blur(14px);backdrop-filter: blur(14px);box-shadow: 0 20px 40px -12px rgb(0 0 0 / .5),inset 0 0 0 1px rgb(255 255 255 / .12);transform: translateY(160%);transition: transform .6s var(--ease)}
+.sn-dock:not(#sn-x){position: fixed;left: 12px;right: 12px;bottom: calc(12px + env(safe-area-inset-bottom));z-index: 60;display: flex;align-items: center;justify-content: space-between;gap: 12px;padding: 6px;border-radius: 999px;background: rgb(9 12 58 / .86);-webkit-backdrop-filter: blur(14px);backdrop-filter: blur(14px);box-shadow: 0 20px 40px -12px rgb(0 0 0 / .5),inset 0 0 0 1px rgb(255 255 255 / .12);transform: translateY(160%);transition: transform .6s var(--ease)}
 .sn-dock.sn-is-visible:not(#sn-x){transform: none}
-.sn-dock__info:not(#sn-x){display: grid;line-height: 1.15;font-size: 13.12px}
-.sn-dock__info strong:not(#sn-x){font-family: var(--font-display);font-size: 16.8px}
-.sn-dock__info span:not(#sn-x){color: rgb(255 255 255 / .7)}
+.sn-dock .sn-btn:not(#sn-x){min-height: 52px}
 @media (min-width: 900px){.sn-dock:not(#sn-x){display: none}
 }
-.sn-wa:not(#sn-x){position: fixed;right: 14px;bottom: calc(84px + env(safe-area-inset-bottom));z-index: 61;display: grid;justify-items: end;gap: 12px}
+.sn-wa:not(#sn-x){position: fixed;right: 14px;bottom: calc(80px + env(safe-area-inset-bottom));z-index: 61;display: none;justify-items: end;gap: 12px}
+.sn-wa.sn-is-up:not(#sn-x),.sn-wa.sn-is-open:not(#sn-x){display: grid}
 .sn-wa__btn:not(#sn-x){position: relative;display: inline-flex;align-items: center;justify-content: center;gap: 10px;width: 58px;height: 58px;padding: 0;border: 0;border-radius: 999px;cursor: pointer;background: #25d366;color: #fff;box-shadow: 0 14px 32px -10px rgb(9 12 58 / .6),0 0 0 0 rgb(37 211 102 / .5);transition: transform .5s var(--ease),box-shadow .5s var(--ease);animation: sn-wa-ping 2.6s ease-out 2s 3}
 .sn-wa__btn:hover:not(#sn-x){transform: translateY(-2px)}
 .sn-wa__icon:not(#sn-x){width: 30px;height: 30px;flex: none}
@@ -150,10 +141,15 @@ to{opacity: 1;transform: none}
 @keyframes sn-wa-ping{0%{box-shadow: 0 14px 32px -10px rgb(9 12 58 / .6),0 0 0 0 rgb(37 211 102 / .55)}
 100%{box-shadow: 0 14px 32px -10px rgb(9 12 58 / .6),0 0 0 18px rgb(37 211 102 / 0)}
 }
-@media (min-width: 900px){.sn-wa:not(#sn-x){right: 24px;bottom: calc(24px + env(safe-area-inset-bottom))}
+@media (min-width: 900px){.sn-wa:not(#sn-x){right: 24px;bottom: calc(24px + env(safe-area-inset-bottom));display: grid}
 .sn-wa__btn:not(#sn-x){width: auto;padding: 0 22px 0 16px}
 .sn-wa__label:not(#sn-x){display: inline}
 .sn-wa.sn-is-open .sn-wa__btn:not(#sn-x){width: 58px;padding: 0}
+}
+@media (max-width: 899px){#gpc-lgpd:not(#sn-x),#gpc-lgpd.sn-botoes:not(#sn-x),#gpc-lgpd.sn-botao:not(#sn-x){left: 8px !important;right: 8px !important;bottom: 8px !important;width: auto !important;min-width: 0 !important;max-width: none !important;grid-template-columns: 1fr auto !important;grid-auto-flow: column !important;grid-row-gap: 0 !important;column-gap: 10px !important;padding: 8px 34px 8px 12px !important;border-radius: 12px !important}
+#gpc-lgpd_texto:not(#sn-x){grid-column: 1 / 2 !important;grid-row: 1 !important;margin: auto 0 !important;text-align: left !important;font-size: 11.5px !important;line-height: 15px !important}
+#gpc-lgpd_botoes:not(#sn-x){grid-column: 2 / 3 !important;grid-row: 1 !important;margin: auto 0 !important}
+#gpc-lgpd_botoes button:not(#sn-x),#gpc-lgpd_botoes a:not(#sn-x){font-size: 12px !important;padding: 6px 10px !important}
 }
 .sn-privacy:not(#sn-x){width: min(560px,calc(100vw - 32px));max-height: calc(100svh - 48px);padding: 0;border: 0;border-radius: var(--radius);background: var(--branco);color: var(--tinta);box-shadow: 0 40px 100px rgb(0 0 0 / .5)}
 .sn-privacy:not(#sn-x)::backdrop{background: rgb(9 12 58 / .7);-webkit-backdrop-filter: blur(4px);backdrop-filter: blur(4px)}

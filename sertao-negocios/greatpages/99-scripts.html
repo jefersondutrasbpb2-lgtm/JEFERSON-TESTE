@@ -24,7 +24,7 @@ window.SN_CONFIG = {
 
   // Opcional: após o envio, redireciona sozinho para esta URL (página de obrigado, grupo de WhatsApp etc.).
   redirectUrl: '',
-  redirectDelayMs: 2200
+  redirectDelayMs: 150
 };
 </script>
 <script>
@@ -39,8 +39,10 @@ const __snRun = () => {
   const root = document.documentElement;
   const CFG = window.SN_CONFIG || {};
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Celular: sem rolagem suave e sem animações de entrada; todo texto aparece na hora
+  const lite = root.classList.contains('sn-lite');
   const hasGSAP = !!(window.gsap && window.ScrollTrigger);
-  const motion = hasGSAP && !reduceMotion;
+  const motion = hasGSAP && !reduceMotion && !lite;
   const $ = (s, c = document) => c.querySelector(s);
   const $$ = (s, c = document) => Array.from(c.querySelectorAll(s));
 
@@ -99,8 +101,7 @@ const __snRun = () => {
   /* ---------- Âncoras, CTAs e pré-seleção de interesse ---------- */
   // Guarda o último interesse clicado (Smart, VIP ou estande) num campo oculto do formulário
   const setInterest = (value) => {
-    const field = $('[data-form] input[name="interesse"]');
-    if (field) field.value = value;
+    $$('[data-form] input[name="interesse"]').forEach((field) => { field.value = value; });
   };
 
   document.addEventListener('click', (e) => {
@@ -116,7 +117,7 @@ const __snRun = () => {
 
     scrollToTarget(target, () => {
       // Move o foco para o destino sem rolar de novo (navegação por teclado / leitores de tela).
-      const focusEl = id === 'inscricao' ? $('#signup-title') : target;
+      const focusEl = id === 'inscricao' ? $('#signup-title') : (id === 'cadastro' ? ($('[data-form] input[name="nome"]', target) || target) : target);
       if (!focusEl.hasAttribute('tabindex')) focusEl.setAttribute('tabindex', '-1');
       focusEl.focus({ preventScroll: true });
     });
@@ -128,6 +129,8 @@ const __snRun = () => {
   const dock = $('[data-dock]');
   const hero = $('.sn-hero');
   const signup = $('#inscricao');
+  const topForm = $('#cadastro');
+  const waFloat = $('[data-wa]');
   // Só as seções da página: quem hospeda o site pode marcar o <html> com data-theme e escurecer o menu no topo
   const themed = $$('section[data-theme], footer[data-theme]');
   let lastY = window.scrollY;
@@ -147,11 +150,14 @@ const __snRun = () => {
       if (r.top <= probe && r.bottom > probe) { nav.classList.toggle('sn-is-light', sec.dataset.theme === 'light'); break; }
     }
 
-    if (dock && hero && signup) {
-      const pastHero = hero.getBoundingClientRect().bottom < window.innerHeight * .25;
+    // Barra fixa do celular: aparece depois do formulário do topo e some quando o do fim está na tela
+    if (dock && topForm && signup) {
+      const pastTopForm = topForm.getBoundingClientRect().bottom < 0;
       const s = signup.getBoundingClientRect();
       const formInView = s.top < window.innerHeight && s.bottom > 0;
-      dock.classList.toggle('sn-is-visible', pastHero && !formInView);
+      dock.classList.toggle('sn-is-visible', pastTopForm && !formInView);
+      // WhatsApp de dúvidas: no celular só aparece junto com a barra, logo acima dela
+      if (waFloat) waFloat.classList.toggle('sn-is-up', pastTopForm && !formInView);
     }
     ticking = false;
   };
@@ -199,8 +205,7 @@ const __snRun = () => {
     .fromTo('[data-hero="logo"]', { opacity: 0, y: 70, scale: .94, rotateX: 18, transformPerspective: 900 },
       { opacity: 1, y: 0, scale: 1, rotateX: 0, duration: 1.8 }, 0)
     .fromTo('[data-hero="kicker"]', { opacity: 0, y: 16 }, { opacity: 1, y: 0 }, .25)
-    .fromTo('[data-hero="meta"]', { opacity: 0, x: 30 }, { opacity: 1, x: 0 }, .55)
-    .fromTo(['[data-hero="sign"]', '[data-hero="lead"]', '[data-hero="sub"]', '[data-hero="invite"]', '[data-hero="cta"]', '[data-hero="note"]'],
+    .fromTo(['[data-hero="lead"]', '[data-hero="sub"]', '[data-hero="cta"]'],
       { opacity: 0, y: 26 }, { opacity: 1, y: 0, stagger: .09 }, .6)
     .from('.sn-hero__frieze', { opacity: 0, y: 24, duration: 1.2 }, .9)
     .from('.sn-hero__horizon', { opacity: 0, y: 40, duration: 2 }, 0);
@@ -358,109 +363,132 @@ const __snRun = () => {
      FORMULÁRIO
      ========================================================= */
   function initForm() {
-    const form = $('[data-form]');
-    if (!form) return;
-    const success = $('[data-success]');
-    const status = $('.sn-form__status', form);
+    const forms = $$('[data-form]');
+    if (!forms.length) return;
     const params = new URLSearchParams(location.search);
-
-    ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach((k) => {
-      if (form.elements[k] && params.get(k)) form.elements[k].value = params.get(k);
-    });
-    if (form.elements.pagina) form.elements.pagina.value = location.href.split('#')[0];
     const pre = params.get('interesse');
-    if (pre && ['smart', 'vip', 'expositor'].includes(pre)) setInterest(pre);
 
-    // Botão "Entrar no grupo" da mensagem de sucesso
-    const community = $('[data-community]');
-    if (community) {
-      if (CFG.communityUrl) community.href = CFG.communityUrl;
-      community.addEventListener('click', (e) => {
-        track('community_click', { form_id: 'lead-form' });
-        if (typeof window.fbq === 'function') window.fbq('trackCustom', 'EntrouNoGrupo');
-        if (!CFG.communityUrl) { e.preventDefault(); console.warn('[Sertão Negócios] communityUrl não configurado em assets/js/config.js.'); }
-      });
-    }
-
-    // Máscara de telefone: (00) 00000-0000
-    const phone = form.elements.whatsapp;
-    phone.addEventListener('input', () => {
-      const d = phone.value.replace(/\D/g, '').slice(0, 11);
-      let out = d;
-      if (d.length > 2) out = `(${d.slice(0, 2)}) ${d.slice(2)}`;
-      if (d.length > 7) out = `(${d.slice(0, 2)}) ${d.slice(2, d.length - 4)}-${d.slice(-4)}`;
-      phone.value = out;
-    });
-
-    let started = false;
-    form.addEventListener('focusin', () => {
-      if (!started) { started = true; track('form_start', { form_id: 'lead-form' }); }
-    });
+    // Grupo da comunidade: abre o link e mede quem foi para o grupo (Pixel e GA4)
+    const goToGroup = (metodo, formId) => {
+      track('EntrouNoGrupo', { metodo, form_id: formId });
+      if (typeof window.fbq === 'function') window.fbq('trackCustom', 'EntrouNoGrupo', { metodo });
+      if (CFG.communityUrl) location.href = CFG.communityUrl;
+    };
 
     const rules = {
       nome: (v) => v.trim().length >= 3 && /\s/.test(v.trim()) ? '' : 'Informe seu nome completo.',
-      whatsapp: (v) => { const d = v.replace(/\D/g, ''); return d.length >= 10 && d.length <= 11 ? '' : 'Informe um WhatsApp válido com DDD.'; },
-      email: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()) ? '' : 'Informe um e-mail válido.'
+      whatsapp: (v) => { const d = v.replace(/\D/g, ''); return d.length >= 10 && d.length <= 11 ? '' : 'Informe um WhatsApp válido com DDD.'; }
     };
 
-    const validate = (name) => {
-      const input = form.elements[name];
-      const msg = rules[name](input.value ?? '');
-      const field = input.closest('.sn-field');
-      const err = $(`#e-${name}`);
-      field.classList.toggle('sn-is-invalid', !!msg);
-      field.classList.toggle('sn-is-valid', !msg);
-      if (err) err.textContent = msg;
-      input.setAttribute('aria-invalid', msg ? 'true' : 'false');
-      if (err) input.setAttribute('aria-describedby', err.id);
-      return !msg;
-    };
+    forms.forEach((form) => {
+      const formId = form.id || 'lead-form';
+      const card = form.closest('[data-form-card]') || form.parentElement;
+      const success = $('[data-success]', card);
+      const status = $('.sn-form__status', form);
 
-    ['nome', 'whatsapp', 'email'].forEach((n) => {
-      form.elements[n].addEventListener('blur', () => { if (form.elements[n].value) validate(n); });
-      form.elements[n].addEventListener('input', () => { if (form.elements[n].closest('.sn-field').classList.contains('sn-is-invalid')) validate(n); });
-    });
+      ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach((k) => {
+        if (form.elements[k] && params.get(k)) form.elements[k].value = params.get(k);
+      });
+      if (form.elements.pagina) form.elements.pagina.value = location.href.split('#')[0];
+      if (pre && ['expositor'].includes(pre) && form.elements.interesse) form.elements.interesse.value = pre;
 
-    form.addEventListener('submit', async (e) => {
-      status.textContent = '';
-      const ok = Object.keys(rules).map(validate).every(Boolean);
-      if (!ok) {
+      // Botão "Entrar no grupo agora" da tela de sucesso
+      const community = success && $('[data-community]', success);
+      if (community) {
+        if (CFG.communityUrl) community.href = CFG.communityUrl;
+        community.addEventListener('click', (e) => { e.preventDefault(); goToGroup('botao', formId); });
+      }
+
+      // Máscara de telefone: (00) 00000-0000
+      const phone = form.elements.whatsapp;
+      phone.addEventListener('input', () => {
+        const d = phone.value.replace(/\D/g, '').slice(0, 11);
+        let out = d;
+        if (d.length > 2) out = `(${d.slice(0, 2)}) ${d.slice(2)}`;
+        if (d.length > 7) out = `(${d.slice(0, 2)}) ${d.slice(2, d.length - 4)}-${d.slice(-4)}`;
+        phone.value = out;
+      });
+
+      let started = false;
+      form.addEventListener('focusin', () => {
+        if (!started) { started = true; track('form_start', { form_id: formId }); }
+      });
+
+      const validate = (name) => {
+        const input = form.elements[name];
+        const msg = rules[name](input.value ?? '');
+        const field = input.closest('.sn-field');
+        const err = $('.sn-field__error', field);
+        field.classList.toggle('sn-is-invalid', !!msg);
+        field.classList.toggle('sn-is-valid', !msg);
+        if (err) err.textContent = msg;
+        input.setAttribute('aria-invalid', msg ? 'true' : 'false');
+        if (err) input.setAttribute('aria-describedby', err.id);
+        return !msg;
+      };
+
+      Object.keys(rules).forEach((n) => {
+        form.elements[n].addEventListener('blur', () => { if (form.elements[n].value) validate(n); });
+        form.elements[n].addEventListener('input', () => { if (form.elements[n].closest('.sn-field').classList.contains('sn-is-invalid')) validate(n); });
+      });
+
+      form.addEventListener('submit', async (e) => {
+        status.textContent = '';
+        const ok = Object.keys(rules).map(validate).every(Boolean);
+        if (!ok) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          const first = $('.sn-is-invalid input', form);
+          if (first) first.focus();
+          track('form_error', { form_id: formId });
+          return;
+        }
+        if (form.elements.__empresa_site.value) { e.preventDefault(); e.stopImmediatePropagation(); return; } // honeypot
+
         e.preventDefault();
-        e.stopImmediatePropagation();
-        const first = $('.sn-is-invalid input', form);
-        if (first) first.focus();
-        track('form_error', { form_id: 'lead-form' });
-        return;
-      }
-      if (form.elements.__empresa_site.value) { e.preventDefault(); e.stopImmediatePropagation(); return; } // honeypot
+        const nome = form.elements.nome.value;
+        const interesse = (form.elements.interesse && form.elements.interesse.value) || 'geral';
 
-      // Página HTML do GreatPages: o próprio GreatPages recebe o envio e guarda o lead
-      if (CFG.formMode === 'greatpages') {
-        track('generate_lead', { form_id: 'lead-form', interesse: form.elements.interesse.value || 'geral' });
-        if (typeof window.fbq === 'function') window.fbq('track', 'Lead', { content_name: `Sertão Negócios · ${form.elements.interesse.value || 'lote 0'}` });
-        return;
-      }
-      e.preventDefault();
+        // Página HTML do GreatPages: com o envio já interrompido aqui, o script do GreatPages grava o lead
+        // em segundo plano (sendBeacon); a página mostra o botão do grupo e já leva a pessoa para lá.
+        if (CFG.formMode === 'greatpages') {
+          track('generate_lead', { form_id: formId, interesse });
+          if (typeof window.fbq === 'function') window.fbq('track', 'Lead', { content_name: `Sertão Negócios · ${interesse}` });
+          setTimeout(() => showSuccess(nome, true), 50);
+          return;
+        }
 
-      const data = Object.fromEntries(new FormData(form).entries());
-      delete data.__empresa_site;
-      data.whatsapp = data.whatsapp.replace(/\D/g, '');
-      data.enviado_em = new Date().toISOString();
+        const data = Object.fromEntries(new FormData(form).entries());
+        delete data.__empresa_site;
+        data.whatsapp = data.whatsapp.replace(/\D/g, '');
+        data.enviado_em = new Date().toISOString();
 
-      form.classList.add('sn-is-loading');
-      form.setAttribute('aria-busy', 'true');
-      try {
-        await sendLead(data);
-        track('generate_lead', { form_id: 'lead-form', interesse: data.interesse || 'geral' });
-        if (typeof window.fbq === 'function') window.fbq('track', 'Lead', { content_name: `Sertão Negócios · ${data.interesse || 'lote 0'}` });
-        showSuccess(data.nome);
-      } catch (err) {
-        console.error(err);
-        status.textContent = 'Não foi possível enviar agora. Verifique sua conexão e tente novamente.';
-        track('form_submit_error', { form_id: 'lead-form' });
-      } finally {
-        form.classList.remove('sn-is-loading');
-        form.removeAttribute('aria-busy');
+        form.classList.add('sn-is-loading');
+        form.setAttribute('aria-busy', 'true');
+        try {
+          await sendLead(data);
+          track('generate_lead', { form_id: formId, interesse });
+          if (typeof window.fbq === 'function') window.fbq('track', 'Lead', { content_name: `Sertão Negócios · ${interesse}` });
+          showSuccess(data.nome, !!CFG.redirectUrl);
+        } catch (err) {
+          console.error(err);
+          status.textContent = 'Não foi possível enviar agora. Verifique sua conexão e tente novamente.';
+          track('form_submit_error', { form_id: formId });
+        } finally {
+          form.classList.remove('sn-is-loading');
+          form.removeAttribute('aria-busy');
+        }
+      });
+
+      function showSuccess(nomeCompleto, redirect) {
+        const first = (nomeCompleto || '').trim().split(/\s+/)[0];
+        const name = $('[data-success-name]', success);
+        if (name) name.textContent = first ? `, ${first}` : '';
+        form.hidden = true;
+        success.hidden = false;
+        success.focus({ preventScroll: true });
+        // Sem tela de espera: vai direto para o grupo. O botão fica como garantia se o navegador bloquear.
+        if (redirect && CFG.communityUrl) setTimeout(() => goToGroup('automatico', formId), CFG.redirectDelayMs ?? 150);
       }
     });
 
@@ -479,18 +507,6 @@ const __snRun = () => {
       });
       // Em modo no-cors a resposta é opaca: considera enviado se não houve erro de rede.
       if (res.type !== 'opaque' && !res.ok) throw new Error(`HTTP ${res.status}`);
-    }
-
-    function showSuccess(nome) {
-      const first = (nome || '').trim().split(/\s+/)[0];
-      $('[data-success-name]').textContent = first ? `, ${first}` : '';
-      form.hidden = true;
-      success.hidden = false;
-      success.focus();
-      if (window.gsap && !reduceMotion) {
-        gsap.from(success.children, { opacity: 0, y: 24, duration: .9, ease: 'expo.out', stagger: .08 });
-      }
-      if (CFG.redirectUrl) setTimeout(() => { location.href = CFG.redirectUrl; }, CFG.redirectDelayMs || 2000);
     }
   }
 
@@ -521,6 +537,11 @@ const __snRun = () => {
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !menu.hidden) { setOpen(false); btn.focus(); } });
     document.addEventListener('click', (e) => { if (!menu.hidden && !wa.contains(e.target)) setOpen(false); });
   }
+  // Links diretos para o WhatsApp comercial (ex.: "Quero expor minha empresa")
+  $$('[data-wa-direct]').forEach((a) => a.addEventListener('click', () => {
+    track('whatsapp_click', { assunto: a.dataset.waDirect });
+    if (typeof window.fbq === 'function') window.fbq('track', 'Contact', { content_name: a.dataset.waDirect });
+  }));
 
   /* =========================================================
      POLÍTICA DE PRIVACIDADE (dialog)

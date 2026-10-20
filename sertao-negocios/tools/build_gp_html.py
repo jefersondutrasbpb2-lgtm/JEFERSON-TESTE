@@ -64,6 +64,11 @@ html = must_replace(html, 'href="assets/img/favicon.svg"', f'href="data:image/sv
 html = must_replace(html, '<link rel="canonical" href="./">', f'<link rel="canonical" href="{SITE_URL}">')
 html = must_replace(html, 'content="assets/img/og-logo.png"', f'content="{links["logo-sertao-negocios.webp"]}"')
 
+# Logos menores embutidos (o arquivo do GreatPages tem 1.774 px): topo no celular e menu
+for small in ("logo-sertao-negocios-440.webp", "logo-sertao-negocios-240.webp"):
+    data = base64.b64encode((ROOT / "assets/img" / small).read_bytes()).decode()
+    html = must_replace(html, f"assets/img/{small}", f"data:image/webp;base64,{data}")
+
 # Imagens: links do GreatPages
 for name, url in links.items():
     html = html.replace(f"assets/img/{name}", url)

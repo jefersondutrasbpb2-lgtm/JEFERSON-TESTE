@@ -17,5 +17,5 @@ window.SN_CONFIG = {
 
   // Opcional: após o envio, redireciona sozinho para esta URL (página de obrigado, grupo de WhatsApp etc.).
   redirectUrl: '',
-  redirectDelayMs: 2200
+  redirectDelayMs: 150
 };

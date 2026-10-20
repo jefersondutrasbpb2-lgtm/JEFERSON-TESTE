@@ -50,7 +50,7 @@ classes.update(re.findall(r"\.([a-zA-Z_][\w-]*)", css_no_urls))
 # Classes adicionadas só pelo JavaScript
 classes.update({"is-scrolled", "is-hidden", "is-light", "is-visible", "is-loading",
                 "is-invalid", "is-valid", "is-active", "split-line", "split-line-mask",
-                "w", "js", "reduced-motion", "no-motion"})
+                "w", "js", "reduced-motion", "no-motion", "lite"})
 classes -= {"lenis", "lenis-smooth", "lenis-stopped"}
 classes = {c for c in classes if not c.startswith("sn-")}
 
@@ -212,7 +212,7 @@ for k in list(blocks):
 # Bloco 09 no GreatPages: o formulário é o nativo do GreatPages, encaixado no cartão do kit
 _slot = (ROOT / "tools/gp_form_slot.html").read_text().rstrip("\n")
 _b11 = blocks["09-inscricao"]
-_i = _b11.index('      <div class="sn-form-card" data-reveal>')
+_i = _b11.index('      <div class="sn-form-card" data-reveal data-form-card>')
 _j = _b11.rindex("  </section>") + len("  </section>")
 blocks["09-inscricao"] = _b11[:_i] + _slot + _b11[_j:]
 

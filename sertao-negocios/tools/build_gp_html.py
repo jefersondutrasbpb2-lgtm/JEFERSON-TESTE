@@ -76,12 +76,16 @@ left = sorted(set(re.findall(r"assets/img/[\w.-]+", html)))
 if left:
     fail(f"imagens sem link do GreatPages: {left}")
 
-# Formulário: chave que o GreatPages criou na importação e destino depois do envio (grupo da comunidade)
-GP_FORM_KEY = "acvpruwy"
+# Formulários: chaves que o GreatPages criou na importação (página 3658757), uma por formulário.
+# Manter as mesmas chaves faz uma atualização pela MCP não perder as conversões já ligadas a elas.
+GP_FORM_KEYS = {
+    '<form class="form form--hero" id="lead-form-topo" novalidate data-form>': "lommgcdf",
+    '<form class="form" id="lead-form" novalidate data-form>': "acvpruwy",
+}
 COMMUNITY_URL = "https://chat.whatsapp.com/It1MX9ij3o48Zzbvo04Vkq"
-html = must_replace(html, '<form class="form" id="lead-form" novalidate data-form>',
-                    f'<form data-gp-form="{GP_FORM_KEY}" data-gp-conversao="true" data-gp-apos-envio="mensagem" '
-                    f'class="form" id="lead-form" novalidate data-form>')
+for tag, key in GP_FORM_KEYS.items():
+    html = must_replace(html, tag, tag.replace(
+        "<form ", f'<form data-gp-form="{key}" data-gp-conversao="true" data-gp-apos-envio="mensagem" ', 1))
 
 # Pixel da Meta e Google Analytics
 tracking = f"""

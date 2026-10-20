@@ -75,8 +75,8 @@ if left:
 GP_FORM_KEY = "acvpruwy"
 COMMUNITY_URL = "https://chat.whatsapp.com/It1MX9ij3o48Zzbvo04Vkq"
 html = must_replace(html, '<form class="form" id="lead-form" novalidate data-form>',
-                    f'<form data-gp-form="{GP_FORM_KEY}" data-gp-conversao="true" data-gp-apos-envio="redirecionar" '
-                    f'data-gp-redirect="{COMMUNITY_URL}" class="form" id="lead-form" novalidate data-form>')
+                    f'<form data-gp-form="{GP_FORM_KEY}" data-gp-conversao="true" data-gp-apos-envio="mensagem" '
+                    f'class="form" id="lead-form" novalidate data-form>')
 
 # Pixel da Meta e Google Analytics
 tracking = f"""
@@ -106,6 +106,8 @@ html = must_replace(html, "</head>", tracking + "</head>")
 for local, remote in CDN.items():
     html = must_replace(html, f'<script src="{local}" defer></script>', f'<script src="{remote}" defer></script>')
 cfg = must_replace(cfg, "  leadEndpoint: '',", "  // Página HTML do GreatPages: o envio do formulário é do próprio GreatPages\n  formMode: 'greatpages',\n  leadEndpoint: '',")
+# Depois do cadastro: mensagem de sucesso com o botão do grupo e, em seguida, vai sozinho para a comunidade
+cfg = must_replace(cfg, "  redirectUrl: '',", f"  redirectUrl: '{COMMUNITY_URL}',")
 html = must_replace(html, '<script src="assets/js/config.js" defer></script>', "<script>\n" + cfg.strip() + "\n</script>")
 html = must_replace(html, '<script src="assets/js/main.js" defer></script>',
                     "<script>\ndocument.addEventListener('DOMContentLoaded', function () {\n" + js.strip() + "\n});\n</script>")

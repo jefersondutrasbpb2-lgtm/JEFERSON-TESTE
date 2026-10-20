@@ -402,13 +402,17 @@
       }
       if (form.elements.__empresa_site.value) { e.preventDefault(); e.stopImmediatePropagation(); return; } // honeypot
 
-      // Página HTML do GreatPages: o próprio GreatPages recebe o envio e guarda o lead
+      e.preventDefault();
+
+      // Página HTML do GreatPages: com o envio já interrompido aqui, o script do GreatPages grava o lead
+      // em segundo plano (sendBeacon) e a página mostra a confirmação e leva para a comunidade.
       if (CFG.formMode === 'greatpages') {
+        const nome = form.elements.nome.value;
         track('generate_lead', { form_id: 'lead-form', interesse: form.elements.interesse.value || 'geral' });
         if (typeof window.fbq === 'function') window.fbq('track', 'Lead', { content_name: `Sertão Negócios · ${form.elements.interesse.value || 'lote 0'}` });
+        setTimeout(() => showSuccess(nome), 50);
         return;
       }
-      e.preventDefault();
 
       const data = Object.fromEntries(new FormData(form).entries());
       delete data.__empresa_site;

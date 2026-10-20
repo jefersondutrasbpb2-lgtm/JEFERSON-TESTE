@@ -1,6 +1,5 @@
 <!-- Sertão Negócios 2026 · ESTILOS 2 de 3 · GreatPages: Configurações > Javascript & CSS > Adicionar código (tipo Funcionamento), na ordem 1, 2, 3 -->
 <style>
-.sn-pain__list li:not(#sn-x){position: relative;padding: 14px 0 14px 34px;border-top: 1px solid rgb(255 255 255 / .14);color: rgb(255 255 255 / .82)}
 .sn-pain__list li:first-child:not(#sn-x){border-top: 0}
 .sn-pain__list li:not(#sn-x)::before{content: "";position: absolute;left: 0;top: 1.45em;width: 18px;height: 2px;border-radius: 2px;background: var(--sol)}
 .sn-solution:not(#sn-x){margin-top: clamp(56px,8vw,120px)}
@@ -72,14 +71,16 @@
 .sn-speaker--lead .sn-speaker__info:not(#sn-x){margin-top: 0}
 }
 @media (min-width: 640px) and (max-width: 1023px){.sn-speakers__grid:not(#sn-x){grid-template-columns: 1fr 1fr}
-.sn-speaker--lead:not(#sn-x),.sn-speaker-cases:not(#sn-x){grid-column: 1 / -1}
+.sn-speaker--lead:not(#sn-x){grid-column: 1 / -1}
 .sn-speaker--b:not(#sn-x){margin-top: 12vw}
+.sn-speaker-cases:not(#sn-x){align-self: center}
 }
 @media (min-width: 1024px){.sn-speakers__grid:not(#sn-x){grid-template-columns: repeat(12,minmax(0,1fr));column-gap: clamp(16px,2vw,32px);row-gap: 64px}
 .sn-speaker--lead:not(#sn-x){grid-column: 1 / -1;grid-template-columns: minmax(0,5fr) minmax(0,7fr);margin-bottom: clamp(24px,4vw,64px)}
 .sn-speaker--a:not(#sn-x){grid-column: 1 / span 4}
 .sn-speaker--b:not(#sn-x){grid-column: 5 / span 4;margin-top: 14vh}
-.sn-speaker-cases:not(#sn-x){grid-column: 9 / span 4;align-self: start;margin-top: 5vh}
+.sn-speaker--c:not(#sn-x){grid-column: 9 / span 4;margin-top: 5vh}
+.sn-speaker-cases:not(#sn-x){grid-column: 7 / span 6;grid-template-columns: auto 1fr;align-items: center;column-gap: 28px}
 }
 .sn-schedule:not(#sn-x){position: relative;z-index: 7;margin-top: calc(var(--sn-overlap) * -1);border-radius: var(--radius-lg) var(--radius-lg) 0 0;background: var(--noite);padding-block: var(--section-y)}
 .sn-schedule__head:not(#sn-x){margin-bottom: clamp(48px,7vw,96px)}

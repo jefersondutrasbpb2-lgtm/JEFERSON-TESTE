@@ -149,7 +149,7 @@ O texto "Entrar na comunidade não custa nada…" é colocado sozinho logo acima
 Preencha nas configurações de SEO da página:
 
 - **Título:** `Sertão Negócios 2026 · 03 e 04 de dezembro · Patos-PB`
-- **Descrição:** `Gestão com Moisés Ramos, palestra de Rick Chesther e 10 cases do Sertão. 03 e 04 de dezembro, em Patos-PB. Lote 0 dia 21/10 na comunidade.`
+- **Descrição:** `Moisés Ramos, Rick Chesther, Rossandro Klinjey, Padre Fabrício Timóteo e 10 cases do Sertão. 03 e 04 de dezembro, em Patos-PB. Lote 0 dia 21/10 na comunidade.`
 - **Imagem de compartilhamento:** `imagens/og-logo.png`.
 
 Pixel da Meta, Google Analytics e Tag Manager podem ser instalados normalmente pelo GreatPages.

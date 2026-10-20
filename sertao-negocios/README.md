@@ -41,11 +41,11 @@ A frase principal do topo tem três versões para teste: a A está no HTML, e `?
 | 02 No palco | Moisés Ramos em destaque, Rick Chesther e Rossandro Klinjey como convidados, mais os 10 cases. |
 | 03 Programação | Linha do tempo dos dois dias, que se preenche com o scroll. |
 | 04 Experiência | Estrutura do evento e CTA para expositores. |
-| 05 Lote 0 | Três passos até a condição de lançamento (21 de outubro, na comunidade), mais o aviso dos 300 lugares. Os tipos de ingresso saem da página até o lançamento. |
+| 05 Lote 0 | Três passos até a condição de lançamento (quinta, 22/10, às 8h, na comunidade), mais o aviso dos 400 lugares. Os tipos de ingresso saem da página até o lançamento. |
 | 06 Quem faz | Sebrae, MR3, Âncora e a metodologia PBXP / Summit Paraíba. |
 | 07 Perguntas frequentes | Sete perguntas em sanfona (details/summary). |
 | 08 Inscrição | Nome, WhatsApp e e-mail, com validação, máscara, honeypot, estados de envio e o botão para entrar na comunidade. |
-| Final | Assinatura, CTA e P.S. sobre os 300 lugares. |
+| Final | Assinatura, CTA e P.S. sobre os 400 lugares. |
 
 A copy segue `copy/copy-revisada-v1.1.md`. As seções da proposta, da história do Sertão e do mapa saíram da página de captura a pedido do realizador.
 

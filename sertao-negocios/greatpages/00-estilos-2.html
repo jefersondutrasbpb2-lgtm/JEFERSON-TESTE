@@ -1,15 +1,5 @@
 <!-- Sertão Negócios 2026 · ESTILOS 2 de 3 · GreatPages: Configurações > Javascript & CSS > Adicionar código (tipo Funcionamento), na ordem 1, 2, 3 -->
 <style>
-.sn-pain__list li:first-child:not(#sn-x){border-top: 0}
-.sn-pain__list li:not(#sn-x)::before{content: "";position: absolute;left: 0;top: 1.45em;width: 18px;height: 2px;border-radius: 2px;background: var(--sol)}
-.sn-solution:not(#sn-x){margin-top: clamp(56px,8vw,120px)}
-.sn-solution__intro:not(#sn-x){font-family: var(--font-display);font-variation-settings: "opsz" 48;font-weight: 600;font-size: clamp(24px,17.6px + 1.4vw,36.8px);line-height: 1.1;letter-spacing: -.025em;max-width: 24ch}
-.sn-solution__intro strong:not(#sn-x){color: var(--sol-ink);font-weight: 800}
-.sn-solution__foot:not(#sn-x){margin-top: 28px;max-width: 64ch;color: var(--tinta-2);font-weight: 600}
-.sn-benefits:not(#sn-x){margin-top: clamp(28px,4vw,48px);display: grid}
-.sn-benefit:not(#sn-x){display: grid;grid-template-columns: auto 1fr;gap: 6px 18px;align-items: start;padding-block: 28px;border-top: 1px solid rgb(13 15 46 / .15)}
-.sn-benefit:last-child:not(#sn-x){border-bottom: 1px solid rgb(13 15 46 / .15)}
-.sn-benefit__n:not(#sn-x){font-family: var(--font-display);font-weight: 700;color: var(--sol-ink);font-size: 15.2px;padding-top: 6px}
 .sn-benefit__icon:not(#sn-x){display: none;width: 56px;height: 56px;color: var(--cobalto)}
 .sn-benefit h3:not(#sn-x){font-family: var(--font-display);font-variation-settings: "opsz" 48;font-weight: 700;font-size: clamp(22.4px,17.6px + 1vw,32px);line-height: 1.08;letter-spacing: -.025em;margin-bottom: 8px}
 .sn-benefit p:not(#sn-x){color: var(--tinta-2);max-width: 52ch}
@@ -149,4 +139,22 @@
 #lote-0:not(#sn-x){overflow-x: clip}
 .sn-lot .sn-tickets__head:not(#sn-x){margin-bottom: clamp(32px,4vw,56px)}
 .sn-lot__phone:not(#sn-x){position: relative;justify-self: center;width: min(74vw,400px);margin: 0}
-.sn-lot__phone img:not(#sn-x){position: relative;z-index: 1;width: 100%;aspect-ratio: 878 / 1448;object-fit: cover;object-position: 0 50%;filter: drop-shadow(0 40px 50px rgb(9 12 58 / .55));animation: sn-float 7s ease-in-out infinite}</style>
+.sn-lot__phone img:not(#sn-x){position: relative;z-index: 1;width: 100%;aspect-ratio: 878 / 1448;object-fit: cover;object-position: 0 50%;filter: drop-shadow(0 40px 50px rgb(9 12 58 / .55));animation: sn-float 7s ease-in-out infinite}
+.sn-lot__glow:not(#sn-x){position: absolute;z-index: 0;inset: 8% -18% 4%;border-radius: 50%;background: radial-gradient(closest-side,rgb(255 74 42 / .6),rgb(62 201 245 / .28) 62%,transparent);filter: blur(30px)}
+.sn-lot__tag:not(#sn-x){position: absolute;z-index: 2;left: -8%;top: 30%;display: inline-flex;align-items: center;gap: 10px;padding: .7em 1.15em;border-radius: 999px;background: var(--branco);color: var(--tinta);font-size: 13.6px;font-weight: 800;white-space: nowrap;box-shadow: 0 20px 40px -14px rgb(9 12 58 / .6)}
+.sn-lot__dot:not(#sn-x){width: 10px;height: 10px;border-radius: 50%;background: var(--sol);box-shadow: 0 0 0 0 rgb(255 61 46 / .6);animation: sn-ping 2s ease-out infinite}
+@keyframes sn-float{0%,100%{transform: translateY(0)}
+50%{transform: translateY(-14px)}
+}
+@keyframes sn-ping{0%{box-shadow: 0 0 0 0 rgb(255 61 46 / .55)}
+100%{box-shadow: 0 0 0 12px rgb(255 61 46 / 0)}
+}
+.sn-steps:not(#sn-x){display: grid;gap: 14px}
+.sn-step:not(#sn-x){display: grid;gap: 10px;align-content: start;padding: clamp(24px,3vw,40px);border-radius: var(--radius-lg);background: rgb(255 255 255 / .07);box-shadow: inset 0 0 0 1px rgb(255 255 255 / .22)}
+.sn-step__n:not(#sn-x){font-family: var(--font-display);font-variation-settings: "opsz" 96;font-weight: 800;font-size: clamp(41.6px,32px + 2.4vw,67.2px);line-height: .9;letter-spacing: -.05em;color: var(--ceu)}
+.sn-step h3:not(#sn-x){font-family: var(--font-display);font-variation-settings: "opsz" 48;font-weight: 700;font-size: clamp(20.8px,17.6px + .8vw,28.8px);line-height: 1.1;letter-spacing: -.02em}
+.sn-step p:not(#sn-x){color: rgb(255 255 255 / .8)}
+.sn-step--date:not(#sn-x){background: var(--branco);color: var(--tinta);box-shadow: 0 40px 80px -40px rgb(9 12 58 / .7)}
+.sn-step--date .sn-step__n:not(#sn-x){background: var(--por-do-sol);-webkit-background-clip: text;background-clip: text;color: transparent}
+.sn-step--date p:not(#sn-x){color: var(--tinta-2)}
+.sn-presale:not(#sn-x){display: grid;gap: 24px;margin-top: 18px;padding: clamp(26px,3.4vw,48px);border-radius: var(--radius-lg);background: var(--noite);box-shadow: inset 0 0 0 1px rgb(255 255 255 / .14)}</style>

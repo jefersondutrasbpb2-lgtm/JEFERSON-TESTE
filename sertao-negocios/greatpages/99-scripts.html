@@ -177,6 +177,9 @@ const __snRun = () => {
     for (let i = 1; i < copies; i++) track.appendChild(set.cloneNode(true));
   });
 
+  /* ---------- WhatsApp flutuante ---------- */
+  initWhatsApp();
+
   /* ---------- Formulário ---------- */
   initForm();
   initPrivacy();
@@ -480,6 +483,34 @@ const __snRun = () => {
       }
       if (CFG.redirectUrl) setTimeout(() => { location.href = CFG.redirectUrl; }, CFG.redirectDelayMs || 2000);
     }
+  }
+
+  /* =========================================================
+     WHATSAPP FLUTUANTE (dúvidas, patrocínio e estandes)
+     ========================================================= */
+  function initWhatsApp() {
+    const wa = $('[data-wa]');
+    if (!wa) return;
+    const btn = $('.sn-wa__btn', wa);
+    const menu = $('.sn-wa__menu', wa);
+    const number = (wa.dataset.waNumber || '').replace(/\D/g, '');
+    $$('[data-wa-msg]', wa).forEach((a) => {
+      a.href = `https://wa.me/${number}?text=${encodeURIComponent(a.dataset.waMsg)}`;
+      a.addEventListener('click', () => {
+        track('whatsapp_click', { assunto: a.dataset.waTopic });
+        if (typeof window.fbq === 'function') window.fbq('track', 'Contact', { content_name: a.dataset.waTopic });
+        setOpen(false);
+      });
+    });
+    const setOpen = (open) => {
+      menu.hidden = !open;
+      wa.classList.toggle('sn-is-open', open);
+      btn.setAttribute('aria-expanded', String(open));
+      if (open) track('whatsapp_open', {});
+    };
+    btn.addEventListener('click', () => setOpen(menu.hidden));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !menu.hidden) { setOpen(false); btn.focus(); } });
+    document.addEventListener('click', (e) => { if (!menu.hidden && !wa.contains(e.target)) setOpen(false); });
   }
 
   /* =========================================================

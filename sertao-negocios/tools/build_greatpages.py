@@ -183,8 +183,11 @@ for name, start, end in section_markers:
     blocks[name] = frag
 
 footer = between("<footer", "<!-- CTA fixo no mobile -->").strip()
-dock = between("<!-- CTA fixo no mobile -->", "<!-- Política de privacidade -->").strip()
+dock = between("<!-- CTA fixo no mobile -->", "<!-- WhatsApp flutuante").strip()
 dock = dock[dock.index("<div"):]
+wa = between("<!-- WhatsApp flutuante", "<!-- Política de privacidade -->").strip()
+wa_note = wa[:wa.index("-->") + 3]
+wa = wa[wa.index("<div"):]
 dialog = between("<!-- Política de privacidade -->", "<script src=").strip()
 dialog = dialog[dialog.index("<dialog"):]
 
@@ -196,10 +199,11 @@ nav = add_root_class(nav)
 skip = add_root_class(skip)
 footer = add_root_class(footer)
 dock = add_root_class(dock)
+wa = wa_note + "\n" + add_root_class(wa)
 dialog = add_root_class(dialog)
 
 blocks["01-topo"] = "\n\n".join([sprite, skip, nav, blocks["01-topo"]])
-blocks["11-rodape"] = "\n\n".join([footer, dock, dialog])
+blocks["11-rodape"] = "\n\n".join([footer, dock, wa, dialog])
 
 HEADER_NOTE = "<!-- Sertão Negócios 2026 · bloco {name} · GreatPages: Adicionar bloco > elemento HTML/CSS -->\n"
 for k in list(blocks):

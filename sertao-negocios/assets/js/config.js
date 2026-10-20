@@ -13,7 +13,7 @@ window.SN_CONFIG = {
   requestMode: 'cors',
 
   // Link da comunidade no WhatsApp: usado no botão "Entrar no grupo" que aparece depois do cadastro.
-  communityUrl: '',
+  communityUrl: 'https://chat.whatsapp.com/It1MX9ij3o48Zzbvo04Vkq',
 
   // Opcional: após o envio, redireciona sozinho para esta URL (página de obrigado, grupo de WhatsApp etc.).
   redirectUrl: '',

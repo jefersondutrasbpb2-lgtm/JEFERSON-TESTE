@@ -71,6 +71,13 @@ left = sorted(set(re.findall(r"assets/img/[\w.-]+", html)))
 if left:
     fail(f"imagens sem link do GreatPages: {left}")
 
+# Formulário: chave que o GreatPages criou na importação e destino depois do envio (grupo da comunidade)
+GP_FORM_KEY = "acvpruwy"
+COMMUNITY_URL = "https://chat.whatsapp.com/It1MX9ij3o48Zzbvo04Vkq"
+html = must_replace(html, '<form class="form" id="lead-form" novalidate data-form>',
+                    f'<form data-gp-form="{GP_FORM_KEY}" data-gp-conversao="true" data-gp-apos-envio="redirecionar" '
+                    f'data-gp-redirect="{COMMUNITY_URL}" class="form" id="lead-form" novalidate data-form>')
+
 # Pixel da Meta e Google Analytics
 tracking = f"""
   <!-- Google Analytics -->

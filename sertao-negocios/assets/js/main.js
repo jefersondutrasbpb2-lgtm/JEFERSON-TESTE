@@ -400,7 +400,7 @@
         track('form_error', { form_id: 'lead-form' });
         return;
       }
-      if (form.elements.empresa_site.value) { e.preventDefault(); e.stopImmediatePropagation(); return; } // honeypot
+      if (form.elements.__empresa_site.value) { e.preventDefault(); e.stopImmediatePropagation(); return; } // honeypot
 
       // Página HTML do GreatPages: o próprio GreatPages recebe o envio e guarda o lead
       if (CFG.formMode === 'greatpages') {
@@ -411,7 +411,7 @@
       e.preventDefault();
 
       const data = Object.fromEntries(new FormData(form).entries());
-      delete data.empresa_site;
+      delete data.__empresa_site;
       data.whatsapp = data.whatsapp.replace(/\D/g, '');
       data.enviado_em = new Date().toISOString();
 

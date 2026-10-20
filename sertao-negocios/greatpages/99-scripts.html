@@ -20,7 +20,7 @@ window.SN_CONFIG = {
   requestMode: 'cors',
 
   // Link da comunidade no WhatsApp: usado no botão "Entrar no grupo" que aparece depois do cadastro.
-  communityUrl: '',
+  communityUrl: 'https://chat.whatsapp.com/It1MX9ij3o48Zzbvo04Vkq',
 
   // Opcional: após o envio, redireciona sozinho para esta URL (página de obrigado, grupo de WhatsApp etc.).
   redirectUrl: '',
@@ -422,19 +422,28 @@ const __snRun = () => {
     });
 
     form.addEventListener('submit', async (e) => {
-      e.preventDefault();
       status.textContent = '';
       const ok = Object.keys(rules).map(validate).every(Boolean);
       if (!ok) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
         const first = $('.sn-is-invalid input', form);
         if (first) first.focus();
         track('form_error', { form_id: 'lead-form' });
         return;
       }
-      if (form.elements.empresa_site.value) return; // honeypot
+      if (form.elements.__empresa_site.value) { e.preventDefault(); e.stopImmediatePropagation(); return; } // honeypot
+
+      // Página HTML do GreatPages: o próprio GreatPages recebe o envio e guarda o lead
+      if (CFG.formMode === 'greatpages') {
+        track('generate_lead', { form_id: 'lead-form', interesse: form.elements.interesse.value || 'geral' });
+        if (typeof window.fbq === 'function') window.fbq('track', 'Lead', { content_name: `Sertão Negócios · ${form.elements.interesse.value || 'lote 0'}` });
+        return;
+      }
+      e.preventDefault();
 
       const data = Object.fromEntries(new FormData(form).entries());
-      delete data.empresa_site;
+      delete data.__empresa_site;
       data.whatsapp = data.whatsapp.replace(/\D/g, '');
       data.enviado_em = new Date().toISOString();
 

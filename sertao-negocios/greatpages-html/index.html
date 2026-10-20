@@ -1463,7 +1463,7 @@ button { font: inherit; color: inherit; }
       </div>
 
       <div class="form-card" data-reveal>
-        <form class="form" id="lead-form" novalidate data-form>
+        <form data-gp-form="acvpruwy" data-gp-conversao="true" data-gp-apos-envio="redirecionar" data-gp-redirect="https://chat.whatsapp.com/It1MX9ij3o48Zzbvo04Vkq" class="form" id="lead-form" novalidate data-form>
           <div class="field">
             <label for="f-nome">Nome</label>
             <input id="f-nome" name="nome" type="text" autocomplete="name" required minlength="3" placeholder="Como você se chama?">
@@ -1483,7 +1483,7 @@ button { font: inherit; color: inherit; }
           <!-- Campos de rastreamento preenchidos automaticamente (interesse: "expositor" quando a pessoa clica em "Quero expor minha empresa") -->
           <input type="hidden" name="interesse"><input type="hidden" name="utm_source"><input type="hidden" name="utm_medium"><input type="hidden" name="utm_campaign"><input type="hidden" name="utm_content"><input type="hidden" name="utm_term"><input type="hidden" name="pagina">
           <!-- Honeypot anti-spam -->
-          <div class="hp" aria-hidden="true"><label>Não preencha<input type="text" name="empresa_site" tabindex="-1" autocomplete="off"></label></div>
+          <div class="hp" aria-hidden="true"><label>Não preencha<input type="text" name="__empresa_site" tabindex="-1" autocomplete="off"></label></div>
 
           <p class="form__promise">Entrar na comunidade não custa nada e não obriga você a comprar. Você recebe as informações, decide no seu tempo e pode sair do grupo quando quiser.</p>
           <button class="btn btn--sol btn--lg btn--block form__submit" type="submit">
@@ -1608,7 +1608,7 @@ window.SN_CONFIG = {
   requestMode: 'cors',
 
   // Link da comunidade no WhatsApp: usado no botão "Entrar no grupo" que aparece depois do cadastro.
-  communityUrl: '',
+  communityUrl: 'https://chat.whatsapp.com/It1MX9ij3o48Zzbvo04Vkq',
 
   // Opcional: após o envio, redireciona sozinho para esta URL (página de obrigado, grupo de WhatsApp etc.).
   redirectUrl: '',
@@ -2019,7 +2019,7 @@ document.addEventListener('DOMContentLoaded', function () {
         track('form_error', { form_id: 'lead-form' });
         return;
       }
-      if (form.elements.empresa_site.value) { e.preventDefault(); e.stopImmediatePropagation(); return; } // honeypot
+      if (form.elements.__empresa_site.value) { e.preventDefault(); e.stopImmediatePropagation(); return; } // honeypot
 
       // Página HTML do GreatPages: o próprio GreatPages recebe o envio e guarda o lead
       if (CFG.formMode === 'greatpages') {
@@ -2030,7 +2030,7 @@ document.addEventListener('DOMContentLoaded', function () {
       e.preventDefault();
 
       const data = Object.fromEntries(new FormData(form).entries());
-      delete data.empresa_site;
+      delete data.__empresa_site;
       data.whatsapp = data.whatsapp.replace(/\D/g, '');
       data.enviado_em = new Date().toISOString();
 

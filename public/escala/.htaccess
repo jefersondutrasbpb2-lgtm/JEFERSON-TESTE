@@ -1,3 +1,2 @@
-# /escala abre o app da Escala do Louvor (o subdomínio usa a pasta escalas/).
-# O navegador mantém o #disponibilidade do convite.
-RedirectMatch 302 .* https://claude.ai/artifact/H8ZFZrMUby8Wcvnn6pyVMx
+# /escala leva ao endereço da Escala do Louvor. O navegador mantém o #disponibilidade do convite.
+RedirectMatch 302 .* https://escalas.igrejacongregacionalpombal.com.br/

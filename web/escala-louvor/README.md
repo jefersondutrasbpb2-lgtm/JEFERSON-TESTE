@@ -4,9 +4,9 @@ Ferramenta para montar, com antecedência, escalas **quinzenais ou mensais** do 
 função e quais salmos, hinos e louvores são cantados em cada culto. A liturgia é organizada pelo pastor e não faz parte
 da ferramenta.
 
-Abra `index.html` no navegador (funciona direto do arquivo, sem instalar nada). Os dados ficam salvos no próprio
-aparelho; quando a página roda como Artifact no Claude, eles ficam na nuvem e aparecem iguais no celular e no
-computador. Em **Ajustes › Backup** dá para baixar uma cópia.
+No ar em **escalas.igrejacongregacionalpombal.com.br**. Lá, os dados ficam no servidor da igreja e aparecem iguais no
+celular e no computador. Aberto direto do arquivo (`index.html`, sem instalar nada), o app guarda tudo só no próprio
+aparelho. Em **Ajustes › Backup** dá para baixar uma cópia.
 
 ## Telas
 
@@ -20,13 +20,25 @@ computador. Em **Ajustes › Backup** dá para baixar uma cópia.
 
 ## Disponibilidade da equipe
 
-Quem abre o link com `#disponibilidade` (ou qualquer pessoa sem permissão de editar a escala) vê só a tela **Sua
+Quem abre o link (com ou sem `#disponibilidade`) e não entrou como coordenador vê só a tela **Sua
 disponibilidade**: escolhe o próprio nome, toca no calendário os dias em que **pode** servir e envia.
 
-- Quando a pessoa tem acesso de **Colaborador** ao Artifact (menu Compartilhar), a resposta é salva direto e aparece na
-  Agenda na hora. A equipe só consegue gravar a própria disponibilidade; equipe, músicas e escalas só quem edita muda.
-- Sem esse acesso (por exemplo, quem abre por link público), a ferramenta mostra um texto com o código `#disp` para
-  mandar pelo WhatsApp, e o coordenador usa **Colar respostas**.
+- A resposta vai direto para o servidor e aparece na Agenda do coordenador em até 20 segundos. A equipe só consegue
+  gravar a própria disponibilidade; equipe, músicas e escalas só o coordenador muda.
+- Se o envio falhar (sem internet, por exemplo), a ferramenta mostra um texto com o código `#disp` para mandar pelo
+  WhatsApp, e o coordenador usa **Colar respostas**.
+
+## Coordenador
+
+Na tela de disponibilidade, **Sou o coordenador** pede a senha. Ela é o secret `ESCALA_SENHA` do GitHub (Settings ›
+Secrets and variables › Actions); a publicação guarda no servidor só a senha cifrada. Para trocar, altere o secret e
+publique de novo. A sessão dura 30 dias no aparelho; **Ajustes › Sair do modo coordenador** encerra antes.
+
+## Servidor
+
+`servidor/api.php` guarda tudo num arquivo fora da pasta pública (`domains/<domínio>/escala-dados/banco.php`) e
+`servidor/servidor.js` liga o app a ela. `servidor/semente.json` são os dados de partida, usados só enquanto o servidor
+não tem dados. A publicação monta a pasta `escalas/` do site com `scripts/montar-escala.mjs`.
 - Na geração, quem marcou que não pode fica de fora; quem confirmou vem antes de quem não respondeu. Em Ajustes ›
   Escolha das músicas dá para escalar **só** quem respondeu.
 

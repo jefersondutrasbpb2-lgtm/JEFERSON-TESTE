@@ -226,7 +226,7 @@
   ];
 
   function configuracaoBase() {
-    return JSON.parse(JSON.stringify({ versao: 3, igreja: { nome: "IEC Pombal", link: "https://claude.ai/artifact/H8ZFZrMUby8Wcvnn6pyVMx" }, funcoes, tags, regras, cultos }));
+    return JSON.parse(JSON.stringify({ versao: 3, igreja: { nome: "IEC Pombal", link: "https://escalas.igrejacongregacionalpombal.com.br" }, funcoes, tags, regras, cultos }));
   }
 
   function repertorio() {

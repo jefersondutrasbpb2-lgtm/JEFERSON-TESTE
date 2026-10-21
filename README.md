@@ -64,7 +64,7 @@ Configuração (uma vez):
    - `FTP_PASTA`: pasta do site no servidor (padrão `public_html/`; use `./` se a conta FTP já abrir dentro do
      `public_html`);
    - `FTP_PROTOCOLO`: `ftps` (padrão, com criptografia) ou `ftp`, se a conexão criptografada falhar;
-   - `SITE_URL`: endereço oficial (padrão `https://www.igrejacongregacionaldepombal.com.br`);
+   - `SITE_URL`: endereço oficial (padrão `https://www.igrejacongregacionalpombal.com.br`);
    - `CONTACT_ENDPOINT` e `PRAYER_ENDPOINT`: endereços que recebem os formulários.
 4. Se já houver outro site na pasta `public_html`, faça um backup e retire os arquivos antigos antes da primeira
    publicação. O arquivo `public/.htaccess` faz o `index.html` ter prioridade e usa a página 404 do site.

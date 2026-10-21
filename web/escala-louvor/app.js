@@ -1,9 +1,10 @@
 /*
  * Interface da Escala do Louvor.
  *
- * Quatro telas (Escala, Músicas, Equipe, Ajustes). Toda edição abre num painel
- * (que sobe da base no celular); exclusões e mudanças grandes podem ser
- * desfeitas pelo aviso no rodapé. O estado inteiro mora em `state`; cada
+ * Telas: Início (visão geral), Escala, Agenda, Músicas, Equipe e Ajustes. No
+ * celular, barra inferior com os destinos principais e "Mais"; no computador,
+ * menu lateral. Toda edição abre num painel (que sobe da base no celular);
+ * exclusões e mudanças grandes podem ser desfeitas pelo aviso no rodapé. O estado inteiro mora em `state`; cada
  * alteração passa por `mudou()`, que salva no navegador e, quando a página roda
  * no site da igreja (com servidor.js e api.php), também no servidor. A lógica
  * fica em engine.js.
@@ -14,16 +15,21 @@
   const E = window.EscalaEngine;
   const D = window.EscalaDados;
   const TELAS = [
-    { id: "escala", nome: "Escala", icone: "calendario" },
+    { id: "inicio", nome: "Início", icone: "inicio" },
+    { id: "escala", nome: "Escala", icone: "escala" },
     { id: "agenda", nome: "Agenda", icone: "agenda" },
-    { id: "musicas", nome: "Músicas", icone: "nota" },
+    { id: "musicas", nome: "Músicas", icone: "musica" },
     { id: "equipe", nome: "Equipe", icone: "pessoas" },
     { id: "ajustes", nome: "Ajustes", icone: "ajustes" },
   ];
+  const NAV_CELULAR = ["inicio", "escala", "agenda", "musicas"]; // Equipe e Ajustes ficam em "Mais"
   const MOBILE = "(max-width: 759px)";
 
   let state = null;
-  const ui = { tela: "escala", escalaId: null, ordemDe: {}, busca: "", filtro: "todas", coordena: true, resposta: null };
+  const ui = {
+    tela: "inicio", ultimaTela: null, escalaId: null, ordemDe: {}, busca: "", filtro: "todas", coordena: true, resposta: null,
+    agendaMes: null, agendaDia: null, agendaModo: "mes", somenteLeitura: false, instalar: null,
+  };
 
   /* ------------------------------------------------------------ util */
 
@@ -44,30 +50,64 @@
     return el;
   }
 
+  // Ícones Lucide (lucide.dev, licença ISC), só os traços.
   const ICONES = {
-    calendario: '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/>',
-    agenda: '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4M8.5 15l2.5 2.5 4.5-5"/>',
-    colar: '<rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h6"/>',
-    nota: '<path d="M9 18V6l11-2v12"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',
-    pessoas: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/>',
-    ajustes: '<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',
-    mais: '<path d="M12 5v14M5 12h14"/>',
-    opcoes: '<circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/>',
-    enviar: '<path d="M21 3 10 14M21 3l-7 18-4-7-7-4 18-7Z"/>',
-    sortear: '<path d="M4 4v6h6M20 20v-6h-6"/><path d="M5.5 15a7 7 0 0 0 12.3 2.5M18.5 9A7 7 0 0 0 6.2 6.5"/>',
-    pino: '<path d="M9 4h6l-1 6 4 4H6l4-4-1-6ZM12 14v7"/>',
-    fechar: '<path d="M6 6l12 12M18 6 6 18"/>',
-    cima: '<path d="m6 15 6-6 6 6"/>',
-    baixo: '<path d="m6 9 6 6 6-6"/>',
-    busca: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
-    play: '<circle cx="12" cy="12" r="9"/><path d="m10 8.5 5 3.5-5 3.5Z"/>',
-    lixo: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
-    copiar: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
-    baixar: '<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
-    imprimir: '<path d="M7 9V3h10v6M7 17H4v-7h16v7h-3"/><rect x="7" y="14" width="10" height="7"/>',
-    importar: '<path d="M12 20V9M7 14l5-5 5 5M5 4h14"/>',
-    ok: '<path d="m5 12 4.5 4.5L19 7"/>',
-    nota2: '<path d="M5 4h10l4 4v12H5Z"/><path d="M9 12h6M9 16h4"/>',
+    inicio: "<path d=\"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8\" /><path d=\"M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\" />",
+    escala: "<path d=\"M8 2v4\" /><path d=\"M16 2v4\" /><rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\" /><path d=\"M3 10h18\" /><path d=\"m9 16 2 2 4-4\" />",
+    agenda: "<path d=\"M8 2v4\" /><path d=\"M16 2v4\" /><rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\" /><path d=\"M3 10h18\" /><path d=\"M8 14h.01\" /><path d=\"M12 14h.01\" /><path d=\"M16 14h.01\" /><path d=\"M8 18h.01\" /><path d=\"M12 18h.01\" /><path d=\"M16 18h.01\" />",
+    musica: "<path d=\"M9 18V5l12-2v13\" /><circle cx=\"6\" cy=\"18\" r=\"3\" /><circle cx=\"18\" cy=\"16\" r=\"3\" />",
+    pessoas: "<path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\" /><circle cx=\"9\" cy=\"7\" r=\"4\" /><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\" /><path d=\"M16 3.13a4 4 0 0 1 0 7.75\" />",
+    ajustes: "<path d=\"M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z\" /><circle cx=\"12\" cy=\"12\" r=\"3\" />",
+    menu: "<circle cx=\"12\" cy=\"12\" r=\"1\" /><circle cx=\"19\" cy=\"12\" r=\"1\" /><circle cx=\"5\" cy=\"12\" r=\"1\" />",
+    mais: "<path d=\"M5 12h14\" /><path d=\"M12 5v14\" />",
+    opcoes: "<circle cx=\"12\" cy=\"12\" r=\"1\" /><circle cx=\"12\" cy=\"5\" r=\"1\" /><circle cx=\"12\" cy=\"19\" r=\"1\" />",
+    enviar: "<path d=\"M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z\" /><path d=\"m21.854 2.147-10.94 10.939\" />",
+    sortear: "<path d=\"m18 14 4 4-4 4\" /><path d=\"m18 2 4 4-4 4\" /><path d=\"M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-8.6a4 4 0 0 1 3.3-1.7H22\" /><path d=\"M2 6h1.972a4 4 0 0 1 3.6 2.2\" /><path d=\"M22 18h-6.041a4 4 0 0 1-3.3-1.8l-.359-.45\" />",
+    pino: "<path d=\"M12 17v5\" /><path d=\"M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z\" />",
+    fechar: "<path d=\"M18 6 6 18\" /><path d=\"m6 6 12 12\" />",
+    cima: "<path d=\"m18 15-6-6-6 6\" />",
+    baixo: "<path d=\"m6 9 6 6 6-6\" />",
+    esq: "<path d=\"m15 18-6-6 6-6\" />",
+    dir: "<path d=\"m9 18 6-6-6-6\" />",
+    busca: "<circle cx=\"11\" cy=\"11\" r=\"8\" /><path d=\"m21 21-4.3-4.3\" />",
+    play: "<circle cx=\"12\" cy=\"12\" r=\"10\" /><polygon points=\"10 8 16 12 10 16 10 8\" />",
+    lixo: "<path d=\"M3 6h18\" /><path d=\"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6\" /><path d=\"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2\" /><line x1=\"10\" x2=\"10\" y1=\"11\" y2=\"17\" /><line x1=\"14\" x2=\"14\" y1=\"11\" y2=\"17\" />",
+    copiar: "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" /><path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />",
+    baixar: "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" /><polyline points=\"7 10 12 15 17 10\" /><line x1=\"12\" x2=\"12\" y1=\"15\" y2=\"3\" />",
+    imprimir: "<path d=\"M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2\" /><path d=\"M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6\" /><rect x=\"6\" y=\"14\" width=\"12\" height=\"8\" rx=\"1\" />",
+    importar: "<path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z\" /><path d=\"M14 2v4a2 2 0 0 0 2 2h4\" /><path d=\"M12 12v6\" /><path d=\"m15 15-3-3-3 3\" />",
+    ok: "<path d=\"M20 6 9 17l-5-5\" />",
+    nota2: "<path d=\"M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z\" /><path d=\"M15 3v4a2 2 0 0 0 2 2h4\" />",
+    colar: "<path d=\"M15 2H9a1 1 0 0 0-1 1v2c0 .6.4 1 1 1h6c.6 0 1-.4 1-1V3c0-.6-.4-1-1-1Z\" /><path d=\"M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2M16 4h2a2 2 0 0 1 2 2v2M11 14h10\" /><path d=\"m17 10 4 4-4 4\" />",
+    alerta: "<path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\" /><path d=\"M12 9v4\" /><path d=\"M12 17h.01\" />",
+    erro: "<circle cx=\"12\" cy=\"12\" r=\"10\" /><line x1=\"12\" x2=\"12\" y1=\"8\" y2=\"12\" /><line x1=\"12\" x2=\"12.01\" y1=\"16\" y2=\"16\" />",
+    certo: "<circle cx=\"12\" cy=\"12\" r=\"10\" /><path d=\"m9 12 2 2 4-4\" />",
+    compartilhar: "<circle cx=\"18\" cy=\"5\" r=\"3\" /><circle cx=\"6\" cy=\"12\" r=\"3\" /><circle cx=\"18\" cy=\"19\" r=\"3\" /><line x1=\"8.59\" x2=\"15.42\" y1=\"13.51\" y2=\"17.49\" /><line x1=\"15.41\" x2=\"8.59\" y1=\"6.51\" y2=\"10.49\" />",
+    whatsapp: "<path d=\"M7.9 20A9 9 0 1 0 4 16.1L2 22Z\" />",
+    lista: "<path d=\"M3 12h.01\" /><path d=\"M3 18h.01\" /><path d=\"M3 6h.01\" /><path d=\"M8 12h13\" /><path d=\"M8 18h13\" /><path d=\"M8 6h13\" />",
+    grade: "<rect width=\"7\" height=\"7\" x=\"3\" y=\"3\" rx=\"1\" /><rect width=\"7\" height=\"7\" x=\"14\" y=\"3\" rx=\"1\" /><rect width=\"7\" height=\"7\" x=\"14\" y=\"14\" rx=\"1\" /><rect width=\"7\" height=\"7\" x=\"3\" y=\"14\" rx=\"1\" />",
+    relogio: "<circle cx=\"12\" cy=\"12\" r=\"10\" /><polyline points=\"12 6 12 12 16 14\" />",
+    offline: "<path d=\"M12 20h.01\" /><path d=\"M8.5 16.429a5 5 0 0 1 7 0\" /><path d=\"M5 12.859a10 10 0 0 1 5.17-2.69\" /><path d=\"M19 12.859a10 10 0 0 0-2.007-1.523\" /><path d=\"M2 8.82a15 15 0 0 1 4.177-2.643\" /><path d=\"M22 8.82a15 15 0 0 0-11.288-3.764\" /><path d=\"m2 2 20 20\" />",
+    nuvem: "<path d=\"M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z\" />",
+    atualizar: "<path d=\"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8\" /><path d=\"M21 3v5h-5\" /><path d=\"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16\" /><path d=\"M8 16H3v5\" />",
+    sol: "<circle cx=\"12\" cy=\"12\" r=\"4\" /><path d=\"M12 2v2\" /><path d=\"M12 20v2\" /><path d=\"m4.93 4.93 1.41 1.41\" /><path d=\"m17.66 17.66 1.41 1.41\" /><path d=\"M2 12h2\" /><path d=\"M20 12h2\" /><path d=\"m6.34 17.66-1.41 1.41\" /><path d=\"m19.07 4.93-1.41 1.41\" />",
+    lua: "<path d=\"M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z\" />",
+    auto: "<rect width=\"20\" height=\"14\" x=\"2\" y=\"3\" rx=\"2\" /><line x1=\"8\" x2=\"16\" y1=\"21\" y2=\"21\" /><line x1=\"12\" x2=\"12\" y1=\"17\" y2=\"21\" />",
+    instalar: "<rect width=\"14\" height=\"20\" x=\"5\" y=\"2\" rx=\"2\" ry=\"2\" /><path d=\"M12 18h.01\" />",
+    igreja: "<path d=\"M10 9h4\" /><path d=\"M12 7v5\" /><path d=\"M14 22v-4a2 2 0 0 0-4 0v4\" /><path d=\"M18 22V5.618a1 1 0 0 0-.553-.894l-4.553-2.277a2 2 0 0 0-1.788 0L6.553 4.724A1 1 0 0 0 6 5.618V22\" /><path d=\"m18 7 3.447 1.724a1 1 0 0 1 .553.894V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9.618a1 1 0 0 1 .553-.894L6 7\" />",
+    editar: "<path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\" /><path d=\"m15 5 4 4\" />",
+    seta: "<path d=\"M5 12h14\" /><path d=\"m12 5 7 7-7 7\" />",
+    info: "<circle cx=\"12\" cy=\"12\" r=\"10\" /><path d=\"M12 16v-4\" /><path d=\"M12 8h.01\" />",
+    link: "<path d=\"M15 3h6v6\" /><path d=\"M10 14 21 3\" /><path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\" />",
+    filtro: "<line x1=\"21\" x2=\"14\" y1=\"4\" y2=\"4\" /><line x1=\"10\" x2=\"3\" y1=\"4\" y2=\"4\" /><line x1=\"21\" x2=\"12\" y1=\"12\" y2=\"12\" /><line x1=\"8\" x2=\"3\" y1=\"12\" y2=\"12\" /><line x1=\"21\" x2=\"16\" y1=\"20\" y2=\"20\" /><line x1=\"12\" x2=\"3\" y1=\"20\" y2=\"20\" /><line x1=\"14\" x2=\"14\" y1=\"2\" y2=\"6\" /><line x1=\"8\" x2=\"8\" y1=\"10\" y2=\"14\" /><line x1=\"16\" x2=\"16\" y1=\"18\" y2=\"22\" />",
+    livro: "<path d=\"M12 7v14\" /><path d=\"M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z\" />",
+    pessoa: "<circle cx=\"12\" cy=\"8\" r=\"5\" /><path d=\"M20 21a8 8 0 0 0-16 0\" />",
+    pessoaMais: "<path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\" /><circle cx=\"9\" cy=\"7\" r=\"4\" /><line x1=\"19\" x2=\"19\" y1=\"8\" y2=\"14\" /><line x1=\"22\" x2=\"16\" y1=\"11\" y2=\"11\" />",
+    calendarioMais: "<path d=\"M8 2v4\" /><path d=\"M16 2v4\" /><path d=\"M21 13V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8\" /><path d=\"M3 10h18\" /><path d=\"M16 19h6\" /><path d=\"M19 16v6\" />",
+    sino: "<path d=\"M10.268 21a2 2 0 0 0 3.464 0\" /><path d=\"M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326\" />",
+    lixeira: "<path d=\"M3 6h18\" /><path d=\"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6\" /><path d=\"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2\" /><line x1=\"10\" x2=\"10\" y1=\"11\" y2=\"17\" /><line x1=\"14\" x2=\"14\" y1=\"11\" y2=\"17\" />",
+    calendario: "<path d=\"M8 2v4\" /><path d=\"M16 2v4\" /><rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\" /><path d=\"M3 10h18\" /><path d=\"M8 14h.01\" /><path d=\"M12 14h.01\" /><path d=\"M16 14h.01\" /><path d=\"M8 18h.01\" /><path d=\"M12 18h.01\" /><path d=\"M16 18h.01\" />",
+    nota: "<path d=\"M9 18V5l12-2v13\" /><circle cx=\"6\" cy=\"18\" r=\"3\" /><circle cx=\"18\" cy=\"16\" r=\"3\" />",
   };
   function icone(nome) {
     const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -83,6 +123,34 @@
   const hoje = () => E.isoData(new Date());
   const servidor = window.EscalaServidor || null;
   const celular = () => matchMedia(MOBILE).matches;
+  const nomeTela = (id) => (TELAS.find((t) => t.id === id) || { nome: "Sua disponibilidade" }).nome;
+
+  function iniciais(nome) {
+    const partes = String(nome || "?").trim().split(/\s+/).filter(Boolean);
+    return ((partes[0] || "?")[0] + (partes.length > 1 ? partes[partes.length - 1][0] : "")).toUpperCase();
+  }
+  /** Avatar com iniciais; a cor sai do id, sempre a mesma para a mesma pessoa. */
+  function avatar(p, extra) {
+    const id = String((p && p.id) || "");
+    let n = 0;
+    for (const c of id) n = (n * 31 + c.charCodeAt(0)) % 997;
+    return h("span", { class: `avatar${extra ? ` ${extra}` : ""}`, "data-cor": String((n % 6) + 1), "aria-hidden": "true" }, iniciais(p && p.nome));
+  }
+
+  /* --------------------------------------------------------- tema */
+
+  const CHAVE_TEMA = "escala-louvor:tema";
+  function temaSalvo() {
+    try { return localStorage.getItem(CHAVE_TEMA) || "auto"; } catch (e) { return "auto"; }
+  }
+  function aplicarTema(tema) {
+    if (tema === "light" || tema === "dark") document.documentElement.dataset.theme = tema;
+    else delete document.documentElement.dataset.theme;
+    const escuro = tema === "dark" || (tema !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.content = escuro ? "#0a1626" : "#0B2345";
+  }
+  aplicarTema(temaSalvo());
 
   function proximoDomingo() {
     const d = new Date();
@@ -98,6 +166,8 @@
 
   /** Aviso no rodapé, com ação opcional (ex.: Desfazer). */
   function avisar(msg, acao) {
+    // Sem conexão, a alteração foi recusada: não mostra o "salvo" que a tela pediria logo depois.
+    if (ui.somenteLeitura && !(acao && acao.semConexao) && Date.now() - (ui.bloqueouEm || 0) < 100) return;
     const area = document.getElementById("avisos-rodape");
     const el = h("div", { class: "aviso-rodape", role: "status" }, h("span", {}, msg),
       acao ? h("button", { onclick: () => { el.remove(); acao.fazer(); } }, acao.rotulo) : null);
@@ -107,6 +177,7 @@
 
   /** Faz uma alteração que pode ser desfeita pelo aviso do rodapé. */
   function comDesfazer(msg, fn) {
+    if (ui.somenteLeitura) return avisarSemConexao();
     const antes = JSON.stringify(state);
     mudou(fn);
     avisar(msg, { rotulo: "Desfazer", fazer: () => { state = JSON.parse(antes); garantirEscalaAtual(); mudou(); } });
@@ -132,7 +203,7 @@
   const CHAVE_LOCAL = "escala-louvor:v1";
   const SECOES = ["config", "pessoas", "musicas", "cultos"];
   const ANTIGAS = ["liturgias", "oficiais"]; // de versões anteriores; apagadas depois de migrar
-  const armazem = { db: null, user: null, ultimo: {}, antigas: new Set(), timer: null, salvando: false, pendente: false };
+  const armazem = { db: null, user: null, ultimo: {}, antigas: new Set(), timer: null, salvando: false, pendente: false, sujo: false };
 
   function secao(nome) {
     if (nome === "config") return { versao: state.versao, igreja: state.igreja, funcoes: state.funcoes, tags: state.tags, regras: state.regras, pedido: state.pedido || null };
@@ -198,15 +269,24 @@
     }, () => { /* sem atualização ao vivo: as respostas aparecem ao recarregar */ });
   }
 
+  /** Indicador de salvamento: salvando, salvo, sem conexão ou falha. "Salvo" só depois da confirmação do servidor. */
   function mostrarSalvo(estado, texto) {
     const el = document.getElementById("salvo");
     el.dataset.estado = estado;
     el.lastChild.textContent = texto;
+    el.title = { ok: "Tudo salvo", salvando: "Enviando as alterações", offline: "Sem conexão: as alterações ficam guardadas neste aparelho e vão quando a internet voltar", erro: "O servidor não confirmou a gravação" }[estado] || "";
+  }
+
+  function avisarSemConexao() {
+    ui.bloqueouEm = Date.now();
+    avisar("Sem conexão com o servidor: não dá para alterar agora.", { rotulo: "Tentar de novo", fazer: () => location.reload(), semConexao: true });
   }
 
   function salvar() {
     gravarLocal();
     if (!armazem.db) return mostrarSalvo("ok", "Salvo neste aparelho");
+    armazem.sujo = true;
+    if (!navigator.onLine) return mostrarSalvo("offline", "Sem conexão");
     mostrarSalvo("salvando", "Salvando…");
     clearTimeout(armazem.timer);
     armazem.timer = setTimeout(salvarNuvem, 600);
@@ -255,14 +335,21 @@
         await armazem.db.doc(`dados/${nome}`).delete();
         armazem.antigas.delete(nome);
       }
+      armazem.sujo = armazem.pendente;
       mostrarSalvo("ok", "Salvo");
     } catch (e) {
+      armazem.sujo = true;
+      const semRede = !navigator.onLine || e instanceof TypeError;
+      if (semRede) {
+        mostrarSalvo("offline", "Sem conexão");
+        return;
+      }
       const msg = {
         quota_exceeded: "O espaço de dados acabou. Exclua escalas antigas.",
         invalid_argument: "Uma parte dos dados ficou grande demais para salvar. Baixe um backup em Ajustes.",
         origem: "O servidor recusou a gravação. Recarregue a página e tente de novo.",
       }[e && e.code] || "Não consegui salvar no servidor agora. Tento de novo na próxima alteração.";
-      mostrarSalvo("erro", "Não salvo");
+      mostrarSalvo("erro", "Falha ao salvar");
       avisar(msg);
     } finally {
       armazem.salvando = false;
@@ -275,6 +362,7 @@
 
   /** Aplica uma alteração, mantém os cultos ligados em dia, salva e redesenha. */
   function mudou(fn, redesenhar) {
+    if (ui.somenteLeitura && fn) return avisarSemConexao();
     if (fn) fn();
     for (const e of state.escalas) E.sincronizarEscala(e);
     salvar();
@@ -292,8 +380,11 @@
       try {
         remoto = await lerNuvem(armazem.db);
       } catch (e) {
+        // Sem o servidor, mostra a última cópia deste aparelho, mas não deixa editar:
+        // assim nada salvo aqui some quando o servidor voltar.
         armazem.db = null;
-        avisar("Não consegui abrir os dados do servidor. Por enquanto, as alterações ficam só neste aparelho.");
+        ui.somenteLeitura = !!salvoLocal;
+        if (!salvoLocal) avisar("Não consegui abrir os dados do servidor.");
       }
     }
     const base = D.configuracaoBase();
@@ -308,10 +399,54 @@
     if (TELAS.some((t) => t.id === hash)) ui.tela = hash;
     if (!ui.coordena || hash === "disponibilidade") ui.tela = "disponibilidade";
     garantirEscalaAtual();
-    if (ui.coordena) salvar(); // grava a migração (ou os dados iniciais) e leva para o servidor o que estava só no aparelho
+    if (ui.somenteLeitura) mostrarSalvo("offline", "Sem conexão");
+    else if (ui.coordena) salvar(); // grava a migração (ou os dados iniciais) e leva para o servidor o que estava só no aparelho
     else mostrarSalvo("ok", armazem.db ? "Conectado" : "Neste aparelho");
     if (armazem.db) acompanharRespostas();
+    vigiarConexao();
     render();
+    registrarApp();
+  }
+
+  /** Sem internet: avisa no indicador; quando volta, envia o que ficou pendente. */
+  function vigiarConexao() {
+    const topo = document.getElementById("topo");
+    addEventListener("scroll", () => topo.classList.toggle("rolou", window.scrollY > 4), { passive: true });
+    // Links internos (#escala, logo → #inicio) e voltar do navegador trocam de tela.
+    addEventListener("hashchange", () => {
+      const alvo = location.hash.slice(1);
+      if (alvo !== ui.tela && (TELAS.some((t) => t.id === alvo) || alvo === "disponibilidade")) {
+        if (fecharAtual) fecharAtual(true);
+        ui.tela = alvo;
+        render();
+      }
+    });
+    addEventListener("offline", () => { if (armazem.db) mostrarSalvo("offline", "Sem conexão"); });
+    addEventListener("online", () => {
+      if (ui.somenteLeitura) return avisar("A conexão voltou.", { rotulo: "Recarregar", fazer: () => location.reload() });
+      if (armazem.db && armazem.sujo) { mostrarSalvo("salvando", "Salvando…"); salvarNuvem(); }
+      else if (armazem.db) mostrarSalvo("ok", "Salvo");
+    });
+    addEventListener("beforeunload", (e) => {
+      if (armazem.db && armazem.sujo) { e.preventDefault(); e.returnValue = ""; }
+    });
+  }
+
+  /** PWA: service worker (só no site) e convite de instalação. */
+  function registrarApp() {
+    addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); ui.instalar = e; if (ui.tela === "ajustes") render(); });
+    if (!servidor || !("serviceWorker" in navigator) || !/^https?:$/.test(location.protocol)) return;
+    navigator.serviceWorker.register("sw.js").then((reg) => {
+      const oferecer = (sw) => avisar("Há uma versão nova do app.", { rotulo: "Atualizar", fazer: () => sw.postMessage("ativar") });
+      if (reg.waiting && navigator.serviceWorker.controller) oferecer(reg.waiting);
+      reg.addEventListener("updatefound", () => {
+        const novo = reg.installing;
+        if (!novo) return;
+        novo.addEventListener("statechange", () => { if (novo.state === "installed" && navigator.serviceWorker.controller) oferecer(novo); });
+      });
+    }).catch(() => { /* sem service worker: o app funciona igual, só não instala */ });
+    let recarregou = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => { if (!recarregou) { recarregou = true; location.reload(); } });
   }
 
   function estadoInicial() {
@@ -349,22 +484,48 @@
     ui.tela = tela;
     try { history.replaceState(null, "", `#${tela}`); } catch (e) { /* sem histórico */ }
     render();
-    window.scrollTo({ top: 0 });
   }
 
   function render() {
-    const nav = document.getElementById("nav");
-    nav.hidden = ui.tela === "disponibilidade";
-    document.body.classList.toggle("sem-nav", nav.hidden);
-    nav.replaceChildren(...TELAS.map((t) => h("button", {
-      "aria-current": ui.tela === t.id ? "page" : null, onclick: () => irPara(t.id),
-    }, h("span", { class: "pilula" }, icone(t.icone)), t.nome)));
-    document.getElementById("nome-igreja").textContent = (state.igreja && state.igreja.nome) || "";
-    const telas = { escala: telaEscala, agenda: telaAgenda, disponibilidade: telaDisponibilidade, musicas: telaMusicas, equipe: telaEquipe, ajustes: telaAjustes };
+    const semNav = ui.tela === "disponibilidade";
+    document.body.classList.toggle("sem-nav", semNav);
+    const inferior = document.getElementById("nav-inferior");
+    inferior.hidden = semNav;
+    const atual = (id) => (ui.tela === id ? "page" : null);
+    document.getElementById("nav-lateral").replaceChildren(...TELAS.map((t) => h("button", { "aria-current": atual(t.id), onclick: () => irPara(t.id) }, icone(t.icone), t.nome)));
+    const emMais = !NAV_CELULAR.includes(ui.tela) && !semNav;
+    inferior.replaceChildren(
+      ...NAV_CELULAR.map((id) => TELAS.find((t) => t.id === id)).map((t) => h("button", { "aria-current": atual(t.id), onclick: () => irPara(t.id) }, h("span", { class: "pilula" }, icone(t.icone)), t.nome)),
+      h("button", { "aria-current": emMais ? "page" : null, "aria-haspopup": "dialog", onclick: menuMais }, h("span", { class: "pilula" }, icone("menu")), "Mais"));
+    const igreja = (state.igreja && state.igreja.nome) || "";
+    document.getElementById("nome-igreja").textContent = igreja;
+    document.getElementById("nome-igreja-lateral").textContent = igreja;
+    document.getElementById("hoje-lateral").textContent = E.formatarData(hoje(), "longa");
+    document.getElementById("topo-titulo").replaceChildren(h("b", {}, nomeTela(ui.tela)), igreja ? ` · ${igreja}` : "");
+    document.title = `${nomeTela(ui.tela)} · Escala do Louvor`;
+    const telas = { inicio: telaInicio, escala: telaEscala, agenda: telaAgenda, disponibilidade: telaDisponibilidade, musicas: telaMusicas, equipe: telaEquipe, ajustes: telaAjustes };
     lembrarAberta();
+    const novaTela = ui.ultimaTela !== ui.tela;
+    ui.ultimaTela = ui.tela;
     const y = window.scrollY;
-    document.getElementById("app").replaceChildren(telas[ui.tela]());
-    window.scrollTo({ top: y });
+    const tela = telas[ui.tela]();
+    if (novaTela) tela.classList.add("entra");
+    if (ui.somenteLeitura && !semNav) tela.prepend(h("div", { class: "faixa alerta", role: "status" }, icone("offline"),
+      h("span", {}, "Sem conexão com o servidor. Você está vendo a última cópia salva neste aparelho; as alterações ficam bloqueadas até a conexão voltar."),
+      h("button", { class: "btn", onclick: () => location.reload() }, icone("atualizar"), "Tentar de novo")));
+    document.getElementById("app").replaceChildren(tela);
+    window.scrollTo({ top: novaTela ? 0 : y });
+  }
+
+  /** "Mais" da barra inferior: Equipe e Ajustes. */
+  function menuMais() {
+    painel({
+      titulo: "Mais",
+      corpo: h("div", { class: "menu-mais" }, TELAS.filter((t) => !NAV_CELULAR.includes(t.id)).map((t) => h("button", {
+        "aria-current": ui.tela === t.id ? "page" : null, onclick: () => { fecharAtual(true); irPara(t.id); },
+      }, h("span", { class: "icone-linha" }, icone(t.icone)), t.nome))),
+      foco: ".menu-mais button",
+    });
   }
 
   /* ----------------------------------------------------------- painel */
@@ -428,13 +589,167 @@
     fechar = painel({ titulo, sub, corpo: [topo, buscar ? h("div", { class: "busca" }, icone("busca"), campo) : null, lista], foco: buscar ? "#busca-opcao" : ".opcao" });
   }
 
+  /* ---------------------------------------------------------- início */
+
+  /** Cultos de hoje em diante, de todas as escalas, em ordem. */
+  function proximosCultos() {
+    const lista = [];
+    for (const e of state.escalas) for (const c of e.cultos) if (c.data >= hoje()) lista.push({ escala: e, culto: c });
+    return lista.sort((a, b) => `${a.culto.data}${a.culto.hora || ""}`.localeCompare(`${b.culto.data}${b.culto.hora || ""}`));
+  }
+
+  function integrantesDe(escala) {
+    const ids = new Set();
+    for (const c of escala.cultos) for (const v of c.equipe || []) if (v.pessoaId) ids.add(v.pessoaId);
+    return [...ids].map((id) => porId(state.pessoas, id)).filter(Boolean);
+  }
+
+  function vigencia(escala) {
+    if (escala.inicio <= hoje() && escala.fim >= hoje()) return "Em vigor";
+    return escala.inicio > hoje() ? "Próxima escala" : "Encerrada";
+  }
+
+  function abrirCulto(escala, cultoId) {
+    ui.escalaId = escala.id;
+    irPara("escala");
+    setTimeout(() => irParaCulto(cultoId), 80);
+  }
+
+  function quandoFalta(iso) {
+    const dias = Math.round((E.parseData(iso) - E.parseData(hoje())) / 86400000);
+    return dias === 0 ? "Hoje" : dias === 1 ? "Amanhã" : `Em ${dias} dias`;
+  }
+
+  function telaInicio() {
+    const escala = porId(state.escalas, ui.escalaId);
+    const igreja = (state.igreja && state.igreja.nome) || "";
+    const cab = h("div", { class: "cabecalho" },
+      h("div", {}, h("h1", {}, "Visão geral"), h("p", { class: "muted" }, `${E.formatarData(hoje(), "longa")}${igreja ? ` · ${igreja}` : ""}`)),
+      h("div", { class: "acoes" }, h("button", { class: "btn", onclick: novaEscala }, icone("calendarioMais"), "Nova escala")));
+    if (!escala) {
+      return h("div", { class: "tela" }, cab,
+        h("div", { class: "vazio" }, h("span", { class: "icone-vazio" }, icone("escala")),
+          h("h2", {}, "Nenhuma escala ainda"),
+          h("p", {}, "Escolha o período e o app distribui a equipe e as músicas de cada culto, seguindo a orientação do pastor para os cultos solenes."),
+          h("button", { class: "btn primario", onclick: novaEscala }, icone("mais"), "Criar a primeira escala")));
+    }
+    const avisos = E.validarEscala(state, escala).sort((a, b) => (a.nivel === "erro" ? 0 : 1) - (b.nivel === "erro" ? 0 : 1));
+    const erros = avisos.filter((a) => a.nivel === "erro").length;
+    const integrantes = integrantesDe(escala);
+    const cards = [cartaoProximo(), cartaoVigente(escala, erros, integrantes), cartaoPendencias(escala, avisos), cartaoDisponibilidade(), cartaoRepertorio()];
+    return h("div", { class: "tela" }, cab, h("div", { class: "painel-inicio" }, cards));
+  }
+
+  function cartaoProximo() {
+    const prox = proximosCultos()[0];
+    if (!prox) {
+      return h("section", { class: "cartao largo-2" }, h("div", { class: "cartao-cab" }, h("h2", {}, icone("relogio"), "Próximo culto")),
+        h("div", { class: "secao" }, h("p", { class: "muted" }, "Nenhum culto programado nas escalas. Crie a escala do próximo período."),
+          h("button", { class: "btn primario", style: "justify-self:start", onclick: novaEscala }, icone("mais"), "Nova escala")));
+    }
+    const { escala } = prox;
+    const base = E.liderDe(escala, prox.culto) || prox.culto;
+    const grupo = [base, ...escala.cultos.filter((c) => E.liderDe(escala, c) === base)];
+    const d = E.parseData(base.data);
+    const equipe = E.equipePorFuncao(base).map((g) => h("div", { class: "funcao" },
+      h("span", {}, E.nomeFuncao(state, g.funcao)),
+      h("div", { class: "chips" }, g.vagas.map((v) => {
+        const p = porId(state.pessoas, v.pessoaId);
+        return h("span", { class: `pessoa leitura${p ? "" : " vazia"}` }, p ? [avatar(p), p.nome] : "a definir");
+      }))));
+    const musicas = base.musicas.map((v) => {
+      const m = porId(state.musicas, v.id);
+      return h("li", { class: "item" }, h("span", { class: `marcador ${v.tipo === "hino" ? "hino" : "louvor"}`, style: "min-width:40px;height:32px" }, v.tipo === "hino" ? (m && m.numero ? m.numero : "SH") : icone("musica")),
+        h("span", {}, h("span", { class: "t" }, m ? (m.titulo || `Salmos e Hinos nº ${m.numero}`) : `${E.nomeTipo(v.tipo)} a definir`), m && m.tom ? h("span", { class: "s" }, ` · tom ${m.tom}`) : null), h("span"));
+    });
+    return h("section", { class: "cartao largo-2" },
+      h("div", { class: "destaque-culto" },
+        h("div", { class: "data-grande" },
+          h("div", { class: "calendario-mini", "aria-hidden": "true" }, h("span", {}, E.MESES[d.getMonth()].slice(0, 3)), h("b", {}, String(d.getDate()))),
+          h("div", { style: "min-width:0" },
+            h("span", { class: "rotulo" }, `Próximo culto · ${quandoFalta(base.data)}`),
+            h("h2", {}, grupo.map((x) => x.nome).filter((n, i, a) => a.indexOf(n) === i).join(" · ")),
+            h("p", { class: "quando" }, `${E.DIAS[d.getDay()]} · `, grupo.flatMap((x, i) => [i ? " e " : "", h("b", {}, x.hora)])))),
+        base.solene ? h("div", { class: "selos" }, h("span", { class: "selo solene" }, "Culto solene")) : null,
+        h("div", { class: "destaque-corpo" },
+          equipe.length ? h("div", { style: "display:grid;gap:8px" }, h("span", { class: "rotulo" }, "Equipe"), h("div", { class: "funcoes" }, equipe)) : null,
+          musicas.length ? h("div", { style: "display:grid;gap:4px" }, h("span", { class: "rotulo" }, "Repertório"), h("ul", { class: "lista-compacta", style: "padding:0" }, musicas)) : null)),
+      h("div", { class: "rodape-cartao" },
+        h("button", { class: "btn primario", onclick: () => abrirCulto(escala, base.id) }, "Abrir na escala", icone("seta"))));
+  }
+
+  function cartaoVigente(escala, erros, integrantes) {
+    return h("section", { class: "cartao" },
+      h("div", { class: "cartao-cab" }, h("h2", {}, icone("escala"), vigencia(escala)),
+        h("span", { class: `selo ${escala.status === "confirmada" ? "ok" : "neutro"}` }, escala.status === "confirmada" ? "Confirmada" : "Rascunho")),
+      h("div", { class: "secao", style: "gap:6px" },
+        h("b", { style: "font-family:var(--f-titulo);font-size:var(--t-xl);letter-spacing:-0.02em" }, E.formatarPeriodo(escala.inicio, escala.fim)),
+        integrantes.length ? h("div", { class: "avatares", "aria-label": `${integrantes.length} integrantes` }, integrantes.slice(0, 8).map((p) => avatar(p)),
+          integrantes.length > 8 ? h("span", { class: "small muted", style: "margin-left:8px" }, `+${integrantes.length - 8}`) : null) : null),
+      h("div", { class: "dados", style: "border-radius:0" },
+        h("div", {}, h("b", {}, String(escala.cultos.length)), h("span", {}, escala.cultos.length === 1 ? "culto" : "cultos")),
+        h("div", {}, h("b", {}, String(integrantes.length)), h("span", {}, "integrantes")),
+        h("div", { class: erros ? "erro" : "ok" }, h("b", {}, String(erros)), h("span", {}, erros === 1 ? "pendência" : "pendências"))),
+      h("div", { class: "rodape-cartao" },
+        h("button", { class: "btn zap", style: "flex:1 1 auto", onclick: () => enviarWhatsApp(escala) }, icone("whatsapp"), "Enviar no WhatsApp"),
+        h("button", { class: "btn", onclick: () => irPara("escala") }, "Ver escala")));
+  }
+
+  function cartaoPendencias(escala, avisos) {
+    const itens = avisos.slice(0, 5).map((a) => {
+      const c = escala.cultos[a.ci];
+      return h("li", {}, h("button", { onclick: () => abrirCulto(escala, (E.liderDe(escala, c) || c).id) },
+        h("span", { class: `ponto ${a.nivel}`, "aria-hidden": "true" }),
+        h("span", {}, h("span", { class: "t" }, a.msg), h("br"), h("span", { class: "s" }, `${E.formatarData(c.data, "dia")} · ${c.nome}`)),
+        icone("dir")));
+    });
+    return h("section", { class: "cartao" },
+      h("div", { class: "cartao-cab" }, h("h2", {}, icone("alerta"), "Pendências"), avisos.length ? h("span", { class: `selo ${avisos.some((a) => a.nivel === "erro") ? "erro" : "alerta"}` }, String(avisos.length)) : null),
+      avisos.length
+        ? [h("ul", { class: "lista-compacta", style: "padding-top:8px" }, itens), avisos.length > 5 ? h("div", { class: "rodape-cartao" }, h("button", { class: "btn texto", onclick: () => verAvisos(escala, avisos) }, `Ver todas (${avisos.length})`)) : null]
+        : h("div", { class: "secao" }, h("p", { style: "display:flex;gap:8px;align-items:center;color:var(--ok);font-weight:600" }, icone("certo"), "Tudo certo nesta escala."), h("p", { class: "small muted" }, "Todas as funções e músicas estão definidas e seguem as regras.")));
+  }
+
+  function cartaoDisponibilidade() {
+    const periodo = pedidoAtual();
+    const dias = E.diasDeCulto(state, periodo.inicio, periodo.fim);
+    const ativas = state.pessoas.filter((p) => p.ativo !== false);
+    const resp = ativas.filter((p) => (state.respostas || []).some((r) => r.id === E.idResposta(p.id, periodo.inicio))).length;
+    const pct = ativas.length ? Math.round((resp / ativas.length) * 100) : 0;
+    return h("section", { class: "cartao" },
+      h("div", { class: "cartao-cab" }, h("h2", {}, icone("agenda"), "Disponibilidade")),
+      h("div", { class: "secao" },
+        h("p", { class: "small muted" }, `Pedido de ${E.formatarPeriodo(periodo.inicio, periodo.fim)}`),
+        h("div", { class: "progresso", role: "progressbar", "aria-valuemin": 0, "aria-valuemax": ativas.length, "aria-valuenow": resp, "aria-label": "Respostas" },
+          h("div", { class: "barra" }, h("span", { style: `width:${pct}%` })),
+          h("span", { class: "small" }, h("b", {}, `${resp} de ${ativas.length}`), " responderam"))),
+      h("div", { class: "rodape-cartao" },
+        h("button", { class: "btn tonal", onclick: () => pedirNoWhatsApp(periodo, dias) }, icone("enviar"), "Pedir no WhatsApp"),
+        h("button", { class: "btn texto", onclick: () => irPara("agenda") }, "Ver agenda")));
+  }
+
+  function cartaoRepertorio() {
+    const ativas = state.musicas.filter((m) => m.ativo !== false);
+    const ir = (filtro) => { ui.filtro = filtro; ui.busca = ""; irPara("musicas"); };
+    const campo = h("input", { type: "search", placeholder: "Buscar música", "aria-label": "Buscar música no repertório",
+      onkeydown: (e) => { if (e.key === "Enter") { ui.busca = e.target.value; ui.filtro = "todas"; irPara("musicas"); } } });
+    return h("section", { class: "cartao" },
+      h("div", { class: "cartao-cab" }, h("h2", {}, icone("musica"), "Repertório")),
+      h("div", { class: "numeros" },
+        h("button", { onclick: () => ir("hino") }, h("b", {}, String(ativas.filter((m) => m.tipo === "hino").length)), h("span", {}, "Salmos e Hinos")),
+        h("button", { onclick: () => ir("louvor") }, h("b", {}, String(ativas.filter((m) => m.tipo === "louvor").length)), h("span", {}, "Louvores")),
+        h("button", { onclick: () => ir("solene") }, h("b", {}, String(ativas.filter((m) => E.aptaSolene(state, m)).length)), h("span", {}, "Aptas ao solene"))),
+      h("div", { style: "padding:0 var(--e-4) var(--e-4)" }, h("div", { class: "busca" }, icone("busca"), campo)));
+  }
+
   /* ---------------------------------------------------------- escala */
 
   function telaEscala() {
     const escala = porId(state.escalas, ui.escalaId);
     if (!escala) {
       return h("div", { class: "tela" },
-        h("div", { class: "vazio" },
+        h("div", { class: "cabecalho" }, h("div", {}, h("h1", {}, "Escala"))),
+        h("div", { class: "vazio" }, h("span", { class: "icone-vazio" }, icone("escala")),
           h("h2", {}, "Nenhuma escala ainda"),
           h("p", {}, "Escolha o período e a ferramenta distribui a equipe e as músicas de cada culto, seguindo a orientação do pastor para os cultos solenes."),
           h("button", { class: "btn primario", onclick: novaEscala }, icone("mais"), "Criar escala")));
@@ -448,10 +763,18 @@
     const erros = avisos.filter((a) => a.nivel === "erro").length;
     const alertas = avisos.length - erros;
     const estado = erros
-      ? h("button", { class: "btn tonal", onclick: () => verAvisos(escala, avisos) }, h("span", { class: "selo erro" }, String(erros)), erros > 1 ? "pendências" : "pendência")
+      ? h("button", { class: "btn", onclick: () => verAvisos(escala, avisos) }, h("span", { class: "selo erro" }, String(erros)), erros > 1 ? "pendências" : "pendência")
       : alertas
-        ? h("button", { class: "btn tonal", onclick: () => verAvisos(escala, avisos) }, h("span", { class: "selo alerta" }, String(alertas)), alertas > 1 ? "alertas" : "alerta")
-        : h("span", { class: "selo ok", style: "min-height:32px;padding:0 12px" }, "Tudo certo");
+        ? h("button", { class: "btn", onclick: () => verAvisos(escala, avisos) }, h("span", { class: "selo alerta" }, String(alertas)), alertas > 1 ? "alertas" : "alerta")
+        : h("span", { class: "selo ok", style: "min-height:32px;padding:0 12px" }, icone("certo"), "Tudo certo");
+    const ordem = [...state.escalas].sort((a, b) => a.inicio.localeCompare(b.inicio));
+    const pos = ordem.indexOf(escala);
+    const vizinha = (passo) => ordem[pos + passo];
+    const seta = (passo, nomeIcone, texto) => {
+      const v = vizinha(passo);
+      return h("button", { class: "btn icone", disabled: !v || null, "aria-label": v ? `${texto}: ${E.formatarPeriodo(v.inicio, v.fim)}` : `Sem ${texto.toLowerCase()}`, onclick: () => { ui.escalaId = v.id; render(); } }, icone(nomeIcone));
+    };
+    const integrantes = integrantesDe(escala);
 
     // Um cartão por culto; cultos ligados (ex.: domingo 9h e 18h) dividem o mesmo cartão.
     const dias = [];
@@ -463,19 +786,27 @@
     });
 
     return h("div", { class: "tela" },
+      h("div", { class: "cabecalho" }, h("div", {}, h("h1", {}, "Escala"), h("p", { class: "muted" }, "Quem serve e o que se canta em cada culto.")),
+        h("button", { class: "btn", onclick: novaEscala }, icone("calendarioMais"), "Nova escala")),
       h("section", { class: "cartao" },
         h("div", { class: "seletor-escala" },
+          seta(-1, "esq", "Escala anterior"),
           h("button", { class: "periodo", onclick: trocarEscala, "aria-label": `Escala de ${E.formatarPeriodo(escala.inicio, escala.fim)}. Trocar ou criar outra` },
-            h("span", { class: "rotulo" }, escala.status === "confirmada" ? "Escala confirmada" : "Rascunho da escala"),
+            h("span", { class: "linha-status" }, h("span", { class: "rotulo" }, vigencia(escala)),
+              h("span", { class: `selo ${escala.status === "confirmada" ? "ok" : "neutro"}` }, escala.status === "confirmada" ? "Confirmada" : "Rascunho")),
             h("b", {}, E.formatarPeriodo(escala.inicio, escala.fim), icone("baixo")),
-            h("span", { class: "small muted" }, `${dias.length} ${dias.length === 1 ? "dia" : "dias"} de culto · toque para trocar ou criar outra`)),
+            h("span", { class: "small muted num" }, `${escala.cultos.length} ${escala.cultos.length === 1 ? "culto" : "cultos"} · ${dias.length} ${dias.length === 1 ? "dia" : "dias"} · ${integrantes.length} integrantes`)),
+          seta(1, "dir", "Próxima escala"),
           h("button", { class: "btn icone", "aria-label": "Mais opções da escala", onclick: () => opcoesEscala(escala) }, icone("opcoes"))),
         h("div", { class: "resumo" },
-          h("button", { class: "btn primario", onclick: () => enviarWhatsApp(escala) }, icone("enviar"), "Enviar no WhatsApp"),
+          h("button", { class: "btn zap", onclick: () => enviarWhatsApp(escala) }, icone("whatsapp"), "Enviar no WhatsApp"),
           estado)),
-      dias.map((d) => h("section", { class: "dia", "aria-label": E.formatarData(d.data, "longa") },
-        h("h2", {}, E.formatarData(d.data, "longa")),
-        d.cultos.map((ci) => cartaoCulto(escala, ci, porCampo)))));
+      h("div", { class: "dias" }, dias.map((d) => {
+        const [semana, resto] = E.formatarData(d.data, "longa").split(", ");
+        return h("section", { class: "dia", "aria-label": E.formatarData(d.data, "longa") },
+          h("h2", {}, h("span", {}, h("b", {}, semana), resto ? `, ${resto}` : ""), d.data === hoje() ? h("span", { class: "selo azul" }, "Hoje") : null),
+          h("div", { class: `cultos-do-dia${d.cultos.length > 1 ? " dois" : ""}` }, d.cultos.map((ci) => cartaoCulto(escala, ci, porCampo))));
+      })));
   }
 
   function cartaoCulto(escala, ci, porCampo) {
@@ -499,7 +830,7 @@
           class: `pessoa${p ? "" : " vazia"}`, "data-nivel": a ? a.nivel : null, title: a ? a.msg : null,
           "aria-label": `${E.nomeFuncao(state, g.funcao)}: ${p ? p.nome : "a definir"}${a ? `. ${a.msg}` : ""}`,
           onclick: () => escolherPessoa(escala, ci, v.si),
-        }, fixo.has(`e:${v.si}`) ? icone("pino") : null, p ? p.nome : "a definir");
+        }, p ? avatar(p) : null, p ? p.nome : "a definir", fixo.has(`e:${v.si}`) ? icone("pino") : null);
       }))));
 
     const musicas = mostrado.musicas.map((vaga, k) => {
@@ -521,12 +852,12 @@
     });
 
     const notas = grupo.filter((x) => x.obs);
-    return h("article", { class: "cartao culto", id: `culto-${culto.id}` },
+    return h("article", { class: "cartao culto", id: `culto-${culto.id}`, "aria-label": `${grupo.map((x) => `${x.nome} às ${x.hora}`).join(" e ")}` },
       h("header", { class: "culto-cab" },
         h("div", { class: "horarios" },
           grupo.map((x) => h("div", { class: "horario" }, x.hora ? h("span", { class: "hora" }, x.hora) : null, h("h3", {}, x.nome))),
           culto.solene || culto.avulso ? h("div", { class: "selos" },
-            culto.solene ? h("span", { class: "selo solene" }, "Solene") : null,
+            culto.solene ? h("span", { class: "selo solene" }, "Culto solene") : null,
             culto.avulso ? h("span", { class: "selo neutro" }, "Extra") : null) : null),
         h("button", { class: "btn icone", "aria-label": `Opções do culto ${culto.nome}`, onclick: () => opcoesCulto(escala, ci) }, icone("opcoes"))),
       equipe.length ? h("div", { class: "bloco" }, h("div", { class: "bloco-cab" }, h("span", { class: "rotulo" }, "Equipe")), h("div", { class: "funcoes" }, equipe)) : null,
@@ -801,21 +1132,43 @@
     });
   }
 
+  /** Prévia editável do texto da escala; nada é enviado sem o toque em Copiar ou Abrir no WhatsApp. */
   function enviarWhatsApp(escala) {
     let links = false;
-    const pre = h("pre", { class: "texto", id: "texto-whatsapp" });
-    const atualizar = () => { pre.textContent = E.textoWhatsApp(state, escala, { links }); };
+    let editado = false;
+    const erros = E.validarEscala(state, escala).filter((a) => a.nivel === "erro").length;
+    const area = h("textarea", { class: "texto", id: "texto-whatsapp", "aria-label": "Texto da escala para enviar", spellcheck: "false", oninput: () => { editado = true; } });
+    const atualizar = () => { area.value = E.textoWhatsApp(state, escala, { links }); editado = false; };
     atualizar();
+    const abrir = async () => {
+      const texto = area.value.trim();
+      if (!texto) return avisar("O texto está vazio.");
+      if (navigator.share && celular()) {
+        try { await navigator.share({ text: texto }); } catch (e) { if (e && e.name !== "AbortError") copiar(texto, area); }
+        return;
+      }
+      const janela = window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, "_blank", "noopener");
+      if (!janela) copiar(texto, area);
+    };
     painel({
-      titulo: "Enviar no WhatsApp",
-      sub: "Copie e cole no grupo. Negrito e itálico aparecem formatados.",
+      titulo: "Compartilhar a escala",
+      sub: `${E.formatarPeriodo(escala.inicio, escala.fim)} · confira e, se quiser, edite antes de enviar.`,
       corpo: [
+        erros ? h("div", { class: "faixa alerta" }, icone("alerta"), h("span", {}, `${erros} ${erros === 1 ? "item ainda está" : "itens ainda estão"} a definir e ${erros === 1 ? "vai" : "vão"} assim no texto.`),
+          h("button", { class: "btn mini", onclick: () => { fecharAtual(true); verAvisos(escala, E.validarEscala(state, escala)); } }, "Ver")) : null,
         h("label", { class: "interruptor" }, h("span", {}, "Incluir links do YouTube", h("small", {}, "Para a equipe ensaiar")),
-          h("input", { type: "checkbox", role: "switch", id: "com-links", onchange: (e) => { links = e.target.checked; atualizar(); } })),
-        pre,
+          h("input", { type: "checkbox", role: "switch", id: "com-links", onchange: (e) => {
+            links = e.target.checked;
+            if (editado) avisar("O texto foi refeito com a nova opção; suas edições saíram.");
+            atualizar();
+          } })),
+        area,
       ],
-      rodape: () => [h("button", { class: "btn primario", onclick: () => copiar(pre.textContent, pre) }, icone("copiar"), "Copiar texto")],
-      foco: "footer .btn",
+      rodape: () => [
+        h("button", { class: "btn", onclick: () => copiar(area.value, area) }, icone("copiar"), "Copiar"),
+        h("button", { class: "btn zap", onclick: abrir }, icone(navigator.share && celular() ? "compartilhar" : "whatsapp"), navigator.share && celular() ? "Compartilhar" : "Abrir no WhatsApp"),
+      ],
+      foco: "footer .btn.zap",
     });
   }
 
@@ -896,12 +1249,12 @@
         h("div", { class: "cabecalho" }, h("div", {}, h("h1", {}, "Sua disponibilidade"), h("p", { class: "muted" }, `Cultos de ${E.formatarPeriodo(periodo.inicio, periodo.fim)}`)), voltar),
         h("section", { class: "cartao secao" },
           h("h2", { style: "font-size:1.15rem" }, "Quem é você?"),
-          h("div", { class: "nomes" }, ativas.map((p) => h("button", { class: "btn", onclick: () => {
+          h("div", { class: "nomes" }, ativas.map((p) => h("button", { class: "btn", "aria-label": p.nome, onclick: () => {
             ui.respostaPessoa = p.id;
             ui.resposta = null;
             try { localStorage.setItem(CHAVE_PESSOA, p.id); } catch (e) { /* sem armazenamento */ }
             render();
-          } }, p.nome)))));
+          } }, avatar(p), p.nome)))));
     }
     const id = E.idResposta(pessoa.id, periodo.inicio);
     const existente = (state.respostas || []).find((r) => r.id === id);
@@ -955,7 +1308,87 @@
     }
   }
 
-  /** Agenda do coordenador: pedido, quem respondeu e a grade de disponibilidade. */
+  /** Cultos de um mês, por data: os das escalas (com equipe) e, onde não há escala, os da semana configurada. */
+  function cultosDoMes(ano, mes) {
+    const inicio = E.isoData(new Date(ano, mes, 1, 12));
+    const fim = E.isoData(new Date(ano, mes + 1, 0, 12));
+    const porData = {};
+    const por = (d) => (porData[d] = porData[d] || []);
+    for (const e of state.escalas) {
+      for (const c of e.cultos) if (c.data >= inicio && c.data <= fim) por(c.data).push({ hora: c.hora, nome: c.nome, solene: !!c.solene, escala: e, culto: c });
+    }
+    const coberto = (d) => state.escalas.some((e) => e.inicio <= d && e.fim >= d);
+    for (const o of E.listarOcorrencias(state.cultos, inicio, fim)) {
+      if (coberto(o.data)) continue;
+      const c = porId(state.cultos, o.cultoId);
+      if (c) por(o.data).push({ hora: c.hora, nome: c.nome, solene: !!c.solene, escala: null, culto: null });
+    }
+    for (const lista of Object.values(porData)) lista.sort((a, b) => (a.hora || "").localeCompare(b.hora || ""));
+    return porData;
+  }
+
+  function compromisso(item) {
+    const lider = item.escala ? E.liderDe(item.escala, item.culto) || item.culto : null;
+    const pessoas = lider ? lider.equipe.map((v) => porId(state.pessoas, v.pessoaId)).filter(Boolean) : [];
+    const sub = item.escala ? `${pessoas.length} ${pessoas.length === 1 ? "pessoa" : "pessoas"} · ${lider.musicas.filter((m) => m.id).length} músicas` : "Ainda sem escala";
+    const conteudo = [h("span", { class: "h" }, item.hora || "—"),
+      h("span", { style: "min-width:0" }, h("span", { class: "t" }, item.nome), h("br"), h("span", { class: "s" }, sub)),
+      h("span", { class: "selos", style: "display:flex;gap:6px;align-items:center" }, item.solene ? h("span", { class: "selo solene" }, "Solene") : null, item.escala ? icone("dir") : null)];
+    return item.escala
+      ? h("button", { class: "compromisso", onclick: () => abrirCulto(item.escala, lider.id) }, conteudo)
+      : h("div", { class: "compromisso" }, conteudo);
+  }
+
+  function calendarioCultos() {
+    if (!ui.agendaMes) ui.agendaMes = hoje().slice(0, 7);
+    const [ano, mes] = ui.agendaMes.split("-").map(Number);
+    const porData = cultosDoMes(ano, mes - 1);
+    const datas = Object.keys(porData).sort();
+    if (!ui.agendaDia || ui.agendaDia.slice(0, 7) !== ui.agendaMes) ui.agendaDia = datas.find((d) => d >= hoje()) || datas[0] || `${ui.agendaMes}-01`;
+    const trocarMes = (delta) => {
+      const d = new Date(ano, mes - 1 + delta, 1, 12);
+      ui.agendaMes = E.isoData(d).slice(0, 7);
+      ui.agendaDia = null;
+      render();
+    };
+    const titulo = `${E.MESES[mes - 1][0].toUpperCase()}${E.MESES[mes - 1].slice(1)} de ${ano}`;
+    const cab = h("div", { class: "mes-cab" },
+      h("h2", { "aria-live": "polite" }, titulo),
+      h("button", { class: "btn texto mini", onclick: () => { ui.agendaMes = hoje().slice(0, 7); ui.agendaDia = hoje(); render(); } }, "Hoje"),
+      h("button", { class: "btn icone", "aria-label": "Mês anterior", onclick: () => trocarMes(-1) }, icone("esq")),
+      h("button", { class: "btn icone", "aria-label": "Próximo mês", onclick: () => trocarMes(1) }, icone("dir")));
+    if (ui.agendaModo === "lista") {
+      return [h("section", { class: "cartao" }, cab,
+        datas.length ? h("div", { class: "lista-dias" }, datas.map((d) => h("div", {}, h("h3", {}, E.formatarData(d, "longa"), d === hoje() ? " · hoje" : ""), h("div", { class: "compromissos", style: "padding:0" }, porData[d].map(compromisso)))))
+          : h("div", { class: "secao" }, h("p", { class: "muted" }, "Nenhum culto neste mês.")))];
+    }
+    const celulas = [];
+    const primeiro = new Date(ano, mes - 1, 1, 12).getDay();
+    const total = new Date(ano, mes, 0, 12).getDate();
+    for (let i = 0; i < primeiro; i++) celulas.push(h("span", { "aria-hidden": "true" }));
+    for (let n = 1; n <= total; n++) {
+      const iso = E.isoData(new Date(ano, mes - 1, n, 12));
+      const itens = porData[iso] || [];
+      celulas.push(h("button", {
+        type: "button", class: `${itens.length ? "tem" : ""}${iso === hoje() ? " hoje" : ""}`, "aria-pressed": String(iso === ui.agendaDia),
+        "aria-label": `${E.formatarData(iso, "longa")}${itens.length ? `: ${itens.map((x) => `${x.nome} às ${x.hora}`).join(", ")}` : ", sem culto"}`,
+        onclick: () => { ui.agendaDia = iso; render(); },
+      }, String(n), h("span", { class: "pontos", "aria-hidden": "true" }, itens.slice(0, 3).map((x) => h("i", { class: !x.escala ? "sem" : x.solene ? "solene" : null })))));
+    }
+    const doDia = porData[ui.agendaDia] || [];
+    const semEscala = doDia.some((x) => !x.escala);
+    return [
+      h("section", { class: "cartao" }, cab,
+        h("div", { class: "cal" }, h("div", { class: "semana", "aria-hidden": "true" }, E.DIAS_CURTOS.map((d) => h("span", {}, d))), h("div", { class: "grade" }, celulas)),
+        h("div", { class: "legenda" }, h("span", {}, h("i"), "Culto com escala"), h("span", {}, h("i", { class: "solene" }), "Culto solene"), h("span", {}, h("i", { class: "sem" }), "Sem escala"))),
+      h("section", { class: "cartao" },
+        h("div", { class: "cartao-cab", style: "padding-bottom:var(--e-3)" }, h("h2", {}, icone("relogio"), E.formatarData(ui.agendaDia, "longa"))),
+        doDia.length ? h("div", { class: "compromissos" }, doDia.map(compromisso)) : h("div", { class: "secao", style: "padding-top:0" }, h("p", { class: "muted" }, "Nenhum culto neste dia.")),
+        semEscala ? h("div", { class: "rodape-cartao" }, h("button", { class: "btn tonal", onclick: novaEscala }, icone("calendarioMais"), "Criar escala")) : null),
+    ];
+  }
+
+  /** Agenda: calendário dos cultos e, abaixo, o pedido e a grade de disponibilidade. */
   function telaAgenda() {
     const periodo = pedidoAtual();
     const dias = E.diasDeCulto(state, periodo.inicio, periodo.fim);
@@ -979,16 +1412,21 @@
       h("tfoot", {}, h("tr", {}, h("th", { scope: "row" }, "Podem"), dias.map((d) => h("td", { class: "num" }, String(ativas.filter((p) => { const r = respostaDa(p); return r && r.dias.includes(d.data); }).length))))));
 
     const recados = responderam.filter((p) => respostaDa(p).obs);
+    const modo = (id, nome, ic) => h("button", { "aria-pressed": String(ui.agendaModo === id), onclick: () => { ui.agendaModo = id; render(); } }, icone(ic), nome);
     return h("div", { class: "tela" },
       h("div", { class: "cabecalho" },
-        h("div", {}, h("h1", {}, "Agenda"), h("p", { class: "small muted" }, "Cada pessoa marca os dias em que pode servir; a escala é montada com essas respostas."))),
+        h("div", {}, h("h1", {}, "Agenda"), h("p", { class: "muted" }, "Os cultos do mês e a disponibilidade da equipe.")),
+        h("div", { class: "segmentado", role: "group", "aria-label": "Ver como" }, modo("mes", "Mês", "grade"), modo("lista", "Lista", "lista"))),
+      h("div", { class: "agenda-grade" }, calendarioCultos()),
+      h("div", { class: "cabecalho", style: "padding-top:var(--e-4)" },
+        h("div", {}, h("h2", { style: "font-size:var(--t-xl)" }, "Disponibilidade da equipe"), h("p", { class: "small muted" }, "Cada pessoa marca os dias em que pode servir; a escala é montada com essas respostas."))),
       h("section", { class: "cartao" },
         h("div", { class: "seletor-escala" },
           h("button", { class: "periodo", onclick: mudarPeriodo, "aria-label": `Período do pedido: ${E.formatarPeriodo(periodo.inicio, periodo.fim)}. Mudar` },
             h("span", { class: "rotulo" }, "Pedido de disponibilidade"),
             h("b", {}, E.formatarPeriodo(periodo.inicio, periodo.fim), icone("baixo")),
             h("span", { class: "small muted" }, `${dias.length} dias de culto · toque para mudar o período`))),
-        h("div", { class: "resumo", style: "display:grid;gap:12px" },
+        h("div", { class: "resumo", style: "display:grid;gap:12px;border-top:0;padding-top:0" },
           h("div", { class: "progresso", role: "progressbar", "aria-valuemin": 0, "aria-valuemax": ativas.length, "aria-valuenow": responderam.length, "aria-label": "Respostas" },
             h("div", { class: "barra" }, h("span", { style: `width:${pct}%` })),
             h("span", { class: "small" }, h("b", {}, `${responderam.length} de ${ativas.length}`), " responderam")),
@@ -996,6 +1434,7 @@
             h("button", { class: "btn tonal", onclick: () => pedirNoWhatsApp(periodo, dias) }, icone("enviar"), "Pedir no WhatsApp"),
             h("button", { class: "btn", onclick: colarRespostas }, icone("colar"), "Colar respostas")),
           h("button", { class: "btn primario largo", onclick: () => gerarComRespostas(periodo, existente) }, icone("sortear"), existente ? "Atualizar a escala com as respostas" : "Gerar a escala com as respostas"))),
+
       dias.length ? h("section", { class: "cartao", style: "overflow:hidden" }, h("div", { class: "rolagem-tabela" }, tabela)) : h("div", { class: "vazio" }, h("p", {}, "Nenhum culto ativo neste período.")),
       recados.length ? h("section", { class: "cartao secao" }, h("span", { class: "rotulo" }, "Recados"), recados.map((p) => h("p", { class: "nota" }, h("b", {}, `${p.nome}: `), respostaDa(p).obs))) : null,
       h("p", { class: "small muted" }, "Toque no nome de alguém para marcar os dias por essa pessoa (por exemplo, quando ela responde por mensagem)."));
@@ -1149,7 +1588,8 @@
       { id: "fora", nome: "Fora do rodízio", fn: (m) => m.ativo === false },
     ];
     const usos = usosMusicas();
-    const lista = h("div", { class: "cartao" });
+    const lista = h("div", { class: "cartao", style: "overflow:hidden" });
+    const PRINCIPAIS = ["trinitario", "cristocentrico", "doutrinario"];
     const contagem = h("p", { class: "small muted", "aria-live": "polite" });
     const desenhar = () => {
       const f = FILTROS.find((x) => x.id === ui.filtro) || FILTROS[0];
@@ -1162,27 +1602,30 @@
         const u = usos[m.id] || {};
         const temas = (m.tags || []).map((t) => (porId(state.tags, t) || { nome: t }).nome).join(", ");
         const quando = [u.ultima ? `cantada em ${E.formatarData(u.ultima, "curta")}` : "", u.proxima ? `próxima: ${E.formatarData(u.proxima, "curta")}` : ""].filter(Boolean).join(" · ");
-        return h("li", { style: "display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center" },
-          h("button", { class: "linha", onclick: () => editarMusica(m) },
-            h("span", { class: `marcador${m.tipo === "louvor" ? " louvor" : ""}`, "aria-hidden": "true" }, m.tipo === "louvor" ? icone("nota") : m.numero ? `SH ${m.numero}` : "SH"),
+        const destaques = (m.tags || []).filter((t) => PRINCIPAIS.includes(t));
+        const outras = (m.tags || []).filter((t) => !PRINCIPAIS.includes(t)).map((t) => (porId(state.tags, t) || { nome: t }).nome).join(", ");
+        return h("li", { class: "musica-linha" },
+          h("button", { class: "linha", onclick: () => editarMusica(m), "aria-label": `${E.rotuloMusica(m)}. Editar` },
+            h("span", { class: `marcador ${m.tipo === "louvor" ? "louvor" : "hino"}`, "aria-hidden": "true" }, m.tipo === "louvor" ? icone("musica") : m.numero ? `SH ${m.numero}` : "SH"),
             h("span", {},
               h("span", { class: "titulo" }, m.titulo || `Salmos e Hinos nº ${m.numero}`), m.ativo === false ? h("span", { class: "selo neutro", style: "margin-left:6px" }, "Fora do rodízio") : null, h("br"),
-              h("span", { class: "sub" }, [temas || "sem etiquetas", quando].filter(Boolean).join(" · "))),
-            E.aptaSolene(state, m) ? h("span", { class: "selo ok", title: "Segue a orientação do culto solene" }, "Solene") : h("span")),
+              h("span", { class: "sub" }, [m.autor, m.tom ? `tom ${m.tom}` : "", outras || (destaques.length ? "" : temas || "sem etiquetas"), quando].filter(Boolean).join(" · ")),
+              destaques.length ? h("span", { class: "etiquetas" }, destaques.map((t) => h("span", { class: "selo azul" }, E.nomeTag(state, t)))) : null),
+            E.aptaSolene(state, m) ? h("span", { class: "selo solene", title: "Segue a orientação do culto solene" }, "Solene") : h("span")),
           m.link ? h("a", { class: "btn icone", href: m.link, target: "_blank", rel: "noopener", "aria-label": `Ouvir ${m.titulo} no YouTube`, style: "margin-right:8px" }, icone("play")) : h("span"));
-      })) : h("div", { class: "vazio", style: "border:0" }, h("p", {}, state.musicas.length ? "Nenhuma música com esse filtro." : "Repertório vazio. Importe a lista de Salmos e Hinos e a de louvores.")));
+      })) : h("div", { class: "vazio", style: "border:0" }, h("span", { class: "icone-vazio" }, icone("busca")), h("p", {}, state.musicas.length ? "Nenhuma música com essa busca ou filtro." : "Repertório vazio. Importe a lista de Salmos e Hinos e a de louvores.")));
     };
     desenhar();
     const r = state.regras;
     const nomes = (ts) => (ts || []).map((t) => E.nomeTag(state, t)).join(" e ") || "qualquer etiqueta";
     return h("div", { class: "tela" },
       h("div", { class: "cabecalho" },
-        h("div", {}, h("h1", {}, "Músicas"), h("p", { class: "small muted" }, `No culto solene entram Salmos e Hinos marcados como ${nomes(r.soleneTagsHinario)} e louvores marcados como ${nomes(r.soleneTagsLouvor)}.`)),
+        h("div", {}, h("h1", {}, "Músicas"), h("p", { class: "muted", style: "max-width:70ch" }, `No culto solene entram Salmos e Hinos marcados como ${nomes(r.soleneTagsHinario)} e louvores marcados como ${nomes(r.soleneTagsLouvor)}.`)),
         h("div", { class: "acoes" },
           h("button", { class: "btn", onclick: importarMusicas }, icone("importar"), "Importar"),
           h("button", { class: "btn primario", onclick: () => editarMusica(null) }, icone("mais"), "Música"))),
       h("div", { class: "busca" }, icone("busca"), h("input", { type: "search", id: "busca-musicas", placeholder: "Buscar por título ou número", "aria-label": "Buscar músicas", value: ui.busca, oninput: (e) => { ui.busca = e.target.value; desenhar(); } })),
-      h("div", { class: "rolagem-x", role: "group", "aria-label": "Filtrar" }, FILTROS.map((f) => h("button", { class: "chip", "aria-pressed": String(ui.filtro === f.id), onclick: () => { ui.filtro = f.id; render(); } }, f.nome))),
+      h("div", { class: "rolagem-x", role: "group", "aria-label": "Filtrar" }, FILTROS.map((f) => h("button", { class: "chip", "aria-pressed": String(ui.filtro === f.id), onclick: () => { ui.filtro = f.id; render(); } }, f.nome, h("span", { class: "conta" }, String(state.musicas.filter(f.fn).length))))),
       contagem,
       lista);
   }
@@ -1290,22 +1733,35 @@
   function telaEquipe() {
     const ativas = state.pessoas.filter((p) => p.ativo !== false);
     const pessoas = [...state.pessoas].sort((a, b) => (a.ativo === false) - (b.ativo === false) || a.nome.localeCompare(b.nome, "pt-BR"));
+    const escala = porId(state.escalas, ui.escalaId);
+    const vezes = {};
+    if (escala) for (const l of E.resumoPessoas(state, escala)) vezes[l.pessoa.id] = l.total;
+    const periodo = pedidoAtual();
+    const respondeu = (p) => (state.respostas || []).some((r) => r.id === E.idResposta(p.id, periodo.inicio));
     return h("div", { class: "tela" },
       h("div", { class: "cabecalho" },
-        h("div", {}, h("h1", {}, "Equipe"), h("p", { class: "small muted" }, `${ativas.length} pessoas no rodízio`)),
-        h("button", { class: "btn primario", onclick: () => editarPessoa(null) }, icone("mais"), "Pessoa")),
-      h("div", { class: "rolagem-x", role: "list", "aria-label": "Titulares por função" }, state.funcoes.map((f) => {
+        h("div", {}, h("h1", {}, "Equipe"), h("p", { class: "muted" }, `${ativas.length} pessoas no rodízio`)),
+        h("button", { class: "btn primario", onclick: () => editarPessoa(null) }, icone("pessoaMais"), "Pessoa")),
+      h("section", { "aria-label": "Titulares por função" }, h("div", { class: "cobertura" }, state.funcoes.map((f) => {
         const n = ativas.filter((p) => (p.funcoes || []).includes(f.id)).length;
         const a = ativas.filter((p) => (p.apoio || []).includes(f.id)).length;
-        return h("span", { class: "chip", role: "listitem", style: n ? null : "border-color:var(--err);color:var(--err)" }, `${f.nome} ${n}${a ? ` + ${a} apoio` : ""}`);
-      })),
-      pessoas.length ? h("ul", { class: "lista cartao" }, pessoas.map((p) => {
+        return h("div", { class: n ? null : "falta" }, h("b", {}, String(n)), h("span", {}, `${f.nome}${a ? ` · +${a} apoio` : ""}${n ? "" : " · sem titular"}`));
+      }))),
+      pessoas.length ? h("div", { class: "equipe-grade" }, pessoas.map((p) => {
         const datas = (p.indisponivel || []).filter((x) => (x.split("..")[1] || x) >= hoje()).length;
-        return h("li", {}, h("button", { class: "linha", onclick: () => editarPessoa(p) },
-          h("span", { class: "avatar", "aria-hidden": "true" }, (p.nome || "?").trim().charAt(0).toUpperCase()),
-          h("span", {}, h("span", { class: "titulo" }, p.nome || "Sem nome"), h("br"), h("span", { class: "sub" }, descreverPessoa(p))),
-          p.ativo === false ? h("span", { class: "selo neutro" }, "Pausado") : datas ? h("span", { class: "selo alerta" }, `${datas} ${datas === 1 ? "data" : "datas"} fora`) : h("span")));
-      })) : h("div", { class: "vazio" }, h("p", {}, "Ninguém cadastrado ainda.")));
+        const cultos = (p.cultos || []).map((id) => porId(state.cultos, id)).filter(Boolean);
+        return h("button", { class: `pessoa-cartao${p.ativo === false ? " pausado" : ""}`, onclick: () => editarPessoa(p), "aria-label": `${p.nome}. ${descreverPessoa(p)}. Editar` },
+          h("div", { class: "cab" }, avatar(p),
+            h("div", { style: "min-width:0;flex:1" }, h("b", {}, p.nome || "Sem nome"), h("span", {}, cultos.length ? cultos.map((c) => `${E.DIAS_CURTOS[c.diaSemana]} ${c.hora}`).join(" · ") : "Serve em todos os cultos")),
+            p.ativo === false ? h("span", { class: "selo neutro" }, "Pausado") : datas ? h("span", { class: "selo alerta" }, `${datas} ${datas === 1 ? "data" : "datas"} fora`) : null),
+          h("div", { class: "funcoes-p" },
+            (p.funcoes || []).map((f) => h("span", { class: "selo azul" }, E.nomeFuncao(state, f))),
+            (p.apoio || []).map((f) => h("span", { class: "selo neutro" }, `${E.nomeFuncao(state, f)} · apoio`)),
+            !(p.funcoes || []).length && !(p.apoio || []).length ? h("span", { class: "small muted" }, "Sem função") : null),
+          h("div", { class: "pe" },
+            escala ? h("span", {}, icone("escala"), `${vezes[p.id] || 0}× nesta escala`) : null,
+            h("span", { style: respondeu(p) ? "color:var(--ok)" : null }, icone(respondeu(p) ? "certo" : "agenda"), respondeu(p) ? "Disponibilidade enviada" : "Não respondeu")));
+      })) : h("div", { class: "vazio" }, h("span", { class: "icone-vazio" }, icone("pessoas")), h("p", {}, "Ninguém cadastrado ainda.")));
   }
 
   function editorDatas(lista) {
@@ -1399,37 +1855,51 @@
   function telaAjustes() {
     const r = state.regras;
     const cultos = [...state.cultos].sort((a, b) => Number(a.diaSemana) - Number(b.diaSemana) || (a.hora || "").localeCompare(b.hora || ""));
-    const linha = (titulo, sub, onclick, direita) => h("li", {}, h("button", { class: "linha", onclick },
-      h("span", { class: "avatar", "aria-hidden": "true" }, icone("ajustes")), h("span", {}, h("span", { class: "titulo" }, titulo), h("br"), h("span", { class: "sub" }, sub)), direita || h("span")));
-    const secao = (titulo, ...conteudo) => h("section", { style: "display:grid;gap:10px" }, ...conteudo.length > 1 ? [h("div", { class: "cabecalho" }, h("h2", { style: "font-size:1.15rem" }, titulo), conteudo[0]), conteudo[1]] : [h("h2", { style: "font-size:1.15rem" }, titulo), conteudo[0]]);
+    const linha = (titulo, sub, onclick, ic, direita) => h("li", {}, h("button", { class: "linha", onclick },
+      h("span", { class: "icone-linha", "aria-hidden": "true" }, icone(ic || "ajustes")), h("span", {}, h("span", { class: "titulo" }, titulo), h("br"), h("span", { class: "sub" }, sub)), direita || icone("dir")));
+    const grupo = (titulo, acao, ...conteudo) => h("section", { class: "grupo-ajustes" },
+      h("div", { class: "cabecalho", style: "padding:0 4px;align-items:center;min-height:34px" }, h("h2", { style: "font-size:var(--t-md)" }, titulo), acao || null), ...conteudo);
     const tagsTexto = (ts) => (ts || []).map((t) => E.nomeTag(state, t)).join(", ") || "livre";
+    const tema = temaSalvo();
+    const opcaoTema = (id, nome, ic) => h("button", { "aria-pressed": String(tema === id), onclick: () => { try { localStorage.setItem(CHAVE_TEMA, id); } catch (e) { /* sem armazenamento */ } aplicarTema(id); render(); } }, icone(ic), nome);
+    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const instalado = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
     return h("div", { class: "tela" },
-      h("div", { class: "cabecalho" }, h("h1", {}, "Ajustes")),
-      secao("Cultos da semana",
-        h("button", { class: "btn texto", onclick: () => editarCulto(null) }, icone("mais"), "Culto"),
-        h("ul", { class: "lista cartao" }, cultos.map((c) => {
-          const lider = porId(state.cultos, c.acompanha);
-          const m = c.musicas || {};
-          const pessoas = (c.equipe || []).reduce((n, q) => n + (Number(q.qtd) || 0), 0);
-          const sub = lider ? `Mesma equipe e músicas do ${lider.nome}` : `${pessoas} pessoas · ${m.hino || 0} de Salmos e Hinos · ${m.louvor || 0} louvores`;
-          return h("li", {}, h("button", { class: "linha", onclick: () => editarCulto(c) },
-            h("span", { class: "marcador", "aria-hidden": "true" }, E.DIAS_CURTOS[c.diaSemana]),
-            h("span", {}, h("span", { class: "titulo" }, `${c.hora} · ${c.nome}`), h("br"), h("span", { class: "sub" }, sub)),
-            c.ativo === false ? h("span", { class: "selo neutro" }, "Desligado") : c.solene ? h("span", { class: "selo solene" }, "Solene") : h("span")));
-        }))),
-      secao("Escolha das músicas",
-        h("ul", { class: "lista cartao" },
-          linha("Orientação pastoral", `Culto solene · Salmos e Hinos: ${tagsTexto(r.soleneTagsHinario)} · Louvores: ${tagsTexto(r.soleneTagsLouvor)}`, editarRegras),
-          linha("Repetição", `Uma música só volta depois de ${r.intervaloMusicaSemanas || 0} semana${r.intervaloMusicaSemanas === 1 ? "" : "s"}`, editarRegras),
-          linha("Etiquetas", `${state.tags.length} etiquetas para marcar as músicas`, () => editarLista("Etiquetas das músicas", state.tags, "Nova etiqueta", (id) => state.musicas.some((m) => (m.tags || []).includes(id)) || (r.soleneTagsHinario || []).includes(id) || (r.soleneTagsLouvor || []).includes(id))))),
-      secao("Equipe",
-        h("ul", { class: "lista cartao" },
-          linha("Funções do louvor", state.funcoes.map((f) => f.nome).join(", "), () => editarLista("Funções do louvor", state.funcoes, "Nova função", (id) => state.pessoas.some((p) => (p.funcoes || []).concat(p.apoio || []).includes(id)) || state.cultos.some((c) => (c.equipe || []).some((q) => q.funcao === id)))),
-          linha("Duas funções no mesmo culto", r.permitirAcumular ? "Permitido" : "Não permitido", editarRegras))),
-      secao("Dados",
-        h("ul", { class: "lista cartao" },
-          linha("Igreja e link da escala", `${state.igreja.nome || "—"}${state.igreja.link ? " · link cadastrado" : " · sem link"}`, editarIgreja),
-          linha("Backup", armazem.db ? "Salvo no servidor. Baixe uma cópia de vez em quando." : "Salvo neste aparelho. Baixe uma cópia de vez em quando.", telaBackup))));
+      h("div", { class: "cabecalho" }, h("div", {}, h("h1", {}, "Ajustes"), h("p", { class: "muted" }, "Cultos, regras de escolha das músicas, equipe e preferências do app."))),
+      h("div", { class: "ajustes-grade" },
+        h("div", { style: "display:grid;gap:var(--e-6)" },
+          grupo("Cultos da semana", h("button", { class: "btn texto mini", onclick: () => editarCulto(null) }, icone("mais"), "Culto"),
+            h("ul", { class: "lista cartao" }, cultos.map((c) => {
+              const lider = porId(state.cultos, c.acompanha);
+              const m = c.musicas || {};
+              const pessoas = (c.equipe || []).reduce((n, q) => n + (Number(q.qtd) || 0), 0);
+              const sub = lider ? `Mesma equipe e músicas do ${lider.nome}` : `${pessoas} pessoas · ${m.hino || 0} de Salmos e Hinos · ${m.louvor || 0} louvores`;
+              return h("li", {}, h("button", { class: "linha", onclick: () => editarCulto(c) },
+                h("span", { class: "marcador", "aria-hidden": "true" }, E.DIAS_CURTOS[c.diaSemana]),
+                h("span", {}, h("span", { class: "titulo" }, `${c.hora} · ${c.nome}`), h("br"), h("span", { class: "sub" }, sub)),
+                c.ativo === false ? h("span", { class: "selo neutro" }, "Desligado") : c.solene ? h("span", { class: "selo solene" }, "Solene") : icone("dir")));
+            }))),
+          grupo("Escolha das músicas", null,
+            h("ul", { class: "lista cartao" },
+              linha("Orientação pastoral", `Culto solene · Salmos e Hinos: ${tagsTexto(r.soleneTagsHinario)} · Louvores: ${tagsTexto(r.soleneTagsLouvor)}`, editarRegras, "livro"),
+              linha("Repetição", `Uma música só volta depois de ${r.intervaloMusicaSemanas || 0} semana${r.intervaloMusicaSemanas === 1 ? "" : "s"}`, editarRegras, "atualizar"),
+              linha("Etiquetas", `${state.tags.length} etiquetas para marcar as músicas`, () => editarLista("Etiquetas das músicas", state.tags, "Nova etiqueta", (id) => state.musicas.some((m) => (m.tags || []).includes(id)) || (r.soleneTagsHinario || []).includes(id) || (r.soleneTagsLouvor || []).includes(id)), "filtro")))),
+        h("div", { style: "display:grid;gap:var(--e-6)" },
+          grupo("Igreja e equipe", null,
+            h("ul", { class: "lista cartao" },
+              linha("Igreja e link da escala", `${state.igreja.nome || "—"}${state.igreja.link ? " · link cadastrado" : " · sem link"}`, editarIgreja, "igreja"),
+              linha("Funções do louvor", state.funcoes.map((f) => f.nome).join(", "), () => editarLista("Funções do louvor", state.funcoes, "Nova função", (id) => state.pessoas.some((p) => (p.funcoes || []).concat(p.apoio || []).includes(id)) || state.cultos.some((c) => (c.equipe || []).some((q) => q.funcao === id))), "pessoas"),
+              linha("Duas funções no mesmo culto", r.permitirAcumular ? "Permitido" : "Não permitido", editarRegras, "pessoa"))),
+          grupo("Aparência", null,
+            h("div", { class: "cartao secao" },
+              h("div", { class: "segmentado", role: "group", "aria-label": "Tema", style: "display:grid" }, opcaoTema("auto", "Automático", "auto"), opcaoTema("light", "Claro", "sol"), opcaoTema("dark", "Escuro", "lua")),
+              h("p", { class: "small muted" }, "Automático segue o tema do aparelho. Vale só neste aparelho."))),
+          grupo("Dados e aplicativo", null,
+            h("ul", { class: "lista cartao" },
+              linha("Backup", armazem.db ? "Salvo no servidor. Baixe uma cópia de vez em quando." : "Salvo neste aparelho. Baixe uma cópia de vez em quando.", telaBackup, "baixar"),
+              instalado ? null
+                : ui.instalar ? linha("Instalar o app", "Abre como aplicativo, com ícone na tela inicial", async () => { const e = ui.instalar; ui.instalar = null; e.prompt(); try { await e.userChoice; } catch (x) { /* */ } render(); }, "instalar")
+                  : linha("Instalar o app", ios ? "No Safari: Compartilhar › Adicionar à Tela de Início" : "No menu do navegador: Instalar app ou Adicionar à tela inicial", () => avisar(ios ? "No Safari, toque em Compartilhar e depois em Adicionar à Tela de Início." : "Abra o menu do navegador e escolha Instalar app (ou Adicionar à tela inicial)."), "instalar"))))));
   }
 
   function editarCulto(original) {

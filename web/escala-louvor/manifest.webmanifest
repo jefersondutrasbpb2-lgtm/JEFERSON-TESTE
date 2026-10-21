@@ -1,0 +1,22 @@
+{
+  "name": "Escala do Louvor — IEC Pombal",
+  "short_name": "Escala",
+  "description": "Escala do grupo de louvor da IEC Pombal: quem serve e quais músicas em cada culto.",
+  "lang": "pt-BR",
+  "start_url": "./#inicio",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F5F7FA",
+  "theme_color": "#0B2345",
+  "icons": [
+    { "src": "marca/icone-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "marca/icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "marca/icone-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Escala", "url": "./#escala", "icons": [{ "src": "marca/icone-192.png", "sizes": "192x192" }] },
+    { "name": "Agenda", "url": "./#agenda", "icons": [{ "src": "marca/icone-192.png", "sizes": "192x192" }] },
+    { "name": "Minha disponibilidade", "url": "./#disponibilidade", "icons": [{ "src": "marca/icone-192.png", "sizes": "192x192" }] }
+  ]
+}

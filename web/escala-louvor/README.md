@@ -12,11 +12,12 @@ aparelho. Em **Ajustes › Backup** dá para baixar uma cópia.
 
 | Tela | O que faz |
 | --- | --- |
-| **Escala** | Mostra a escala aberta, um cartão por culto (equipe e músicas em ordem). Tocar numa pessoa ou música abre a lista de opções, com "Sortear outra" e "Manter esta escolha". As setas mudam a ordem das músicas. **Enviar no WhatsApp** copia a escala formatada. |
-| **Agenda** | Pedido de disponibilidade (padrão: as próximas duas semanas). Mostra quem já respondeu, numa grade pessoa × dia, e gera (ou atualiza) a escala do período com as respostas. **Pedir no WhatsApp** copia o convite com o link; **Colar respostas** lê os códigos `#disp` de quem respondeu por mensagem. |
-| **Músicas** | Repertório com busca e filtros (Salmos e Hinos, louvores, aptas ao solene). Cada música tem etiquetas, link do YouTube, tom e a última vez que foi cantada. **Importar** aceita texto colado do Word, Excel ou WhatsApp. |
-| **Equipe** | Quem faz o quê (titular ou só apoio), em quais cultos serve e as datas em que não pode. |
-| **Ajustes** | Cultos da semana (dia, hora, equipe, quantas músicas, se é solene), orientação pastoral, funções, etiquetas e backup. |
+| **Início** | Visão geral com dados reais: próximo culto (equipe e repertório), escala vigente (cultos, integrantes, pendências), pendências com atalho para o culto, respostas de disponibilidade e repertório. |
+| **Escala** | A escala aberta, com setas para a anterior e a próxima, situação (rascunho ou confirmada) e um cartão por culto (equipe por função, com iniciais, e músicas em ordem). Tocar numa pessoa ou música abre a lista de opções, com "Sortear outra" e "Manter esta escolha". As setas mudam a ordem das músicas. **Enviar no WhatsApp** mostra a prévia editável, avisa se há algo a definir e copia ou abre o WhatsApp. |
+| **Agenda** | Calendário do mês (ou lista) com os cultos de cada dia: com escala, solenes ou ainda sem escala; tocar num culto abre o cartão na escala. Abaixo, o pedido de disponibilidade (padrão: as próximas duas semanas), quem respondeu numa grade pessoa × dia e o botão que gera (ou atualiza) a escala com as respostas. **Pedir no WhatsApp** copia o convite com o link; **Colar respostas** lê os códigos `#disp` de quem respondeu por mensagem. |
+| **Músicas** | Repertório com busca e filtros com contagem (Salmos e Hinos, louvores, aptas ao solene, fora do rodízio). Cada música tem etiquetas, link do YouTube, tom e quando foi e quando será cantada. **Importar** aceita texto colado do Word, Excel ou WhatsApp. |
+| **Equipe** | Titulares por função (e onde falta titular) e um cartão por pessoa: funções, cultos em que serve, quantas vezes está na escala aberta e se já mandou a disponibilidade. |
+| **Ajustes** | Cultos da semana, orientação pastoral, repetição, etiquetas, igreja e link, funções, aparência (automático, claro ou escuro), backup e instalação do app. |
 
 ## Disponibilidade da equipe
 
@@ -55,18 +56,31 @@ não tem dados. A publicação monta a pasta `escalas/` do site com `scripts/mon
 - O que foi escolhido à mão fica fixado e não muda ao sortear de novo. Excluir e sortear de novo podem ser desfeitos
   pelo aviso que aparece no rodapé.
 
-## Usabilidade
+## Visual e usabilidade
 
-A interface segue diretrizes atuais de usabilidade: barra de navegação inferior com quatro destinos no celular e abas
-no topo no computador; edição em painéis que sobem da base (modais centralizados em telas grandes); "Desfazer" no lugar
-de perguntas de confirmação; alvos de toque de pelo menos 44 px; telas que mostram primeiro uma lista simples e os
-detalhes só ao tocar; contraste e foco visíveis, modo escuro automático e respeito a "reduzir movimento".
+- **Identidade**: a logomarca da Escala do Louvor (`marca/`), azul-marinho `#0B2345`, azul de ação `#1E5A96` e o dourado
+  `#F5BE22` como assinatura (item ativo, culto solene, indicadores). Títulos em Plus Jakarta Sans e texto em Inter,
+  as duas variáveis e servidas pelo próprio app (`fontes/`, licença OFL). Ícones Lucide. As cores, a tipografia, os
+  espaçamentos, os raios e as sombras são tokens no começo de `index.html`, com versão escura.
+- **Celular**: barra superior compacta com a marca e o estado do salvamento; barra inferior com Início, Escala,
+  Agenda, Músicas e **Mais** (Equipe e Ajustes); edição em painéis que sobem da base; respeito às áreas seguras.
+- **Computador** (a partir de 960 px): menu lateral azul-marinho, conteúdo em grade (painel inicial em três colunas,
+  agenda com calendário e dia lado a lado, equipe em cartões).
+- **Salvamento**: o indicador mostra Salvando, Salvo (só depois que o servidor confirma), Sem conexão ou Falha ao
+  salvar. Sem internet no meio do uso, as alterações ficam no aparelho e vão quando a conexão volta; se o servidor
+  não responde ao abrir, o app mostra a última cópia do aparelho só para leitura, para nada se perder.
+- **App instalável (PWA)**: `manifest.webmanifest` e `sw.js` (só no site). A casca do app fica em cache por versão;
+  os dados nunca vêm do cache. Quando sai uma versão nova, um aviso oferece **Atualizar**.
+- "Desfazer" no lugar de perguntas de confirmação; alvos de toque de 44 px; foco visível; nomes acessíveis nos
+  controles; estados que não dependem só da cor; respeito a "reduzir movimento".
 
 ## Arquivos
 
 | Arquivo | Conteúdo |
 | --- | --- |
-| `index.html` | Página e estilos |
+| `index.html` | Página, tokens de design e estilos |
+| `fontes/`, `marca/` | Fontes (Inter, Plus Jakarta Sans) e logomarca, favicon e ícones do app |
+| `manifest.webmanifest`, `sw.js` | App instalável (o service worker só roda no site) |
 | `app.js` | Interface e armazenamento |
 | `engine.js` | Regras da escala e da disponibilidade (funções puras) |
 | `dados-iniciais.js` | Repertório, equipe e cultos da igreja; regras padrão |

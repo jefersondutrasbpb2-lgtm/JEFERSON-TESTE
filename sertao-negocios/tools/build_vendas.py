@@ -5,7 +5,6 @@ As seções em comum (palestrantes, programação, experiência, quem faz...) v�
 então uma mudança feita lá entra aqui na próxima geração. O que muda na versão de vendas:
 - topo com o card de compra (Smart e VIP com valor e botão) no lugar do formulário;
 - seção "Ingressos" com os dois cards, valores do lote e botões de checkout;
-- card do Sertão Negócios Book (VIP) de volta na experiência;
 - perguntas, final, barra do celular e menu falando de compra, e sem o formulário de inscrição.
 
 Valores e links de checkout ficam em INGRESSOS, logo abaixo.
@@ -82,12 +81,12 @@ hero_buy = f'''<div class="hero__form buy" id="comprar" data-hero="cta" data-doc
         <p class="buy__tag"><span class="lot__dot" aria-hidden="true"></span>{LOTE} · vendas abertas</p>
         <a class="buy__opt" {attrs("smart", "hero-smart")}>
           <span class="buy__name">Smart</span>
-          <span class="buy__desc">Os dois dias de evento</span>
+          <span class="buy__desc">Acesso completo aos dois dias</span>
           <span class="buy__price">{brl(s["price"])}<small>Comprar</small></span>
         </a>
         <a class="buy__opt buy__opt--vip" {attrs("vip", "hero-vip")}>
           <span class="buy__name">VIP</span>
-          <span class="buy__desc">Networking, aulas online e o Book</span>
+          <span class="buy__desc">Fila exclusiva, assento perto do palco e kit</span>
           <span class="buy__price">{brl(v["price"])}<small>Comprar</small></span>
         </a>
         <a class="buy__more" href="#ingressos" data-cta="hero-comparar">Ver tudo o que cada ingresso inclui</a>
@@ -95,22 +94,12 @@ hero_buy = f'''<div class="hero__form buy" id="comprar" data-hero="cta" data-doc
 '''
 html = must_sub(html, r'<div class="hero__form" id="cadastro".*?\n        </div>\n      </div>\n', hero_buy)
 
-# Experiência: card do Book (exclusivo VIP) depois dos estandes
-book = '''
-        <article class="exp-card exp-card--book" data-reveal>
-          <svg viewBox="0 0 48 48" width="44" height="44" aria-hidden="true" style="color:var(--cobalto)"><g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M24 12c-4-3-10-4-18-3v28c8-1 14 0 18 3 4-3 10-4 18-3V9c-8-1-14 0-18 3z"/><path d="M24 12v28"/></g></svg>
-          <p class="exp-card__tag">Exclusivo VIP</p>
-          <h3 style="margin:0">Sertão Negócios Book</h3>
-          <p>O resumo de todas as palestras, para revisar e aplicar depois.</p>
-          <a class="link-arrow" href="#ingressos" data-cta="exp-book">Quero o VIP <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
-        </article>
-'''
-html = must_replace(html, '<div class="exp__grid">', '<div class="exp__grid exp__grid--book">')
-html = must_replace(html, '''        </article>
 
-        <article class="exp-card" data-reveal>
-          <h3>Credenciamento organizado</h3>''', '        </article>\n' + book + '''        <article class="exp-card" data-reveal>
-          <h3>Credenciamento organizado</h3>''')
+
+# Kit com materiais e brindes é do VIP: credenciamento sem o moleskine para todos e com a fila do VIP
+html = must_replace(html, "<p>Retirada de credencial, pulseira e moleskine.</p>", "<p>Retirada de credencial e pulseira.</p>")
+html = must_replace(html, "<p>Credenciais, pulseiras e moleskine para cada participante, com balcões dimensionados para a abertura.</p>",
+                    "<p>Credenciais e pulseiras para cada participante, balcões dimensionados para a abertura e fila exclusiva para o VIP.</p>")
 
 
 def ticket_price(key):
@@ -138,9 +127,10 @@ tickets = f'''<!-- ====== 06 INGRESSOS ====== -->
           </header>
           {ticket_price("smart")}
           <ul class="ticket__list">
-            <li>Programação completa nos dois dias</li>
-            <li>Credenciamento, com credencial, pulseira e moleskine</li>
-            <li>Acesso à área de estandes</li>
+            <li>Acesso completo ao evento</li>
+            <li>Pulseira personalizada Smart</li>
+            <li>Acesso à área de estandes de negócios, para networking</li>
+            <li>Certificado de participação</li>
           </ul>
           <a class="btn btn--light btn--lg btn--block" {attrs("smart", "ticket-smart")}>
             <span>Comprar o Smart</span>
@@ -157,9 +147,9 @@ tickets = f'''<!-- ====== 06 INGRESSOS ====== -->
           {ticket_price("vip")}
           <ul class="ticket__list">
             <li>Tudo o que o Smart oferece</li>
-            <li>Ações de networking</li>
-            <li>Aulas online ao vivo antes do evento, para você chegar ao primeiro dia com o conteúdo em mãos</li>
-            <li><strong>Sertão Negócios Book</strong>, livro digital com o resumo de todas as palestras</li>
+            <li>Credenciamento exclusivo, com fila diferenciada</li>
+            <li>Assento preferencial, mais perto do palco</li>
+            <li>Kit do participante, com materiais e brindes</li>
           </ul>
           <a class="btn btn--sol btn--lg btn--block" {attrs("vip", "ticket-vip")}>
             <span>Comprar o VIP</span>
@@ -188,7 +178,7 @@ html = must_sub(html, r'<!-- ====== 06 LOTE 0 ====== -->.*?</section>\n\n  ', ti
 # Perguntas: as duas do lote 0 viram compra e diferença entre os ingressos
 faq_new = '''<details class="qa" data-reveal>
           <summary><span>Qual a diferença entre o Smart e o VIP?</span><span class="qa__icon" aria-hidden="true"></span></summary>
-          <div class="qa__a"><p>O Smart dá acesso aos dois dias, ao credenciamento e aos estandes. O VIP inclui tudo isso e acrescenta ações de networking, aulas online ao vivo antes do evento e o Sertão Negócios Book.</p></div>
+          <div class="qa__a"><p>O Smart dá acesso completo ao evento, com pulseira personalizada, área de estandes de negócios e certificado de participação. O VIP inclui tudo isso e acrescenta credenciamento exclusivo com fila diferenciada, assento preferencial mais perto do palco e o kit do participante, com materiais e brindes.</p></div>
         </details>
         <details class="qa" data-reveal>
           <summary><span>Como faço para comprar?</span><span class="qa__icon" aria-hidden="true"></span></summary>

@@ -48,6 +48,28 @@ definitivo), use `npm run preview:build`; a saída fica em `preview/`.
 O conteúdo de `out/` pode ser hospedado em qualquer serviço estático (Vercel, Netlify, Cloudflare Pages, GitHub Pages,
 hospedagem tradicional).
 
+### Publicação na Hostinger (automática)
+
+O workflow `.github/workflows/publicar-hostinger.yml` monta o site e envia a pasta `out/` por FTP para a Hostinger a
+cada envio para o branch principal (`claude/church-website-design-akEr2`). Também dá para rodar à mão em
+**Actions › Publicar site na Hostinger › Run workflow**. Só os arquivos que mudaram são enviados.
+
+Configuração (uma vez):
+
+1. No hPanel da Hostinger, em **Arquivos › Contas FTP**, veja o servidor (IP ou `ftp.seudominio`), o usuário e a
+   senha da conta FTP.
+2. No GitHub, em **Settings › Secrets and variables › Actions › Secrets**, crie `FTP_SERVER`, `FTP_USERNAME` e
+   `FTP_PASSWORD`.
+3. Opcional, na aba **Variables** da mesma página:
+   - `FTP_PASTA`: pasta do site no servidor (padrão `public_html/`; use `./` se a conta FTP já abrir dentro do
+     `public_html`);
+   - `FTP_PROTOCOLO`: `ftps` (padrão, com criptografia) ou `ftp`, se a conexão criptografada falhar;
+   - `SITE_URL`: endereço oficial (padrão `https://www.igrejacongregacionaldepombal.com.br`);
+   - `CONTACT_ENDPOINT` e `PRAYER_ENDPOINT`: endereços que recebem os formulários.
+4. Se já houver outro site na pasta `public_html`, faça um backup e retire os arquivos antigos antes da primeira
+   publicação. O arquivo `public/.htaccess` faz o `index.html` ter prioridade e usa a página 404 do site.
+5. No hPanel, ative o SSL gratuito do domínio e a opção **Forçar HTTPS**.
+
 ### Variáveis de ambiente
 
 Copie `.env.example` para `.env.local` e preencha:

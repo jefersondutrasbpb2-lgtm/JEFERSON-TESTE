@@ -223,3 +223,16 @@ test("sem o culto da manhã, o culto da noite é escalado normalmente", () => {
   assert.equal(noite.acompanha, null);
   assert.ok(todosCampos({ cultos: [noite] }).every(Boolean));
 });
+
+test("escalas antigas passam a seguir a ligação dos cultos de domingo", () => {
+  const s = novoEstado();
+  const esc = E.gerarEscala(s, { inicio: "2026-10-25", fim: "2026-10-25", seed: 4 });
+  esc.cultos.forEach((c) => { delete c.acompanha; }); // como numa escala salva antes da ligação
+  const noite = esc.cultos.find((c) => c.cultoId === "dom-noite");
+  noite.equipe[0].pessoaId = "germano";
+  E.vincularCultos(s, esc);
+  E.sincronizarEscala(s, esc);
+  const manha = esc.cultos.find((c) => c.cultoId === "dom-manha");
+  assert.equal(noite.acompanha, manha.id);
+  assert.deepEqual(noite.equipe.map((x) => x.pessoaId), manha.equipe.map((x) => x.pessoaId));
+});

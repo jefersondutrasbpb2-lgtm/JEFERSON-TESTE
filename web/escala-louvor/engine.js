@@ -802,7 +802,7 @@
     criarAleatorio, novoId, porId, rotuloMusica, nomeFuncao, nomeOficial, nomeTag,
     tagsExigidas, atendeItem, listarOcorrencias, montarUsos,
     candidatosPessoa, candidatosOficial, candidatosMusica, itemModelo,
-    nivelFuncao, liderDe, sincronizarCulto, sincronizarEscala, gerarEscala, preencherCulto, adicionarCultoAvulso, sortearCampo,
+    nivelFuncao, liderDe, vincularCultos, sincronizarCulto, sincronizarEscala, gerarEscala, preencherCulto, adicionarCultoAvulso, sortearCampo,
     validarEscala, resumoPessoas, textoWhatsApp,
     lerListaMusicas, lerTags, normalizar, migrar,
   };

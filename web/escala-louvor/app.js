@@ -255,7 +255,10 @@
     if (remoto) state = E.migrar(remoto, X.configuracaoBase());
     else if (local) state = E.migrar(local, X.configuracaoBase());
     else state = novoInicial();
-    if (armazem.db && !remoto && local && !local.exemplo) salvar(); // leva para a nuvem o que já estava no navegador
+    // Escalas feitas antes de existir a ligação entre cultos (ex.: domingo manhã e noite) passam a segui-la.
+    const antigas = state.escalas.filter((e) => e.cultos.some((c) => c.acompanha === undefined));
+    antigas.forEach((e) => { E.vincularCultos(state, e); E.sincronizarEscala(state, e); });
+    if (antigas.length || (armazem.db && !remoto && local && !local.exemplo)) salvar(); // e leva para a nuvem o que estava só no navegador
     else mostrarSalvo("ok", armazem.db ? "Salvo na nuvem" : "Salvo neste navegador");
     if (!armazem.db) gravarLocal();
     const hash = location.hash.slice(1);

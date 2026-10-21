@@ -3,7 +3,8 @@
  *
  * Louvores: "Repertório – Grupo de louvor IEC de Pombal/PB" (100 itens; títulos
  * repetidos foram unidos, com o segundo link guardado nas observações).
- * Salmos e Hinos: números informados pelo ministério de louvor.
+ * Salmos e Hinos: números informados pelo ministério de louvor e a seção
+ * "Trindade" do hinário (nº 29 a 35, 228 e 245), conforme hinologia.org.
  * Equipe, dias e horários: informados pelo ministério de louvor (out/2026). O
  * grupo canta e conduz a igreja à adoração; a liturgia fica com o pastor.
  * Quantidade de músicas por culto: tirada dos "Modelos de liturgia IEC Pombal".
@@ -56,6 +57,8 @@
     soleneTagsLouvor: ["cristocentrico", "doutrinario"],
     intervaloMusicaSemanas: 3,
     permitirAcumular: false,
+    // Disponibilidade: quem não respondeu ainda pode ser escalado (depois de quem confirmou).
+    soQuemRespondeu: false,
   };
 
   // Composição da equipe: sugestão inicial; ajuste em Ajustes › Cultos.
@@ -89,12 +92,20 @@
     id, tipo: "hino", numero, titulo, autor: "", link: "", tags: ts.split(" "), tom: "", ativo: true, obs: obs || "", ultimaVez: ultimaVez || "",
   });
 
+  // Seção "Trindade" do hinário Salmos e Hinos (nº 29 a 35) e outros dois hinos à Trindade,
+  // conforme o índice publicado em hinologia.org. Confira os títulos no hinário da igreja.
+  const FONTE = "Seção Trindade do Salmos e Hinos (índice do hinologia.org).";
   const salmosEHinos = [
-    H("sh29", "29", "", "trinitario", "2026-10-18", "Cantado no domingo 18/10."),
-    H("sh30", "30", "", "trinitario"),
-    H("sh31", "31", "", "trinitario"),
-    H("sh245", "245", "", "trinitario"),
-    H("sh247", "247", "", "trinitario"),
+    H("sh29", "29", "Invocação", "trinitario adoracao", "2026-10-18", `${FONTE} Cantado no domingo 18/10.`),
+    H("sh30", "30", "Vem, ó Todo-Poderoso!", "trinitario adoracao", "", FONTE),
+    H("sh31", "31", "Adoração à Trindade", "trinitario adoracao", "", FONTE),
+    H("sh32", "32", "Aleluia ao Deus triúno", "trinitario adoracao", "", FONTE),
+    H("sh33", "33", "Invocação e Louvor", "trinitario adoracao", "", FONTE),
+    H("sh34", "34", "Santíssima Trindade", "trinitario adoracao", "", FONTE),
+    H("sh35", "35", "Glória à Trindade", "trinitario adoracao", "", FONTE),
+    H("sh228", "228", "Louvor à Trindade", "trinitario adoracao", "", "Índice do hinologia.org."),
+    H("sh245", "245", "Culto à Trindade", "trinitario adoracao", "", "Índice do hinologia.org."),
+    H("sh247", "247", "", "trinitario", "", "Usado no modelo de liturgia do culto solene. Título a confirmar."),
     H("sh-abraao", "", "Ao Deus de Abraão", "trinitario adoracao", "", "Número no hinário a confirmar."),
   ];
 
@@ -215,7 +226,7 @@
   ];
 
   function configuracaoBase() {
-    return JSON.parse(JSON.stringify({ versao: 2, igreja: { nome: "IEC Pombal" }, funcoes, tags, regras, cultos }));
+    return JSON.parse(JSON.stringify({ versao: 3, igreja: { nome: "IEC Pombal", link: "https://claude.ai/artifact/H8ZFZrMUby8Wcvnn6pyVMx" }, funcoes, tags, regras, cultos }));
   }
 
   function repertorio() {
@@ -228,6 +239,7 @@
       pessoas: JSON.parse(JSON.stringify(pessoas)),
       musicas: repertorio(),
       escalas: [],
+      respostas: [],
     });
   }
 

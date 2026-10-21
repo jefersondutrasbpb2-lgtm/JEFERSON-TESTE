@@ -183,6 +183,89 @@
     return lista.sort((a, b) => (a.data + hora(a)).localeCompare(b.data + hora(b)));
   }
 
+  /* ---------------------------------------------------- disponibilidade */
+
+  /**
+   * Respostas de disponibilidade: { id, pessoaId, inicio, fim, dias, obs, em }.
+   * `dias` são as datas em que a pessoa PODE servir; as outras datas do período
+   * contam como "não posso".
+   */
+  function respostaDe(state, pessoaId, data) {
+    let achada = null;
+    for (const r of state.respostas || []) {
+      if (r.pessoaId !== pessoaId || data < r.inicio || data > r.fim) continue;
+      if (!achada || String(r.em || "") > String(achada.em || "")) achada = r;
+    }
+    return achada;
+  }
+
+  /** "sim", "nao" ou null (a pessoa não respondeu para esta data). */
+  function disponivelEm(state, pessoaId, data) {
+    const r = respostaDe(state, pessoaId, data);
+    if (!r) return null;
+    return (r.dias || []).includes(data) ? "sim" : "nao";
+  }
+
+  /** Há pedido de disponibilidade cobrindo esta data (alguém já respondeu)? */
+  const pedidoCobre = (state, data) => (state.respostas || []).some((r) => data >= r.inicio && data <= r.fim);
+
+  /** Dias de culto do período, cada um com os cultos daquele dia. */
+  function diasDeCulto(state, inicio, fim) {
+    const dias = [];
+    for (const oc of listarOcorrencias(state.cultos, inicio, fim)) {
+      const cfg = porId(state.cultos, oc.cultoId);
+      let d = dias.find((x) => x.data === oc.data);
+      if (!d) dias.push((d = { data: oc.data, cultos: [] }));
+      d.cultos.push(cfg);
+    }
+    return dias;
+  }
+
+  const idResposta = (pessoaId, inicio) => `${pessoaId}__${inicio}`;
+
+  /** Código curto que a pessoa manda pelo WhatsApp quando não consegue salvar direto. */
+  function codigoResposta(r) {
+    const dias = (r.dias || []).slice().sort().map((d) => formatarData(d, "curta")).join(",");
+    return `#disp ${r.pessoaId} ${r.inicio} ${r.fim} ${dias || "-"}`;
+  }
+
+  function textoResposta(state, r) {
+    const pessoa = porId(state.pessoas, r.pessoaId);
+    const todos = diasDeCulto(state, r.inicio, r.fim).map((d) => d.data);
+    const pode = todos.filter((d) => (r.dias || []).includes(d)).map((d) => formatarData(d, "dia"));
+    const nao = todos.filter((d) => !(r.dias || []).includes(d)).map((d) => formatarData(d, "dia"));
+    return [
+      `*Disponibilidade · ${pessoa ? pessoa.nome : r.pessoaId}*`,
+      `_${formatarPeriodo(r.inicio, r.fim)}_`,
+      `Posso: ${pode.join(", ") || "nenhum dia"}`,
+      nao.length ? `Não posso: ${nao.join(", ")}` : "",
+      r.obs ? `Recado: ${r.obs}` : "",
+      "",
+      codigoResposta(r),
+    ].filter((l, i, a) => l || (i > 0 && a[i - 1])).join("\n");
+  }
+
+  /** Lê os códigos "#disp …" colados (de uma ou várias mensagens). */
+  function lerRespostas(state, texto) {
+    const saida = [];
+    const re = /#disp\s+(\S+)\s+(\d{4}-\d{2}-\d{2})\s+(\d{4}-\d{2}-\d{2})\s+([\d/,\s-]*)/gi;
+    let m;
+    while ((m = re.exec(String(texto || "")))) {
+      const [, pessoaId, inicio, fim, lista] = m;
+      if (!porId(state.pessoas, pessoaId)) continue;
+      const datas = diasDeCulto(state, inicio, fim).map((d) => d.data);
+      const dias = [];
+      for (const parte of lista.split(/[,\s]+/)) {
+        const [dd, mm] = parte.split("/").map(Number);
+        if (!dd || !mm) continue;
+        const data = datas.find((x) => parseData(x).getDate() === dd && parseData(x).getMonth() + 1 === mm);
+        if (data && !dias.includes(data)) dias.push(data);
+      }
+      saida.push({ id: idResposta(pessoaId, inicio), pessoaId, inicio, fim, dias, obs: "", em: new Date().toISOString() });
+    }
+    return saida;
+  }
+
   /* ------------------------------------------------------ cultos ligados */
 
   /** O culto do mesmo dia cuja equipe e músicas este repete (ex.: o das 18h repete o das 9h). */
@@ -288,12 +371,18 @@
       .filter((p) => p.ativo !== false && nivelFuncao(p, vaga.funcao))
       .map((p) => {
         const apoio = nivelFuncao(p, vaga.funcao) === "apoio";
+        const disp = disponivelEm(state, p.id, culto.data);
+        const semResposta = disp === null && pedidoCobre(state, culto.data);
         let bloqueio = "";
         if (indisponivelEm(p.indisponivel, culto.data)) bloqueio = "não pode nesta data";
+        else if (disp === "nao") bloqueio = "marcou que não pode";
+        else if (semResposta && state.regras && state.regras.soQuemRespondeu) bloqueio = "não respondeu a disponibilidade";
         else if (p.cultos && p.cultos.length && culto.cultoId && !p.cultos.includes(culto.cultoId)) bloqueio = "não serve neste culto";
         else if (!acumula && culto.equipe.some((s, i) => i !== si && s.pessoaId === p.id)) bloqueio = "já tem outra função neste culto";
         const vezes = (usos.pessoas[p.id] || []).filter((u) => u.ref.atual).length;
-        return { pessoa: p, apoio, bloqueio, vezes, score: pontuarPessoa(escala, ci, p, usos) + (apoio ? APOIO : 0) };
+        // Quem confirmou que pode vem antes de quem ainda não respondeu.
+        const score = pontuarPessoa(escala, ci, p, usos) + (apoio ? APOIO : 0) + (semResposta ? 15 : 0);
+        return { pessoa: p, apoio, disp, semResposta, bloqueio, vezes, score };
       })
       .sort((a, b) => (a.bloqueio ? 1 : 0) - (b.bloqueio ? 1 : 0) || a.score - b.score || a.pessoa.nome.localeCompare(b.pessoa.nome));
   }
@@ -531,7 +620,7 @@
         if (!s.pessoaId) return push("erro", campo, `${funcao}: ninguém escalado`);
         const p = porId(state.pessoas, s.pessoaId);
         if (!p) return push("erro", campo, `${funcao}: pessoa removida da equipe`);
-        if (indisponivelEm(p.indisponivel, culto.data)) push("erro", campo, `${p.nome} não pode nesta data`);
+        if (indisponivelEm(p.indisponivel, culto.data) || disponivelEm(state, p.id, culto.data) === "nao") push("erro", campo, `${p.nome} não pode nesta data`);
         if (nivelFuncao(p, s.funcao) === "apoio") push("alerta", campo, `${p.nome} só apoia em ${funcao.toLowerCase()}`);
         if (!(state.regras && state.regras.permitirAcumular) && culto.equipe.some((o, i) => i < si && o.pessoaId === s.pessoaId)) {
           push("alerta", campo, `${p.nome} está em duas funções`);
@@ -692,10 +781,10 @@
    * liturgia nem oficiais: cada culto tem só equipe e músicas) e completa
    * campos novos.
    */
-  function migrar(state, base) {
+  function migrar(state, base, repertorioBase) {
     state = state || {};
     const s = Object.assign({}, base, state);
-    for (const k of ["funcoes", "tags", "pessoas", "musicas", "cultos", "escalas"]) {
+    for (const k of ["funcoes", "tags", "pessoas", "musicas", "cultos", "escalas", "respostas"]) {
       if (!Array.isArray(s[k])) s[k] = (base && base[k]) || [];
     }
     s.regras = Object.assign({}, base && base.regras, state.regras);
@@ -733,10 +822,19 @@
       if (e.cultos.some((c) => c.acompanha === undefined)) vincularCultos(s, e);
       sincronizarEscala(e);
     }
+    // Versão 3: completa os Salmos e Hinos da seção Trindade (números e títulos).
+    if ((Number(state.versao) || 0) < 3 && repertorioBase) {
+      for (const m of repertorioBase) {
+        if (m.tipo !== "hino") continue;
+        const atual = porId(s.musicas, m.id);
+        if (!atual) s.musicas.push(Object.assign({}, m));
+        else if (!atual.titulo && m.titulo) atual.titulo = m.titulo;
+      }
+    }
     delete s.liturgias;
     delete s.oficiais;
     delete s.exemplo;
-    s.versao = 2;
+    s.versao = 3;
     return s;
   }
 
@@ -751,5 +849,6 @@
     gerarEscala, preencherCulto, adicionarCultoExtra, sortearCampo, sortearCulto, colocarMusica, moverMusica,
     validarEscala, resumoPessoas, equipePorFuncao, textoWhatsApp,
     lerListaMusicas, lerTags, migrar,
+    respostaDe, disponivelEm, diasDeCulto, idResposta, codigoResposta, textoResposta, lerRespostas,
   };
 });

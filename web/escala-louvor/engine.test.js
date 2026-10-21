@@ -259,3 +259,77 @@ test("migra dados salvos com liturgia e oficiais para o formato novo", () => {
   assert.deepEqual(noite.equipe, manha.equipe);
   assert.deepEqual(noite.musicas, manha.musicas);
 });
+
+test("disponibilidade: quem marcou que não pode fica de fora; quem confirmou vem antes de quem não respondeu", () => {
+  const s = novoEstado();
+  const inicio = "2026-10-25";
+  const fim = "2026-11-07";
+  const em = "2026-10-21T10:00:00Z";
+  // Leonar não pode no dia 25; os vocais Germano e Alexandre confirmam todos os dias; o resto não respondeu.
+  const todos = E.diasDeCulto(s, inicio, fim).map((d) => d.data);
+  s.respostas = [
+    { id: E.idResposta("leonar", inicio), pessoaId: "leonar", inicio, fim, dias: todos.filter((d) => d !== "2026-10-25"), em },
+    { id: E.idResposta("germano", inicio), pessoaId: "germano", inicio, fim, dias: todos, em },
+    { id: E.idResposta("alexandre", inicio), pessoaId: "alexandre", inicio, fim, dias: todos, em },
+  ];
+  assert.equal(E.disponivelEm(s, "leonar", "2026-10-25"), "nao");
+  assert.equal(E.disponivelEm(s, "leonar", "2026-11-01"), "sim");
+  assert.equal(E.disponivelEm(s, "natan", "2026-11-01"), null);
+  const esc = E.gerarEscala(s, { inicio, fim, seed: 4 });
+  const manha = cultoDe(esc, "dom-manha", "2026-10-25");
+  assert.notEqual(manha.equipe.find((x) => x.funcao === "bateria").pessoaId, "leonar");
+  const vozes = manha.equipe.filter((x) => x.funcao === "vocal").map((x) => x.pessoaId);
+  assert.ok(vozes.includes("germano") && vozes.includes("alexandre"), `vozes: ${vozes}`);
+  const cand = E.candidatosPessoa(s, esc, esc.cultos.indexOf(manha), manha.equipe.findIndex((x) => x.funcao === "bateria"));
+  assert.equal(cand.find((c) => c.pessoa.id === "leonar").bloqueio, "marcou que não pode");
+  assert.ok(cand.find((c) => c.pessoa.id === "tulio").semResposta);
+});
+
+test("disponibilidade: opção de escalar só quem respondeu", () => {
+  const s = novoEstado();
+  s.regras.soQuemRespondeu = true;
+  const inicio = "2026-10-25";
+  s.respostas = [{ id: E.idResposta("germano", inicio), pessoaId: "germano", inicio, fim: "2026-10-31", dias: ["2026-10-27"], em: "x" }];
+  const esc = E.gerarEscala(s, { inicio, fim: "2026-10-31", seed: 1 });
+  const ter = cultoDe(esc, "ter-oracao");
+  assert.deepEqual(ter.equipe.map((x) => x.pessoaId), ["germano", null, null]);
+  assert.ok(E.validarEscala(s, esc).some((a) => a.nivel === "erro" && /ninguém escalado/.test(a.msg)));
+});
+
+test("disponibilidade pelo WhatsApp: o código vai e volta", () => {
+  const s = novoEstado();
+  const r = { id: E.idResposta("kaio", "2026-10-25"), pessoaId: "kaio", inicio: "2026-10-25", fim: "2026-11-07", dias: ["2026-10-25", "2026-11-05"], obs: "Só à noite no dia 25", em: "x" };
+  const texto = E.textoResposta(s, r);
+  assert.match(texto, /\*Disponibilidade · Kaio\*/);
+  assert.match(texto, /Posso: Dom, 25\/10, Qui, 05\/11/);
+  assert.match(texto, /Recado: Só à noite no dia 25/);
+  const colado = `Bom dia!\n${texto}\n\noutra coisa\n#disp ninguem 2026-10-25 2026-11-07 25/10`;
+  const lidas = E.lerRespostas(s, colado);
+  assert.equal(lidas.length, 1, "ignora código de pessoa que não existe");
+  assert.deepEqual([lidas[0].pessoaId, lidas[0].inicio, lidas[0].fim, lidas[0].dias], ["kaio", "2026-10-25", "2026-11-07", ["2026-10-25", "2026-11-05"]]);
+});
+
+test("dias de culto do período agrupam os cultos de cada dia", () => {
+  const s = novoEstado();
+  const dias = E.diasDeCulto(s, "2026-10-25", "2026-10-31");
+  assert.deepEqual(dias.map((d) => [d.data, d.cultos.map((c) => c.id)]), [
+    ["2026-10-25", ["dom-manha", "dom-noite"]],
+    ["2026-10-27", ["ter-oracao"]],
+    ["2026-10-29", ["qui-doutrina"]],
+  ]);
+});
+
+test("a migração completa a seção Trindade do Salmos e Hinos sem duplicar", () => {
+  const s = novoEstado();
+  s.versao = 2;
+  s.musicas = s.musicas.filter((m) => !["sh32", "sh33", "sh34", "sh35", "sh228"].includes(m.id));
+  E.porId(s.musicas, "sh30").titulo = "";
+  const m = E.migrar(s, D.configuracaoBase(), D.repertorio());
+  assert.equal(m.versao, 3);
+  for (const id of ["sh32", "sh33", "sh34", "sh35", "sh228"]) assert.ok(E.porId(m.musicas, id), id);
+  assert.equal(E.porId(m.musicas, "sh30").titulo, "Vem, ó Todo-Poderoso!");
+  assert.equal(m.musicas.filter((x) => x.id === "sh29").length, 1);
+  assert.equal(E.rotuloMusica(E.porId(m.musicas, "sh31")), "SH 31 · Adoração à Trindade");
+  const de_novo = E.migrar(Object.assign(m, { musicas: m.musicas.filter((x) => x.id !== "sh33") }), D.configuracaoBase(), D.repertorio());
+  assert.ok(!E.porId(de_novo.musicas, "sh33"), "não recoloca um hino que a igreja apagou depois");
+});

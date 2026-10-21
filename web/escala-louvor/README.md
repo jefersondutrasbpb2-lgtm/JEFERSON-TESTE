@@ -13,9 +13,22 @@ computador. Em **Ajustes › Backup** dá para baixar uma cópia.
 | Tela | O que faz |
 | --- | --- |
 | **Escala** | Mostra a escala aberta, um cartão por culto (equipe e músicas em ordem). Tocar numa pessoa ou música abre a lista de opções, com "Sortear outra" e "Manter esta escolha". As setas mudam a ordem das músicas. **Enviar no WhatsApp** copia a escala formatada. |
+| **Agenda** | Pedido de disponibilidade (padrão: as próximas duas semanas). Mostra quem já respondeu, numa grade pessoa × dia, e gera (ou atualiza) a escala do período com as respostas. **Pedir no WhatsApp** copia o convite com o link; **Colar respostas** lê os códigos `#disp` de quem respondeu por mensagem. |
 | **Músicas** | Repertório com busca e filtros (Salmos e Hinos, louvores, aptas ao solene). Cada música tem etiquetas, link do YouTube, tom e a última vez que foi cantada. **Importar** aceita texto colado do Word, Excel ou WhatsApp. |
 | **Equipe** | Quem faz o quê (titular ou só apoio), em quais cultos serve e as datas em que não pode. |
 | **Ajustes** | Cultos da semana (dia, hora, equipe, quantas músicas, se é solene), orientação pastoral, funções, etiquetas e backup. |
+
+## Disponibilidade da equipe
+
+Quem abre o link com `#disponibilidade` (ou qualquer pessoa sem permissão de editar a escala) vê só a tela **Sua
+disponibilidade**: escolhe o próprio nome, toca no calendário os dias em que **pode** servir e envia.
+
+- Quando a pessoa tem acesso de **Colaborador** ao Artifact (menu Compartilhar), a resposta é salva direto e aparece na
+  Agenda na hora. A equipe só consegue gravar a própria disponibilidade; equipe, músicas e escalas só quem edita muda.
+- Sem esse acesso (por exemplo, quem abre por link público), a ferramenta mostra um texto com o código `#disp` para
+  mandar pelo WhatsApp, e o coordenador usa **Colar respostas**.
+- Na geração, quem marcou que não pode fica de fora; quem confirmou vem antes de quem não respondeu. Em Ajustes ›
+  Escolha das músicas dá para escalar **só** quem respondeu.
 
 ## Regras da geração
 
@@ -45,7 +58,7 @@ detalhes só ao tocar; contraste e foco visíveis, modo escuro automático e res
 | --- | --- |
 | `index.html` | Página e estilos |
 | `app.js` | Interface e armazenamento |
-| `engine.js` | Regras da escala (funções puras) |
+| `engine.js` | Regras da escala e da disponibilidade (funções puras) |
 | `dados-iniciais.js` | Repertório, equipe e cultos da igreja; regras padrão |
 | `engine.test.js` | Testes: `node --test web/escala-louvor/engine.test.js` |
 
@@ -55,7 +68,11 @@ Dados salvos por versões anteriores (com liturgia e oficiais) são convertidos 
 
 - **Louvores**: "Repertório – Grupo de louvor IEC de Pombal/PB" (100 itens). Títulos repetidos viraram uma música só;
   quando o vídeo era outro, o segundo link ficou nas observações.
-- **Salmos e Hinos**: nº 29 (cantado em 18/10/2026), 30, 31, 245, 247 e "Ao Deus de Abraão" (número a confirmar).
+- **Salmos e Hinos**: a seção "Trindade" do hinário (nº 29 Invocação, 30 Vem, ó Todo-Poderoso!, 31 Adoração à Trindade,
+  32 Aleluia ao Deus triúno, 33 Invocação e Louvor, 34 Santíssima Trindade, 35 Glória à Trindade), 228 Louvor à Trindade
+  e 245 Culto à Trindade, conforme o índice do [hinologia.org](http://www.hinologia.org/salmos-e-hinos-sh/); mais o
+  247 (do modelo de liturgia; título a confirmar) e "Ao Deus de Abraão" (número a confirmar). O 29 foi cantado em
+  18/10/2026.
 - **Quantidade de músicas por culto**: dos "Modelos de liturgia IEC Pombal" (domingo: 1 de Salmos e Hinos e 3
   louvores; oração e doutrina: 2 e 2).
 - **Cultos**: domingo 9h (culto matinal e EBD) e 18h (culto solene), terça 19h30 (oração) e quinta 19h30 (doutrina

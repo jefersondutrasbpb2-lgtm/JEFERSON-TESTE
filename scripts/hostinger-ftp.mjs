@@ -30,9 +30,20 @@ try {
     let pasta = env.FTP_PASTA;
     if (!pasta) {
       // A Hostinger guarda cada site em domains/<domínio>/public_html.
+      const listar = async (caminho) => {
+        try {
+          const lista = await nomes(caminho);
+          console.log(`${caminho}:`, lista.join(", ") || "(vazia)");
+          return lista;
+        } catch (erro) {
+          console.log(`${caminho}: não deu para listar (${erro.message})`);
+          return [];
+        }
+      };
       const sites = [];
-      for (const nome of await nomes("domains").catch(() => [])) {
-        if ((await nomes(`domains/${nome}`).catch(() => [])).includes("public_html")) sites.push(nome);
+      for (const nome of await listar("domains/")) {
+        if (nome.startsWith(".")) continue;
+        if ((await listar(`domains/${nome}/`)).includes("public_html")) sites.push(nome);
       }
       console.log("Sites em domains/:", sites.join(", ") || "(nenhum)");
       const dominio = env.DOMINIO.replace(/^www\./, "");

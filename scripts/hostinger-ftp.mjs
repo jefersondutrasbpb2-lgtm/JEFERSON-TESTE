@@ -29,10 +29,18 @@ try {
     console.log("Pastas na raiz da conta FTP:", (await nomes("/")).join(", "));
     let pasta = env.FTP_PASTA;
     if (!pasta) {
-      const doDominio = `domains/${env.DOMINIO}/public_html/`;
-      pasta = (await nomes(`domains/${env.DOMINIO}`).catch(() => [])).includes("public_html")
-        ? doDominio
-        : "public_html/";
+      // A Hostinger guarda cada site em domains/<domínio>/public_html.
+      const sites = [];
+      for (const nome of await nomes("domains").catch(() => [])) {
+        if ((await nomes(`domains/${nome}`).catch(() => [])).includes("public_html")) sites.push(nome);
+      }
+      console.log("Sites em domains/:", sites.join(", ") || "(nenhum)");
+      const dominio = env.DOMINIO.replace(/^www\./, "");
+      const site =
+        sites.find((nome) => nome.replace(/^www\./, "") === dominio) ??
+        sites.find((nome) => nome.includes(dominio.split(".")[0])) ??
+        (sites.length === 1 ? sites[0] : undefined);
+      pasta = site ? `domains/${site}/public_html/` : "public_html/";
     }
     console.log(`Pasta do site: ${pasta}`);
     console.log("Conteúdo atual:", (await nomes(pasta).catch(() => [])).join(", ") || "(vazia)");

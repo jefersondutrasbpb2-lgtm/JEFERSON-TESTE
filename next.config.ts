@@ -10,6 +10,9 @@ const nextConfig: NextConfig = {
   images: { unoptimized: true },
   reactStrictMode: true,
   poweredByHeader: false,
+  // Nome fixo para a pasta _next/static/<id>: a publicação por FTP só troca os arquivos, sem
+  // apagar a pasta da versão anterior a cada envio.
+  generateBuildId: async () => "iec-pombal",
 };
 
 export default nextConfig;

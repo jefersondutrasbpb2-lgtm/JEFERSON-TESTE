@@ -72,6 +72,14 @@ Configuração (uma vez):
    `public/.htaccess` faz o `index.html` ter prioridade e usa a página 404 do site.
 5. No hPanel, ative o SSL gratuito do domínio e a opção **Forçar HTTPS**.
 
+### Endereço da Escala do Louvor
+
+`www.igrejacongregacionalpombal.com.br/escala` e o subdomínio `escala.igrejacongregacionalpombal.com.br` levam ao
+app da escala (o Artifact no Claude, onde ficam os dados na nuvem). O link `#disponibilidade` dos convites continua
+funcionando. Para o subdomínio, crie-o no hPanel (**Domínios › Subdomínios**, nome `escala`) com a pasta padrão
+`public_html/escala`; a publicação já envia essa pasta. O endereço do app fica em `public/escala/` e em
+`public/.htaccess`.
+
 ### Variáveis de ambiente
 
 Copie `.env.example` para `.env.local` e preencha:

@@ -1,34 +1,27 @@
 /*
  * Interface da Escala do Louvor.
  *
- * O estado inteiro mora em `state`; cada alteração chama `mudou()`, que salva
- * (no navegador e, quando aberto como Artifact no Claude, também na nuvem) e
- * redesenha a aba atual. A lógica de escala fica em engine.js.
+ * Quatro telas (Escala, Músicas, Equipe, Ajustes). Toda edição abre num painel
+ * (que sobe da base no celular); exclusões e mudanças grandes podem ser
+ * desfeitas pelo aviso no rodapé. O estado inteiro mora em `state`; cada
+ * alteração passa por `mudou()`, que salva no navegador e, quando a página roda
+ * como Artifact no Claude, também na nuvem. A lógica fica em engine.js.
  */
 (function () {
   "use strict";
 
   const E = window.EscalaEngine;
-  const X = window.EscalaDados;
-  const CARGOS = ["Pastor", "Presbítero", "Diácono", "Evangelista", "Missionário", "Outro"];
-  const ABAS = [
-    { id: "escalas", nome: "Escalas" },
-    { id: "repertorio", nome: "Repertório" },
-    { id: "equipe", nome: "Equipe do louvor" },
-    { id: "oficiais", nome: "Oficiais" },
-    { id: "liturgias", nome: "Liturgias" },
-    { id: "cultos", nome: "Cultos e regras" },
-    { id: "backup", nome: "Backup" },
+  const D = window.EscalaDados;
+  const TELAS = [
+    { id: "escala", nome: "Escala", icone: "calendario" },
+    { id: "musicas", nome: "Músicas", icone: "nota" },
+    { id: "equipe", nome: "Equipe", icone: "pessoas" },
+    { id: "ajustes", nome: "Ajustes", icone: "ajustes" },
   ];
+  const MOBILE = "(max-width: 759px)";
 
   let state = null;
-  const ui = {
-    aba: "escalas",
-    escalaId: null,
-    liturgiaId: null,
-    nova: { tipo: "quinzenal", inicio: "", mes: "", fim: "", titulo: "" },
-    rep: { busca: "", tipo: "", tag: "", solene: false },
-  };
+  const ui = { tela: "escala", escalaId: null, ordemDe: {}, busca: "", filtro: "todas" };
 
   /* ------------------------------------------------------------ util */
 
@@ -40,41 +33,50 @@
       else if (k === "class") el.className = v;
       else if (k === "value") el.value = v;
       else if (k === "checked") el.checked = !!v;
-      else if (k === "html") el.innerHTML = v;
       else el.setAttribute(k, v === true ? "" : v);
     }
     for (const f of filhos.flat(Infinity)) {
-      if (f === null || f === undefined || f === false) continue;
+      if (f === null || f === undefined || f === false || f === "") continue;
       el.append(f instanceof Node ? f : document.createTextNode(String(f)));
     }
     return el;
   }
 
   const ICONES = {
-    lock: '<rect x="4" y="9" width="12" height="9" rx="1.5"/><path d="M7 9V6.5a3 3 0 0 1 6 0V9" fill="none" stroke="currentColor" stroke-width="2"/>',
-    unlock: '<rect x="4" y="9" width="12" height="9" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 9V6.5a3 3 0 0 1 5.8-1.1" fill="none" stroke="currentColor" stroke-width="1.6"/>',
-    refresh: '<path d="M10 3a7 7 0 0 1 6.3 4H18V2l-2 2.1A9 9 0 0 0 1 10h2a7 7 0 0 1 7-7Zm7 7a7 7 0 0 1-13.3 3H6v-2H1v5l1.9-1.9A9 9 0 0 0 19 10h-2Z"/>',
-    plus: '<path d="M9 3h2v6h6v2h-6v6H9v-6H3V9h6z"/>',
-    trash: '<path d="M7 2h6l1 2h4v2H2V4h4l1-2Zm-3 5h12l-1 11H5L4 7Z"/>',
-    copy: '<path d="M6 2h10v12h-2V4H6V2ZM3 6h10v12H3V6Z"/>',
-    up: '<path d="m10 5 6 7h-4v4H8v-4H4z"/>',
-    down: '<path d="m10 15-6-7h4V4h4v4h4z"/>',
-    x: '<path d="m5.4 4 4.6 4.6L14.6 4 16 5.4 11.4 10l4.6 4.6-1.4 1.4-4.6-4.6L5.4 16 4 14.6 8.6 10 4 5.4z"/>',
-    print: '<path d="M5 2h10v4H5V2ZM2 7h16v8h-3v3H5v-3H2V7Zm5 6v3h6v-3H7Z"/>',
-    download: '<path d="M9 2h2v8l3-3 1.4 1.4L10 13.8 4.6 8.4 6 7l3 3V2ZM3 15h14v3H3z"/>',
+    calendario: '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+    nota: '<path d="M9 18V6l11-2v12"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',
+    pessoas: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/>',
+    ajustes: '<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',
+    mais: '<path d="M12 5v14M5 12h14"/>',
+    opcoes: '<circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/>',
+    enviar: '<path d="M21 3 10 14M21 3l-7 18-4-7-7-4 18-7Z"/>',
+    sortear: '<path d="M4 4v6h6M20 20v-6h-6"/><path d="M5.5 15a7 7 0 0 0 12.3 2.5M18.5 9A7 7 0 0 0 6.2 6.5"/>',
+    pino: '<path d="M9 4h6l-1 6 4 4H6l4-4-1-6ZM12 14v7"/>',
+    fechar: '<path d="M6 6l12 12M18 6 6 18"/>',
+    cima: '<path d="m6 15 6-6 6 6"/>',
+    baixo: '<path d="m6 9 6 6 6-6"/>',
+    busca: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+    play: '<circle cx="12" cy="12" r="9"/><path d="m10 8.5 5 3.5-5 3.5Z"/>',
+    lixo: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+    copiar: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
+    baixar: '<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
+    imprimir: '<path d="M7 9V3h10v6M7 17H4v-7h16v7h-3"/><rect x="7" y="14" width="10" height="7"/>',
+    importar: '<path d="M12 20V9M7 14l5-5 5 5M5 4h14"/>',
   };
   function icone(nome) {
     const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    s.setAttribute("viewBox", "0 0 20 20");
-    s.setAttribute("fill", "currentColor");
+    s.setAttribute("viewBox", "0 0 24 24");
+    s.setAttribute("class", "i");
     s.setAttribute("aria-hidden", "true");
-    s.innerHTML = ICONES[nome];
+    s.innerHTML = ICONES[nome] || "";
     return s;
   }
 
   const porId = E.porId;
   const clone = (x) => JSON.parse(JSON.stringify(x));
   const hoje = () => E.isoData(new Date());
+  const local = () => !(window.claude && typeof window.claude.use === "function");
+  const celular = () => matchMedia(MOBILE).matches;
 
   function proximoDomingo() {
     const d = new Date();
@@ -88,38 +90,46 @@
     return E.isoData(d).slice(0, 7);
   }
 
-  function toast(msg) {
-    const t = h("div", { class: "toast", role: "status" }, msg);
-    document.body.append(t);
-    setTimeout(() => t.remove(), 2800);
+  /** Aviso no rodapé, com ação opcional (ex.: Desfazer). */
+  function avisar(msg, acao) {
+    const area = document.getElementById("avisos-rodape");
+    const el = h("div", { class: "aviso-rodape", role: "status" }, h("span", {}, msg),
+      acao ? h("button", { onclick: () => { el.remove(); acao.fazer(); } }, acao.rotulo) : null);
+    area.replaceChildren(el);
+    setTimeout(() => el.remove(), acao ? 7000 : 3200);
+  }
+
+  /** Faz uma alteração que pode ser desfeita pelo aviso do rodapé. */
+  function comDesfazer(msg, fn) {
+    const antes = JSON.stringify(state);
+    mudou(fn);
+    avisar(msg, { rotulo: "Desfazer", fazer: () => { state = JSON.parse(antes); garantirEscalaAtual(); mudou(); } });
   }
 
   async function copiar(texto, alvo) {
     try {
       await navigator.clipboard.writeText(texto);
-      toast("Copiado. É só colar no WhatsApp.");
+      avisar("Copiado. É só colar no WhatsApp.");
     } catch (e) {
       if (alvo) {
         const r = document.createRange();
         r.selectNodeContents(alvo);
-        const sel = getSelection();
-        sel.removeAllRanges();
-        sel.addRange(r);
+        getSelection().removeAllRanges();
+        getSelection().addRange(r);
       }
-      toast("Não consegui copiar sozinho. O texto ficou selecionado: use Copiar do seu aparelho.");
+      avisar("Não deu para copiar sozinho. O texto ficou selecionado: use Copiar do aparelho.");
     }
   }
 
   /* --------------------------------------------------- armazenamento */
 
   const CHAVE_LOCAL = "escala-louvor:v1";
-  const SECOES = ["config", "pessoas", "oficiais", "musicas", "liturgias", "cultos"];
-  const armazem = { db: null, downloads: null, ultimo: {}, timer: null, salvando: false, pendente: false };
+  const SECOES = ["config", "pessoas", "musicas", "cultos"];
+  const ANTIGAS = ["liturgias", "oficiais"]; // de versões anteriores; apagadas depois de migrar
+  const armazem = { db: null, downloads: null, ultimo: {}, antigas: new Set(), timer: null, salvando: false, pendente: false };
 
   function secao(nome) {
-    if (nome === "config") {
-      return { versao: state.versao, igreja: state.igreja, funcoes: state.funcoes, tags: state.tags, regras: state.regras, exemplo: !!state.exemplo };
-    }
+    if (nome === "config") return { versao: state.versao, igreja: state.igreja, funcoes: state.funcoes, tags: state.tags, regras: state.regras };
     return { itens: state[nome] };
   }
 
@@ -136,21 +146,24 @@
     try {
       localStorage.setItem(CHAVE_LOCAL, JSON.stringify(state));
     } catch (e) {
-      /* navegador sem armazenamento: segue só na memória (ou na nuvem) */
+      /* navegador sem armazenamento: segue na memória (ou na nuvem) */
     }
   }
 
   async function lerNuvem(db) {
     const s = {};
-    const docs = await Promise.all(SECOES.map((n) => db.doc(`dados/${n}`).get()));
+    const nomes = SECOES.concat(ANTIGAS);
+    const docs = await Promise.all(nomes.map((n) => db.doc(`dados/${n}`).get()));
     let achou = false;
     docs.forEach((snap, i) => {
       if (!snap.exists) return;
       achou = true;
-      const dados = snap.data();
-      armazem.ultimo[SECOES[i]] = JSON.stringify(dados);
-      if (SECOES[i] === "config") Object.assign(s, clone(dados));
-      else s[SECOES[i]] = clone(dados.itens || []);
+      const nome = nomes[i];
+      const dados = clone(snap.data());
+      if (ANTIGAS.includes(nome)) armazem.antigas.add(nome);
+      else armazem.ultimo[nome] = JSON.stringify(snap.data());
+      if (nome === "config") Object.assign(s, dados);
+      else s[nome] = dados.itens || [];
     });
     const escalas = await db.collection("escalas").get();
     s.escalas = escalas.docs.map((d) => {
@@ -169,13 +182,10 @@
 
   function salvar() {
     gravarLocal();
-    if (!armazem.db) {
-      mostrarSalvo("ok", "Salvo neste navegador");
-      return;
-    }
+    if (!armazem.db) return mostrarSalvo("ok", "Salvo neste aparelho");
     mostrarSalvo("salvando", "Salvando…");
     clearTimeout(armazem.timer);
-    armazem.timer = setTimeout(salvarNuvem, 700);
+    armazem.timer = setTimeout(salvarNuvem, 600);
   }
 
   async function salvarNuvem() {
@@ -186,8 +196,7 @@
     armazem.salvando = true;
     try {
       for (const nome of SECOES) {
-        const corpo = secao(nome);
-        const json = JSON.stringify(corpo);
+        const json = JSON.stringify(secao(nome));
         if (armazem.ultimo[nome] === json) continue;
         await armazem.db.doc(`dados/${nome}`).set(JSON.parse(json));
         armazem.ultimo[nome] = json;
@@ -205,15 +214,19 @@
         await armazem.db.collection("escalas").doc(chave.slice(7)).delete();
         delete armazem.ultimo[chave];
       }
+      for (const nome of [...armazem.antigas]) {
+        await armazem.db.doc(`dados/${nome}`).delete();
+        armazem.antigas.delete(nome);
+      }
       mostrarSalvo("ok", "Salvo na nuvem");
     } catch (e) {
       const msg = {
-        quota_exceeded: "O espaço de dados acabou. Exclua escalas antigas na aba Escalas.",
-        invalid_argument: "Uma parte dos dados ficou grande demais para salvar. Baixe um backup e fale com quem cuida da ferramenta.",
+        quota_exceeded: "O espaço de dados acabou. Exclua escalas antigas.",
+        invalid_argument: "Uma parte dos dados ficou grande demais para salvar. Baixe um backup em Ajustes.",
         revoked: "Você não tem mais permissão para salvar aqui.",
       }[e && e.code] || "Não consegui salvar na nuvem agora. Tento de novo na próxima alteração.";
       mostrarSalvo("erro", "Não salvo na nuvem");
-      toast(msg);
+      avisar(msg);
     } finally {
       armazem.salvando = false;
       if (armazem.pendente) {
@@ -223,19 +236,17 @@
     }
   }
 
-  /** Aplica uma alteração, salva e redesenha. */
+  /** Aplica uma alteração, mantém os cultos ligados em dia, salva e redesenha. */
   function mudou(fn, redesenhar) {
     if (fn) fn();
-    // Cultos ligados (ex.: domingo à noite) acompanham a equipe e as músicas do culto líder.
-    for (const e of state.escalas) E.sincronizarEscala(state, e);
+    for (const e of state.escalas) E.sincronizarEscala(e);
     salvar();
     if (redesenhar !== false) render();
   }
 
   async function iniciar() {
-    let local = lerLocal();
-    const temClaude = !!(window.claude && typeof window.claude.use === "function");
-    if (temClaude) {
+    const salvoLocal = lerLocal();
+    if (!local()) {
       try {
         armazem.db = await window.claude.use("db");
         armazem.downloads = await window.claude.use("downloads");
@@ -249,225 +260,142 @@
         remoto = await lerNuvem(armazem.db);
       } catch (e) {
         armazem.db = null;
-        toast("Não consegui abrir os dados da nuvem. Por enquanto, as alterações ficam só neste navegador.");
+        avisar("Não consegui abrir os dados da nuvem. Por enquanto, as alterações ficam só neste aparelho.");
       }
     }
-    if (remoto) state = E.migrar(remoto, X.configuracaoBase());
-    else if (local) state = E.migrar(local, X.configuracaoBase());
-    else state = novoInicial();
-    // Escalas feitas antes de existir a ligação entre cultos (ex.: domingo manhã e noite) passam a segui-la.
-    const antigas = state.escalas.filter((e) => e.cultos.some((c) => c.acompanha === undefined));
-    antigas.forEach((e) => { E.vincularCultos(state, e); E.sincronizarEscala(state, e); });
-    if (antigas.length || (armazem.db && !remoto && local && !local.exemplo)) salvar(); // e leva para a nuvem o que estava só no navegador
-    else mostrarSalvo("ok", armazem.db ? "Salvo na nuvem" : "Salvo neste navegador");
-    if (!armazem.db) gravarLocal();
+    const base = D.configuracaoBase();
+    if (remoto) state = E.migrar(remoto, base);
+    else if (salvoLocal) state = E.migrar(salvoLocal, base);
+    else state = estadoInicial();
     const hash = location.hash.slice(1);
-    if (ABAS.some((a) => a.id === hash)) ui.aba = hash;
-    ui.escalaId = escalasOrdenadas()[0] ? escalasOrdenadas()[0].id : null;
-    renderAbas();
+    if (TELAS.some((t) => t.id === hash)) ui.tela = hash;
+    garantirEscalaAtual();
+    salvar(); // grava a migração (ou os dados iniciais) e leva para a nuvem o que estava só no aparelho
     render();
   }
 
-  function novoInicial() {
-    const s = X.estadoInicial();
+  function estadoInicial() {
+    const s = D.estadoInicial();
     const inicio = proximoDomingo();
     s.escalas.push(E.gerarEscala(s, { inicio, fim: E.somarDias(inicio, 13), tipo: "quinzenal", seed: 1 }));
     return s;
   }
 
-  /* ---------------------------------------------------------- moldura */
-
-  function renderAbas() {
-    const nav = document.getElementById("abas");
-    nav.replaceChildren(
-      ...ABAS.map((a) =>
-        h("button", {
-          class: "aba", role: "tab", id: `aba-${a.id}`, "aria-selected": String(ui.aba === a.id),
-          onclick: () => { ui.aba = a.id; try { history.replaceState(null, "", `#${a.id}`); } catch (e) { /* sem histórico */ } renderAbas(); render(); window.scrollTo({ top: 0 }); },
-        }, a.nome)
-      )
-    );
-    document.getElementById("nome-igreja").textContent = (state.igreja && state.igreja.nome) || "";
-  }
-
-  function render() {
-    const app = document.getElementById("app");
-    const telas = { escalas: telaEscalas, repertorio: telaRepertorio, equipe: telaEquipe, oficiais: telaOficiais, liturgias: telaLiturgias, cultos: telaCultos, backup: telaBackup };
-    const y = window.scrollY;
-    app.replaceChildren(...[avisoExemplo(), telas[ui.aba]()].filter(Boolean));
-    window.scrollTo({ top: y });
-  }
-
-  function avisoExemplo() {
-    if (!state.exemplo) return null;
-    return h("div", { class: "aviso-exemplo", role: "note" },
-      h("p", {}, h("strong", {}, "Equipe de exemplo. "), "Liturgias e repertório já são os da igreja, mas as pessoas do louvor e os oficiais (menos o pastor) são fictícios, só para mostrar a ferramenta funcionando. Cadastre a equipe e os oficiais e depois apague os exemplos."),
-      h("div", { class: "acoes" },
-        h("button", { class: "btn primario", onclick: () => confirmar("Apagar os dados de exemplo?", "As pessoas e os oficiais de exemplo saem, junto com as escalas feitas com eles. Repertório, liturgias, cultos e regras continuam.", "Apagar exemplos", limparExemplos) }, "Apagar exemplos"),
-        h("button", { class: "btn", onclick: () => mudou(() => { state.exemplo = false; }) }, "Já são meus dados")
-      )
-    );
-  }
-
-  function limparExemplos() {
-    mudou(() => {
-      state.pessoas = state.pessoas.filter((p) => !p.exemplo);
-      state.oficiais = state.oficiais.filter((o) => !o.exemplo);
-      state.musicas = state.musicas.filter((m) => !m.exemplo);
-      state.escalas = [];
-      state.exemplo = false;
-      ui.escalaId = null;
-    });
-    toast("Exemplos apagados.");
-  }
-
-  /* ---------------------------------------------------------- janelas */
-
-  function abrirJanela({ titulo, sub, corpo, rodape, larga, aoAbrir }) {
-    const camada = document.getElementById("camada");
-    const anterior = document.activeElement;
-    const fechar = () => {
-      camada.replaceChildren();
-      document.removeEventListener("keydown", esc);
-      if (anterior && anterior.focus) anterior.focus();
-    };
-    const esc = (e) => { if (e.key === "Escape") fechar(); };
-    document.addEventListener("keydown", esc);
-    const janela = h("div", { class: `janela${larga ? " larga" : ""}`, role: "dialog", "aria-modal": "true", "aria-labelledby": "janela-titulo" },
-      h("header", {}, h("h2", { id: "janela-titulo" }, titulo), sub ? h("p", { class: "muted small" }, sub) : null),
-      h("div", { class: "corpo" }, corpo),
-      h("footer", {}, rodape ? rodape(fechar) : h("button", { class: "btn", onclick: fechar }, "Fechar"))
-    );
-    const veu = h("div", { class: "veu", onclick: (e) => { if (e.target === veu) fechar(); } }, janela);
-    camada.replaceChildren(veu);
-    if (aoAbrir) aoAbrir(janela);
-    else {
-      const foco = janela.querySelector("input, select, textarea, .corpo button");
-      if (foco) foco.focus();
-    }
-    return fechar;
-  }
-
-  function confirmar(titulo, texto, rotulo, acao) {
-    abrirJanela({
-      titulo,
-      corpo: h("p", {}, texto),
-      rodape: (fechar) => [
-        h("button", { class: "btn", onclick: fechar }, "Cancelar"),
-        h("button", { class: "btn perigo cheio", onclick: () => { fechar(); acao(); } }, rotulo),
-      ],
-    });
-  }
-
-  /** Lista pesquisável de opções (pessoas, oficiais ou músicas). */
-  function escolherDe({ titulo, sub, grupos, atual, aoEscolher, vazio }) {
-    const busca = h("input", { type: "search", id: "busca-opcao", placeholder: "Buscar…", "aria-label": "Buscar" });
-    const lista = h("div", { class: "opcoes", role: "listbox" });
-    let fecharJanela = null;
-    const desenhar = () => {
-      const q = E.normalizar(busca.value);
-      const blocos = [];
-      for (const g of grupos) {
-        const itens = g.itens.filter((o) => !q || E.normalizar(o.busca || o.rotulo).includes(q));
-        if (!itens.length) continue;
-        if (g.titulo) blocos.push(h("div", { class: "grupo-titulo" }, g.titulo));
-        for (const o of itens) {
-          blocos.push(h("button", {
-            class: "opcao", role: "option", "aria-current": String(o.id === atual),
-            onclick: () => { fecharJanela(); aoEscolher(o.id); },
-          }, h("b", {}, o.rotulo), o.direita ? h("span", { class: "small muted" }, o.direita) : h("span"), o.meta ? h("span", { class: "meta" }, o.meta) : null));
-        }
-      }
-      if (vazio) blocos.push(h("button", { class: "opcao", onclick: () => { fecharJanela(); aoEscolher(null); } }, h("b", { class: "muted" }, vazio), h("span")));
-      if (!blocos.length) blocos.push(h("p", { class: "muted small" }, "Nada encontrado."));
-      lista.replaceChildren(...blocos);
-    };
-    busca.addEventListener("input", desenhar);
-    desenhar();
-    fecharJanela = abrirJanela({ titulo, sub, corpo: [busca, lista], aoAbrir: () => busca.focus() });
-  }
-
-  /* ---------------------------------------------------------- escalas */
-
   function escalasOrdenadas() {
     return [...state.escalas].sort((a, b) => b.inicio.localeCompare(a.inicio));
   }
 
-  function telaEscalas() {
+  const CHAVE_ABERTA = "escala-louvor:aberta";
+
+  /** Lembra, só neste aparelho, qual escala estava aberta. */
+  function lembrarAberta() {
+    try { localStorage.setItem(CHAVE_ABERTA, ui.escalaId || ""); } catch (e) { /* sem armazenamento */ }
+  }
+
+  function garantirEscalaAtual() {
+    if (!ui.escalaId) {
+      try { ui.escalaId = localStorage.getItem(CHAVE_ABERTA) || null; } catch (e) { /* sem armazenamento */ }
+    }
+    if (porId(state.escalas, ui.escalaId)) return;
+    // Mostra a escala em vigor (ou a próxima); se não houver, a mais recente.
+    const lista = [...state.escalas].sort((a, b) => a.inicio.localeCompare(b.inicio));
+    const atual = lista.find((e) => e.fim >= hoje()) || lista[lista.length - 1];
+    ui.escalaId = atual ? atual.id : null;
+  }
+
+  /* ---------------------------------------------------------- moldura */
+
+  function irPara(tela) {
+    ui.tela = tela;
+    try { history.replaceState(null, "", `#${tela}`); } catch (e) { /* sem histórico */ }
+    render();
+    window.scrollTo({ top: 0 });
+  }
+
+  function render() {
+    document.getElementById("nav").replaceChildren(...TELAS.map((t) => h("button", {
+      "aria-current": ui.tela === t.id ? "page" : null, onclick: () => irPara(t.id),
+    }, h("span", { class: "pilula" }, icone(t.icone)), t.nome)));
+    document.getElementById("nome-igreja").textContent = (state.igreja && state.igreja.nome) || "";
+    const telas = { escala: telaEscala, musicas: telaMusicas, equipe: telaEquipe, ajustes: telaAjustes };
+    lembrarAberta();
+    const y = window.scrollY;
+    document.getElementById("app").replaceChildren(telas[ui.tela]());
+    window.scrollTo({ top: y });
+  }
+
+  /* ----------------------------------------------------------- painel */
+
+  let fecharAtual = null;
+
+  /** Painel modal: sobe da base no celular, centralizado no computador. */
+  function painel({ titulo, sub, corpo, rodape, foco }) {
+    if (fecharAtual) fecharAtual(true);
+    const camada = document.getElementById("camada");
+    const anterior = document.activeElement;
+    const fechar = (semFoco) => {
+      camada.replaceChildren();
+      document.removeEventListener("keydown", tecla);
+      fecharAtual = null;
+      if (!semFoco && anterior && anterior.isConnected) anterior.focus();
+    };
+    const tecla = (e) => { if (e.key === "Escape") fechar(); };
+    document.addEventListener("keydown", tecla);
+    const caixa = h("section", { class: "painel", role: "dialog", "aria-modal": "true", "aria-labelledby": "painel-titulo" },
+      h("div", {},
+        h("div", { class: "alca", "aria-hidden": "true" }),
+        h("header", {},
+          h("div", {}, h("h2", { id: "painel-titulo" }, titulo), sub ? h("p", {}, sub) : null),
+          h("button", { class: "btn icone", "aria-label": "Fechar", onclick: () => fechar() }, icone("fechar")))),
+      h("div", { class: "corpo" }, corpo),
+      rodape ? h("footer", {}, rodape(fechar)) : null);
+    const veu = h("div", { class: "veu", onclick: (e) => { if (e.target === veu) fechar(); } }, caixa);
+    camada.replaceChildren(veu);
+    fecharAtual = fechar;
+    // No celular, não abre o teclado sozinho: o foco vai para um botão.
+    const alvo = foco ? caixa.querySelector(foco) : null;
+    const usar = alvo && !(celular() && /^(INPUT|TEXTAREA)$/.test(alvo.tagName));
+    (usar ? alvo : caixa.querySelector("header .btn")).focus();
+    return fechar;
+  }
+
+  /** Lista de escolha com busca. Cada opção: { id, rotulo, direita, meta, busca }. */
+  function escolher({ titulo, sub, topo, grupos, atual, vazio, aoEscolher, buscar }) {
+    const campo = h("input", { type: "search", id: "busca-opcao", placeholder: "Buscar", "aria-label": "Buscar" });
+    const lista = h("div", { class: "opcoes", role: "listbox", "aria-label": titulo });
+    let fechar = null;
+    const desenhar = () => {
+      const q = E.normalizar(campo.value);
+      const blocos = [];
+      for (const g of grupos) {
+        const itens = g.itens.filter((o) => !q || E.normalizar(o.busca || o.rotulo).includes(q));
+        if (!itens.length) continue;
+        if (g.titulo) blocos.push(h("div", { class: "grupo" }, g.titulo));
+        for (const o of itens) {
+          blocos.push(h("button", { class: "opcao", role: "option", "aria-selected": String(o.id === atual), "aria-current": String(o.id === atual), onclick: () => { fechar(); aoEscolher(o.id); } },
+            h("b", {}, o.rotulo), h("span", { class: "small muted" }, o.direita || ""), o.meta ? h("span", { class: "meta" }, o.meta) : null));
+        }
+      }
+      if (vazio) blocos.push(h("button", { class: "opcao", onclick: () => { fechar(); aoEscolher(null); } }, h("b", { class: "muted" }, vazio), h("span")));
+      if (!blocos.length) blocos.push(h("p", { class: "muted small", style: "padding:12px" }, "Nada encontrado."));
+      lista.replaceChildren(...blocos);
+    };
+    campo.addEventListener("input", desenhar);
+    desenhar();
+    fechar = painel({ titulo, sub, corpo: [topo, buscar ? h("div", { class: "busca" }, icone("busca"), campo) : null, lista], foco: buscar ? "#busca-opcao" : ".opcao" });
+  }
+
+  /* ---------------------------------------------------------- escala */
+
+  function telaEscala() {
     const escala = porId(state.escalas, ui.escalaId);
-    return h("div", { class: "escalas" },
-      h("aside", { class: "lado" }, painelNovaEscala(), painelListaEscalas()),
-      h("div", { style: "min-width:0" }, escala ? editorEscala(escala) : h("div", { class: "vazio-estado" },
-        h("h2", {}, "Nenhuma escala ainda"),
-        h("p", {}, "Escolha quinzenal ou mensal ao lado e toque em Gerar escala. A ferramenta distribui a equipe, os oficiais e as músicas de cada liturgia; depois você ajusta o que quiser.")
-      ))
-    );
-  }
-
-  function periodoNova() {
-    const n = ui.nova;
-    if (n.tipo === "quinzenal") {
-      const inicio = n.inicio || proximoDomingo();
-      return { inicio, fim: E.somarDias(inicio, 13) };
+    if (!escala) {
+      return h("div", { class: "tela" },
+        h("div", { class: "vazio" },
+          h("h2", {}, "Nenhuma escala ainda"),
+          h("p", {}, "Escolha o período e a ferramenta distribui a equipe e as músicas de cada culto, seguindo a orientação do pastor para os cultos solenes."),
+          h("button", { class: "btn primario", onclick: novaEscala }, icone("mais"), "Criar escala")));
     }
-    if (n.tipo === "mensal") {
-      const mes = n.mes || proximoMes();
-      return { inicio: `${mes}-01`, fim: E.fimDoMes(mes) };
-    }
-    const inicio = n.inicio || proximoDomingo();
-    return { inicio, fim: n.fim && n.fim >= inicio ? n.fim : E.somarDias(inicio, 13) };
-  }
-
-  function painelNovaEscala() {
-    const n = ui.nova;
-    const p = periodoNova();
-    const qtd = E.listarOcorrencias(state.cultos, p.inicio, p.fim).length;
-    const tipoBtn = (id, nome) => h("button", { "aria-pressed": String(n.tipo === id), onclick: () => { n.tipo = id; render(); } }, nome);
-    const campos = [];
-    if (n.tipo === "mensal") {
-      campos.push(h("label", { class: "campo" }, "Mês", h("input", { type: "month", id: "nova-mes", value: n.mes || proximoMes(), onchange: (e) => { n.mes = e.target.value; render(); } })));
-    } else {
-      campos.push(h("label", { class: "campo" }, n.tipo === "quinzenal" ? "Começa em" : "De", h("input", { type: "date", id: "nova-inicio", value: p.inicio, onchange: (e) => { n.inicio = e.target.value; render(); } })));
-      if (n.tipo === "personalizado") campos.push(h("label", { class: "campo" }, "Até", h("input", { type: "date", id: "nova-fim", value: p.fim, min: p.inicio, onchange: (e) => { n.fim = e.target.value; render(); } })));
-    }
-    return h("section", { class: "painel" },
-      h("header", {}, h("h2", {}, "Nova escala")),
-      h("div", { class: "segmentado", role: "group", "aria-label": "Período" }, tipoBtn("quinzenal", "Quinzenal"), tipoBtn("mensal", "Mensal"), tipoBtn("personalizado", "Outro")),
-      campos,
-      h("p", { class: "small muted" }, `${E.formatarPeriodo(p.inicio, p.fim)} · ${qtd} ${qtd === 1 ? "culto" : "cultos"}`),
-      h("button", {
-        class: "btn primario", disabled: qtd === 0 || null,
-        onclick: () => {
-          const esc = E.gerarEscala(state, { inicio: p.inicio, fim: p.fim, tipo: n.tipo });
-          mudou(() => { state.escalas.push(esc); ui.escalaId = esc.id; });
-          toast(`Escala gerada com ${esc.cultos.length} cultos.`);
-        },
-      }, "Gerar escala"),
-      qtd === 0 ? h("p", { class: "small muted" }, "Nenhum culto ativo neste período. Confira a aba Cultos e regras.") : null
-    );
-  }
-
-  function painelListaEscalas() {
-    const lista = escalasOrdenadas();
-    if (!lista.length) return null;
-    return h("section", { class: "painel" },
-      h("header", {}, h("h2", {}, "Escalas salvas"), h("span", { class: "small muted" }, String(lista.length))),
-      h("div", { class: "lista-escalas" }, lista.map((esc) => {
-        const avisos = E.validarEscala(state, esc);
-        const erros = avisos.filter((a) => a.nivel === "erro").length;
-        return h("button", { class: "item-escala", "aria-current": String(esc.id === ui.escalaId), onclick: () => { ui.escalaId = esc.id; render(); } },
-          h("strong", {}, E.formatarPeriodo(esc.inicio, esc.fim)),
-          h("span", { class: "linha small muted" },
-            esc.status === "confirmada" ? h("span", { class: "selo ok" }, "Confirmada") : h("span", { class: "selo neutro" }, "Rascunho"),
-            erros ? h("span", { class: "selo erro" }, `${erros} pendente${erros > 1 ? "s" : ""}`) : null,
-            `${esc.cultos.length} cultos`
-          )
-        );
-      }))
-    );
-  }
-
-  function editorEscala(escala) {
     const avisos = E.validarEscala(state, escala);
     const porCampo = {};
     for (const a of avisos) {
@@ -476,381 +404,379 @@
     }
     const erros = avisos.filter((a) => a.nivel === "erro").length;
     const alertas = avisos.length - erros;
-    const local = !(window.claude && typeof window.claude.use === "function");
+    const estado = erros
+      ? h("button", { class: "btn tonal", onclick: () => verAvisos(escala, avisos) }, h("span", { class: "selo erro" }, String(erros)), erros > 1 ? "pendências" : "pendência")
+      : alertas
+        ? h("button", { class: "btn tonal", onclick: () => verAvisos(escala, avisos) }, h("span", { class: "selo alerta" }, String(alertas)), alertas > 1 ? "alertas" : "alerta")
+        : h("span", { class: "selo ok", style: "min-height:32px;padding:0 12px" }, "Tudo certo");
 
-    const topo = h("div", { class: "editor-topo" },
-      h("div", { class: "titulo" },
-        h("div", { style: "min-width:0;flex:1 1 280px" },
-          h("input", { type: "text", class: "titulo-input", id: "titulo-escala", value: escala.titulo, "aria-label": "Nome da escala", oninput: (e) => mudou(() => { escala.titulo = e.target.value; }, false) }),
-          h("p", { class: "muted" }, `${E.formatarPeriodo(escala.inicio, escala.fim)} · ${escala.cultos.length} cultos`)
-        ),
-        h("div", { class: "segmentado", style: "grid-template-columns:1fr 1fr;min-width:220px", role: "group", "aria-label": "Situação" },
-          h("button", { "aria-pressed": String(escala.status !== "confirmada"), onclick: () => mudou(() => { escala.status = "rascunho"; }) }, "Rascunho"),
-          h("button", { "aria-pressed": String(escala.status === "confirmada"), onclick: () => mudou(() => { escala.status = "confirmada"; }) }, "Confirmada")
-        )
-      ),
-      h("div", { class: "acoes" },
-        h("button", { class: "btn primario", onclick: () => janelaWhatsApp(escala) }, icone("copy"), "Texto para o WhatsApp"),
+    // Um cartão por culto; cultos ligados (ex.: domingo 9h e 18h) dividem o mesmo cartão.
+    const dias = [];
+    escala.cultos.forEach((c, ci) => {
+      if (E.liderDe(escala, c)) return;
+      let d = dias.find((x) => x.data === c.data);
+      if (!d) dias.push((d = { data: c.data, cultos: [] }));
+      d.cultos.push(ci);
+    });
+
+    return h("div", { class: "tela" },
+      h("section", { class: "cartao" },
+        h("div", { class: "seletor-escala" },
+          h("button", { class: "periodo", onclick: trocarEscala, "aria-label": `Escala de ${E.formatarPeriodo(escala.inicio, escala.fim)}. Trocar ou criar outra` },
+            h("span", { class: "rotulo" }, escala.status === "confirmada" ? "Escala confirmada" : "Rascunho da escala"),
+            h("b", {}, E.formatarPeriodo(escala.inicio, escala.fim), icone("baixo")),
+            h("span", { class: "small muted" }, `${dias.length} ${dias.length === 1 ? "dia" : "dias"} de culto · toque para trocar ou criar outra`)),
+          h("button", { class: "btn icone", "aria-label": "Mais opções da escala", onclick: () => opcoesEscala(escala) }, icone("opcoes"))),
+        h("div", { class: "resumo" },
+          h("button", { class: "btn primario", onclick: () => enviarWhatsApp(escala) }, icone("enviar"), "Enviar no WhatsApp"),
+          estado)),
+      dias.map((d) => h("section", { class: "dia", "aria-label": E.formatarData(d.data, "longa") },
+        h("h2", {}, E.formatarData(d.data, "longa")),
+        d.cultos.map((ci) => cartaoCulto(escala, ci, porCampo)))));
+  }
+
+  function cartaoCulto(escala, ci, porCampo) {
+    const culto = escala.cultos[ci];
+    const seguidores = escala.cultos.filter((c) => E.liderDe(escala, c) === culto);
+    const grupo = [culto, ...seguidores];
+    const aviso = (campo) => porCampo[`${ci}|${campo}`];
+    const fixo = new Set(culto.travados || []);
+
+    // Qual lista de músicas está à mostra (num cartão com dois horários).
+    const mostrado = porId(grupo, ui.ordemDe[culto.id]) || culto;
+    const ehSeguidor = mostrado !== culto;
+    const mci = escala.cultos.indexOf(mostrado);
+
+    const equipe = E.equipePorFuncao(culto).map((g) => h("div", { class: "funcao" },
+      h("span", {}, E.nomeFuncao(state, g.funcao)),
+      h("div", { class: "chips" }, g.vagas.map((v) => {
+        const p = porId(state.pessoas, v.pessoaId);
+        const a = aviso(`e:${v.si}`);
+        return h("button", {
+          class: `pessoa${p ? "" : " vazia"}`, "data-nivel": a ? a.nivel : null, title: a ? a.msg : null,
+          "aria-label": `${E.nomeFuncao(state, g.funcao)}: ${p ? p.nome : "a definir"}${a ? `. ${a.msg}` : ""}`,
+          onclick: () => escolherPessoa(escala, ci, v.si),
+        }, fixo.has(`e:${v.si}`) ? icone("pino") : null, p ? p.nome : "a definir");
+      }))));
+
+    const musicas = mostrado.musicas.map((vaga, k) => {
+      const m = porId(state.musicas, vaga.id);
+      const a = ehSeguidor ? null : aviso(`m:${k}`);
+      const tags = m ? (m.tags || []).filter((t) => ["trinitario", "cristocentrico", "doutrinario"].includes(t)).map((t) => E.nomeTag(state, t)).join(" · ") : "";
+      const nome = m ? E.rotuloMusica(m) : "música";
+      return h("li", {},
         h("button", {
-          class: "btn", title: "Sorteia de novo tudo o que não estiver travado",
-          onclick: () => {
-            const nova = E.gerarEscala(state, { inicio: escala.inicio, fim: escala.fim, tipo: escala.tipo }, escala);
-            mudou(() => { state.escalas[state.escalas.indexOf(escala)] = nova; });
-            toast("Escala sorteada de novo. O que estava travado foi mantido.");
-          },
-        }, icone("refresh"), "Sortear de novo"),
-        h("button", { class: "btn", onclick: () => janelaCultoAvulso(escala) }, icone("plus"), "Culto avulso"),
-        local ? h("button", { class: "btn", onclick: () => window.print() }, icone("print"), "Imprimir") : null,
-        h("button", { class: "btn perigo", onclick: () => confirmar("Excluir esta escala?", `A escala de ${E.formatarPeriodo(escala.inicio, escala.fim)} será apagada. Isso não pode ser desfeito.`, "Excluir", () => mudou(() => { state.escalas = state.escalas.filter((e) => e !== escala); ui.escalaId = escalasOrdenadas()[0] ? escalasOrdenadas()[0].id : null; })) }, icone("trash"), "Excluir")
-      ),
-      avisos.length
-        ? h("details", { class: "resumo-avisos" },
-            h("summary", {}, erros ? h("span", { class: "selo erro" }, `${erros} pendência${erros > 1 ? "s" : ""}`) : null, alertas ? h("span", { class: "selo alerta" }, `${alertas} alerta${alertas > 1 ? "s" : ""}`) : null, h("span", { class: "small muted" }, "ver lista")),
-            h("ul", {}, avisos.map((a) => h("li", {}, h("button", { onclick: () => irParaCulto(escala.cultos[a.ci].id) }, E.formatarData(escala.cultos[a.ci].data, "dia")), ` · ${a.msg}`)))
-          )
-        : h("p", { class: "selo ok", style: "justify-self:start" }, "Tudo certo nesta escala")
-    );
+          class: `musica${m ? "" : " vazia"}`, "data-nivel": a ? a.nivel : null, title: a ? a.msg : null,
+          onclick: () => (ehSeguidor ? escolherOrdem(escala, mci, k, culto) : escolherMusica(escala, ci, k)),
+        },
+          h("b", {}, m ? E.rotuloMusica(m) : `${E.nomeTipo(vaga.tipo)} a definir`),
+          h("span", { class: "fixa" }, !ehSeguidor && fixo.has(`m:${k}`) ? icone("pino") : null),
+          h("span", { class: "sub" }, [E.nomeTipo(vaga.tipo), m && m.tom ? `tom ${m.tom}` : "", tags, a ? a.msg : ""].filter(Boolean).join(" · "))),
+        h("span", { class: "ordem" },
+          h("button", { class: "btn icone", "aria-label": `Subir ${nome}`, disabled: k === 0 || null, onclick: () => mudou(() => E.moverMusica(mostrado, k, -1)) }, icone("cima")),
+          h("button", { class: "btn icone", "aria-label": `Descer ${nome}`, disabled: k === mostrado.musicas.length - 1 || null, onclick: () => mudou(() => E.moverMusica(mostrado, k, 1)) }, icone("baixo"))));
+    });
 
-    return h("div", {},
-      topo,
-      h("div", { class: "cultos" }, escala.cultos.map((c, ci) => cartaoCulto(escala, c, ci, porCampo))),
-      resumoEquipe(escala)
-    );
+    const notas = grupo.filter((x) => x.obs);
+    return h("article", { class: "cartao culto", id: `culto-${culto.id}` },
+      h("header", { class: "culto-cab" },
+        h("div", { class: "horarios" },
+          grupo.map((x) => h("div", { class: "horario" }, x.hora ? h("span", { class: "hora" }, x.hora) : null, h("h3", {}, x.nome))),
+          culto.solene || culto.avulso ? h("div", { class: "selos" },
+            culto.solene ? h("span", { class: "selo solene" }, "Solene") : null,
+            culto.avulso ? h("span", { class: "selo neutro" }, "Extra") : null) : null),
+        h("button", { class: "btn icone", "aria-label": `Opções do culto ${culto.nome}`, onclick: () => opcoesCulto(escala, ci) }, icone("opcoes"))),
+      equipe.length ? h("div", { class: "bloco" }, h("div", { class: "bloco-cab" }, h("span", { class: "rotulo" }, "Equipe")), h("div", { class: "funcoes" }, equipe)) : null,
+      h("div", { class: "bloco" },
+        h("div", { class: "bloco-cab" },
+          h("span", { class: "rotulo" }, "Músicas"),
+          seguidores.length ? h("div", { class: "segmentado", role: "group", "aria-label": "Ver a ordem das músicas de qual culto" }, grupo.map((x) => h("button", {
+            "aria-pressed": String(x === mostrado), onclick: () => { ui.ordemDe[culto.id] = x.id; render(); },
+          }, x.hora || x.nome))) : null),
+        ehSeguidor ? h("p", { class: "small muted" }, `Mesmas músicas do culto das ${culto.hora}. Aqui você muda só a ordem.`) : null,
+        musicas.length ? h("ol", { class: "musicas" }, musicas) : h("p", { class: "small muted" }, "Este culto não tem músicas configuradas.")),
+      notas.length ? h("div", { class: "bloco" }, notas.map((x) => h("p", { class: "nota" }, grupo.length > 1 ? `${x.hora}: ${x.obs}` : x.obs))) : null);
   }
 
   function irParaCulto(id) {
     const el = document.getElementById(`culto-${id}`);
     if (!el) return;
     el.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
-    el.classList.remove("destaque");
-    void el.offsetWidth;
     el.classList.add("destaque");
+    setTimeout(() => el.classList.remove("destaque"), 1600);
   }
 
-  function botaoTrava(culto, campo) {
-    const travado = (culto.travados || []).includes(campo);
-    return h("button", {
-      class: "btn leve icone", "aria-pressed": String(travado), title: travado ? "Travado: não muda ao sortear de novo" : "Travar este campo",
-      "aria-label": travado ? "Destravar" : "Travar",
-      onclick: () => mudou(() => {
-        culto.travados = travado ? culto.travados.filter((t) => t !== campo) : [...(culto.travados || []), campo];
-      }),
-    }, icone(travado ? "lock" : "unlock"));
+  function verAvisos(escala, avisos) {
+    painel({
+      titulo: "O que precisa de atenção",
+      sub: "Toque num item para ir até o culto.",
+      corpo: h("ul", { class: "avisos" }, avisos.map((a) => {
+        const c = escala.cultos[a.ci];
+        return h("li", { class: a.nivel }, h("button", { onclick: () => { fecharAtual(true); setTimeout(() => irParaCulto(c.id), 60); } },
+          h("span", { class: "ponto", "aria-hidden": "true" }),
+          h("span", {}, h("b", {}, `${E.formatarData(c.data, "dia")} · ${c.nome}`), h("br"), h("span", { class: "small muted" }, a.msg))));
+      })),
+      foco: ".avisos button",
+    });
   }
 
-  function botaoSortear(escala, ci, campo) {
-    return h("button", {
-      class: "btn leve icone", title: "Sortear outro", "aria-label": "Sortear outro",
-      onclick: () => mudou(() => { E.sortearCampo(state, escala, ci, campo); }),
-    }, icone("refresh"));
+  /** Fixar: o campo não muda quando a escala ou o culto são sorteados de novo. */
+  function interruptorFixo(culto, campo) {
+    const fixo = (culto.travados || []).includes(campo);
+    return h("label", { class: "interruptor" },
+      h("span", {}, "Manter esta escolha", h("small", {}, "Não muda ao sortear de novo")),
+      h("input", { type: "checkbox", role: "switch", checked: fixo, onchange: (e) => {
+        mudou(() => { culto.travados = e.target.checked ? [...(culto.travados || []), campo] : (culto.travados || []).filter((t) => t !== campo); });
+      } }));
   }
 
-  function travar(culto, campo) {
+  function fixar(culto, campo) {
     if (!(culto.travados || []).includes(campo)) culto.travados = [...(culto.travados || []), campo];
-  }
-
-  function campoValor(texto, aviso, onclick, direita) {
-    return h("button", { class: `valor${texto ? "" : " vazio"}`, "data-nivel": aviso ? aviso.nivel : null, title: aviso ? aviso.msg : null, onclick },
-      h("span", {}, texto || "a definir"), direita ? h("small", {}, direita) : null);
-  }
-
-  function cartaoCulto(escala, culto, ci, porCampo) {
-    const d = E.parseData(culto.data);
-    const lit = porId(state.liturgias, culto.liturgiaId);
-    const aviso = (campo) => porCampo[`${ci}|${campo}`];
-
-    const lider = E.liderDe(escala, culto);
-    const equipe = lider ? [] : culto.equipe.map((s, si) => {
-      const campo = `e:${si}`;
-      const p = porId(state.pessoas, s.pessoaId);
-      return h("div", { class: "linha-campo" },
-        h("span", { class: "rotulo" }, E.nomeFuncao(state, s.funcao)),
-        campoValor(p && p.nome, aviso(campo), () => escolherPessoa(escala, ci, si)),
-        h("span", { class: "mini-acoes nao-imprimir" }, botaoSortear(escala, ci, campo), botaoTrava(culto, campo))
-      );
-    });
-
-    const itens = culto.liturgia.map((it, ii) => {
-      let corpo;
-      if (it.tipo === "musica") {
-        corpo = it.musicas.map((id, k) => {
-          const campo = `m:${ii}:${k}`;
-          const m = porId(state.musicas, id);
-          return h("div", { class: "linha-valor" },
-            campoValor(E.rotuloMusica(m), aviso(campo), () => escolherMusica(escala, ci, ii, k), m && m.tom ? `Tom ${m.tom}` : null),
-            lider ? h("span") : h("span", { class: "mini-acoes nao-imprimir" }, botaoSortear(escala, ci, campo), botaoTrava(culto, campo))
-          );
-        });
-      } else if (it.tipo === "oficial") {
-        corpo = it.oficiais.map((id, k) => {
-          const campo = `o:${ii}:${k}`;
-          return h("div", { class: "linha-valor" },
-            campoValor(E.nomeOficial(porId(state.oficiais, id)), aviso(campo), () => escolherOficial(escala, ci, ii, k)),
-            h("span", { class: "mini-acoes nao-imprimir" }, botaoSortear(escala, ci, campo), botaoTrava(culto, campo))
-          );
-        });
-      } else {
-        corpo = it.texto ? h("span", { class: "texto-fixo" }, it.texto) : null;
-      }
-      return h("li", {},
-        h("div", { class: "item-corpo" },
-          h("div", { class: "cab" }, h("strong", {}, it.titulo), it.tipo !== "texto" && it.texto ? h("span", { class: "small muted" }, it.texto) : null),
-          corpo,
-          h("input", {
-            type: "text", class: "nota", id: `nota-${culto.id}-${ii}`, value: it.nota || "",
-            placeholder: it.tipo === "oficial" ? "Texto bíblico ou observação" : "Observação (opcional)",
-            "aria-label": `Observação: ${it.titulo}`,
-            oninput: (e) => mudou(() => { it.nota = e.target.value; }, false),
-          })
-        )
-      );
-    });
-
-    return h("article", { class: `culto${culto.solene ? " solene" : ""}`, id: `culto-${culto.id}` },
-      h("header", {},
-        h("div", { class: "data-bloco", "aria-hidden": "true" }, h("b", { class: "num" }, String(d.getDate()).padStart(2, "0")), h("span", {}, `${E.DIAS_CURTOS[d.getDay()]} · ${E.MESES[d.getMonth()].slice(0, 3)}`)),
-        h("div", { style: "min-width:0" },
-          h("h3", {}, culto.nome),
-          h("div", { class: "sub" },
-            h("span", {}, `${E.formatarData(culto.data, "longa")}${culto.hora ? ` · ${culto.hora}` : ""}`),
-            culto.solene ? h("span", { class: "selo solene" }, "Solene") : null,
-            culto.avulso ? h("span", { class: "selo neutro" }, "Avulso") : null
-          ),
-          lit ? h("div", { class: "sub" }, `Liturgia: ${lit.nome}`) : null
-        ),
-        h("div", { class: "mini-acoes nao-imprimir" },
-          h("button", {
-            class: "btn leve icone", title: "Sortear este culto de novo (mantém os travados)", "aria-label": "Sortear este culto de novo",
-            onclick: () => mudou(() => {
-              const trav = new Set(culto.travados || []);
-              culto.equipe.forEach((s, si) => { if (!trav.has(`e:${si}`)) s.pessoaId = null; });
-              culto.liturgia.forEach((it, ii) => {
-                if (!lider) it.musicas = it.musicas.map((id, k) => (trav.has(`m:${ii}:${k}`) ? id : null));
-                it.oficiais = it.oficiais.map((id, k) => (trav.has(`o:${ii}:${k}`) ? id : null));
-              });
-              E.preencherCulto(state, escala, ci, Math.random);
-            }),
-          }, icone("refresh")),
-          culto.avulso ? h("button", { class: "btn leve icone perigo", title: "Remover este culto", "aria-label": "Remover este culto", onclick: () => confirmar("Remover este culto da escala?", `${culto.nome} de ${E.formatarData(culto.data)} sai desta escala.`, "Remover", () => mudou(() => { escala.cultos.splice(ci, 1); })) }, icone("trash")) : null
-        )
-      ),
-      lider
-        ? h("section", { "aria-label": "Equipe" },
-            h("span", { class: "eyebrow" }, "Equipe"),
-            h("p", { class: "small muted" }, `A mesma equipe e as mesmas músicas do ${lider.nome} (${lider.hora}). Para mudar alguém ou alguma música, mude lá. Aqui você só troca a ordem das músicas: toque numa música e escolha com qual ela troca de lugar.`),
-            h("p", { class: "small" }, resumoEquipeCulto(culto)))
-        : equipe.length ? h("section", { "aria-label": "Equipe" }, h("span", { class: "eyebrow" }, "Equipe"), equipe) : null,
-      h("section", { "aria-label": "Ordem do culto" }, h("span", { class: "eyebrow" }, "Ordem do culto"), itens.length ? h("ol", { class: "ordem" }, itens) : h("p", { class: "muted small" }, "Este culto não tem liturgia definida.")),
-      h("footer", {},
-        h("textarea", { id: `obs-${culto.id}`, placeholder: "Observações para a equipe (ensaio, roupa, avisos…)", "aria-label": "Observações do culto", value: culto.obs || "", oninput: (e) => mudou(() => { culto.obs = e.target.value; }, false) })
-      )
-    );
   }
 
   function escolherPessoa(escala, ci, si) {
     const culto = escala.cultos[ci];
-    const slot = culto.equipe[si];
+    const vaga = culto.equipe[si];
     const cands = E.candidatosPessoa(state, escala, ci, si);
     const op = (c) => ({
       id: c.pessoa.id, rotulo: c.pessoa.nome,
-      direita: `${c.vezes}× na escala`,
+      direita: c.vezes ? `${c.vezes}× nesta escala` : "ainda não escalado",
       meta: c.bloqueio ? h("span", { class: "ruim" }, c.bloqueio) : c.apoio ? "só apoio nesta função" : null,
     });
-    escolherDe({
-      titulo: E.nomeFuncao(state, slot.funcao),
-      sub: `${culto.nome} · ${E.formatarData(culto.data, "dia")}`,
-      atual: slot.pessoaId,
+    escolher({
+      titulo: E.nomeFuncao(state, vaga.funcao),
+      sub: `${E.formatarData(culto.data, "longa")} · ${culto.nome}`,
+      topo: h("div", { style: "display:grid;gap:8px" },
+        h("button", { class: "btn tonal largo", onclick: () => { fecharAtual(); mudou(() => E.sortearCampo(state, escala, ci, `e:${si}`)); } }, icone("sortear"), "Sortear outra pessoa"),
+        interruptorFixo(culto, `e:${si}`)),
+      atual: vaga.pessoaId,
       grupos: [
-        { titulo: "Titulares disponíveis (quem serviu menos aparece primeiro)", itens: cands.filter((c) => !c.bloqueio && !c.apoio).map(op) },
+        { titulo: "Disponíveis · quem serviu menos primeiro", itens: cands.filter((c) => !c.bloqueio && !c.apoio).map(op) },
         { titulo: "Só apoio", itens: cands.filter((c) => !c.bloqueio && c.apoio).map(op) },
         { titulo: "Com restrição", itens: cands.filter((c) => c.bloqueio).map(op) },
       ],
       vazio: "Deixar sem ninguém",
-      aoEscolher: (id) => mudou(() => { slot.pessoaId = id; if (id) travar(culto, `e:${si}`); }),
+      aoEscolher: (id) => mudou(() => { vaga.pessoaId = id; if (id) fixar(culto, `e:${si}`); }),
     });
-    if (!cands.length) toast(`Ninguém cadastrado faz ${E.nomeFuncao(state, slot.funcao)}. Marque a função na aba Equipe do louvor.`);
   }
 
-  function escolherOficial(escala, ci, ii, k) {
+  function metaMusica(c) {
+    const partes = [c.ultima ? `última vez ${E.formatarData(c.ultima, "curta")}` : "sem registro recente"];
+    if (c.bloqueio) partes.push(h("span", { class: "ruim" }, ` · ${c.bloqueio}`));
+    if (!c.atende) partes.push(h("span", { class: "ruim" }, ` · falta: ${c.faltam.map((t) => E.nomeTag(state, t)).join(", ")}`));
+    return partes;
+  }
+
+  function escolherMusica(escala, ci, k) {
     const culto = escala.cultos[ci];
-    const item = culto.liturgia[ii];
-    const cands = E.candidatosOficial(state, escala, ci, ii, k);
-    const op = (c) => ({
-      id: c.oficial.id, rotulo: E.nomeOficial(c.oficial), busca: `${c.oficial.nome} ${c.oficial.cargo}`,
-      direita: `${c.vezes}× na escala`,
-      meta: c.bloqueio ? h("span", { class: "ruim" }, c.bloqueio) : c.noCulto ? "já tem outra parte neste culto" : c.oficial.cargo,
-    });
-    escolherDe({
-      titulo: item.titulo,
-      sub: `${culto.nome} · ${E.formatarData(culto.data, "dia")}`,
-      atual: item.oficiais[k],
+    const vaga = culto.musicas[k];
+    const cands = E.candidatosMusica(state, escala, ci, k);
+    const exigidas = E.tagsExigidas(state, vaga.tipo, culto.solene);
+    const op = (c) => ({ id: c.musica.id, rotulo: E.rotuloMusica(c.musica), busca: `${c.musica.numero} ${c.musica.titulo} ${c.musica.autor}`, direita: c.musica.tom ? `tom ${c.musica.tom}` : "", meta: metaMusica(c) });
+    escolher({
+      titulo: E.nomeTipo(vaga.tipo),
+      sub: `${E.formatarData(culto.data, "longa")} · ${culto.nome}${exigidas.length ? ` · precisa ser ${exigidas.map((t) => E.nomeTag(state, t)).join(" e ")}` : ""}`,
+      topo: h("div", { style: "display:grid;gap:8px" },
+        h("button", { class: "btn tonal largo", onclick: () => { fecharAtual(); mudou(() => E.sortearCampo(state, escala, ci, `m:${k}`)); } }, icone("sortear"), "Sortear outra música"),
+        interruptorFixo(culto, `m:${k}`)),
+      buscar: true,
+      atual: vaga.id,
       grupos: [
-        { titulo: "Disponíveis", itens: cands.filter((c) => !c.bloqueio).map(op) },
-        { titulo: "Com restrição", itens: cands.filter((c) => c.bloqueio).map(op) },
+        { titulo: exigidas.length ? "Seguem a orientação e não foram cantadas há pouco" : "Não foram cantadas há pouco", itens: cands.filter((c) => c.atende && !c.bloqueio).map(op) },
+        { titulo: "Cantadas há pouco ou já neste culto", itens: cands.filter((c) => c.atende && c.bloqueio).map(op) },
+        { titulo: "Fora da orientação do culto solene", itens: cands.filter((c) => !c.atende).map(op) },
       ],
       vazio: "Deixar a definir",
-      aoEscolher: (id) => mudou(() => { item.oficiais[k] = id; if (id) travar(culto, `o:${ii}:${k}`); }),
+      aoEscolher: (id) => mudou(() => { E.colocarMusica(culto, k, id); if (id) fixar(culto, `m:${k}`); }),
     });
   }
 
-  /** Põe a música no lugar; se ela já estava em outra parte do mesmo culto, as duas trocam de lugar. */
-  function colocarMusica(culto, ii, k, id) {
-    const atual = culto.liturgia[ii].musicas[k];
-    if (id) {
-      culto.liturgia.forEach((it) => it.musicas.forEach((x, kk) => {
-        if (x === id && !(it === culto.liturgia[ii] && kk === k)) it.musicas[kk] = atual;
-      }));
-    }
-    culto.liturgia[ii].musicas[k] = id;
-  }
-
-  function resumoEquipeCulto(culto) {
-    const grupos = [];
-    culto.equipe.forEach((s) => {
-      const nome = (porId(state.pessoas, s.pessoaId) || {}).nome || "a definir";
-      const g = grupos.find((x) => x.funcao === s.funcao);
-      if (g) g.nomes.push(nome);
-      else grupos.push({ funcao: s.funcao, nomes: [nome] });
-    });
-    return grupos.map((g) => `${E.nomeFuncao(state, g.funcao)}: ${g.nomes.join(", ")}`).join(" · ");
-  }
-
-  /** No culto que acompanha outro, a escolha é só entre as músicas do dia: muda a ordem. */
-  function escolherOrdem(escala, ci, ii, k, lider) {
+  /** No culto que repete outro, a escolha é só entre as músicas do dia: muda a ordem. */
+  function escolherOrdem(escala, ci, k, lider) {
     const culto = escala.cultos[ci];
-    const item = culto.liturgia[ii];
-    const onde = (id) => {
-      for (const it of culto.liturgia) if (it.musicas.includes(id)) return it.titulo;
-      return "";
-    };
-    const doDia = [...new Set(lider.liturgia.flatMap((it) => it.musicas).filter(Boolean))];
-    escolherDe({
-      titulo: item.titulo,
-      sub: `Músicas deste domingo. A escolhida troca de lugar com a atual.`,
-      atual: item.musicas[k],
-      grupos: [{ itens: doDia.map((id) => {
-        const m = porId(state.musicas, id);
-        return { id, rotulo: E.rotuloMusica(m), busca: m ? `${m.numero} ${m.titulo}` : "", direita: m && m.tom ? `Tom ${m.tom}` : "", meta: onde(id) ? `hoje em: ${onde(id)}` : null };
-      }) }],
-      aoEscolher: (id) => mudou(() => { if (id) colocarMusica(culto, ii, k, id); }),
+    const posicao = (id) => culto.musicas.findIndex((m) => m.id === id) + 1;
+    escolher({
+      titulo: `${k + 1}ª música às ${culto.hora}`,
+      sub: "A música escolhida troca de lugar com a que está aqui.",
+      atual: culto.musicas[k].id,
+      grupos: [{ itens: lider.musicas.filter((m) => m.id).map((m) => ({ id: m.id, rotulo: E.rotuloMusica(porId(state.musicas, m.id)), direita: `agora é a ${posicao(m.id)}ª` })) }],
+      aoEscolher: (id) => mudou(() => { if (id) E.colocarMusica(culto, k, id); }),
     });
   }
 
-  function escolherMusica(escala, ci, ii, k) {
+  function opcoesCulto(escala, ci) {
     const culto = escala.cultos[ci];
-    const lider = E.liderDe(escala, culto);
-    if (lider) return escolherOrdem(escala, ci, ii, k, lider);
-    const item = culto.liturgia[ii];
-    const modelo = E.itemModelo(state, culto, item) || item;
-    const cands = E.candidatosMusica(state, escala, ci, ii, k);
-    const op = (c) => {
-      const partes = [];
-      partes.push(c.ultima ? `última vez: ${E.formatarData(c.ultima, "curta")}` : "sem registro antes desta data");
-      if (c.bloqueio) partes.push(h("span", { class: "ruim" }, ` · ${c.bloqueio}`));
-      if (!c.atende && c.faltam.length) partes.push(h("span", { class: "ruim" }, ` · falta: ${c.faltam.map((t) => E.nomeTag(state, t)).join(", ")}`));
-      return { id: c.musica.id, rotulo: E.rotuloMusica(c.musica), busca: `${c.musica.numero} ${c.musica.titulo} ${c.musica.autor}`, direita: c.musica.tom ? `Tom ${c.musica.tom}` : "", meta: partes };
-    };
-    const exigidas = new Set();
-    for (const tipo of modelo.tipos || []) E.tagsExigidas(state, modelo, culto.solene, tipo).forEach((t) => exigidas.add(t));
-    escolherDe({
-      titulo: item.titulo,
-      sub: `${culto.nome} · ${E.formatarData(culto.data, "dia")}${exigidas.size ? ` · exige: ${[...exigidas].map((t) => E.nomeTag(state, t)).join(", ")}` : ""}`,
-      atual: item.musicas[k],
-      grupos: [
-        { titulo: "Atendem a este momento", itens: cands.filter((c) => c.atende && !c.bloqueio).map(op) },
-        { titulo: "Atendem, mas cantadas há pouco", itens: cands.filter((c) => c.atende && c.bloqueio).map(op) },
-        { titulo: "Não atendem às etiquetas exigidas", itens: cands.filter((c) => !c.atende).map(op) },
-      ],
-      vazio: "Deixar a definir",
-      aoEscolher: (id) => mudou(() => { colocarMusica(culto, ii, k, id); if (id) travar(culto, `m:${ii}:${k}`); }),
-    });
-  }
-
-  function resumoEquipe(escala) {
-    const linhas = E.resumoPessoas(state, escala);
-    if (!linhas.length) return null;
-    return h("details", { class: "painel nao-imprimir", style: "margin-top:20px" },
-      h("summary", { style: "cursor:pointer" }, h("strong", {}, "Quantas vezes cada pessoa serve nesta escala")),
-      h("div", { class: "tabela-wrap" }, h("table", {},
-        h("thead", {}, h("tr", {}, h("th", {}, "Pessoa"), h("th", {}, "Vezes"), h("th", {}, "Funções"))),
-        h("tbody", {}, linhas.map((l) => h("tr", {},
-          h("td", {}, l.pessoa.nome),
-          h("td", { class: "num" }, String(l.total)),
-          h("td", { class: "small muted" }, Object.entries(l.funcoes).map(([f, n]) => `${E.nomeFuncao(state, f)} (${n})`).join(", ") || "—")
-        )))
-      ))
-    );
-  }
-
-  function janelaWhatsApp(escala) {
-    let comLiturgia = true;
-    let comLinks = false;
-    const pre = h("pre", { class: "texto", id: "texto-whatsapp" });
-    const atualizar = () => { pre.textContent = E.textoWhatsApp(state, escala, { liturgia: comLiturgia, links: comLinks }); };
-    atualizar();
-    abrirJanela({
-      titulo: "Texto para o WhatsApp",
-      sub: "Negrito e itálico aparecem formatados ao colar no WhatsApp.",
-      larga: true,
+    const seguidores = escala.cultos.filter((c) => E.liderDe(escala, c) === culto);
+    const obs = [culto, ...seguidores].map((x) => ({ x, campo: h("textarea", { id: `obs-${x.id}`, rows: 2, placeholder: "Ensaio, roupa, avisos para a equipe…", value: x.obs || "" }) }));
+    painel({
+      titulo: culto.nome,
+      sub: `${E.formatarData(culto.data, "longa")}${culto.hora ? ` · ${culto.hora}` : ""}`,
       corpo: [
-        h("label", { class: "check" }, h("input", { type: "checkbox", id: "com-liturgia", checked: true, onchange: (e) => { comLiturgia = e.target.checked; atualizar(); } }), "Incluir a ordem do culto completa"),
-        h("label", { class: "check" }, h("input", { type: "checkbox", id: "com-links", onchange: (e) => { comLinks = e.target.checked; atualizar(); } }), "Incluir os links do YouTube (para a equipe ensaiar)"),
+        h("button", { class: "btn tonal largo", onclick: () => { fecharAtual(); mudou(() => E.sortearCulto(state, escala, ci)); avisar("Culto sorteado de novo. O que estava fixado foi mantido."); } }, icone("sortear"), "Sortear este culto de novo"),
+        obs.map(({ x, campo }) => h("label", { class: "campo" }, obs.length > 1 ? `Observação · ${x.hora}` : "Observação para a equipe", campo)),
+        culto.avulso ? h("button", { class: "btn perigo largo", onclick: () => { fecharAtual(); comDesfazer("Culto extra removido.", () => { escala.cultos.splice(ci, 1); }); } }, icone("lixo"), "Remover este culto extra") : null,
+      ],
+      rodape: (fechar) => [h("button", { class: "btn primario", onclick: () => { fechar(); mudou(() => obs.forEach(({ x, campo }) => { x.obs = campo.value.trim(); })); } }, "Salvar")],
+      foco: ".btn.tonal",
+    });
+  }
+
+  function opcoesEscala(escala) {
+    const itens = [
+      h("div", { class: "campo" }, "Situação",
+        h("div", { class: "segmentado", role: "group", "aria-label": "Situação da escala", style: "display:grid" },
+          h("button", { "aria-pressed": String(escala.status !== "confirmada"), onclick: () => { fecharAtual(); mudou(() => { escala.status = "rascunho"; }); } }, "Rascunho"),
+          h("button", { "aria-pressed": String(escala.status === "confirmada"), onclick: () => { fecharAtual(); mudou(() => { escala.status = "confirmada"; }); avisar("Escala confirmada."); } }, "Confirmada"))),
+      h("button", {
+        class: "btn tonal largo", onclick: () => {
+          fecharAtual();
+          comDesfazer("Escala sorteada de novo. O que estava fixado foi mantido.", () => {
+            state.escalas[state.escalas.indexOf(escala)] = E.gerarEscala(state, { inicio: escala.inicio, fim: escala.fim }, escala);
+          });
+        },
+      }, icone("sortear"), "Sortear a escala de novo"),
+      h("button", { class: "btn largo", onclick: () => cultoExtra(escala) }, icone("mais"), "Adicionar culto extra"),
+      h("button", { class: "btn largo", onclick: () => quantasVezes(escala) }, icone("pessoas"), "Quantas vezes cada um serve"),
+      local() ? h("button", { class: "btn largo", onclick: () => { fecharAtual(); setTimeout(() => window.print(), 50); } }, icone("imprimir"), "Imprimir") : null,
+      h("button", {
+        class: "btn perigo largo", onclick: () => {
+          fecharAtual();
+          comDesfazer("Escala excluída.", () => { state.escalas = state.escalas.filter((e) => e !== escala); ui.escalaId = null; garantirEscalaAtual(); });
+        },
+      }, icone("lixo"), "Excluir esta escala"),
+    ];
+    painel({ titulo: "Opções da escala", sub: E.formatarPeriodo(escala.inicio, escala.fim), corpo: h("div", { style: "display:grid;gap:10px" }, itens), foco: ".btn.tonal" });
+  }
+
+  function trocarEscala() {
+    painel({
+      titulo: "Escalas",
+      corpo: [
+        h("button", { class: "btn primario largo", onclick: novaEscala }, icone("mais"), "Nova escala"),
+        h("ul", { class: "lista cartao" }, escalasOrdenadas().map((e) => {
+          const erros = E.validarEscala(state, e).filter((a) => a.nivel === "erro").length;
+          return h("li", {}, h("button", { class: "linha", "aria-current": String(e.id === ui.escalaId), onclick: () => { fecharAtual(true); ui.escalaId = e.id; render(); window.scrollTo({ top: 0 }); } },
+            h("span", { class: "avatar", "aria-hidden": "true" }, icone("calendario")),
+            h("span", {}, h("span", { class: "titulo" }, E.formatarPeriodo(e.inicio, e.fim)), h("br"),
+              h("span", { class: "sub" }, `${e.status === "confirmada" ? "Confirmada" : "Rascunho"}${erros ? ` · ${erros} pendência${erros > 1 ? "s" : ""}` : ""}`)),
+            e.id === ui.escalaId ? h("span", { class: "selo ok" }, "Aberta") : h("span")));
+        })),
+      ],
+      foco: ".btn.primario",
+    });
+  }
+
+  function novaEscala() {
+    const f = { tipo: "quinzenal", inicio: proximoDomingo(), mes: proximoMes(), fim: "" };
+    const corpo = h("div", { style: "display:grid;gap:16px" });
+    const periodo = () => {
+      if (f.tipo === "mensal") return { inicio: `${f.mes}-01`, fim: E.fimDoMes(f.mes) };
+      if (f.tipo === "quinzenal") return { inicio: f.inicio, fim: E.somarDias(f.inicio, 13) };
+      return { inicio: f.inicio, fim: f.fim && f.fim >= f.inicio ? f.fim : E.somarDias(f.inicio, 13) };
+    };
+    let botao = null;
+    const desenhar = () => {
+      const p = periodo();
+      const qtd = E.listarOcorrencias(state.cultos, p.inicio, p.fim).length;
+      const tipo = (id, nome) => h("button", { "aria-pressed": String(f.tipo === id), onclick: () => { f.tipo = id; desenhar(); } }, nome);
+      corpo.replaceChildren(
+        h("div", { class: "segmentado", role: "group", "aria-label": "Período", style: "display:grid" }, tipo("quinzenal", "Quinzenal"), tipo("mensal", "Mensal"), tipo("personalizado", "Outro")),
+        f.tipo === "mensal"
+          ? h("label", { class: "campo" }, "Mês", h("input", { type: "month", id: "nova-mes", value: f.mes, onchange: (e) => { f.mes = e.target.value || f.mes; desenhar(); } }))
+          : h("div", { style: "display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px" },
+              h("label", { class: "campo" }, f.tipo === "quinzenal" ? "Começa em" : "De", h("input", { type: "date", id: "nova-inicio", value: f.inicio, onchange: (e) => { f.inicio = e.target.value || f.inicio; desenhar(); } })),
+              f.tipo === "personalizado" ? h("label", { class: "campo" }, "Até", h("input", { type: "date", id: "nova-fim", value: p.fim, min: f.inicio, onchange: (e) => { f.fim = e.target.value; desenhar(); } })) : null),
+        h("p", { class: "muted" }, `${E.formatarPeriodo(p.inicio, p.fim)} · ${qtd} ${qtd === 1 ? "culto" : "cultos"}`));
+      if (botao) botao.disabled = qtd === 0;
+    };
+    desenhar();
+    painel({
+      titulo: "Nova escala",
+      sub: "A equipe e as músicas são distribuídas automaticamente; depois é só ajustar.",
+      corpo,
+      rodape: (fechar) => [botao = h("button", {
+        class: "btn primario", onclick: () => {
+          const p = periodo();
+          const esc = E.gerarEscala(state, { inicio: p.inicio, fim: p.fim, tipo: f.tipo });
+          fechar(true);
+          ui.tela = "escala";
+          mudou(() => { state.escalas.push(esc); ui.escalaId = esc.id; });
+          window.scrollTo({ top: 0 });
+          avisar(`Escala criada com ${esc.cultos.length} cultos.`);
+        },
+      }, "Gerar escala")],
+      foco: ".segmentado button",
+    });
+    desenhar();
+  }
+
+  function cultoExtra(escala) {
+    const modelos = state.cultos;
+    const f = { data: escala.inicio, cultoId: (modelos[0] || {}).id, nome: "", hora: "19:00", solene: false };
+    const doModelo = () => { const m = porId(modelos, f.cultoId); if (m) { f.hora = m.hora; f.solene = !!m.solene; } };
+    doModelo();
+    const corpo = h("div", { style: "display:grid;gap:16px" });
+    const desenhar = () => corpo.replaceChildren(
+      h("label", { class: "campo" }, "Nome", h("input", { type: "text", id: "ex-nome", placeholder: "Ex.: Culto de Natal", value: f.nome, oninput: (e) => { f.nome = e.target.value; } })),
+      h("div", { style: "display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px" },
+        h("label", { class: "campo" }, "Data", h("input", { type: "date", id: "ex-data", value: f.data, onchange: (e) => { f.data = e.target.value; } })),
+        h("label", { class: "campo" }, "Hora", h("input", { type: "time", id: "ex-hora", value: f.hora, onchange: (e) => { f.hora = e.target.value; } }))),
+      h("label", { class: "campo" }, "Equipe e músicas como no culto", h("select", { id: "ex-modelo", onchange: (e) => { f.cultoId = e.target.value; doModelo(); desenhar(); } },
+        modelos.map((m) => h("option", { value: m.id, selected: m.id === f.cultoId || null }, `${m.nome} (${E.DIAS_CURTOS[m.diaSemana]} ${m.hora})`)))),
+      h("label", { class: "interruptor" }, h("span", {}, "Culto solene", h("small", {}, "Aplica a orientação do pastor às músicas")), h("input", { type: "checkbox", role: "switch", checked: f.solene, onchange: (e) => { f.solene = e.target.checked; } })));
+    desenhar();
+    painel({
+      titulo: "Culto extra",
+      sub: "Para datas especiais: Natal, aniversário da igreja, ação de graças…",
+      corpo,
+      rodape: (fechar) => [h("button", {
+        class: "btn primario", onclick: () => {
+          if (!f.nome.trim()) return avisar("Dê um nome ao culto.");
+          if (!f.data) return avisar("Escolha a data.");
+          fechar(true);
+          let ci = 0;
+          mudou(() => { ci = E.adicionarCultoExtra(state, escala, { ...f, nome: f.nome.trim() }); });
+          const c = escala.cultos[ci];
+          if (c) setTimeout(() => irParaCulto(c.id), 60);
+        },
+      }, "Adicionar")],
+      foco: "#ex-nome",
+    });
+  }
+
+  function quantasVezes(escala) {
+    painel({
+      titulo: "Quantas vezes cada um serve",
+      sub: `${E.formatarPeriodo(escala.inicio, escala.fim)} · domingo de manhã e à noite contam como uma vez`,
+      corpo: h("table", {},
+        h("thead", {}, h("tr", {}, h("th", {}, "Pessoa"), h("th", {}, "Vezes"), h("th", {}, "Funções"))),
+        h("tbody", {}, E.resumoPessoas(state, escala).map((l) => h("tr", {},
+          h("td", {}, h("b", {}, l.pessoa.nome)),
+          h("td", { class: "num" }, String(l.total)),
+          h("td", { class: "small muted" }, Object.entries(l.funcoes).map(([f, n]) => `${E.nomeFuncao(state, f)} ${n}×`).join(", ") || "—"))))),
+    });
+  }
+
+  function enviarWhatsApp(escala) {
+    let links = false;
+    const pre = h("pre", { class: "texto", id: "texto-whatsapp" });
+    const atualizar = () => { pre.textContent = E.textoWhatsApp(state, escala, { links }); };
+    atualizar();
+    painel({
+      titulo: "Enviar no WhatsApp",
+      sub: "Copie e cole no grupo. Negrito e itálico aparecem formatados.",
+      corpo: [
+        h("label", { class: "interruptor" }, h("span", {}, "Incluir links do YouTube", h("small", {}, "Para a equipe ensaiar")),
+          h("input", { type: "checkbox", role: "switch", id: "com-links", onchange: (e) => { links = e.target.checked; atualizar(); } })),
         pre,
       ],
-      rodape: (fechar) => [
-        h("button", { class: "btn", onclick: fechar }, "Fechar"),
-        h("button", { class: "btn primario", onclick: () => copiar(pre.textContent, pre) }, icone("copy"), "Copiar texto"),
-      ],
+      rodape: () => [h("button", { class: "btn primario", onclick: () => copiar(pre.textContent, pre) }, icone("copiar"), "Copiar texto")],
+      foco: "footer .btn",
     });
   }
 
-  function janelaCultoAvulso(escala) {
-    const modelos = state.cultos;
-    const f = { data: escala.inicio, cultoId: modelos[0] ? modelos[0].id : "", nome: "", hora: "", liturgiaId: "", solene: null };
-    const preencherDoModelo = () => {
-      const m = porId(modelos, f.cultoId);
-      f.nome = m ? m.nome : "";
-      f.hora = m ? m.hora : "";
-      f.liturgiaId = m ? m.liturgiaId : (state.liturgias[0] || {}).id;
-      f.solene = m ? !!m.solene : false;
-    };
-    preencherDoModelo();
-    const corpo = h("div", { class: "pilha" });
-    const desenhar = () => corpo.replaceChildren(
-      h("div", { class: "grade" },
-        h("label", { class: "campo" }, "Data", h("input", { type: "date", id: "av-data", value: f.data, onchange: (e) => { f.data = e.target.value; } })),
-        h("label", { class: "campo" }, "Equipe igual à do culto", h("select", { id: "av-modelo", onchange: (e) => { f.cultoId = e.target.value; preencherDoModelo(); desenhar(); } }, modelos.map((m) => h("option", { value: m.id, selected: m.id === f.cultoId || null }, m.nome)))),
-        h("label", { class: "campo" }, "Nome do culto", h("input", { type: "text", id: "av-nome", value: f.nome, oninput: (e) => { f.nome = e.target.value; } })),
-        h("label", { class: "campo" }, "Hora", h("input", { type: "time", id: "av-hora", value: f.hora, oninput: (e) => { f.hora = e.target.value; } })),
-        h("label", { class: "campo" }, "Liturgia", h("select", { id: "av-lit", onchange: (e) => { f.liturgiaId = e.target.value; } }, state.liturgias.map((l) => h("option", { value: l.id, selected: l.id === f.liturgiaId || null }, l.nome))))
-      ),
-      h("label", { class: "check" }, h("input", { type: "checkbox", id: "av-solene", checked: f.solene, onchange: (e) => { f.solene = e.target.checked; } }), "Culto solene (aplica a orientação pastoral para as músicas)")
-    );
-    desenhar();
-    abrirJanela({
-      titulo: "Culto avulso",
-      sub: "Para datas especiais: Natal, aniversário da igreja, culto de ação de graças…",
-      corpo,
-      rodape: (fechar) => [
-        h("button", { class: "btn", onclick: fechar }, "Cancelar"),
-        h("button", {
-          class: "btn primario",
-          onclick: () => {
-            if (!f.data) return toast("Escolha a data do culto.");
-            fechar();
-            let ci = 0;
-            mudou(() => { ci = E.adicionarCultoAvulso(state, escala, f); });
-            const c = escala.cultos[ci];
-            if (c) setTimeout(() => irParaCulto(c.id), 50);
-          },
-        }, "Adicionar"),
-      ],
-    });
-  }
+  /* ---------------------------------------------------------- músicas */
 
-  /* -------------------------------------------------------- repertório */
-
-  /** Para cada música: a última vez cantada (até hoje) e a próxima já programada. */
   function usosMusicas() {
     const mapa = {};
     const marcar = (id, data) => {
@@ -859,81 +785,58 @@
       else if (!u.proxima || data < u.proxima) u.proxima = data;
     };
     for (const m of state.musicas) if (m.ultimaVez) marcar(m.id, m.ultimaVez);
-    for (const e of state.escalas) for (const c of e.cultos) for (const it of c.liturgia) for (const id of it.musicas) if (id) marcar(id, c.data);
+    for (const e of state.escalas) for (const c of e.cultos) if (!E.liderDe(e, c)) for (const v of c.musicas) if (v.id) marcar(v.id, c.data);
     return mapa;
   }
 
-  function aptaSolene(m) {
-    const r = state.regras;
-    const exig = m.tipo === "louvor" ? r.soleneTagsLouvor || [] : r.soleneTagsHinario || [];
-    return exig.every((t) => (m.tags || []).includes(t));
-  }
-
-  function telaRepertorio() {
-    const f = ui.rep;
-    const lista = h("div", {});
+  function telaMusicas() {
+    const FILTROS = [
+      { id: "todas", nome: "Todas", fn: () => true },
+      { id: "hino", nome: "Salmos e Hinos", fn: (m) => m.tipo === "hino" },
+      { id: "louvor", nome: "Louvores", fn: (m) => m.tipo === "louvor" },
+      { id: "solene", nome: "Aptas ao solene", fn: (m) => E.aptaSolene(state, m) && m.ativo !== false },
+      { id: "fora", nome: "Fora do rodízio", fn: (m) => m.ativo === false },
+    ];
     const usos = usosMusicas();
-    const desenharLista = () => {
-      const q = E.normalizar(f.busca);
-      const filtradas = state.musicas
-        .filter((m) => (!f.tipo || m.tipo === f.tipo) && (!f.tag || (m.tags || []).includes(f.tag)) && (!f.solene || aptaSolene(m)))
-        .filter((m) => !q || E.normalizar(`${m.numero} ${m.titulo} ${m.autor}`).includes(q))
+    const lista = h("div", { class: "cartao" });
+    const contagem = h("p", { class: "small muted", "aria-live": "polite" });
+    const desenhar = () => {
+      const f = FILTROS.find((x) => x.id === ui.filtro) || FILTROS[0];
+      const q = E.normalizar(ui.busca);
+      const itens = state.musicas
+        .filter((m) => f.fn(m) && (!q || E.normalizar(`${m.numero} ${m.titulo} ${m.autor}`).includes(q)))
         .sort((a, b) => a.tipo.localeCompare(b.tipo) || String(a.numero).localeCompare(String(b.numero), "pt-BR", { numeric: true }) || a.titulo.localeCompare(b.titulo, "pt-BR"));
-      if (!state.musicas.length) {
-        lista.replaceChildren(h("div", { class: "vazio-estado" }, h("h2", {}, "Repertório vazio"), h("p", {}, "Importe a lista de Salmos e Hinos e a de louvores colando o texto, ou cadastre uma por uma.")));
-        return;
-      }
-      lista.replaceChildren(
-        h("p", { class: "small muted", style: "margin-bottom:8px" }, `${filtradas.length} de ${state.musicas.length} músicas`),
-        h("div", { class: "tabela-wrap" }, h("table", {},
-          h("thead", {}, h("tr", {}, h("th", {}, "Tipo"), h("th", {}, "Nº"), h("th", {}, "Título"), h("th", {}, "Etiquetas"), h("th", {}, "Solene"), h("th", {}, "Cantada em"), h("th", {}, ""))),
-          h("tbody", {}, filtradas.map((m) => h("tr", { class: m.ativo === false ? "inativo" : "" },
-            h("td", {}, (E.TIPOS_MUSICA.find((t) => t.id === m.tipo) || {}).nome || m.tipo),
-            h("td", { class: "num" }, m.numero || "—"),
-            h("td", {},
-              h("strong", {}, m.titulo || (m.numero ? `Salmos e Hinos nº ${m.numero}` : "")),
-              m.autor ? h("div", { class: "small muted" }, m.autor) : null,
-              m.tom ? h("div", { class: "small muted" }, `Tom ${m.tom}`) : null,
-              m.link ? h("div", { class: "small" }, h("a", { href: m.link, target: "_blank", rel: "noopener" }, "Ouvir no YouTube")) : null,
-              m.obs ? h("div", { class: "small muted" }, m.obs) : null
-            ),
-            h("td", {}, h("div", { class: "chips" }, (m.tags || []).map((t) => h("span", { class: `chip tag-${t}` }, (porId(state.tags, t) || { nome: t }).nome)))),
-            h("td", {}, aptaSolene(m) ? h("span", { class: "selo ok" }, "Apta") : h("span", { class: "selo neutro" }, "Não")),
-            h("td", { class: "num small" },
-              usos[m.id] && usos[m.id].ultima ? h("div", {}, E.formatarData(usos[m.id].ultima)) : h("div", { class: "muted" }, "—"),
-              usos[m.id] && usos[m.id].proxima ? h("div", { class: "muted" }, `próxima: ${E.formatarData(usos[m.id].proxima, "curta")}`) : null
-            ),
-            h("td", {}, h("button", { class: "btn", onclick: () => janelaMusica(m) }, "Editar"))
-          )))
-        ))
-      );
+      contagem.textContent = `${itens.length} de ${state.musicas.length} músicas`;
+      lista.replaceChildren(itens.length ? h("ul", { class: "lista" }, itens.map((m) => {
+        const u = usos[m.id] || {};
+        const temas = (m.tags || []).map((t) => (porId(state.tags, t) || { nome: t }).nome).join(", ");
+        const quando = [u.ultima ? `cantada em ${E.formatarData(u.ultima, "curta")}` : "", u.proxima ? `próxima: ${E.formatarData(u.proxima, "curta")}` : ""].filter(Boolean).join(" · ");
+        return h("li", { style: "display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center" },
+          h("button", { class: "linha", onclick: () => editarMusica(m) },
+            h("span", { class: `marcador${m.tipo === "louvor" ? " louvor" : ""}`, "aria-hidden": "true" }, m.tipo === "louvor" ? icone("nota") : m.numero ? `SH ${m.numero}` : "SH"),
+            h("span", {},
+              h("span", { class: "titulo" }, m.titulo || `Salmos e Hinos nº ${m.numero}`), m.ativo === false ? h("span", { class: "selo neutro", style: "margin-left:6px" }, "Fora do rodízio") : null, h("br"),
+              h("span", { class: "sub" }, [temas || "sem etiquetas", quando].filter(Boolean).join(" · "))),
+            E.aptaSolene(state, m) ? h("span", { class: "selo ok", title: "Segue a orientação do culto solene" }, "Solene") : h("span")),
+          m.link ? h("a", { class: "btn icone", href: m.link, target: "_blank", rel: "noopener", "aria-label": `Ouvir ${m.titulo} no YouTube`, style: "margin-right:8px" }, icone("play")) : h("span"));
+      })) : h("div", { class: "vazio", style: "border:0" }, h("p", {}, state.musicas.length ? "Nenhuma música com esse filtro." : "Repertório vazio. Importe a lista de Salmos e Hinos e a de louvores.")));
     };
-    desenharLista();
+    desenhar();
     const r = state.regras;
-    const nomes = (ts) => (ts || []).map((t) => E.nomeTag(state, t)).join(" e ") || "nenhuma etiqueta";
-    const total = (fn) => state.musicas.filter((m) => m.ativo !== false && fn(m)).length;
-    return h("div", { class: "pilha" },
-      h("div", { class: "painel" },
-        h("header", {}, h("h2", {}, "Repertório"), h("div", { class: "acoes" },
-          h("button", { class: "btn", onclick: () => janelaImportar() }, "Importar lista"),
-          h("button", { class: "btn primario", onclick: () => janelaMusica(null) }, icone("plus"), "Música")
-        )),
-        h("p", { class: "muted" },
-          `Nos cultos solenes, salmos e hinos precisam ser ${nomes(r.soleneTagsHinario)}, e os louvores, ${nomes(r.soleneTagsLouvor)}. `,
-          `Hoje há ${total((m) => E.HINARIO.has(m.tipo) && aptaSolene(m))} salmos/hinos e ${total((m) => m.tipo === "louvor" && aptaSolene(m))} louvores aptos.`
-        ),
-        h("div", { class: "barra" },
-          h("label", { class: "campo" }, "Buscar", h("input", { type: "search", id: "rep-busca", value: f.busca, placeholder: "Título, número ou autor", oninput: (e) => { f.busca = e.target.value; desenharLista(); } })),
-          h("label", { class: "campo" }, "Tipo", h("select", { id: "rep-tipo", onchange: (e) => { f.tipo = e.target.value; desenharLista(); } }, h("option", { value: "" }, "Todos"), E.TIPOS_MUSICA.map((t) => h("option", { value: t.id, selected: f.tipo === t.id || null }, t.nome)))),
-          h("label", { class: "campo" }, "Etiqueta", h("select", { id: "rep-tag", onchange: (e) => { f.tag = e.target.value; desenharLista(); } }, h("option", { value: "" }, "Todas"), state.tags.map((t) => h("option", { value: t.id, selected: f.tag === t.id || null }, t.nome)))),
-          h("div", { class: "acoes" }, h("label", { class: "check" }, h("input", { type: "checkbox", id: "rep-solene", checked: f.solene, onchange: (e) => { f.solene = e.target.checked; desenharLista(); } }), "Só aptas ao solene"))
-        )
-      ),
-      lista
-    );
+    const nomes = (ts) => (ts || []).map((t) => E.nomeTag(state, t)).join(" e ") || "qualquer etiqueta";
+    return h("div", { class: "tela" },
+      h("div", { class: "cabecalho" },
+        h("div", {}, h("h1", {}, "Músicas"), h("p", { class: "small muted" }, `No culto solene entram Salmos e Hinos marcados como ${nomes(r.soleneTagsHinario)} e louvores marcados como ${nomes(r.soleneTagsLouvor)}.`)),
+        h("div", { class: "acoes" },
+          h("button", { class: "btn", onclick: importarMusicas }, icone("importar"), "Importar"),
+          h("button", { class: "btn primario", onclick: () => editarMusica(null) }, icone("mais"), "Música"))),
+      h("div", { class: "busca" }, icone("busca"), h("input", { type: "search", id: "busca-musicas", placeholder: "Buscar por título ou número", "aria-label": "Buscar músicas", value: ui.busca, oninput: (e) => { ui.busca = e.target.value; desenhar(); } })),
+      h("div", { class: "rolagem-x", role: "group", "aria-label": "Filtrar" }, FILTROS.map((f) => h("button", { class: "chip", "aria-pressed": String(ui.filtro === f.id), onclick: () => { ui.filtro = f.id; render(); } }, f.nome))),
+      contagem,
+      lista);
   }
 
-  function seletorTags(selecionadas, aoMudar) {
+  function seletorTags(selecionadas) {
     const caixa = h("div", { class: "chips" });
     const desenhar = () => caixa.replaceChildren(...state.tags.map((t) => h("button", {
       type: "button", class: "chip", "aria-pressed": String(selecionadas.includes(t.id)),
@@ -942,420 +845,387 @@
         if (i >= 0) selecionadas.splice(i, 1);
         else selecionadas.push(t.id);
         desenhar();
-        if (aoMudar) aoMudar();
       },
     }, t.nome)));
     desenhar();
     return caixa;
   }
 
-  function janelaMusica(original) {
-    const m = original ? clone(original) : { id: E.novoId("m"), tipo: "hino", numero: "", titulo: "", autor: "", link: "", tags: [], tom: "", ativo: true, obs: "", ultimaVez: "" };
+  function segmentado(rotulo, opcoes, atual, aoMudar) {
+    const caixa = h("div", { class: "segmentado", role: "group", "aria-label": rotulo, style: "display:grid" });
+    caixa.append(...opcoes.map((o) => h("button", {
+      type: "button", "aria-pressed": String(o.id === atual),
+      onclick: (e) => { [...caixa.children].forEach((b) => b.setAttribute("aria-pressed", String(b === e.currentTarget))); aoMudar(o.id); },
+    }, o.nome)));
+    return caixa;
+  }
+
+  function editarMusica(original) {
+    const m = original ? clone(original) : { id: E.novoId("m"), tipo: "louvor", numero: "", titulo: "", autor: "", link: "", tags: [], tom: "", ativo: true, obs: "", ultimaVez: "" };
     const set = (k) => (e) => { m[k] = e.target.type === "checkbox" ? e.target.checked : e.target.value; };
-    abrirJanela({
+    const numero = h("label", { class: "campo", hidden: m.tipo !== "hino" || null }, "Número no hinário", h("input", { type: "text", id: "mus-numero", inputmode: "numeric", value: m.numero, oninput: set("numero") }));
+    painel({
       titulo: original ? "Editar música" : "Nova música",
       corpo: [
-        h("div", { class: "grade" },
-          h("label", { class: "campo" }, "Tipo", h("select", { id: "mus-tipo", onchange: set("tipo") }, E.TIPOS_MUSICA.map((t) => h("option", { value: t.id, selected: m.tipo === t.id || null }, t.nome)))),
-          h("label", { class: "campo" }, "Número no hinário", h("input", { type: "text", id: "mus-numero", value: m.numero, placeholder: "ex.: 12", oninput: set("numero") })),
-          h("label", { class: "campo" }, "Tom", h("input", { type: "text", id: "mus-tom", value: m.tom, placeholder: "ex.: Ré", oninput: set("tom") }))
-        ),
+        segmentado("Tipo", E.TIPOS_MUSICA, m.tipo, (id) => { m.tipo = id; numero.hidden = id !== "hino"; }),
+        numero,
         h("label", { class: "campo" }, "Título", h("input", { type: "text", id: "mus-titulo", value: m.titulo, oninput: set("titulo") })),
-        h("label", { class: "campo" }, "Autor ou ministério (opcional)", h("input", { type: "text", id: "mus-autor", value: m.autor, oninput: set("autor") })),
-        h("label", { class: "campo" }, "Link para ouvir (YouTube)", h("input", { type: "text", id: "mus-link", value: m.link || "", placeholder: "https://youtu.be/…", oninput: set("link") })),
-        h("label", { class: "campo" }, "Última vez que foi cantada fora das escalas daqui (opcional)", h("input", { type: "date", id: "mus-ultima", value: m.ultimaVez || "", onchange: set("ultimaVez") })),
-        h("div", { class: "campo" }, "Etiquetas", seletorTags(m.tags)),
-        h("label", { class: "campo" }, "Observações", h("textarea", { id: "mus-obs", value: m.obs, oninput: set("obs") })),
-        h("label", { class: "check" }, h("input", { type: "checkbox", id: "mus-ativo", checked: m.ativo !== false, onchange: set("ativo") }), "Ativa (pode entrar nas escalas)"),
+        h("div", { style: "display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px" },
+          h("label", { class: "campo" }, "Autor ou ministério", h("input", { type: "text", id: "mus-autor", value: m.autor, oninput: set("autor") })),
+          h("label", { class: "campo" }, "Tom", h("input", { type: "text", id: "mus-tom", value: m.tom, placeholder: "Ex.: Ré", oninput: set("tom") }))),
+        h("label", { class: "campo" }, "Link para ouvir", h("input", { type: "url", id: "mus-link", value: m.link || "", placeholder: "https://youtu.be/…", oninput: set("link") })),
+        h("div", { class: "campo" }, "Etiquetas", h("span", { class: "ajuda" }, "Trinitário, cristocêntrico e doutrinário decidem se a música entra nos cultos solenes."), seletorTags(m.tags)),
+        h("label", { class: "campo" }, "Última vez que foi cantada", h("span", { class: "ajuda" }, "Só se foi antes das escalas feitas aqui."), h("input", { type: "date", id: "mus-ultima", value: m.ultimaVez || "", onchange: set("ultimaVez") })),
+        h("label", { class: "campo" }, "Observações", h("textarea", { id: "mus-obs", rows: 2, value: m.obs, oninput: set("obs") })),
+        h("label", { class: "interruptor" }, h("span", {}, "No rodízio", h("small", {}, "Desligue para não entrar nas próximas escalas")), h("input", { type: "checkbox", role: "switch", checked: m.ativo !== false, onchange: set("ativo") })),
       ],
       rodape: (fechar) => [
-        original ? h("button", { class: "btn perigo", style: "margin-right:auto", onclick: () => { fechar(); confirmar("Excluir esta música?", `${E.rotuloMusica(original)} sai do repertório. Nas escalas já feitas ela aparecerá como removida. Se quiser só tirá-la das próximas escalas, desmarque "Ativa".`, "Excluir", () => mudou(() => { state.musicas = state.musicas.filter((x) => x.id !== original.id); })); } }, "Excluir") : null,
-        h("button", { class: "btn", onclick: fechar }, "Cancelar"),
+        original ? h("button", { class: "btn perigo", style: "margin-right:auto", onclick: () => { fechar(true); comDesfazer("Música excluída.", () => { state.musicas = state.musicas.filter((x) => x.id !== original.id); }); } }, icone("lixo"), "Excluir") : null,
         h("button", {
-          class: "btn primario",
-          onclick: () => {
-            if (!m.titulo.trim() && !String(m.numero).trim()) return toast("Escreva o título ou o número da música.");
-            fechar();
-            mudou(() => {
-              m.titulo = m.titulo.trim();
-              if (original) Object.assign(original, m);
-              else state.musicas.push(m);
-            });
+          class: "btn primario", onclick: () => {
+            if (!m.titulo.trim() && !String(m.numero).trim()) return avisar("Escreva o título ou o número.");
+            if (m.tipo === "louvor") m.numero = "";
+            m.titulo = m.titulo.trim();
+            fechar(true);
+            mudou(() => { if (original) Object.assign(original, m); else state.musicas.push(m); });
+            avisar(original ? "Música atualizada." : "Música adicionada.");
           },
         }, "Salvar"),
       ],
+      foco: "#mus-titulo",
     });
   }
 
-  function janelaImportar() {
+  function importarMusicas() {
     const padrao = { tipo: "hino", tags: [] };
-    const area = h("textarea", { id: "imp-texto", rows: 9, placeholder: "Cole uma música por linha. Exemplos:\n12 - Santo! Santo! Santo!\nHino; 30; Castelo Forte; trinitário, doutrinário\nLouvor; Porque Ele Vive; cristocêntrico, doutrinário" });
-    const previa = h("div", { class: "small" });
-    let lidas = [];
+    const area = h("textarea", { id: "imp-texto", rows: 7, placeholder: "Uma música por linha. Exemplos:\n245\n12 - Santo! Santo! Santo!\nLouvor; Porque Ele vive; cristocêntrico, doutrinário" });
+    const previa = h("p", { class: "small muted" });
     const chave = (m) => `${m.tipo}|${m.numero}|${E.normalizar(m.titulo)}`;
     const existentes = new Set(state.musicas.map(chave));
+    let novas = [];
     const atualizar = () => {
-      lidas = E.lerListaMusicas(state, area.value, padrao);
-      const novas = lidas.filter((m) => !existentes.has(chave(m)));
-      previa.replaceChildren(
-        h("p", { class: "muted" }, lidas.length ? `${novas.length} nova${novas.length === 1 ? "" : "s"} para importar${lidas.length > novas.length ? ` (${lidas.length - novas.length} já estão no repertório)` : ""}.` : "Nada para importar ainda."),
-        novas.length ? h("div", { class: "tabela-wrap", style: "max-height:220px;overflow:auto;margin-top:6px" }, h("table", {}, h("tbody", {}, novas.slice(0, 200).map((m) => h("tr", {},
-          h("td", {}, (E.TIPOS_MUSICA.find((t) => t.id === m.tipo) || {}).nome),
-          h("td", { class: "num" }, m.numero || "—"),
-          h("td", {}, m.titulo || "—", m.autor ? h("span", { class: "muted" }, ` · ${m.autor}`) : null, m.link ? h("span", { class: "muted" }, " · com link") : null),
-          h("td", { class: "small muted" }, m.tags.map((t) => E.nomeTag(state, t)).join(", "))
-        ))))) : ""
-      );
+      const lidas = E.lerListaMusicas(state, area.value, padrao);
+      novas = lidas.filter((m) => !existentes.has(chave(m)));
+      previa.textContent = lidas.length
+        ? `${novas.length} nova${novas.length === 1 ? "" : "s"}${lidas.length > novas.length ? ` · ${lidas.length - novas.length} já no repertório` : ""}${novas.length ? `: ${novas.slice(0, 4).map(E.rotuloMusica).join(", ")}${novas.length > 4 ? "…" : ""}` : ""}`
+        : "Cole a lista acima.";
     };
     area.addEventListener("input", atualizar);
     atualizar();
-    abrirJanela({
-      titulo: "Importar lista de músicas",
-      sub: "Copie do Word, Excel, PDF ou WhatsApp e cole aqui. Colunas separadas por ponto e vírgula ou tabulação.",
-      larga: true,
-      corpo: [
-        h("div", { class: "grade" },
-          h("label", { class: "campo" }, "Tipo, quando a linha não disser", h("select", { id: "imp-tipo", onchange: (e) => { padrao.tipo = e.target.value; atualizar(); } }, E.TIPOS_MUSICA.map((t) => h("option", { value: t.id, selected: padrao.tipo === t.id || null }, t.nome))))
-        ),
-        h("div", { class: "campo" }, "Etiquetas para todas as músicas coladas (opcional)", seletorTags(padrao.tags, atualizar)),
-        area,
-        previa,
-      ],
-      rodape: (fechar) => [
-        h("button", { class: "btn", onclick: fechar }, "Cancelar"),
-        h("button", {
-          class: "btn primario",
-          onclick: () => {
-            const novas = lidas.filter((m) => !existentes.has(chave(m)));
-            if (!novas.length) return toast("Nenhuma música nova para importar.");
-            fechar();
-            mudou(() => { state.musicas.push(...novas); });
-            toast(`${novas.length} músicas importadas.`);
-          },
-        }, "Importar"),
-      ],
+    painel({
+      titulo: "Importar músicas",
+      sub: "Copie do Word, Excel, PDF ou WhatsApp e cole aqui.",
+      corpo: [h("div", { class: "campo" }, "Tipo, quando a linha não disser", segmentado("Tipo das músicas", E.TIPOS_MUSICA, padrao.tipo, (id) => { padrao.tipo = id; atualizar(); })), area, previa],
+      rodape: (fechar) => [h("button", {
+        class: "btn primario", onclick: () => {
+          if (!novas.length) return avisar("Nenhuma música nova para importar.");
+          fechar(true);
+          const lote = novas;
+          comDesfazer(`${lote.length} músicas importadas.`, () => { state.musicas.push(...lote); });
+        },
+      }, "Importar")],
+      foco: "#imp-texto",
     });
   }
 
-  /* ------------------------------------------- equipe, oficiais, datas */
+  /* ----------------------------------------------------------- equipe */
 
-  function editorIndisponivel(lista, aoMudar) {
-    const caixa = h("div", { class: "pilha", style: "gap:8px" });
+  function descreverPessoa(p) {
+    const f = (p.funcoes || []).map((x) => E.nomeFuncao(state, x)).join(", ");
+    const a = (p.apoio || []).map((x) => E.nomeFuncao(state, x).toLowerCase()).join(", ");
+    return [f || "sem função", a ? `apoio: ${a}` : ""].filter(Boolean).join(" · ");
+  }
+
+  function telaEquipe() {
+    const ativas = state.pessoas.filter((p) => p.ativo !== false);
+    const pessoas = [...state.pessoas].sort((a, b) => (a.ativo === false) - (b.ativo === false) || a.nome.localeCompare(b.nome, "pt-BR"));
+    return h("div", { class: "tela" },
+      h("div", { class: "cabecalho" },
+        h("div", {}, h("h1", {}, "Equipe"), h("p", { class: "small muted" }, `${ativas.length} pessoas no rodízio`)),
+        h("button", { class: "btn primario", onclick: () => editarPessoa(null) }, icone("mais"), "Pessoa")),
+      h("div", { class: "rolagem-x", role: "list", "aria-label": "Titulares por função" }, state.funcoes.map((f) => {
+        const n = ativas.filter((p) => (p.funcoes || []).includes(f.id)).length;
+        const a = ativas.filter((p) => (p.apoio || []).includes(f.id)).length;
+        return h("span", { class: "chip", role: "listitem", style: n ? null : "border-color:var(--err);color:var(--err)" }, `${f.nome} ${n}${a ? ` + ${a} apoio` : ""}`);
+      })),
+      pessoas.length ? h("ul", { class: "lista cartao" }, pessoas.map((p) => {
+        const datas = (p.indisponivel || []).filter((x) => (x.split("..")[1] || x) >= hoje()).length;
+        return h("li", {}, h("button", { class: "linha", onclick: () => editarPessoa(p) },
+          h("span", { class: "avatar", "aria-hidden": "true" }, (p.nome || "?").trim().charAt(0).toUpperCase()),
+          h("span", {}, h("span", { class: "titulo" }, p.nome || "Sem nome"), h("br"), h("span", { class: "sub" }, descreverPessoa(p))),
+          p.ativo === false ? h("span", { class: "selo neutro" }, "Pausado") : datas ? h("span", { class: "selo alerta" }, `${datas} ${datas === 1 ? "data" : "datas"} fora`) : h("span")));
+      })) : h("div", { class: "vazio" }, h("p", {}, "Ninguém cadastrado ainda.")));
+  }
+
+  function editorDatas(lista) {
+    const caixa = h("div", { style: "display:grid;gap:10px" });
     const desenhar = () => {
-      const de = h("input", { type: "date", "aria-label": "Indisponível de", min: hoje() });
-      const ate = h("input", { type: "date", "aria-label": "até (opcional)" });
-      const futuras = lista.filter((x) => (x.split("..")[1] || x) >= hoje());
+      const de = h("input", { type: "date", min: hoje() });
+      const ate = h("input", { type: "date" });
+      const futuras = lista.filter((x) => (x.split("..")[1] || x) >= hoje()).sort();
       caixa.replaceChildren(
-        futuras.length
-          ? h("div", { class: "chips" }, futuras.sort().map((x) => {
-              const [a, b] = x.split("..");
-              return h("span", { class: "chip" }, b ? `${E.formatarData(a, "curta")} a ${E.formatarData(b, "curta")}` : E.formatarData(a, "dia"),
-                h("button", { "aria-label": "Remover data", onclick: () => { lista.splice(lista.indexOf(x), 1); aoMudar(); desenhar(); } }, "×"));
-            }))
-          : h("p", { class: "small muted" }, "Nenhuma data marcada."),
-        h("div", { style: "display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:6px;align-items:center" }, de, ate,
-          h("button", {
-            class: "btn", onclick: () => {
-              if (!de.value) return toast("Escolha a data.");
-              lista.push(ate.value && ate.value > de.value ? `${de.value}..${ate.value}` : de.value);
-              aoMudar();
-              desenhar();
-            },
-          }, "Marcar"))
-      );
+        futuras.length ? h("div", { class: "chips" }, futuras.map((x) => {
+          const [a, b] = x.split("..");
+          return h("span", { class: "chip", style: "padding-right:4px" }, b ? `${E.formatarData(a, "curta")} a ${E.formatarData(b, "curta")}` : E.formatarData(a, "dia"),
+            h("button", { class: "btn icone", style: "width:32px;min-height:32px", "aria-label": "Tirar esta data", onclick: () => { lista.splice(lista.indexOf(x), 1); desenhar(); } }, icone("fechar")));
+        })) : h("p", { class: "small muted" }, "Nenhuma data marcada."),
+        h("div", { style: "display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:8px;align-items:end" },
+          h("label", { class: "campo" }, "De", de), h("label", { class: "campo" }, "Até (opcional)", ate),
+          h("button", { class: "btn tonal", onclick: () => {
+            if (!de.value) return avisar("Escolha a data.");
+            lista.push(ate.value && ate.value > de.value ? `${de.value}..${ate.value}` : de.value);
+            desenhar();
+          } }, "Marcar")));
     };
     desenhar();
     return caixa;
   }
 
-  function telaEquipe() {
-    const pessoas = [...state.pessoas].sort((a, b) => (a.ativo === false) - (b.ativo === false) || a.nome.localeCompare(b.nome, "pt-BR"));
-    const ativas = state.pessoas.filter((p) => p.ativo !== false);
-    const contagem = state.funcoes.map((f) => ({
-      f,
-      n: ativas.filter((p) => (p.funcoes || []).includes(f.id)).length,
-      apoio: ativas.filter((p) => (p.apoio || []).includes(f.id)).length,
+  function editarPessoa(original) {
+    const p = original ? clone(original) : { id: E.novoId("p"), nome: "", funcoes: [], apoio: [], cultos: [], indisponivel: [], ativo: true, obs: "" };
+    const funcoes = h("div", { class: "chips" });
+    const desenharFuncoes = () => funcoes.replaceChildren(...state.funcoes.map((f) => {
+      const nivel = E.nivelFuncao(p, f.id);
+      return h("button", {
+        type: "button", class: `chip${nivel === "apoio" ? " apoio" : ""}`, "aria-pressed": String(nivel === "principal"),
+        "aria-label": `${f.nome}: ${nivel === "principal" ? "titular" : nivel === "apoio" ? "só apoio" : "não faz"}`,
+        onclick: () => {
+          // não faz → titular → só apoio → não faz
+          p.funcoes = p.funcoes.filter((x) => x !== f.id);
+          p.apoio = p.apoio.filter((x) => x !== f.id);
+          if (!nivel) p.funcoes.push(f.id);
+          else if (nivel === "principal") p.apoio.push(f.id);
+          desenharFuncoes();
+        },
+      }, nivel === "apoio" ? `${f.nome} · apoio` : f.nome);
     }));
-    return h("div", { class: "pilha" },
-      h("div", { class: "painel" },
-        h("header", {}, h("h2", {}, "Equipe do louvor"), h("button", {
-          class: "btn primario",
-          onclick: () => mudou(() => { state.pessoas.unshift({ id: E.novoId("p"), nome: "", funcoes: [], apoio: [], cultos: [], indisponivel: [], ativo: true, obs: "" }); }),
-        }, icone("plus"), "Pessoa")),
-        h("p", { class: "muted" }, "Toque numa função para marcar o que a pessoa faz. Toque de novo para deixar como só apoio: ela só é escalada nessa função quando nenhum titular puder. A escala nunca coloca alguém numa data marcada como indisponível."),
-        h("div", { class: "chips" }, contagem.map(({ f, n, apoio }) => h("span", { class: `selo ${n ? "neutro" : "erro"}` }, `${f.nome}: ${n}${apoio ? ` + ${apoio} apoio` : ""}`)))
-      ),
-      pessoas.length ? h("div", { class: "cartoes" }, pessoas.map((p) => cartaoPessoa(p))) : h("div", { class: "vazio-estado" }, h("p", {}, "Ninguém cadastrado ainda. Toque em + Pessoa."))
-    );
-  }
-
-  function cartaoPessoa(p) {
-    const salvarSem = () => mudou(null, false);
-    return h("div", { class: `cartao${p.ativo === false ? " inativo" : ""}` },
-      h("div", { class: "cab" },
-        h("input", { type: "text", id: `pes-nome-${p.id}`, value: p.nome, placeholder: "Nome", "aria-label": "Nome", oninput: (e) => { p.nome = e.target.value; salvarSem(); } }),
-        h("button", { class: "btn leve icone perigo", "aria-label": "Excluir pessoa", title: "Excluir", onclick: () => confirmar("Excluir esta pessoa?", `${p.nome || "Esta pessoa"} sai da equipe. Nas escalas já feitas aparecerá como removida. Para só pausar, desmarque "Ativa".`, "Excluir", () => mudou(() => { state.pessoas = state.pessoas.filter((x) => x !== p); })) }, icone("trash"))
-      ),
-      h("div", { class: "campo" }, "Funções", h("div", { class: "chips" }, state.funcoes.map((f) => {
-        const nivel = E.nivelFuncao(p, f.id);
-        return h("button", {
-          class: `chip${nivel === "apoio" ? " apoio" : ""}`, "aria-pressed": String(nivel === "principal"),
-          title: nivel === "principal" ? "Titular. Toque para deixar como só apoio." : nivel === "apoio" ? "Só apoio. Toque para tirar." : "Toque para marcar.",
-          onclick: () => mudou(() => {
-            // nenhuma → titular → só apoio → nenhuma
-            p.funcoes = (p.funcoes || []).filter((x) => x !== f.id);
-            p.apoio = (p.apoio || []).filter((x) => x !== f.id);
-            if (!nivel) p.funcoes.push(f.id);
-            else if (nivel === "principal") p.apoio.push(f.id);
-          }),
-        }, nivel === "apoio" ? `${f.nome} (apoio)` : f.nome);
-      }))),
-      h("div", { class: "campo" }, "Serve nos cultos (nenhum marcado = todos)", h("div", { class: "chips" }, state.cultos.map((c) => h("button", {
-        class: "chip", "aria-pressed": String((p.cultos || []).includes(c.id)),
-        onclick: () => mudou(() => { p.cultos = (p.cultos || []).includes(c.id) ? p.cultos.filter((x) => x !== c.id) : [...(p.cultos || []), c.id]; }),
-      }, `${E.DIAS_CURTOS[c.diaSemana]} · ${c.nome}`)))),
-      h("div", { class: "campo" }, "Não pode servir em", editorIndisponivel(p.indisponivel = p.indisponivel || [], salvarSem)),
-      h("label", { class: "campo" }, "Observações", h("input", { type: "text", id: `pes-obs-${p.id}`, value: p.obs || "", oninput: (e) => { p.obs = e.target.value; salvarSem(); } })),
-      h("label", { class: "check" }, h("input", { type: "checkbox", checked: p.ativo !== false, onchange: (e) => mudou(() => { p.ativo = e.target.checked; }) }), "Ativa (entra nas escalas)")
-    );
-  }
-
-  function telaOficiais() {
-    const ordem = (o) => CARGOS.indexOf(o.cargo);
-    const lista = [...state.oficiais].sort((a, b) => ordem(a) - ordem(b) || a.nome.localeCompare(b.nome, "pt-BR"));
-    return h("div", { class: "pilha" },
-      h("div", { class: "painel" },
-        h("header", {}, h("h2", {}, "Oficiais da igreja"), h("button", {
-          class: "btn primario",
-          onclick: () => mudou(() => { state.oficiais.unshift({ id: E.novoId("o"), nome: "", cargo: "Presbítero", indisponivel: [], ativo: true, obs: "", pessoaId: "" }); }),
-        }, icone("plus"), "Oficial")),
-        h("p", { class: "muted" }, "Os oficiais são distribuídos nas partes da liturgia, como a chamada à adoração feita pelo dirigente do culto. Em cada liturgia você define quais cargos podem fazer cada parte. Quem também está na equipe do louvor nunca recebe uma parte no culto em que está tocando ou cantando.")
-      ),
-      lista.length ? h("div", { class: "cartoes" }, lista.map((o) => h("div", { class: `cartao${o.ativo === false ? " inativo" : ""}` },
-        h("div", { class: "cab" },
-          h("input", { type: "text", id: `of-nome-${o.id}`, value: o.nome, placeholder: "Nome", "aria-label": "Nome", oninput: (e) => { o.nome = e.target.value; mudou(null, false); } }),
-          h("button", { class: "btn leve icone perigo", "aria-label": "Excluir oficial", title: "Excluir", onclick: () => confirmar("Excluir este oficial?", `${E.nomeOficial(o) || "Este oficial"} sai do cadastro.`, "Excluir", () => mudou(() => { state.oficiais = state.oficiais.filter((x) => x !== o); })) }, icone("trash"))
-        ),
-        h("label", { class: "campo" }, "Cargo", h("select", { id: `of-cargo-${o.id}`, onchange: (e) => mudou(() => { o.cargo = e.target.value; }) }, CARGOS.map((c) => h("option", { value: c, selected: o.cargo === c || null }, c)))),
-        h("label", { class: "campo" }, "Também serve no louvor como", h("select", { id: `of-pessoa-${o.id}`, onchange: (e) => mudou(() => { o.pessoaId = e.target.value; }) },
-          h("option", { value: "" }, "Não está na equipe do louvor"),
-          [...state.pessoas].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")).map((p) => h("option", { value: p.id, selected: o.pessoaId === p.id || null }, p.nome))
-        )),
-        h("div", { class: "campo" }, "Não pode servir em", editorIndisponivel(o.indisponivel = o.indisponivel || [], () => mudou(null, false))),
-        h("label", { class: "campo" }, "Observações", h("input", { type: "text", id: `of-obs-${o.id}`, value: o.obs || "", oninput: (e) => { o.obs = e.target.value; mudou(null, false); } })),
-        h("label", { class: "check" }, h("input", { type: "checkbox", checked: o.ativo !== false, onchange: (e) => mudou(() => { o.ativo = e.target.checked; }) }), "Ativo (entra nas escalas)")
-      ))) : h("div", { class: "vazio-estado" }, h("p", {}, "Nenhum oficial cadastrado ainda."))
-    );
-  }
-
-  /* -------------------------------------------------------- liturgias */
-
-  function telaLiturgias() {
-    if (!porId(state.liturgias, ui.liturgiaId)) ui.liturgiaId = state.liturgias[0] ? state.liturgias[0].id : null;
-    const lit = porId(state.liturgias, ui.liturgiaId);
-    return h("div", { class: "liturgias" },
-      h("aside", { class: "painel" },
-        h("header", {}, h("h2", {}, "Liturgias")),
-        h("div", { class: "lista-escalas" }, state.liturgias.map((l) => h("button", { class: "item-escala", "aria-current": String(l.id === ui.liturgiaId), onclick: () => { ui.liturgiaId = l.id; render(); } },
-          h("strong", {}, l.nome || "Sem nome"),
-          h("span", { class: "linha small muted" }, l.solene ? h("span", { class: "selo solene" }, "Solene") : null, `${l.itens.length} partes`)
-        ))),
+    desenharFuncoes();
+    const cultos = h("div", { class: "chips" });
+    const desenharCultos = () => cultos.replaceChildren(...state.cultos.map((c) => h("button", {
+      type: "button", class: "chip", "aria-pressed": String(p.cultos.includes(c.id)),
+      onclick: () => { p.cultos = p.cultos.includes(c.id) ? p.cultos.filter((x) => x !== c.id) : [...p.cultos, c.id]; desenharCultos(); },
+    }, `${E.DIAS_CURTOS[c.diaSemana]} ${c.hora} · ${c.nome}`)));
+    desenharCultos();
+    painel({
+      titulo: original ? p.nome || "Pessoa" : "Nova pessoa",
+      corpo: [
+        h("label", { class: "campo" }, "Nome", h("input", { type: "text", id: "pes-nome", value: p.nome, autocomplete: "off", oninput: (e) => { p.nome = e.target.value; } })),
+        h("div", { class: "campo" }, "O que faz no louvor", h("span", { class: "ajuda" }, "Toque uma vez: titular. Duas: só apoio (entra quando falta titular). Três: tira."), funcoes),
+        h("div", { class: "campo" }, "Em quais cultos serve", h("span", { class: "ajuda" }, "Nenhum marcado: serve em todos."), cultos),
+        h("div", { class: "campo" }, "Datas em que não pode", editorDatas(p.indisponivel)),
+        h("label", { class: "campo" }, "Observações", h("textarea", { id: "pes-obs", rows: 2, value: p.obs || "", oninput: (e) => { p.obs = e.target.value; } })),
+        h("label", { class: "interruptor" }, h("span", {}, "No rodízio", h("small", {}, "Desligue para pausar sem apagar")), h("input", { type: "checkbox", role: "switch", checked: p.ativo !== false, onchange: (e) => { p.ativo = e.target.checked; } })),
+      ],
+      rodape: (fechar) => [
+        original ? h("button", { class: "btn perigo", style: "margin-right:auto", onclick: () => { fechar(true); comDesfazer(`${original.nome || "Pessoa"} saiu da equipe.`, () => { state.pessoas = state.pessoas.filter((x) => x.id !== original.id); }); } }, icone("lixo"), "Excluir") : null,
         h("button", {
-          class: "btn", onclick: () => {
-            const nova = { id: E.novoId("lit"), nome: "Nova liturgia", solene: false, itens: [] };
-            mudou(() => { state.liturgias.push(nova); ui.liturgiaId = nova.id; });
+          class: "btn primario", onclick: () => {
+            if (!p.nome.trim()) return avisar("Escreva o nome.");
+            p.nome = p.nome.trim();
+            fechar(true);
+            mudou(() => { if (original) Object.assign(original, p); else state.pessoas.push(p); });
+            avisar(original ? "Dados atualizados." : `${p.nome} entrou na equipe.`);
           },
-        }, icone("plus"), "Liturgia")
-      ),
-      lit ? editorLiturgia(lit) : h("div", { class: "vazio-estado" }, h("p", {}, "Crie a primeira liturgia."))
-    );
+        }, "Salvar"),
+      ],
+      foco: original ? ".chips .chip" : "#pes-nome",
+    });
   }
 
-  function editorLiturgia(lit) {
-    const usadaPor = state.cultos.filter((c) => c.liturgiaId === lit.id);
-    const mover = (i, d) => mudou(() => { const [x] = lit.itens.splice(i, 1); lit.itens.splice(i + d, 0, x); });
-    return h("section", { class: "painel" },
-      h("header", {},
-        h("input", { type: "text", class: "titulo-input", id: `lit-nome-${lit.id}`, value: lit.nome, "aria-label": "Nome da liturgia", oninput: (e) => { lit.nome = e.target.value; mudou(null, false); } }),
-        h("div", { class: "acoes" },
-          h("button", { class: "btn", onclick: () => { const c = clone(lit); c.id = E.novoId("lit"); c.nome = `${lit.nome} (cópia)`; mudou(() => { state.liturgias.push(c); ui.liturgiaId = c.id; }); } }, icone("copy"), "Duplicar"),
-          h("button", {
-            class: "btn perigo",
-            onclick: () => usadaPor.length
-              ? toast(`Esta liturgia é usada por: ${usadaPor.map((c) => c.nome).join(", ")}. Troque a liturgia desses cultos antes de excluir.`)
-              : confirmar("Excluir esta liturgia?", `${lit.nome} será apagada.`, "Excluir", () => mudou(() => { state.liturgias = state.liturgias.filter((l) => l !== lit); })),
-          }, icone("trash"), "Excluir")
-        )
-      ),
-      h("label", { class: "check" }, h("input", { type: "checkbox", checked: !!lit.solene, onchange: (e) => mudou(() => { lit.solene = e.target.checked; }) }), "Liturgia de culto solene (salmos/hinos e louvores seguem a orientação pastoral)"),
-      h("p", { class: "small muted" }, usadaPor.length ? `Usada por: ${usadaPor.map((c) => c.nome).join(", ")}. Mudanças valem para as próximas escalas geradas.` : "Nenhum culto semanal usa esta liturgia ainda; ela pode ser usada em cultos avulsos."),
-      h("div", { class: "itens-lit" }, lit.itens.map((it, i) => h("div", { class: "item-lit" },
-        h("div", { class: "cab" },
-          h("span", { class: "numero num" }, String(i + 1)),
-          h("input", { type: "text", id: `it-titulo-${lit.id}-${it.id}`, value: it.titulo, "aria-label": "Nome da parte", placeholder: "Nome da parte", oninput: (e) => { it.titulo = e.target.value; mudou(null, false); } }),
-          h("select", {
-            "aria-label": "Tipo da parte", id: `it-tipo-${lit.id}-${it.id}`,
-            onchange: (e) => mudou(() => {
-              it.tipo = e.target.value;
-              if (it.tipo === "musica") { it.tipos = it.tipos || ["salmo", "hino"]; it.tags = it.tags || []; it.qtd = it.qtd || 1; }
-              if (it.tipo === "oficial") { it.cargos = it.cargos || []; it.qtd = it.qtd || 1; }
-            }),
-          }, [["musica", "Música"], ["oficial", "Oficial"], ["texto", "Texto fixo"]].map(([v, n]) => h("option", { value: v, selected: it.tipo === v || null }, n))),
-          h("span", { class: "mini-acoes" },
-            h("button", { class: "btn leve icone", "aria-label": "Subir", disabled: i === 0 || null, onclick: () => mover(i, -1) }, icone("up")),
-            h("button", { class: "btn leve icone", "aria-label": "Descer", disabled: i === lit.itens.length - 1 || null, onclick: () => mover(i, 1) }, icone("down")),
-            h("button", { class: "btn leve icone perigo", "aria-label": "Remover parte", onclick: () => mudou(() => { lit.itens.splice(i, 1); }) }, icone("x"))
-          )
-        ),
-        configItem(it)
-      ))),
-      h("button", { class: "btn", style: "justify-self:start", onclick: () => mudou(() => { lit.itens.push({ id: E.novoId("i"), titulo: "", tipo: "musica", tipos: ["salmo", "hino"], tags: [], qtd: 1, texto: "", notaPadrao: "" }); }) }, icone("plus"), "Parte da liturgia")
-    );
+  /* ---------------------------------------------------------- ajustes */
+
+  function passo(valor, min, max, aoMudar, rotulo) {
+    const out = h("output", {}, String(valor));
+    const menos = h("button", { type: "button", "aria-label": `Menos ${rotulo}` }, "−");
+    const mais = h("button", { type: "button", "aria-label": `Mais ${rotulo}` }, "+");
+    const atualizar = () => { out.textContent = String(valor); menos.disabled = valor <= min; mais.disabled = valor >= max; };
+    menos.addEventListener("click", () => { valor = Math.max(min, valor - 1); atualizar(); aoMudar(valor); });
+    mais.addEventListener("click", () => { valor = Math.min(max, valor + 1); atualizar(); aoMudar(valor); });
+    atualizar();
+    return h("span", { class: "passo", role: "group", "aria-label": rotulo }, menos, out, mais);
   }
 
-  function configItem(it) {
-    const comuns = h("div", { class: "grade", style: "grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr))" },
-      h("label", { class: "campo" }, it.tipo === "texto" ? "Responsável ou orientação" : "Orientação (opcional)", h("input", { type: "text", id: `it-texto-${it.id}`, value: it.texto || "", placeholder: it.tipo === "texto" ? "ex.: Dirigente · em pé" : "ex.: Em pé", oninput: (e) => { it.texto = e.target.value; mudou(null, false); } })),
-      h("label", { class: "campo" }, "Observação que já vem preenchida", h("input", { type: "text", id: `it-nota-${it.id}`, value: it.notaPadrao || "", placeholder: "ex.: Êxodo 20.1–17", oninput: (e) => { it.notaPadrao = e.target.value; mudou(null, false); } }))
-    );
-    const qtd = (rotulo) => h("label", { class: "campo", style: "max-width:120px" }, rotulo, h("input", { type: "number", min: 1, max: 6, value: it.qtd || 1, onchange: (e) => mudou(() => { it.qtd = Math.max(1, Math.min(6, Number(e.target.value) || 1)); }) }));
-    if (it.tipo === "musica") {
-      return h("div", { class: "pilha", style: "gap:10px;padding-left:36px" },
-        h("div", { class: "campo" }, "Aceita", h("div", { class: "chips" }, E.TIPOS_MUSICA.map((t) => h("button", {
-          class: "chip", "aria-pressed": String((it.tipos || []).includes(t.id)),
-          onclick: () => mudou(() => { it.tipos = (it.tipos || []).includes(t.id) ? it.tipos.filter((x) => x !== t.id) : [...(it.tipos || []), t.id]; }),
-        }, t.nome)))),
-        h("div", { class: "campo" }, "Etiquetas exigidas neste momento (além da regra do solene)", seletorTags(it.tags = it.tags || [], () => mudou(null, false))),
-        qtd("Quantas músicas"),
-        comuns
-      );
-    }
-    if (it.tipo === "oficial") {
-      return h("div", { class: "pilha", style: "gap:10px;padding-left:36px" },
-        h("div", { class: "campo" }, "Quem pode fazer (nenhum marcado = qualquer oficial)", h("div", { class: "chips" }, CARGOS.map((c) => h("button", {
-          class: "chip", "aria-pressed": String((it.cargos || []).includes(c)),
-          onclick: () => mudou(() => { it.cargos = (it.cargos || []).includes(c) ? it.cargos.filter((x) => x !== c) : [...(it.cargos || []), c]; }),
-        }, c)))),
-        qtd("Quantas pessoas"),
-        comuns
-      );
-    }
-    return h("div", { style: "padding-left:36px" }, comuns);
-  }
-
-  /* --------------------------------------------------- cultos e regras */
-
-  function telaCultos() {
+  function telaAjustes() {
     const r = state.regras;
-    return h("div", { class: "pilha" },
-      h("section", { class: "painel" },
-        h("header", {}, h("h2", {}, "Orientação pastoral para os cultos solenes")),
-        h("div", { class: "grade", style: "grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr))" },
-          h("div", { class: "campo" }, "Salmos e hinos precisam ter", seletorTags(r.soleneTagsHinario = r.soleneTagsHinario || [], () => mudou(null, false))),
-          h("div", { class: "campo" }, "Louvores precisam ter", seletorTags(r.soleneTagsLouvor = r.soleneTagsLouvor || [], () => mudou(null, false)))
-        ),
-        h("div", { class: "grade" },
-          h("label", { class: "campo" }, "Não repetir uma música antes de (semanas)", h("input", { type: "number", id: "regra-intervalo", min: 0, max: 26, value: r.intervaloMusicaSemanas || 0, onchange: (e) => mudou(() => { r.intervaloMusicaSemanas = Math.max(0, Number(e.target.value) || 0); }) }))
-        ),
-        h("label", { class: "check" }, h("input", { type: "checkbox", id: "regra-acumular", checked: !!r.permitirAcumular, onchange: (e) => mudou(() => { r.permitirAcumular = e.target.checked; }) }), "Permitir que a mesma pessoa tenha duas funções no mesmo culto")
-      ),
-      h("section", { class: "painel" },
-        h("header", {}, h("h2", {}, "Cultos da semana"), h("button", {
-          class: "btn primario",
-          onclick: () => mudou(() => { state.cultos.push({ id: E.novoId("cul"), nome: "Novo culto", diaSemana: 0, hora: "19:00", semanas: [], liturgiaId: (state.liturgias[0] || {}).id, solene: false, ativo: true, equipe: [{ funcao: (state.funcoes[0] || {}).id, qtd: 1 }] }); }),
-        }, icone("plus"), "Culto")),
-        h("p", { class: "muted" }, "Cada culto usa uma liturgia e uma equipe. Use as semanas do mês para cultos que só acontecem em alguns domingos, como a Santa Ceia no primeiro domingo."),
-        h("div", { class: "cartoes" }, state.cultos.map((c) => cartaoCultoSemanal(c)))
-      ),
-      h("div", { class: "cartoes" },
-        listaEditavel("Funções do louvor", state.funcoes, "Nova função", (id) => state.pessoas.some((p) => (p.funcoes || []).includes(id)) || state.cultos.some((c) => c.equipe.some((q) => q.funcao === id))),
-        listaEditavel("Etiquetas das músicas", state.tags, "Nova etiqueta", (id) => state.musicas.some((m) => (m.tags || []).includes(id)) || (r.soleneTagsHinario || []).includes(id) || (r.soleneTagsLouvor || []).includes(id)),
-        h("section", { class: "painel" },
-          h("header", {}, h("h2", {}, "Igreja")),
-          h("label", { class: "campo" }, "Nome que aparece nas escalas", h("input", { type: "text", id: "igreja-nome", value: state.igreja.nome || "", oninput: (e) => { state.igreja.nome = e.target.value; document.getElementById("nome-igreja").textContent = e.target.value; mudou(null, false); } }))
-        )
-      )
-    );
+    const cultos = [...state.cultos].sort((a, b) => Number(a.diaSemana) - Number(b.diaSemana) || (a.hora || "").localeCompare(b.hora || ""));
+    const linha = (titulo, sub, onclick, direita) => h("li", {}, h("button", { class: "linha", onclick },
+      h("span", { class: "avatar", "aria-hidden": "true" }, icone("ajustes")), h("span", {}, h("span", { class: "titulo" }, titulo), h("br"), h("span", { class: "sub" }, sub)), direita || h("span")));
+    const secao = (titulo, ...conteudo) => h("section", { style: "display:grid;gap:10px" }, ...conteudo.length > 1 ? [h("div", { class: "cabecalho" }, h("h2", { style: "font-size:1.15rem" }, titulo), conteudo[0]), conteudo[1]] : [h("h2", { style: "font-size:1.15rem" }, titulo), conteudo[0]]);
+    const tagsTexto = (ts) => (ts || []).map((t) => E.nomeTag(state, t)).join(", ") || "livre";
+    return h("div", { class: "tela" },
+      h("div", { class: "cabecalho" }, h("h1", {}, "Ajustes")),
+      secao("Cultos da semana",
+        h("button", { class: "btn texto", onclick: () => editarCulto(null) }, icone("mais"), "Culto"),
+        h("ul", { class: "lista cartao" }, cultos.map((c) => {
+          const lider = porId(state.cultos, c.acompanha);
+          const m = c.musicas || {};
+          const pessoas = (c.equipe || []).reduce((n, q) => n + (Number(q.qtd) || 0), 0);
+          const sub = lider ? `Mesma equipe e músicas do ${lider.nome}` : `${pessoas} pessoas · ${m.hino || 0} de Salmos e Hinos · ${m.louvor || 0} louvores`;
+          return h("li", {}, h("button", { class: "linha", onclick: () => editarCulto(c) },
+            h("span", { class: "marcador", "aria-hidden": "true" }, E.DIAS_CURTOS[c.diaSemana]),
+            h("span", {}, h("span", { class: "titulo" }, `${c.hora} · ${c.nome}`), h("br"), h("span", { class: "sub" }, sub)),
+            c.ativo === false ? h("span", { class: "selo neutro" }, "Desligado") : c.solene ? h("span", { class: "selo solene" }, "Solene") : h("span")));
+        }))),
+      secao("Escolha das músicas",
+        h("ul", { class: "lista cartao" },
+          linha("Orientação pastoral", `Culto solene · Salmos e Hinos: ${tagsTexto(r.soleneTagsHinario)} · Louvores: ${tagsTexto(r.soleneTagsLouvor)}`, editarRegras),
+          linha("Repetição", `Uma música só volta depois de ${r.intervaloMusicaSemanas || 0} semana${r.intervaloMusicaSemanas === 1 ? "" : "s"}`, editarRegras),
+          linha("Etiquetas", `${state.tags.length} etiquetas para marcar as músicas`, () => editarLista("Etiquetas das músicas", state.tags, "Nova etiqueta", (id) => state.musicas.some((m) => (m.tags || []).includes(id)) || (r.soleneTagsHinario || []).includes(id) || (r.soleneTagsLouvor || []).includes(id))))),
+      secao("Equipe",
+        h("ul", { class: "lista cartao" },
+          linha("Funções do louvor", state.funcoes.map((f) => f.nome).join(", "), () => editarLista("Funções do louvor", state.funcoes, "Nova função", (id) => state.pessoas.some((p) => (p.funcoes || []).concat(p.apoio || []).includes(id)) || state.cultos.some((c) => (c.equipe || []).some((q) => q.funcao === id)))),
+          linha("Duas funções no mesmo culto", r.permitirAcumular ? "Permitido" : "Não permitido", editarRegras))),
+      secao("Dados",
+        h("ul", { class: "lista cartao" },
+          linha("Nome da igreja", state.igreja.nome || "—", editarIgreja),
+          linha("Backup", armazem.db ? "Salvo na nuvem. Baixe uma cópia de vez em quando." : "Salvo neste aparelho. Baixe uma cópia de vez em quando.", telaBackup))));
   }
 
-  function cartaoCultoSemanal(c) {
+  function editarCulto(original) {
+    const c = original ? clone(original) : { id: E.novoId("cul"), nome: "", diaSemana: 0, hora: "19:00", semanas: [], solene: false, ativo: true, equipe: [{ funcao: (state.funcoes[0] || {}).id, qtd: 1 }], musicas: { hino: 1, louvor: 2 }, acompanha: "" };
+    c.musicas = Object.assign({ hino: 0, louvor: 0 }, c.musicas);
+    c.equipe = c.equipe || [];
     const SEMANAS = [[1, "1ª"], [2, "2ª"], [3, "3ª"], [4, "4ª"], [5, "5ª"], ["ultima", "Última"]];
-    return h("div", { class: `cartao${c.ativo === false ? " inativo" : ""}` },
-      h("div", { class: "cab" },
-        h("input", { type: "text", id: `cul-nome-${c.id}`, value: c.nome, "aria-label": "Nome do culto", oninput: (e) => { c.nome = e.target.value; mudou(null, false); } }),
-        h("button", { class: "btn leve icone perigo", "aria-label": "Excluir culto", title: "Excluir", onclick: () => confirmar("Excluir este culto da semana?", `${c.nome} deixa de entrar nas próximas escalas. As escalas já feitas não mudam.`, "Excluir", () => mudou(() => { state.cultos = state.cultos.filter((x) => x !== c); })) }, icone("trash"))
-      ),
-      h("div", { class: "grade", style: "grid-template-columns:repeat(auto-fill,minmax(min(100%,130px),1fr))" },
-        h("label", { class: "campo" }, "Dia", h("select", { id: `cul-dia-${c.id}`, onchange: (e) => mudou(() => { c.diaSemana = Number(e.target.value); }) }, E.DIAS.map((d, i) => h("option", { value: i, selected: Number(c.diaSemana) === i || null }, d)))),
-        h("label", { class: "campo" }, "Hora", h("input", { type: "time", id: `cul-hora-${c.id}`, value: c.hora || "", onchange: (e) => mudou(() => { c.hora = e.target.value; }, false) }))
-      ),
-      h("label", { class: "campo" }, "Liturgia", h("select", { id: `cul-lit-${c.id}`, onchange: (e) => mudou(() => { c.liturgiaId = e.target.value; }) }, state.liturgias.map((l) => h("option", { value: l.id, selected: l.id === c.liturgiaId || null }, l.nome)))),
-      h("label", { class: "campo" }, "Mesma equipe e músicas do culto", h("select", { id: `cul-acomp-${c.id}`, onchange: (e) => mudou(() => { c.acompanha = e.target.value; }) },
-        h("option", { value: "" }, "Não: escala própria"),
-        state.cultos.filter((x) => x !== c && !x.acompanha && Number(x.diaSemana) === Number(c.diaSemana)).map((x) => h("option", { value: x.id, selected: c.acompanha === x.id || null }, `${x.nome} (${x.hora})`))
-      )),
-      h("div", { class: "campo" }, "Semanas do mês (nenhuma marcada = toda semana)", h("div", { class: "chips" }, SEMANAS.map(([v, n]) => h("button", {
-        class: "chip", "aria-pressed": String((c.semanas || []).includes(v)),
-        onclick: () => mudou(() => { c.semanas = (c.semanas || []).includes(v) ? c.semanas.filter((x) => x !== v) : [...(c.semanas || []), v]; }),
-      }, n)))),
-      h("div", { class: "campo" }, "Equipe necessária",
-        h("div", { class: "pilha", style: "gap:6px" }, c.equipe.map((q, i) => h("div", { style: "display:grid;grid-template-columns:minmax(0,1fr) 70px auto;gap:6px;align-items:center" },
-          h("select", { "aria-label": "Função", onchange: (e) => mudou(() => { q.funcao = e.target.value; }) }, state.funcoes.map((f) => h("option", { value: f.id, selected: f.id === q.funcao || null }, f.nome))),
-          h("input", { type: "number", min: 1, max: 8, value: q.qtd, "aria-label": "Quantidade", onchange: (e) => mudou(() => { q.qtd = Math.max(1, Math.min(8, Number(e.target.value) || 1)); }) }),
-          h("button", { class: "btn leve icone perigo", "aria-label": "Remover função", onclick: () => mudou(() => { c.equipe.splice(i, 1); }) }, icone("x"))
-        ))),
-        h("button", { class: "btn", style: "justify-self:start", onclick: () => mudou(() => { c.equipe.push({ funcao: (state.funcoes.find((f) => !c.equipe.some((q) => q.funcao === f.id)) || state.funcoes[0] || {}).id, qtd: 1 }); }) }, icone("plus"), "Função")
-      ),
-      h("label", { class: "check" }, h("input", { type: "checkbox", checked: !!c.solene, onchange: (e) => mudou(() => { c.solene = e.target.checked; }) }), "Culto solene"),
-      h("label", { class: "check" }, h("input", { type: "checkbox", checked: c.ativo !== false, onchange: (e) => mudou(() => { c.ativo = e.target.checked; }) }), "Ativo (entra nas escalas)")
-    );
-  }
-
-  function listaEditavel(titulo, lista, novoNome, emUso) {
-    return h("section", { class: "painel" },
-      h("header", {}, h("h2", {}, titulo)),
-      h("div", { class: "pilha", style: "gap:6px" }, lista.map((x, i) => h("div", { style: "display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px" },
-        h("input", { type: "text", value: x.nome, "aria-label": titulo, oninput: (e) => { x.nome = e.target.value; mudou(null, false); } }),
+    const equipe = h("div", { style: "display:grid;gap:8px" });
+    const desenharEquipe = () => equipe.replaceChildren(
+      ...c.equipe.map((q, i) => h("div", { style: "display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center" },
+        h("select", { "aria-label": "Função", onchange: (e) => { q.funcao = e.target.value; } }, state.funcoes.map((f) => h("option", { value: f.id, selected: f.id === q.funcao || null }, f.nome))),
+        passo(Number(q.qtd) || 1, 1, 8, (v) => { q.qtd = v; }, `Quantidade de ${E.nomeFuncao(state, q.funcao)}`),
+        h("button", { class: "btn icone", "aria-label": "Tirar função", onclick: () => { c.equipe.splice(i, 1); desenharEquipe(); } }, icone("fechar")))),
+      h("button", { class: "btn texto", style: "justify-self:start", onclick: () => { c.equipe.push({ funcao: (state.funcoes.find((f) => !c.equipe.some((q) => q.funcao === f.id)) || state.funcoes[0] || {}).id, qtd: 1 }); desenharEquipe(); } }, icone("mais"), "Função"));
+    desenharEquipe();
+    const semanas = h("div", { class: "chips" });
+    const desenharSemanas = () => semanas.replaceChildren(...SEMANAS.map(([v, n]) => h("button", {
+      type: "button", class: "chip", "aria-pressed": String((c.semanas || []).includes(v)),
+      onclick: () => { c.semanas = (c.semanas || []).includes(v) ? c.semanas.filter((x) => x !== v) : [...(c.semanas || []), v]; desenharSemanas(); },
+    }, n)));
+    desenharSemanas();
+    const lideres = state.cultos.filter((x) => x.id !== c.id && !x.acompanha);
+    const proprio = h("div", { style: "display:grid;gap:16px", hidden: c.acompanha || null },
+      h("div", { class: "campo" }, "Equipe", equipe),
+      h("div", { class: "campo" }, "Músicas",
+        h("div", { class: "interruptor" }, h("span", {}, "Salmos e Hinos"), passo(c.musicas.hino, 0, 6, (v) => { c.musicas.hino = v; }, "Salmos e Hinos")),
+        h("div", { class: "interruptor" }, h("span", {}, "Louvores"), passo(c.musicas.louvor, 0, 8, (v) => { c.musicas.louvor = v; }, "Louvores"))));
+    painel({
+      titulo: original ? c.nome || "Culto" : "Novo culto",
+      sub: "Mudanças valem para as próximas escalas geradas.",
+      corpo: [
+        h("label", { class: "campo" }, "Nome", h("input", { type: "text", id: "cul-nome", value: c.nome, placeholder: "Ex.: Culto solene", oninput: (e) => { c.nome = e.target.value; } })),
+        h("div", { style: "display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px" },
+          h("label", { class: "campo" }, "Dia", h("select", { id: "cul-dia", onchange: (e) => { c.diaSemana = Number(e.target.value); } }, E.DIAS.map((d, i) => h("option", { value: i, selected: Number(c.diaSemana) === i || null }, d)))),
+          h("label", { class: "campo" }, "Hora", h("input", { type: "time", id: "cul-hora", value: c.hora || "", onchange: (e) => { c.hora = e.target.value; } }))),
+        h("label", { class: "interruptor" }, h("span", {}, "Culto solene", h("small", {}, "Músicas seguem a orientação do pastor")), h("input", { type: "checkbox", role: "switch", checked: !!c.solene, onchange: (e) => { c.solene = e.target.checked; } })),
+        lideres.length ? h("label", { class: "campo" }, "Mesma equipe e músicas de outro culto",
+          h("span", { class: "ajuda" }, "Ex.: domingo à noite repete o culto da manhã; muda só a ordem das músicas."),
+          h("select", { id: "cul-acomp", onchange: (e) => { c.acompanha = e.target.value; proprio.hidden = !!c.acompanha; } },
+            h("option", { value: "" }, "Não, escala própria"),
+            lideres.map((x) => h("option", { value: x.id, selected: c.acompanha === x.id || null }, `${x.nome} (${E.DIAS_CURTOS[x.diaSemana]} ${x.hora})`)))) : null,
+        proprio,
+        h("div", { class: "campo" }, "Semanas do mês", h("span", { class: "ajuda" }, "Nenhuma marcada: toda semana."), semanas),
+        h("label", { class: "interruptor" }, h("span", {}, "Culto ativo", h("small", {}, "Desligue para não entrar nas escalas")), h("input", { type: "checkbox", role: "switch", checked: c.ativo !== false, onchange: (e) => { c.ativo = e.target.checked; } })),
+      ],
+      rodape: (fechar) => [
+        original ? h("button", { class: "btn perigo", style: "margin-right:auto", onclick: () => {
+          fechar(true);
+          comDesfazer("Culto excluído. As escalas já feitas não mudam.", () => {
+            state.cultos = state.cultos.filter((x) => x.id !== original.id);
+            state.cultos.forEach((x) => { if (x.acompanha === original.id) x.acompanha = ""; });
+          });
+        } }, icone("lixo"), "Excluir") : null,
         h("button", {
-          class: "btn leve icone perigo", "aria-label": "Remover",
-          onclick: () => emUso(x.id) ? toast(`"${x.nome}" está em uso. Tire-a de quem usa antes de remover.`) : mudou(() => { lista.splice(i, 1); }),
-        }, icone("x"))
-      ))),
-      h("button", {
-        class: "btn", style: "justify-self:start",
-        onclick: () => mudou(() => {
-          const base = E.normalizar(novoNome).replace(/\s+/g, "-");
-          let id = base, n = 2;
-          while (porId(lista, id)) id = `${base}-${n++}`;
-          lista.push({ id, nome: novoNome });
-        }),
-      }, icone("plus"), novoNome)
-    );
+          class: "btn primario", onclick: () => {
+            if (!c.nome.trim()) return avisar("Escreva o nome do culto.");
+            c.nome = c.nome.trim();
+            const lider = porId(state.cultos, c.acompanha);
+            if (lider && Number(lider.diaSemana) !== Number(c.diaSemana)) return avisar("Para repetir outro culto, os dois precisam ser no mesmo dia da semana.");
+            fechar(true);
+            mudou(() => { if (original) Object.assign(original, c); else state.cultos.push(c); });
+            avisar("Culto salvo. Vale para as próximas escalas.");
+          },
+        }, "Salvar"),
+      ],
+      foco: original ? "#cul-dia" : "#cul-nome",
+    });
   }
 
-  /* ------------------------------------------------------------ backup */
+  function editarRegras() {
+    const r = clone(state.regras);
+    r.soleneTagsHinario = r.soleneTagsHinario || [];
+    r.soleneTagsLouvor = r.soleneTagsLouvor || [];
+    painel({
+      titulo: "Escolha das músicas",
+      corpo: [
+        h("p", { class: "small muted" }, "Nos cultos solenes, só entram músicas com estas etiquetas. Se faltar música apta, a escala avisa em vez de colocar uma fora da orientação."),
+        h("div", { class: "campo" }, "Salmos e Hinos precisam ser", seletorTags(r.soleneTagsHinario)),
+        h("div", { class: "campo" }, "Louvores precisam ser", seletorTags(r.soleneTagsLouvor)),
+        h("div", { class: "interruptor" }, h("span", {}, "Semanas antes de repetir uma música", h("small", {}, "Com repertório curto, ela repete a mais antiga e avisa")), passo(r.intervaloMusicaSemanas || 0, 0, 12, (v) => { r.intervaloMusicaSemanas = v; }, "Semanas antes de repetir")),
+        h("label", { class: "interruptor" }, h("span", {}, "Duas funções no mesmo culto", h("small", {}, "Ex.: tocar e cantar ao mesmo tempo")), h("input", { type: "checkbox", role: "switch", checked: !!r.permitirAcumular, onchange: (e) => { r.permitirAcumular = e.target.checked; } })),
+      ],
+      rodape: (fechar) => [h("button", { class: "btn primario", onclick: () => { fechar(true); mudou(() => { state.regras = r; }); avisar("Ajustes salvos."); } }, "Salvar")],
+      foco: ".chip",
+    });
+  }
 
-  function nomeArquivo() {
-    return `escala-louvor-${hoje()}.json`;
+  function editarLista(titulo, lista, novoNome, emUso) {
+    const copia = clone(lista);
+    const caixa = h("div", { style: "display:grid;gap:8px" });
+    const desenhar = () => caixa.replaceChildren(
+      ...copia.map((x, i) => h("div", { style: "display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px" },
+        h("input", { type: "text", value: x.nome, "aria-label": titulo, oninput: (e) => { x.nome = e.target.value; } }),
+        h("button", { class: "btn icone", "aria-label": `Tirar ${x.nome}`, onclick: () => {
+          if (lista.some((y) => y.id === x.id) && emUso(x.id)) return avisar(`"${x.nome}" está em uso e não pode sair.`);
+          copia.splice(i, 1);
+          desenhar();
+        } }, icone("fechar")))),
+      h("button", { class: "btn texto", style: "justify-self:start", onclick: () => {
+        const base = E.normalizar(novoNome).replace(/\s+/g, "-");
+        let id = base;
+        let n = 2;
+        while (porId(copia, id)) id = `${base}-${n++}`;
+        copia.push({ id, nome: "" });
+        desenhar();
+        const campos = caixa.querySelectorAll("input");
+        campos[campos.length - 1].focus();
+      } }, icone("mais"), novoNome));
+    desenhar();
+    painel({
+      titulo,
+      corpo: caixa,
+      rodape: (fechar) => [h("button", { class: "btn primario", onclick: () => {
+        const limpos = copia.filter((x) => x.nome.trim()).map((x) => ({ ...x, nome: x.nome.trim() }));
+        fechar(true);
+        mudou(() => { lista.splice(0, lista.length, ...limpos); });
+        avisar("Lista salva.");
+      } }, "Salvar")],
+      foco: "footer .btn",
+    });
+  }
+
+  function editarIgreja() {
+    let nome = state.igreja.nome || "";
+    painel({
+      titulo: "Nome da igreja",
+      corpo: h("label", { class: "campo" }, "Aparece no topo e no texto do WhatsApp", h("input", { type: "text", id: "igreja-nome", value: nome, oninput: (e) => { nome = e.target.value; } })),
+      rodape: (fechar) => [h("button", { class: "btn primario", onclick: () => { fechar(true); mudou(() => { state.igreja.nome = nome.trim(); }); } }, "Salvar")],
+      foco: "#igreja-nome",
+    });
   }
 
   async function baixarBackup() {
     const dados = JSON.stringify(state, null, 2);
+    const nome = `escala-louvor-${hoje()}.json`;
     if (armazem.downloads) {
       try {
-        const r = await armazem.downloads.save({ filename: nomeArquivo(), data: dados });
-        if (r && r.status === "saved") toast("Backup salvo.");
+        const r = await armazem.downloads.save({ filename: nome, data: dados });
+        if (r && r.status === "saved") avisar("Backup salvo.");
       } catch (e) {
-        toast("O download não foi feito. Use Copiar dados para guardar o backup.");
+        avisar("O download não foi feito. Use Copiar dados.");
       }
       return;
     }
-    if (window.claude && typeof window.claude.use === "function") {
-      toast("Downloads não estão disponíveis aqui. Use Copiar dados.");
-      return;
-    }
+    if (!local()) return avisar("Download indisponível aqui. Use Copiar dados.");
     const url = URL.createObjectURL(new Blob([dados], { type: "application/json" }));
-    const a = h("a", { href: url, download: nomeArquivo() });
+    const a = h("a", { href: url, download: nome });
     document.body.append(a);
     a.click();
     a.remove();
@@ -1367,62 +1237,38 @@
     try {
       dados = JSON.parse(texto);
     } catch (e) {
-      return toast("Esse texto não é um backup válido da Escala do Louvor.");
+      return avisar("Esse texto não é um backup da Escala do Louvor.");
     }
-    if (!dados || typeof dados !== "object" || !Array.isArray(dados.musicas || []) || !(dados.cultos || dados.pessoas || dados.musicas)) {
-      return toast("Esse arquivo não parece um backup da Escala do Louvor.");
-    }
-    confirmar("Substituir os dados atuais?", "Tudo o que está na ferramenta agora será trocado pelo conteúdo do backup.", "Substituir", () => {
-      state = E.migrar(dados, X.configuracaoBase());
-      ui.escalaId = escalasOrdenadas()[0] ? escalasOrdenadas()[0].id : null;
-      mudou();
-      renderAbas();
-      toast("Backup restaurado.");
-    });
+    if (!dados || typeof dados !== "object" || !(dados.cultos || dados.pessoas || dados.musicas)) return avisar("Esse arquivo não parece um backup da Escala do Louvor.");
+    if (fecharAtual) fecharAtual(true);
+    comDesfazer("Backup restaurado.", () => { state = E.migrar(dados, D.configuracaoBase()); ui.escalaId = null; garantirEscalaAtual(); });
   }
 
   function telaBackup() {
-    const nuvem = !!armazem.db;
-    const area = h("textarea", { id: "backup-texto", rows: 6, placeholder: "Cole aqui o conteúdo de um backup (.json)" });
-    const arquivo = h("input", {
-      type: "file", id: "backup-arquivo", accept: ".json,application/json",
-      onchange: (e) => {
-        const f = e.target.files[0];
-        if (!f) return;
-        const leitor = new FileReader();
-        leitor.onload = () => restaurar(String(leitor.result));
-        leitor.readAsText(f);
-        e.target.value = "";
-      },
-    });
+    const area = h("textarea", { id: "backup-texto", rows: 4, placeholder: "Ou cole aqui o conteúdo de um backup" });
+    const arquivo = h("input", { type: "file", id: "backup-arquivo", accept: ".json,application/json", onchange: (e) => {
+      const f = e.target.files[0];
+      if (!f) return;
+      const leitor = new FileReader();
+      leitor.onload = () => restaurar(String(leitor.result));
+      leitor.readAsText(f);
+    } });
     const n = (k) => state[k].length;
-    return h("div", { class: "cartoes", style: "grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr))" },
-      h("section", { class: "painel" },
-        h("header", {}, h("h2", {}, "Onde os dados ficam")),
-        h("p", {}, nuvem
-          ? "Os dados ficam salvos na nuvem, junto com esta página: abrem iguais no celular e no computador."
-          : "Os dados ficam salvos neste navegador, neste aparelho. Se limpar os dados do navegador ou trocar de aparelho, eles não vão junto: baixe um backup de vez em quando."),
-        h("p", { class: "small muted num" }, `${n("pessoas")} pessoas · ${n("oficiais")} oficiais · ${n("musicas")} músicas · ${n("liturgias")} liturgias · ${n("cultos")} cultos semanais · ${n("escalas")} escalas`),
-        h("div", { class: "acoes" },
-          h("button", { class: "btn primario", onclick: baixarBackup }, icone("download"), "Baixar backup"),
-          h("button", { class: "btn", onclick: () => copiar(JSON.stringify(state)) }, icone("copy"), "Copiar dados")
-        )
-      ),
-      h("section", { class: "painel" },
-        h("header", {}, h("h2", {}, "Restaurar um backup")),
-        h("label", { class: "campo" }, "Arquivo de backup", arquivo),
-        area,
-        h("div", { class: "acoes" }, h("button", { class: "btn", onclick: () => area.value.trim() ? restaurar(area.value) : toast("Cole o backup no campo acima.") }, "Restaurar do texto colado"))
-      ),
-      h("section", { class: "painel" },
-        h("header", {}, h("h2", {}, "Recomeçar")),
-        h("p", { class: "muted" }, "Para voltar ao ponto de partida (repertório e liturgias da igreja, equipe de exemplo) ou para zerar tudo."),
-        h("div", { class: "acoes" },
-          h("button", { class: "btn", onclick: () => confirmar("Voltar aos dados iniciais?", "Tudo volta a como estava na primeira abertura: liturgias e repertório da igreja, com equipe de exemplo. Baixe um backup antes, se precisar.", "Voltar aos dados iniciais", () => { state = novoInicial(); ui.escalaId = state.escalas[0] ? state.escalas[0].id : null; mudou(); renderAbas(); }) }, "Voltar aos dados iniciais"),
-          h("button", { class: "btn perigo", onclick: () => confirmar("Apagar tudo?", "Equipe, oficiais, repertório e escalas serão apagados. Liturgias, cultos e regras voltam ao padrão.", "Apagar tudo", () => { state = Object.assign(X.configuracaoBase(), { exemplo: false, pessoas: [], oficiais: [], musicas: [], escalas: [] }); ui.escalaId = null; mudou(); renderAbas(); }) }, "Apagar tudo")
-        )
-      )
-    );
+    painel({
+      titulo: "Backup",
+      sub: armazem.db ? "Os dados ficam na nuvem, iguais no celular e no computador." : "Os dados ficam neste aparelho. Se limpar o navegador, eles somem: guarde uma cópia.",
+      corpo: [
+        h("p", { class: "small muted num" }, `${n("pessoas")} pessoas · ${n("musicas")} músicas · ${n("cultos")} cultos · ${n("escalas")} escalas`),
+        h("div", { style: "display:grid;grid-template-columns:1fr 1fr;gap:8px" },
+          h("button", { class: "btn tonal", onclick: baixarBackup }, icone("baixar"), "Baixar"),
+          h("button", { class: "btn", onclick: () => copiar(JSON.stringify(state)) }, icone("copiar"), "Copiar dados")),
+        h("div", { class: "campo" }, "Restaurar um backup", h("span", { class: "ajuda" }, "Substitui tudo; dá para desfazer logo em seguida."), arquivo, area,
+          h("button", { class: "btn", style: "justify-self:start", onclick: () => (area.value.trim() ? restaurar(area.value) : avisar("Cole o backup no campo.")) }, "Restaurar do texto")),
+        h("div", { class: "campo" }, "Recomeçar",
+          h("button", { class: "btn perigo", style: "justify-self:start", onclick: () => { fecharAtual(true); comDesfazer("Dados voltaram ao início.", () => { state = estadoInicial(); ui.escalaId = null; garantirEscalaAtual(); }); } }, "Voltar aos dados iniciais")),
+      ],
+      foco: ".btn.tonal",
+    });
   }
 
   iniciar();

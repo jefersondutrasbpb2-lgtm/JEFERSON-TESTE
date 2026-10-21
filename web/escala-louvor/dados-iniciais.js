@@ -1,18 +1,15 @@
 /*
  * Dados iniciais da Escala do Louvor — IEC Pombal.
  *
- * Liturgias: "Modelos de liturgia IEC Pombal" (culto solene, culto matinal,
- * reunião de oração e reunião de doutrina).
  * Louvores: "Repertório – Grupo de louvor IEC de Pombal/PB" (100 itens; títulos
  * repetidos foram unidos, com o segundo link guardado nas observações).
  * Salmos e Hinos: números informados pelo ministério de louvor.
- *
- * Equipe do louvor, oficiais, dias e horários: informados pelo ministério de
- * louvor (out/2026). O grupo canta e conduz a igreja à adoração; não há a
- * função de "ministro de louvor".
+ * Equipe, dias e horários: informados pelo ministério de louvor (out/2026). O
+ * grupo canta e conduz a igreja à adoração; a liturgia fica com o pastor.
+ * Quantidade de músicas por culto: tirada dos "Modelos de liturgia IEC Pombal".
  *
  * As ETIQUETAS (trinitário, cristocêntrico, doutrinário e temas) são uma
- * primeira sugestão para revisar com o pastor na aba Repertório.
+ * primeira sugestão para revisar com o pastor na aba Músicas.
  */
 (function (root, factory) {
   const api = factory();
@@ -61,84 +58,7 @@
     permitirAcumular: false,
   };
 
-  const SH = ["salmo", "hino"];
-  const LOUVOR = ["louvor"];
-  const DIRIGENTES = ["Presbítero", "Diácono"];
-  const item = (id, titulo, tipo, extra) => Object.assign({ id, titulo, tipo, texto: "", notaPadrao: "" }, extra);
-  const musica = (id, titulo, tipos, qtd, texto) => item(id, titulo, "musica", { tipos, tags: [], qtd, texto: texto || "" });
-  const texto = (id, titulo, t, nota) => item(id, titulo, "texto", { texto: t || "", notaPadrao: nota || "" });
-
-  const liturgias = [
-    {
-      id: "lit-solene",
-      nome: "Culto solene",
-      solene: true,
-      itens: [
-        item("s01", "Chamada à adoração", "oficial", { cargos: DIRIGENTES, qtd: 1, texto: "Dirigente do culto · em pé" }),
-        musica("s02", "Cântico", SH, 1, "Em pé"),
-        texto("s03", "Oração de invocação", "Dirigente · em pé"),
-        texto("s04", "Confissão de pecado", "Dirigente · em pé", "Êxodo 20.1–17, leitura participativa"),
-        texto("s05", "Oração de confissão", "Dirigente · em pé"),
-        musica("s06", "Cânticos", LOUVOR, 2, "Grupo de louvor"),
-        musica("s07", "Dízimos e ofertas", LOUVOR, 1, "Dirigente · 1 louvor durante a contribuição"),
-        texto("s08", "Oração de consagração das ofertas", "Dirigente"),
-        texto("s09", "Oração pelas crianças", "Dirigente"),
-        texto("s10", "Pregação", "Pastor"),
-        texto("s11", "Oração de agradecimento"),
-        texto("s12", "Bênção apostólica"),
-        texto("s13", "Avisos"),
-        texto("s14", "Apresentação de visitantes"),
-      ],
-    },
-    {
-      id: "lit-matinal",
-      nome: "Culto matinal",
-      solene: true,
-      itens: [
-        item("m01", "Chamada à adoração", "oficial", { cargos: DIRIGENTES, qtd: 1, texto: "Dirigente do culto · em pé" }),
-        musica("m02", "Cântico", SH, 1, "Em pé"),
-        texto("m03", "Oração de invocação", "Dirigente · em pé"),
-        texto("m04", "Confissão de pecado", "Dirigente · em pé", "Êxodo 20.1–17"),
-        texto("m05", "Oração de confissão", "Dirigente · em pé"),
-        musica("m06", "Cânticos", LOUVOR, 2, "Grupo de louvor · sentados"),
-        musica("m07", "Dízimos e ofertas", LOUVOR, 1, "Dirigente · 1 louvor durante a contribuição · sentados"),
-        texto("m08", "Oração de consagração das ofertas e pelas crianças", "Dirigente · sentados"),
-        texto("m09", "Oração de agradecimento"),
-        texto("m10", "Bênção apostólica"),
-        texto("m11", "Escola Bíblica Dominical (EBD)"),
-      ],
-    },
-    {
-      id: "lit-oracao",
-      nome: "Reunião de oração",
-      solene: false,
-      itens: [
-        texto("o01", "Leitura de um salmo", "Pode ser relacionado à oração"),
-        texto("o02", "Oração"),
-        musica("o03", "Cânticos", SH, 2),
-        texto("o04", "Momento de oração com pedidos do povo", "Uma pessoa ora pelos pedidos do povo; uma, por avivamento e conversões; uma, pela liderança da igreja e pelas congregações"),
-        musica("o05", "Cânticos", LOUVOR, 2),
-        texto("o06", "Momento de oração", "20 minutos de joelhos"),
-        texto("o07", "Reflexão bíblica", "15 a 20 minutos"),
-        texto("o08", "Encerramento com oração"),
-      ],
-    },
-    {
-      id: "lit-doutrina",
-      nome: "Reunião de doutrina",
-      solene: false,
-      itens: [
-        texto("d01", "Leitura bíblica", "Pode ser um salmo"),
-        texto("d02", "Oração"),
-        musica("d03", "Cânticos", SH, 2),
-        texto("d04", "Leitura de um texto doutrinário"),
-        musica("d05", "Cânticos", LOUVOR, 2),
-        texto("d06", "Estudo da Escritura"),
-      ],
-    },
-  ];
-
-  // Composição da equipe: ainda não informada; ajuste na aba "Cultos e regras".
+  // Composição da equipe: sugestão inicial; ajuste em Ajustes › Cultos.
   const equipeDomingo = [
     { funcao: "vocal", qtd: 3 },
     { funcao: "violao", qtd: 1 },
@@ -153,11 +73,11 @@
   ];
 
   const cultos = [
-    { id: "dom-manha", nome: "Culto matinal e EBD", diaSemana: 0, hora: "09:00", semanas: [], liturgiaId: "lit-matinal", solene: true, ativo: true, equipe: equipeDomingo },
+    { id: "dom-manha", nome: "Culto matinal e EBD", diaSemana: 0, hora: "09:00", semanas: [], solene: true, ativo: true, equipe: equipeDomingo, musicas: { hino: 1, louvor: 3 } },
     // Mesmo grupo e mesmas músicas do culto da manhã; muda só a ordem, se preciso.
-    { id: "dom-noite", nome: "Culto solene", diaSemana: 0, hora: "18:00", semanas: [], liturgiaId: "lit-solene", solene: true, ativo: true, equipe: equipeDomingo, acompanha: "dom-manha" },
-    { id: "ter-oracao", nome: "Culto de oração", diaSemana: 2, hora: "19:30", semanas: [], liturgiaId: "lit-oracao", solene: false, ativo: true, equipe: equipeSemana },
-    { id: "qui-doutrina", nome: "Culto de doutrina (estudo bíblico)", diaSemana: 4, hora: "19:30", semanas: [], liturgiaId: "lit-doutrina", solene: false, ativo: true, equipe: equipeSemana },
+    { id: "dom-noite", nome: "Culto solene", diaSemana: 0, hora: "18:00", semanas: [], solene: true, ativo: true, equipe: equipeDomingo, musicas: { hino: 1, louvor: 3 }, acompanha: "dom-manha" },
+    { id: "ter-oracao", nome: "Culto de oração", diaSemana: 2, hora: "19:30", semanas: [], solene: false, ativo: true, equipe: equipeSemana, musicas: { hino: 2, louvor: 2 } },
+    { id: "qui-doutrina", nome: "Culto de doutrina (estudo bíblico)", diaSemana: 4, hora: "19:30", semanas: [], solene: false, ativo: true, equipe: equipeSemana, musicas: { hino: 2, louvor: 2 } },
   ];
 
   /* ------------------------------------------------------- repertório */
@@ -274,7 +194,7 @@
     L(99, "Livre acesso", "https://youtu.be/-rKr_xS32Q0", "cristocentrico doutrinario graca", ""),
   ];
 
-  /* ------------------------------------------------- equipe e oficiais */
+  /* ----------------------------------------------------------- equipe */
 
   // `funcoes`: o que a pessoa faz de fato; `apoio`: só quando falta quem faça.
   const pessoa = (id, nome, funcoes, apoio, obs) => ({ id, nome, funcoes, apoio: apoio || [], cultos: [], indisponivel: [], ativo: true, obs: obs || "" });
@@ -283,7 +203,7 @@
     pessoa("valdeci", "Valdeci Junior", ["teclado"]),
     pessoa("tulio", "Tulio", ["guitarra", "violao"], ["bateria", "vocal"], "Bateria só como apoio; às vezes apoia no vocal."),
     pessoa("kaio", "Kaio", ["baixo"], ["violao", "vocal"], "Às vezes violão; apoia no vocal, nunca como principal."),
-    pessoa("leonar", "Leonar", ["bateria"], [], "Também é presbítero."),
+    pessoa("leonar", "Leonar", ["bateria"]),
     pessoa("natan", "Natan", ["violao"]),
     pessoa("germano", "Germano", ["vocal"]),
     pessoa("leticia", "Letícia", ["vocal"]),
@@ -294,33 +214,18 @@
     pessoa("alexandre", "Alexandre", ["vocal"]),
   ];
 
-  const oficial = (id, nome, cargo, extra) => Object.assign({ id, nome, cargo, indisponivel: [], ativo: true, obs: "", pessoaId: "" }, extra);
-  const oficiais = [
-    oficial("felipe", "Felipe Oliveira", "Pastor"),
-    oficial("ariostenes", "Ariostenes", "Presbítero"),
-    oficial("rodrigo", "Rodrigo", "Presbítero"),
-    oficial("leonar-pb", "Leonar", "Presbítero", { pessoaId: "leonar", obs: "Também toca bateria no louvor." }),
-    oficial("inacio", "Inácio Marinho", "Presbítero", { ativo: false, obs: "Sem condições de servir por problemas de saúde." }),
-    oficial("marcos-sergio", "Marcos Sergio", "Presbítero"),
-    oficial("jose-carlos", "José Carlos", "Diácono"),
-    oficial("marcos", "Marcos", "Diácono"),
-    oficial("eliezer", "Eliezer", "Diácono"),
-  ];
-
   function configuracaoBase() {
-    return JSON.parse(JSON.stringify({ versao: 1, igreja: { nome: "IEC Pombal" }, funcoes, tags, regras, liturgias, cultos }));
+    return JSON.parse(JSON.stringify({ versao: 2, igreja: { nome: "IEC Pombal" }, funcoes, tags, regras, cultos }));
   }
 
   function repertorio() {
     return JSON.parse(JSON.stringify(salmosEHinos.concat(louvores)));
   }
 
-  /** Configuração, repertório, equipe e oficiais da igreja. */
+  /** Configuração, repertório e equipe da igreja. */
   function estadoInicial() {
     return Object.assign(configuracaoBase(), {
-      exemplo: false,
       pessoas: JSON.parse(JSON.stringify(pessoas)),
-      oficiais: JSON.parse(JSON.stringify(oficiais)),
       musicas: repertorio(),
       escalas: [],
     });

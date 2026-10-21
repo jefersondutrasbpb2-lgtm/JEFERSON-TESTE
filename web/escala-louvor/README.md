@@ -20,24 +20,22 @@ aparelho. Em **Ajustes › Backup** dá para baixar uma cópia.
 
 ## Disponibilidade da equipe
 
-Quem abre o link (com ou sem `#disponibilidade`) e não entrou como coordenador vê só a tela **Sua
-disponibilidade**: escolhe o próprio nome, toca no calendário os dias em que **pode** servir e envia.
+No site, o app é aberto: quem tem o link vê e edita tudo, com todos os menus. O link do convite (com
+`#disponibilidade`) abre direto a tela **Sua disponibilidade**: a pessoa escolhe o próprio nome, toca no calendário os
+dias em que **pode** servir e envia.
 
-- A resposta vai direto para o servidor e aparece na Agenda do coordenador em até 20 segundos. A equipe só consegue
-  gravar a própria disponibilidade; equipe, músicas e escalas só o coordenador muda.
+- A resposta vai direto para o servidor e aparece na Agenda de quem estiver com o app aberto em até 20 segundos.
 - Se o envio falhar (sem internet, por exemplo), a ferramenta mostra um texto com o código `#disp` para mandar pelo
-  WhatsApp, e o coordenador usa **Colar respostas**.
-
-## Coordenador
-
-Na tela de disponibilidade, **Sou o coordenador** pede a senha. Ela é o secret `ESCALA_SENHA` do GitHub (Settings ›
-Secrets and variables › Actions); a publicação guarda no servidor só a senha cifrada. Para trocar, altere o secret e
-publique de novo. A sessão dura 30 dias no aparelho; **Ajustes › Sair do modo coordenador** encerra antes.
+  WhatsApp, e quem monta a escala usa **Colar respostas**.
+- Na geração, quem marcou que não pode fica de fora; quem confirmou vem antes de quem não respondeu. Em Ajustes ›
+  Escolha das músicas dá para escalar **só** quem respondeu.
 
 ## Servidor
 
 `servidor/api.php` guarda tudo num arquivo fora da pasta pública (`domains/<domínio>/escala-dados/banco.php`) e
-`servidor/servidor.js` liga o app a ela. `servidor/semente.json` são os dados de partida, usados só enquanto o servidor
+`servidor/servidor.js` liga o app a ela. Como todos editam, o servidor guarda por dia uma cópia de como o banco estava
+antes da primeira alteração (`escala-dados/backup-AAAA-MM-DD.php`, últimos 60 dias); além disso, **Ajustes › Backup**
+baixa uma cópia. `servidor/semente.json` são os dados de partida, usados só enquanto o servidor
 não tem dados. A publicação monta a pasta `escalas/` do site com `scripts/montar-escala.mjs`.
 - Na geração, quem marcou que não pode fica de fora; quem confirmou vem antes de quem não respondeu. Em Ajustes ›
   Escolha das músicas dá para escalar **só** quem respondeu.

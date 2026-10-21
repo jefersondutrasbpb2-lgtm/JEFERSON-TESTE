@@ -154,7 +154,8 @@
 
   const cultos = [
     { id: "dom-manha", nome: "Culto matinal e EBD", diaSemana: 0, hora: "09:00", semanas: [], liturgiaId: "lit-matinal", solene: true, ativo: true, equipe: equipeDomingo },
-    { id: "dom-noite", nome: "Culto solene", diaSemana: 0, hora: "18:00", semanas: [], liturgiaId: "lit-solene", solene: true, ativo: true, equipe: equipeDomingo },
+    // Mesmo grupo e mesmas músicas do culto da manhã; muda só a ordem, se preciso.
+    { id: "dom-noite", nome: "Culto solene", diaSemana: 0, hora: "18:00", semanas: [], liturgiaId: "lit-solene", solene: true, ativo: true, equipe: equipeDomingo, acompanha: "dom-manha" },
     { id: "ter-oracao", nome: "Culto de oração", diaSemana: 2, hora: "19:30", semanas: [], liturgiaId: "lit-oracao", solene: false, ativo: true, equipe: equipeSemana },
     { id: "qui-doutrina", nome: "Culto de doutrina (estudo bíblico)", diaSemana: 4, hora: "19:30", semanas: [], liturgiaId: "lit-doutrina", solene: false, ativo: true, equipe: equipeSemana },
   ];

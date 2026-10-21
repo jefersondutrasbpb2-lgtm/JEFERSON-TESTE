@@ -195,12 +195,15 @@
     for (const e of escalas) {
       const atual = escala && e.id === escala.id;
       (e.cultos || []).forEach((c, ci) => {
+        // Um culto que repete a equipe e as músicas de outro do mesmo dia conta uma vez só.
+        const espelho = !!liderDe(e, c);
         (c.equipe || []).forEach((s, si) => {
           const ref = atual ? `${ci}:e:${si}` : null;
-          if (!ignora(ref)) add(usos.pessoas, s.pessoaId, c.data, { atual, ci });
+          if (!espelho && !ignora(ref)) add(usos.pessoas, s.pessoaId, c.data, { atual, ci });
         });
         (c.liturgia || []).forEach((it, ii) => {
           (it.musicas || []).forEach((id, k) => {
+            if (espelho) return;
             const ref = atual ? `${ci}:m:${ii}:${k}` : null;
             if (!ignora(ref)) add(usos.musicas, id, c.data, { atual, ci });
           });
@@ -212,6 +215,49 @@
       });
     }
     return usos;
+  }
+
+  /** O culto do mesmo dia cuja equipe e músicas este repete (ex.: o das 18h repete o das 9h). */
+  function liderDe(escala, culto) {
+    return culto && culto.acompanha ? (escala.cultos || []).find((c) => c.id === culto.acompanha && c !== culto) || null : null;
+  }
+
+  /**
+   * Copia do culto líder a equipe e o conjunto de músicas. A ordem das músicas
+   * escolhida neste culto é mantida; só entram as que faltam e saem as que o
+   * líder não tem mais.
+   */
+  function sincronizarCulto(state, escala, culto) {
+    const lider = liderDe(escala, culto);
+    if (!lider) return culto;
+    const vistos = {};
+    culto.equipe.forEach((s) => {
+      const n = vistos[s.funcao] || 0;
+      const fonte = lider.equipe.filter((x) => x.funcao === s.funcao)[n];
+      s.pessoaId = fonte ? fonte.pessoaId : null;
+      vistos[s.funcao] = n + 1;
+    });
+    const restantes = lider.liturgia.flatMap((it) => it.musicas).filter(Boolean);
+    const vagas = [];
+    culto.liturgia.forEach((it) => it.musicas.forEach((id, k) => vagas.push({ it, k })));
+    for (const v of vagas) {
+      const i = restantes.indexOf(v.it.musicas[v.k]);
+      if (i >= 0) restantes.splice(i, 1);
+      else v.it.musicas[v.k] = null;
+    }
+    for (const v of vagas) {
+      if (v.it.musicas[v.k]) continue;
+      const modelo = itemModelo(state, culto, v.it) || v.it;
+      const tipos = modelo.tipos && modelo.tipos.length ? modelo.tipos : null;
+      const i = restantes.findIndex((id) => { const m = porId(state.musicas, id); return m && (!tipos || tipos.includes(m.tipo)); });
+      if (i >= 0) v.it.musicas[v.k] = restantes.splice(i, 1)[0];
+    }
+    return culto;
+  }
+
+  function sincronizarEscala(state, escala) {
+    escala.cultos.forEach((c) => sincronizarCulto(state, escala, c));
+    return escala;
   }
 
   function cultoAnterior(escala, ci) {
@@ -246,7 +292,7 @@
     const naEscala = lista.filter((u) => u.ref.atual).length;
     const recentes = lista.filter((u) => !u.ref.atual && Math.abs(diasEntre(u.data, culto.data)) <= 90).length;
     const anterior = cultoAnterior(escala, ci);
-    const mesmoDia = escala.cultos.some((c, i) => i !== ci && c.data === culto.data && serveNoCulto(c, pessoa.id));
+    const mesmoDia = escala.cultos.some((c, i) => i !== ci && c.data === culto.data && c !== liderDe(escala, culto) && !liderDe(escala, c) && serveNoCulto(c, pessoa.id));
     let score = naEscala * 10 + recentes * 1.5;
     if (anterior && serveNoCulto(anterior, pessoa.id)) score += 6;
     if (mesmoDia) score += 8;
@@ -397,18 +443,19 @@
   function preencherCulto(state, escala, ci, rand) {
     const culto = escala.cultos[ci];
     const travado = new Set(culto.travados || []);
+    const espelho = !!liderDe(escala, culto); // equipe e músicas vêm do culto líder
     const pessoasPorFuncao = (f) => (state.pessoas || []).filter((p) => p.ativo !== false && nivelFuncao(p, f) === "principal").length;
     // Funções com menos gente são preenchidas primeiro, para não "gastar" quem é insubstituível.
     const ordem = culto.equipe.map((s, si) => si).sort((a, b) => pessoasPorFuncao(culto.equipe[a].funcao) - pessoasPorFuncao(culto.equipe[b].funcao));
     for (const si of ordem) {
       const slot = culto.equipe[si];
-      if (slot.pessoaId || travado.has(`e:${si}`)) continue;
+      if (espelho || slot.pessoaId || travado.has(`e:${si}`)) continue;
       const c = escolher(candidatosPessoa(state, escala, ci, si), (x) => x.score, rand, 0.5);
       slot.pessoaId = c ? c.pessoa.id : null;
     }
     culto.liturgia.forEach((item, ii) => {
       item.musicas.forEach((id, k) => {
-        if (id || travado.has(`m:${ii}:${k}`)) return;
+        if (espelho || id || travado.has(`m:${ii}:${k}`)) return;
         const lista = candidatosMusica(state, escala, ci, ii, k);
         // Músicas nunca cantadas empatam entre si; as já cantadas têm ~1 semana de folga.
         let c = escolher(lista, (x) => Math.min(x.distancia, SEM_USO), rand, 7);
@@ -455,10 +502,26 @@
     }
     for (const a of avulsos) escala.cultos.push(manterTravados(state, a, porId(state.cultos, a.cultoId) || { equipe: [] }, true));
     ordenarCultos(escala);
+    vincularCultos(state, escala);
     // Os cultos solenes escolhem primeiro: o repertório apto a eles costuma ser o mais curto.
     const ordem = escala.cultos.map((_, ci) => ci).sort((a, b) => (escala.cultos[b].solene ? 1 : 0) - (escala.cultos[a].solene ? 1 : 0) || a - b);
-    ordem.forEach((ci) => preencherCulto(state, escala, ci, rand));
+    ordem.filter((ci) => !escala.cultos[ci].acompanha).forEach((ci) => preencherCulto(state, escala, ci, rand));
+    ordem.filter((ci) => escala.cultos[ci].acompanha).forEach((ci) => {
+      sincronizarCulto(state, escala, escala.cultos[ci]);
+      preencherCulto(state, escala, ci, rand);
+    });
     return escala;
+  }
+
+  /** Liga cada culto configurado com "acompanha" ao culto líder do mesmo dia. */
+  function vincularCultos(state, escala) {
+    for (const c of escala.cultos) {
+      const cfg = !c.avulso && porId(state.cultos, c.cultoId);
+      const alvo = cfg && cfg.acompanha;
+      const alvoCfg = alvo && porId(state.cultos, alvo);
+      const lider = alvoCfg && !alvoCfg.acompanha && escala.cultos.find((x) => x !== c && !x.avulso && x.data === c.data && x.cultoId === alvo);
+      c.acompanha = lider ? lider.id : null;
+    }
   }
 
   function manterTravados(state, velho, cfg, avulso) {
@@ -502,6 +565,7 @@
     rand = rand || Math.random;
     const culto = escala.cultos[ci];
     const [tipo, a, b] = campo.split(":").map((x, i) => (i ? Number(x) : x));
+    if (tipo !== "o" && liderDe(escala, culto)) return escala; // equipe e músicas seguem o culto líder
     if (tipo === "e") {
       const atual = culto.equipe[a].pessoaId;
       const lista = candidatosPessoa(state, escala, ci, a).filter((c) => c.pessoa.id !== atual);
@@ -529,7 +593,8 @@
     const nomeMusica = (id) => rotuloMusica(porId(state.musicas, id)) || "música removida";
     escala.cultos.forEach((culto, ci) => {
       const push = (nivel, campo, msg) => avisos.push({ ci, campo, nivel, msg });
-      culto.equipe.forEach((s, si) => {
+      const lider = liderDe(escala, culto);
+      if (!lider) culto.equipe.forEach((s, si) => {
         const campo = `e:${si}`;
         if (!s.pessoaId) return push("erro", campo, `${nomeFuncao(state, s.funcao)} sem ninguém escalado`);
         const p = porId(state.pessoas, s.pessoaId);
@@ -554,7 +619,7 @@
             push(culto.solene ? "erro" : "alerta", campo, `${rotuloMusica(m)} não está marcada como ${nomes}${culto.solene ? " (exigido no culto solene)" : ""}`);
           }
           escala.cultos.forEach((outro, cj) => {
-            if (cj >= ci) return;
+            if (cj >= ci || outro === lider || liderDe(escala, outro) === culto) return;
             const repetida = outro.liturgia.some((it) => it.musicas.includes(id));
             const dist = Math.abs(diasEntre(outro.data, culto.data));
             if (repetida && dist < intervalo) push("alerta", campo, `${nomeMusica(id)} repete a de ${formatarData(outro.data, "dia")}`);
@@ -587,6 +652,7 @@
       linhas.set(p.id, { pessoa: p, total: 0, funcoes: {} });
     }
     for (const c of escala.cultos) {
+      if (liderDe(escala, c)) continue;
       for (const s of c.equipe) {
         const l = linhas.get(s.pessoaId);
         if (!l) continue;
@@ -605,8 +671,10 @@
     const linhas = [`*${escala.titulo}*${igreja ? ` · ${igreja}` : ""}`, `_${formatarPeriodo(escala.inicio, escala.fim)}_`];
     for (const c of escala.cultos) {
       linhas.push("", `*${formatarData(c.data, "dia")}${c.hora ? ` · ${c.hora}` : ""} · ${c.nome}*${c.solene ? " (solene)" : ""}`);
+      const lider = liderDe(escala, c);
       const grupos = [];
-      c.equipe.forEach((s) => {
+      if (lider) linhas.push(`Equipe: a mesma do culto das ${lider.hora || formatarData(lider.data, "dia")}`);
+      else c.equipe.forEach((s) => {
         const nome = (porId(state.pessoas, s.pessoaId) || {}).nome || "a definir";
         const g = grupos.find((x) => x.funcao === s.funcao);
         if (g) g.nomes.push(nome);
@@ -734,7 +802,7 @@
     criarAleatorio, novoId, porId, rotuloMusica, nomeFuncao, nomeOficial, nomeTag,
     tagsExigidas, atendeItem, listarOcorrencias, montarUsos,
     candidatosPessoa, candidatosOficial, candidatosMusica, itemModelo,
-    nivelFuncao, gerarEscala, preencherCulto, adicionarCultoAvulso, sortearCampo,
+    nivelFuncao, liderDe, sincronizarCulto, sincronizarEscala, gerarEscala, preencherCulto, adicionarCultoAvulso, sortearCampo,
     validarEscala, resumoPessoas, textoWhatsApp,
     lerListaMusicas, lerTags, normalizar, migrar,
   };

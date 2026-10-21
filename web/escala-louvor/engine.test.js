@@ -128,7 +128,7 @@ test("sortear de novo mantém os campos travados", () => {
 test("louvores não se repetem dentro do intervalo quando há repertório", () => {
   const s = novoEstado();
   const esc = E.gerarEscala(s, { inicio: "2026-10-25", fim: "2026-11-07", seed: 2 });
-  const louvores = esc.cultos.flatMap((c) => musicasDo(s, c)).filter((m) => m.tipo === "louvor").map((m) => m.id);
+  const louvores = esc.cultos.filter((c) => !c.acompanha).flatMap((c) => musicasDo(s, c)).filter((m) => m.tipo === "louvor").map((m) => m.id);
   assert.equal(new Set(louvores).size, louvores.length);
 });
 
@@ -173,4 +173,53 @@ test("rótulos e texto do WhatsApp", () => {
   assert.doesNotMatch(txt, /Ministro/);
   assert.match(txt, /4\. Confissão de pecado — Dirigente · em pé \(Êxodo 20\.1–17, leitura participativa\)/);
   assert.match(txt, /https:\/\/youtu\.be\//);
+});
+
+test("o culto solene de domingo repete a equipe e as músicas do culto da manhã", () => {
+  const s = novoEstado();
+  const esc = E.gerarEscala(s, { inicio: "2026-10-25", fim: "2026-11-07", seed: 6 });
+  const manhas = esc.cultos.filter((c) => c.cultoId === "dom-manha");
+  assert.equal(manhas.length, 2);
+  for (const manha of manhas) {
+    const noite = esc.cultos.find((c) => c.cultoId === "dom-noite" && c.data === manha.data);
+    assert.equal(noite.acompanha, manha.id);
+    assert.deepEqual(noite.equipe.map((x) => x.pessoaId), manha.equipe.map((x) => x.pessoaId));
+    const ids = (c) => c.liturgia.flatMap((it) => it.musicas).sort();
+    assert.deepEqual(ids(noite), ids(manha));
+    assert.ok(noite.liturgia[0].oficiais[0], "o dirigente da noite é escolhido à parte");
+  }
+  assert.ok(!E.validarEscala(s, esc).some((a) => /repete a de Dom/.test(a.msg) && esc.cultos[a.ci].cultoId === "dom-noite"));
+  // Domingo conta uma vez no resumo de quem serviu.
+  const total = E.resumoPessoas(s, esc).reduce((n, l) => n + l.total, 0);
+  const vagas = esc.cultos.filter((c) => !c.acompanha).reduce((n, c) => n + c.equipe.length, 0);
+  assert.equal(total, vagas);
+});
+
+test("a ordem das músicas da noite é mantida quando a manhã troca uma música", () => {
+  const s = novoEstado();
+  const esc = E.gerarEscala(s, { inicio: "2026-10-25", fim: "2026-10-25", seed: 8 });
+  const manha = esc.cultos.find((c) => c.cultoId === "dom-manha");
+  const noite = esc.cultos.find((c) => c.cultoId === "dom-noite");
+  const [a, b] = noite.liturgia[5].musicas;
+  noite.liturgia[5].musicas = [b, a]; // inverte os dois louvores
+  const antiga = manha.liturgia[6].musicas[0];
+  E.sortearCampo(s, esc, esc.cultos.indexOf(manha), "m:6:0");
+  const nova = manha.liturgia[6].musicas[0];
+  assert.notEqual(nova, antiga);
+  E.sincronizarEscala(s, esc);
+  assert.deepEqual(noite.liturgia[5].musicas, [b, a]);
+  assert.equal(noite.liturgia[6].musicas[0], nova);
+  // A noite não sorteia equipe nem música por conta própria.
+  const antes = JSON.stringify(noite.equipe);
+  E.sortearCampo(s, esc, esc.cultos.indexOf(noite), "e:0");
+  assert.equal(JSON.stringify(noite.equipe), antes);
+});
+
+test("sem o culto da manhã, o culto da noite é escalado normalmente", () => {
+  const s = novoEstado();
+  s.cultos.find((c) => c.id === "dom-manha").ativo = false;
+  const esc = E.gerarEscala(s, { inicio: "2026-10-25", fim: "2026-10-25", seed: 3 });
+  const noite = esc.cultos.find((c) => c.cultoId === "dom-noite");
+  assert.equal(noite.acompanha, null);
+  assert.ok(todosCampos({ cultos: [noite] }).every(Boolean));
 });

@@ -33,6 +33,8 @@ computador. Use **Backup** para guardar uma cópia.
   culto, e nunca escala ninguém em data marcada como indisponível.
 - Quem só apoia numa função (ex.: bateria de apoio) só entra nela quando nenhum titular pode, e a escala avisa.
 - Um oficial que está tocando ou cantando não recebe parte da liturgia naquele culto.
+- **Domingo**: o culto das 18h repete a equipe e as músicas do culto das 9h (configurável em "Mesma equipe e músicas
+  do culto"). Nele só se muda a ordem das músicas; os oficiais de cada culto são escolhidos à parte.
 
 ## Arquivos
 

@@ -226,6 +226,8 @@
   /** Aplica uma alteração, salva e redesenha. */
   function mudou(fn, redesenhar) {
     if (fn) fn();
+    // Cultos ligados (ex.: domingo à noite) acompanham a equipe e as músicas do culto líder.
+    for (const e of state.escalas) E.sincronizarEscala(state, e);
     salvar();
     if (redesenhar !== false) render();
   }
@@ -554,7 +556,8 @@
     const lit = porId(state.liturgias, culto.liturgiaId);
     const aviso = (campo) => porCampo[`${ci}|${campo}`];
 
-    const equipe = culto.equipe.map((s, si) => {
+    const lider = E.liderDe(escala, culto);
+    const equipe = lider ? [] : culto.equipe.map((s, si) => {
       const campo = `e:${si}`;
       const p = porId(state.pessoas, s.pessoaId);
       return h("div", { class: "linha-campo" },
@@ -572,7 +575,7 @@
           const m = porId(state.musicas, id);
           return h("div", { class: "linha-valor" },
             campoValor(E.rotuloMusica(m), aviso(campo), () => escolherMusica(escala, ci, ii, k), m && m.tom ? `Tom ${m.tom}` : null),
-            h("span", { class: "mini-acoes nao-imprimir" }, botaoSortear(escala, ci, campo), botaoTrava(culto, campo))
+            lider ? h("span") : h("span", { class: "mini-acoes nao-imprimir" }, botaoSortear(escala, ci, campo), botaoTrava(culto, campo))
           );
         });
       } else if (it.tipo === "oficial") {
@@ -619,7 +622,7 @@
               const trav = new Set(culto.travados || []);
               culto.equipe.forEach((s, si) => { if (!trav.has(`e:${si}`)) s.pessoaId = null; });
               culto.liturgia.forEach((it, ii) => {
-                it.musicas = it.musicas.map((id, k) => (trav.has(`m:${ii}:${k}`) ? id : null));
+                if (!lider) it.musicas = it.musicas.map((id, k) => (trav.has(`m:${ii}:${k}`) ? id : null));
                 it.oficiais = it.oficiais.map((id, k) => (trav.has(`o:${ii}:${k}`) ? id : null));
               });
               E.preencherCulto(state, escala, ci, Math.random);
@@ -628,7 +631,12 @@
           culto.avulso ? h("button", { class: "btn leve icone perigo", title: "Remover este culto", "aria-label": "Remover este culto", onclick: () => confirmar("Remover este culto da escala?", `${culto.nome} de ${E.formatarData(culto.data)} sai desta escala.`, "Remover", () => mudou(() => { escala.cultos.splice(ci, 1); })) }, icone("trash")) : null
         )
       ),
-      equipe.length ? h("section", { "aria-label": "Equipe" }, h("span", { class: "eyebrow" }, "Equipe"), equipe) : null,
+      lider
+        ? h("section", { "aria-label": "Equipe" },
+            h("span", { class: "eyebrow" }, "Equipe"),
+            h("p", { class: "small muted" }, `A mesma equipe e as mesmas músicas do ${lider.nome} (${lider.hora}). Para mudar alguém ou alguma música, mude lá. Aqui você só troca a ordem das músicas: toque numa música e escolha com qual ela troca de lugar.`),
+            h("p", { class: "small" }, resumoEquipeCulto(culto)))
+        : equipe.length ? h("section", { "aria-label": "Equipe" }, h("span", { class: "eyebrow" }, "Equipe"), equipe) : null,
       h("section", { "aria-label": "Ordem do culto" }, h("span", { class: "eyebrow" }, "Ordem do culto"), itens.length ? h("ol", { class: "ordem" }, itens) : h("p", { class: "muted small" }, "Este culto não tem liturgia definida.")),
       h("footer", {},
         h("textarea", { id: `obs-${culto.id}`, placeholder: "Observações para a equipe (ensaio, roupa, avisos…)", "aria-label": "Observações do culto", value: culto.obs || "", oninput: (e) => mudou(() => { culto.obs = e.target.value; }, false) })
@@ -682,8 +690,53 @@
     });
   }
 
+  /** Põe a música no lugar; se ela já estava em outra parte do mesmo culto, as duas trocam de lugar. */
+  function colocarMusica(culto, ii, k, id) {
+    const atual = culto.liturgia[ii].musicas[k];
+    if (id) {
+      culto.liturgia.forEach((it) => it.musicas.forEach((x, kk) => {
+        if (x === id && !(it === culto.liturgia[ii] && kk === k)) it.musicas[kk] = atual;
+      }));
+    }
+    culto.liturgia[ii].musicas[k] = id;
+  }
+
+  function resumoEquipeCulto(culto) {
+    const grupos = [];
+    culto.equipe.forEach((s) => {
+      const nome = (porId(state.pessoas, s.pessoaId) || {}).nome || "a definir";
+      const g = grupos.find((x) => x.funcao === s.funcao);
+      if (g) g.nomes.push(nome);
+      else grupos.push({ funcao: s.funcao, nomes: [nome] });
+    });
+    return grupos.map((g) => `${E.nomeFuncao(state, g.funcao)}: ${g.nomes.join(", ")}`).join(" · ");
+  }
+
+  /** No culto que acompanha outro, a escolha é só entre as músicas do dia: muda a ordem. */
+  function escolherOrdem(escala, ci, ii, k, lider) {
+    const culto = escala.cultos[ci];
+    const item = culto.liturgia[ii];
+    const onde = (id) => {
+      for (const it of culto.liturgia) if (it.musicas.includes(id)) return it.titulo;
+      return "";
+    };
+    const doDia = [...new Set(lider.liturgia.flatMap((it) => it.musicas).filter(Boolean))];
+    escolherDe({
+      titulo: item.titulo,
+      sub: `Músicas deste domingo. A escolhida troca de lugar com a atual.`,
+      atual: item.musicas[k],
+      grupos: [{ itens: doDia.map((id) => {
+        const m = porId(state.musicas, id);
+        return { id, rotulo: E.rotuloMusica(m), busca: m ? `${m.numero} ${m.titulo}` : "", direita: m && m.tom ? `Tom ${m.tom}` : "", meta: onde(id) ? `hoje em: ${onde(id)}` : null };
+      }) }],
+      aoEscolher: (id) => mudou(() => { if (id) colocarMusica(culto, ii, k, id); }),
+    });
+  }
+
   function escolherMusica(escala, ci, ii, k) {
     const culto = escala.cultos[ci];
+    const lider = E.liderDe(escala, culto);
+    if (lider) return escolherOrdem(escala, ci, ii, k, lider);
     const item = culto.liturgia[ii];
     const modelo = E.itemModelo(state, culto, item) || item;
     const cands = E.candidatosMusica(state, escala, ci, ii, k);
@@ -706,7 +759,7 @@
         { titulo: "Não atendem às etiquetas exigidas", itens: cands.filter((c) => !c.atende).map(op) },
       ],
       vazio: "Deixar a definir",
-      aoEscolher: (id) => mudou(() => { item.musicas[k] = id; if (id) travar(culto, `m:${ii}:${k}`); }),
+      aoEscolher: (id) => mudou(() => { colocarMusica(culto, ii, k, id); if (id) travar(culto, `m:${ii}:${k}`); }),
     });
   }
 
@@ -1234,6 +1287,10 @@
         h("label", { class: "campo" }, "Hora", h("input", { type: "time", id: `cul-hora-${c.id}`, value: c.hora || "", onchange: (e) => mudou(() => { c.hora = e.target.value; }, false) }))
       ),
       h("label", { class: "campo" }, "Liturgia", h("select", { id: `cul-lit-${c.id}`, onchange: (e) => mudou(() => { c.liturgiaId = e.target.value; }) }, state.liturgias.map((l) => h("option", { value: l.id, selected: l.id === c.liturgiaId || null }, l.nome)))),
+      h("label", { class: "campo" }, "Mesma equipe e músicas do culto", h("select", { id: `cul-acomp-${c.id}`, onchange: (e) => mudou(() => { c.acompanha = e.target.value; }) },
+        h("option", { value: "" }, "Não: escala própria"),
+        state.cultos.filter((x) => x !== c && !x.acompanha && Number(x.diaSemana) === Number(c.diaSemana)).map((x) => h("option", { value: x.id, selected: c.acompanha === x.id || null }, `${x.nome} (${x.hora})`))
+      )),
       h("div", { class: "campo" }, "Semanas do mês (nenhuma marcada = toda semana)", h("div", { class: "chips" }, SEMANAS.map(([v, n]) => h("button", {
         class: "chip", "aria-pressed": String((c.semanas || []).includes(v)),
         onclick: () => mudou(() => { c.semanas = (c.semanas || []).includes(v) ? c.semanas.filter((x) => x !== v) : [...(c.semanas || []), v]; }),

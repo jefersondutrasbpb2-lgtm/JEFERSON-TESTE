@@ -124,10 +124,10 @@ some automaticamente no dia seguinte à data do evento, sem precisar republicar 
 
 ### Modo de revisão
 
-Com `reviewMode = true` (em `src/content/site.ts`), o site exibe um aviso discreto, marca os itens pendentes com o selo
+Com `reviewMode = true` (em `src/content/site.ts`), o site marca os itens pendentes com o selo
 **"a confirmar"** e mostra conteúdos de exemplo (mensagens e eventos marcados com `example: true`) para visualizar o
-layout. Depois de validar tudo, remova os `pending: true` confirmados e mude para `reviewMode = false`: selos, aviso e
-exemplos deixam de aparecer.
+layout. Depois de validar tudo, remova os `pending: true` confirmados e mude para `reviewMode = false`: selos e exemplos
+deixam de aparecer.
 
 ## Arquitetura de movimento
 

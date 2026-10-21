@@ -609,6 +609,67 @@ button { font: inherit; color: inherit; }
 .step--date { background: var(--branco); color: var(--tinta); box-shadow: 0 40px 80px -40px rgb(9 12 58 / .7); }
 .step--date .step__n { background: var(--por-do-sol); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .step--date p { color: var(--tinta-2); }
+/* Página de vendas: Smart e VIP com valor do lote e botão de compra */
+.tickets__grid { display: grid; gap: 18px; }
+.ticket {
+  position: relative; display: grid; gap: 28px; align-content: start;
+  padding: clamp(26px, 3.4vw, 48px); border-radius: var(--radius-lg);
+  background: rgb(255 255 255 / .07); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .22);
+}
+.ticket__type { font-family: var(--font-display); font-variation-settings: "opsz" 96; font-weight: 800; font-size: clamp(3rem, 2rem + 4vw, 5.4rem); line-height: .85; letter-spacing: -.05em; }
+.ticket__desc { margin-top: 12px; color: rgb(255 255 255 / .78); }
+.ticket__price { display: grid; gap: 4px; padding-block: 18px; border-block: 1px solid rgb(255 255 255 / .18); }
+.ticket__lot { font-size: .75rem; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: var(--ceu); }
+.ticket__value { font-family: var(--font-display); font-variation-settings: "opsz" 72; font-weight: 800; font-size: clamp(2.2rem, 1.7rem + 2vw, 3.2rem); line-height: 1; letter-spacing: -.04em; }
+.ticket__inst { font-size: .95rem; color: rgb(255 255 255 / .78); }
+.ticket__inst:empty { display: none; }
+.ticket__list { display: grid; gap: 14px; }
+.ticket__list li { position: relative; padding-left: 32px; line-height: 1.45; }
+.ticket__list li::before {
+  content: ""; position: absolute; left: 0; top: .15em; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--ceu) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4 8-9' fill='none' stroke='%23090c3a' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 14px no-repeat;
+}
+.ticket .btn { align-self: end; margin-top: 8px; }
+.ticket--vip { background: var(--branco); color: var(--tinta); box-shadow: 0 40px 80px -40px rgb(9 12 58 / .7); }
+.ticket--vip .ticket__type { background: var(--por-do-sol); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.ticket--vip .ticket__desc, .ticket--vip .ticket__inst { color: var(--tinta-2); }
+.ticket--vip .ticket__price { border-color: rgb(9 12 58 / .12); }
+.ticket--vip .ticket__lot { color: var(--sol-ink); }
+.ticket--vip .ticket__list li::before { background-color: var(--sol-btn); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4 8-9' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+.ticket__badge { position: absolute; top: clamp(20px, 2.6vw, 36px); right: clamp(20px, 2.6vw, 36px); padding: .45em .9em; border-radius: 999px; background: var(--sol-btn); color: var(--branco); font-size: .72rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+@media (min-width: 900px) {
+  .tickets__grid { grid-template-columns: 1fr 1.12fr; align-items: stretch; }
+  .ticket { grid-template-rows: auto auto 1fr auto; }
+}
+
+/* Página de vendas: card de compra no topo */
+.buy { display: grid; gap: 10px; }
+.buy__tag { display: inline-flex; align-items: center; gap: 10px; font-size: .78rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--sol-ink); }
+.buy__opt {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 14px;
+  padding: 12px 14px; border-radius: calc(var(--radius) * .7);
+  background: var(--areia); color: var(--tinta); text-decoration: none; box-shadow: inset 0 0 0 1.5px rgb(9 12 58 / .1);
+  transition: box-shadow .2s, transform .2s;
+}
+.buy__opt:hover { box-shadow: inset 0 0 0 2px var(--cobalto); }
+.buy__opt:active { transform: scale(.99); }
+.buy__name { font-family: var(--font-display); font-weight: 800; font-size: 1.35rem; line-height: 1; letter-spacing: -.02em; }
+.buy__desc { grid-column: 1; font-size: .82rem; line-height: 1.3; color: var(--tinta-2); }
+.buy__price { grid-column: 2; grid-row: 1 / span 2; display: grid; justify-items: end; gap: 2px; font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; line-height: 1; white-space: nowrap; }
+.buy__price small { font-family: var(--font-body); font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--sol-ink); }
+.buy__opt--vip { background: var(--noite); color: var(--branco); box-shadow: inset 0 0 0 1.5px var(--sol); }
+.buy__opt--vip .buy__desc { color: rgb(255 255 255 / .75); }
+.buy__opt--vip .buy__price small { color: var(--ceu); }
+.buy__opt--vip:hover { box-shadow: inset 0 0 0 2px var(--sol); }
+.buy__more { justify-self: center; font-size: .85rem; font-weight: 800; color: var(--tinta); text-decoration: underline; text-underline-offset: 3px; }
+
+/* Página de vendas: card do Book volta e a grade da experiência fecha sem buraco */
+.exp__grid--book .exp-card--book { display: flex; flex-direction: column; gap: 12px; }
+.exp-card--book .exp-card__tag { color: var(--sol-ink); }
+.exp-card--book .link-arrow { margin-top: auto; align-self: flex-start; }
+@media (min-width: 640px) { .exp__grid--book .exp-card:last-child { grid-column: auto; } }
+@media (min-width: 1024px) { .exp__grid--book .exp-card:nth-last-child(-n+2) { grid-column: span 2; } }
+
 .presale {
   display: grid; gap: 24px; margin-top: 18px;
   padding: clamp(26px, 3.4vw, 48px); border-radius: var(--radius-lg);

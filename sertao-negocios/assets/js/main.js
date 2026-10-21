@@ -96,8 +96,8 @@
   const nav = $('[data-nav]');
   const dock = $('[data-dock]');
   const hero = $('.hero');
-  const signup = $('#inscricao');
-  const topForm = $('#cadastro');
+  const signup = $('[data-dock-hide]') || $('#inscricao');
+  const topForm = $('[data-dock-after]') || $('#cadastro');
   const waFloat = $('[data-wa]');
   // Só as seções da página: quem hospeda o site pode marcar o <html> com data-theme e escurecer o menu no topo
   const themed = $$('section[data-theme], footer[data-theme]');
@@ -118,7 +118,7 @@
       if (r.top <= probe && r.bottom > probe) { nav.classList.toggle('is-light', sec.dataset.theme === 'light'); break; }
     }
 
-    // Barra fixa do celular: aparece depois do formulário do topo e some quando o do fim está na tela
+    // Barra fixa do celular: aparece depois do card do topo e some quando o formulário do fim (ou os ingressos) está na tela
     if (dock && topForm && signup) {
       const pastTopForm = topForm.getBoundingClientRect().bottom < 0;
       const s = signup.getBoundingClientRect();
@@ -154,8 +154,9 @@
   /* ---------- WhatsApp flutuante ---------- */
   initWhatsApp();
 
-  /* ---------- Formulário ---------- */
+  /* ---------- Formulário e checkout ---------- */
   initForm();
+  initCheckout();
   initPrivacy();
 
   if (!motion) return;
@@ -510,6 +511,37 @@
     track('whatsapp_click', { assunto: a.dataset.waDirect });
     if (typeof window.fbq === 'function') window.fbq('track', 'Contact', { content_name: a.dataset.waDirect });
   }));
+
+  /* =========================================================
+     CHECKOUT (página de vendas)
+     ========================================================= */
+  function initCheckout() {
+    const links = $$('a[data-checkout]');
+    if (!links.length) return;
+    const params = new URLSearchParams(location.search);
+    links.forEach((a) => {
+      // Repassa as UTMs da visita para o checkout: a venda fica atribuída à campanha de origem
+      try {
+        const url = new URL(a.href);
+        ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach((k) => {
+          const v = params.get(k);
+          if (v && !url.searchParams.has(k)) url.searchParams.set(k, v);
+        });
+        a.href = url.toString();
+      } catch (_) { /* link inválido: segue como está */ }
+
+      a.addEventListener('click', (e) => {
+        const ingresso = a.dataset.checkout;
+        const value = Number(a.dataset.price) || undefined;
+        track('begin_checkout', { ingresso, cta_location: a.dataset.cta, value, currency: 'BRL' });
+        if (typeof window.fbq === 'function') window.fbq('track', 'InitiateCheckout', { content_name: `Ingresso ${ingresso}`, value, currency: 'BRL' });
+        // Pequena espera para o Pixel e o GA4 saírem antes de trocar de página (exceto ao abrir em outra aba)
+        if (e.metaKey || e.ctrlKey || e.shiftKey || a.target === '_blank') return;
+        e.preventDefault();
+        setTimeout(() => { location.href = a.href; }, 250);
+      });
+    });
+  }
 
   /* =========================================================
      POLÍTICA DE PRIVACIDADE (dialog)

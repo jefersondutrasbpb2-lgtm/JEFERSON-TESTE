@@ -9,8 +9,9 @@ que pode ser lido e trocado pela MCP do GreatPages (pages_html_get / pages_html_
 - Pixel da Meta e Google Analytics no <head> (numa página HTML eles vêm do próprio HTML).
 - Formulário enviado pelo GreatPages (formMode "greatpages"): o JS só valida e mede.
 
-Uso:  python3 tools/build_gp_html.py      (a partir da pasta sertao-negocios)
-Saída: greatpages-html/index.html
+Uso:  python3 tools/build_gp_html.py          página de captura (index.html)  -> greatpages-html/index.html
+      python3 tools/build_gp_html.py vendas   página de vendas (vendas.html)   -> greatpages-vendas/index.html
+      (a partir da pasta sertao-negocios; a de vendas sai antes do tools/build_vendas.py)
 """
 import base64
 import json
@@ -19,7 +20,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT = ROOT / "greatpages-html"
+VENDAS = sys.argv[1:] == ["vendas"]
+SOURCE = ROOT / ("vendas.html" if VENDAS else "index.html")
+OUT = ROOT / ("greatpages-vendas" if VENDAS else "greatpages-html")
 
 PIXEL_ID = "702365151785211"
 GA_ID = "G-1W7GNPN0EL"
@@ -44,7 +47,7 @@ def must_replace(text, old, new):
     return text.replace(old, new)
 
 
-html = (ROOT / "index.html").read_text()
+html = SOURCE.read_text()
 css = (ROOT / "assets/css/main.css").read_text()
 js = (ROOT / "assets/js/main.js").read_text()
 cfg = (ROOT / "assets/js/config.js").read_text()
@@ -83,7 +86,7 @@ GP_FORM_KEYS = {
     '<form class="form" id="lead-form" novalidate data-form>': "acvpruwy",
 }
 COMMUNITY_URL = "https://chat.whatsapp.com/It1MX9ij3o48Zzbvo04Vkq"
-for tag, key in GP_FORM_KEYS.items():
+for tag, key in (() if VENDAS else GP_FORM_KEYS.items()):
     html = must_replace(html, tag, tag.replace(
         "<form ", f'<form data-gp-form="{key}" data-gp-conversao="true" data-gp-apos-envio="mensagem" ', 1))
 

@@ -436,8 +436,9 @@
   function registrarApp() {
     addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); ui.instalar = e; if (ui.tela === "ajustes") render(); });
     if (!servidor || !("serviceWorker" in navigator) || !/^https?:$/.test(location.protocol)) return;
+    let pediuAtualizar = false;
     navigator.serviceWorker.register("sw.js").then((reg) => {
-      const oferecer = (sw) => avisar("Há uma versão nova do app.", { rotulo: "Atualizar", fazer: () => sw.postMessage("ativar") });
+      const oferecer = (sw) => avisar("Há uma versão nova do app.", { rotulo: "Atualizar", fazer: () => { pediuAtualizar = true; sw.postMessage("ativar"); } });
       if (reg.waiting && navigator.serviceWorker.controller) oferecer(reg.waiting);
       reg.addEventListener("updatefound", () => {
         const novo = reg.installing;
@@ -445,8 +446,8 @@
         novo.addEventListener("statechange", () => { if (novo.state === "installed" && navigator.serviceWorker.controller) oferecer(novo); });
       });
     }).catch(() => { /* sem service worker: o app funciona igual, só não instala */ });
-    let recarregou = false;
-    navigator.serviceWorker.addEventListener("controllerchange", () => { if (!recarregou) { recarregou = true; location.reload(); } });
+    // Só recarrega quando a pessoa pediu a versão nova (na primeira visita o service worker assume sem recarregar).
+    navigator.serviceWorker.addEventListener("controllerchange", () => { if (pediuAtualizar) { pediuAtualizar = false; location.reload(); } });
   }
 
   function estadoInicial() {

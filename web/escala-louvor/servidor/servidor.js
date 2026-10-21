@@ -1,14 +1,14 @@
 /* Escala do Louvor — ligação com o servidor da igreja (api.php).
  *
  * Oferece ao app o mesmo formato de banco que ele já usa (doc/collection, get/set/delete,
- * onSnapshot), mais a entrada do coordenador por senha. Só é carregado na versão publicada
- * no site, ao lado de api.php.
+ * onSnapshot). O app é aberto: quem tem o link edita tudo. Só é carregado na versão
+ * publicada no site, ao lado de api.php.
  */
 (function () {
   "use strict";
 
   const API = "api.php";
-  let atual = null; // último retrato do servidor: { dados, escalas, respostas, coordena, senhaDefinida }
+  let atual = null; // último retrato do servidor: { dados, escalas, respostas }
   let pedindo = null;
 
   async function chamar(acao, corpo) {
@@ -87,9 +87,6 @@
       },
       collection: colecao,
     },
-    user: { canEdit: async () => !!(await retrato()).coordena },
-    senhaDefinida: async () => !!(await retrato()).senhaDefinida,
-    entrar: (senha) => chamar("entrar", { senha }),
-    sair: () => chamar("sair", {}),
+    user: { canEdit: async () => true },
   };
 })();

@@ -77,7 +77,7 @@ Configuração (uma vez):
 A escala roda no próprio servidor: `escalas.igrejacongregacionalpombal.com.br` (subdomínio criado no hPanel com a
 pasta `public_html/escalas`) e `www.igrejacongregacionalpombal.com.br/escalas`; `/escala` redireciona para o
 subdomínio. Depois do `next build`, `scripts/montar-escala.mjs` monta `out/escalas/` com o app de `web/escala-louvor/`
-e a API em PHP. A senha do coordenador vem do secret `ESCALA_SENHA` (veja `web/escala-louvor/README.md`).
+e a API em PHP. O app é aberto: quem tem o link edita tudo (veja `web/escala-louvor/README.md`).
 
 ### Variáveis de ambiente
 

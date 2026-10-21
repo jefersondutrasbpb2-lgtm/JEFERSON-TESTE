@@ -260,7 +260,7 @@
       const msg = {
         quota_exceeded: "O espaço de dados acabou. Exclua escalas antigas.",
         invalid_argument: "Uma parte dos dados ficou grande demais para salvar. Baixe um backup em Ajustes.",
-        revoked: "Sua sessão de coordenador terminou. Entre de novo para salvar.",
+        origem: "O servidor recusou a gravação. Recarregue a página e tente de novo.",
       }[e && e.code] || "Não consegui salvar no servidor agora. Tento de novo na próxima alteração.";
       mostrarSalvo("erro", "Não salvo");
       avisar(msg);
@@ -300,7 +300,7 @@
     if (remoto) state = E.migrar(remoto, base, D.repertorio());
     else if (salvoLocal) state = E.migrar(salvoLocal, base, D.repertorio());
     else state = estadoInicial();
-    // Quem não entrou como coordenador (a equipe, pelo link) só vê a tela de disponibilidade.
+    // Sem permissão de editar, a pessoa só vê a tela de disponibilidade (no site, todos editam).
     if (armazem.db && armazem.user) {
       try { ui.coordena = await armazem.user.canEdit(); } catch (e) { ui.coordena = false; }
     }
@@ -879,37 +879,6 @@
     return { el: caixa, dias, redesenhar: desenhar };
   }
 
-  /** Senha do coordenador (definida na publicação do site). */
-  async function entrarCoordenador() {
-    if (!(await servidor.senhaDefinida())) return avisar("A senha do coordenador ainda não foi configurada no site.");
-    let senha = "";
-    painel({
-      titulo: "Entrar como coordenador",
-      sub: "Com a senha, este aparelho passa a montar e editar as escalas.",
-      corpo: h("label", { class: "campo" }, "Senha", h("input", { type: "password", id: "senha-coord", autocomplete: "current-password", oninput: (e) => { senha = e.target.value; }, onkeydown: (e) => { if (e.key === "Enter") e.target.closest(".painel").querySelector("footer .btn.primario").click(); } })),
-      rodape: () => [h("button", { class: "btn primario", onclick: async () => {
-        if (!senha) return avisar("Digite a senha.");
-        try {
-          await servidor.entrar(senha);
-          location.hash = "";
-          location.reload();
-        } catch (e) {
-          avisar(e.message || "Não deu para entrar agora.");
-        }
-      } }, "Entrar")],
-      foco: "#senha-coord",
-    });
-  }
-
-  async function sair() {
-    try {
-      await servidor.sair();
-    } finally {
-      location.hash = "disponibilidade";
-      location.reload();
-    }
-  }
-
   function guardarResposta(r) {
     state.respostas = (state.respostas || []).filter((x) => x.id !== r.id).concat(r);
   }
@@ -920,8 +889,7 @@
     let pessoaId = ui.respostaPessoa;
     if (!pessoaId) { try { pessoaId = localStorage.getItem(CHAVE_PESSOA); } catch (e) { /* sem armazenamento */ } }
     const pessoa = porId(state.pessoas, pessoaId);
-    const voltar = ui.coordena ? h("button", { class: "btn texto", onclick: () => irPara("agenda") }, "Voltar ao app")
-      : servidor ? h("button", { class: "btn texto", onclick: entrarCoordenador }, "Sou o coordenador") : null;
+    const voltar = ui.coordena ? h("button", { class: "btn texto", onclick: () => irPara("agenda") }, "Voltar ao app") : null;
     if (!pessoa) {
       const ativas = state.pessoas.filter((p) => p.ativo !== false).sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
       return h("div", { class: "tela" },
@@ -1461,8 +1429,7 @@
       secao("Dados",
         h("ul", { class: "lista cartao" },
           linha("Igreja e link da escala", `${state.igreja.nome || "—"}${state.igreja.link ? " · link cadastrado" : " · sem link"}`, editarIgreja),
-          linha("Backup", armazem.db ? "Salvo no servidor. Baixe uma cópia de vez em quando." : "Salvo neste aparelho. Baixe uma cópia de vez em quando.", telaBackup),
-          servidor ? linha("Sair do modo coordenador", "Neste aparelho, volta a mostrar só a tela de disponibilidade", sair) : null)));
+          linha("Backup", armazem.db ? "Salvo no servidor. Baixe uma cópia de vez em quando." : "Salvo neste aparelho. Baixe uma cópia de vez em quando.", telaBackup))));
   }
 
   function editarCulto(original) {

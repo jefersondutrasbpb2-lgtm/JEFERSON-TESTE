@@ -9,7 +9,7 @@
 #   Variáveis (opcionais):
 #     FTP_PASTA       pasta no servidor; padrão "public_html/"
 #     FTP_PROTOCOLO   "ftps" (padrão, criptografado) ou "ftp"
-#     SITE_URL        padrão "https://www.igrejacongregacionaldepombal.com.br"
+#     SITE_URL        padrão "https://www.igrejacongregacionalpombal.com.br"
 #     CONTACT_ENDPOINT, PRAYER_ENDPOINT  endereços que recebem os formulários
 #   Secrets do Instagram (opcionais): IG_FEED_BOM_SAMARITANO ou IG_TOKEN_BOM_SAMARITANO
 name: Publicar site na Hostinger
@@ -47,7 +47,7 @@ jobs:
       - name: Montar o site
         run: npm run build
         env:
-          NEXT_PUBLIC_SITE_URL: ${{ vars.SITE_URL || 'https://www.igrejacongregacionaldepombal.com.br' }}
+          NEXT_PUBLIC_SITE_URL: ${{ vars.SITE_URL || 'https://www.igrejacongregacionalpombal.com.br' }}
           NEXT_PUBLIC_CONTACT_ENDPOINT: ${{ vars.CONTACT_ENDPOINT }}
           NEXT_PUBLIC_PRAYER_ENDPOINT: ${{ vars.PRAYER_ENDPOINT }}
           IG_FEED_BOM_SAMARITANO: ${{ secrets.IG_FEED_BOM_SAMARITANO }}

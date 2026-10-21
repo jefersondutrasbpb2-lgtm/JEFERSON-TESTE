@@ -37,21 +37,26 @@ try {
           return lista;
         } catch (erro) {
           console.log(`${caminho}: não deu para listar (${erro.message})`);
-          return [];
+          return null;
         }
       };
-      const sites = [];
-      for (const nome of await listar("domains/")) {
-        if (nome.startsWith(".")) continue;
-        if ((await listar(`domains/${nome}/`)).includes("public_html")) sites.push(nome);
-      }
-      console.log("Sites em domains/:", sites.join(", ") || "(nenhum)");
+      console.log("Pasta inicial da conta:", await cliente.pwd());
       const dominio = env.DOMINIO.replace(/^www\./, "");
-      const site =
-        sites.find((nome) => nome.replace(/^www\./, "") === dominio) ??
-        sites.find((nome) => nome.includes(dominio.split(".")[0])) ??
-        (sites.length === 1 ? sites[0] : undefined);
-      pasta = site ? `domains/${site}/public_html/` : "public_html/";
+      const sites = ((await listar("domains/")) ?? []).filter((nome) => nome.replace(/^www\./, "") === dominio);
+      // A pasta domains/ pode não aparecer na listagem e ainda assim abrir pelo caminho completo.
+      const candidatas = [
+        ...sites.map((nome) => `domains/${nome}/public_html/`),
+        `domains/${dominio}/public_html/`,
+        `domains/www.${dominio}/public_html/`,
+        `/domains/${dominio}/public_html/`,
+      ];
+      pasta = "public_html/";
+      for (const candidata of new Set(candidatas)) {
+        if ((await listar(candidata)) !== null) {
+          pasta = candidata;
+          break;
+        }
+      }
     }
     console.log(`Pasta do site: ${pasta}`);
     console.log("Conteúdo atual:", (await nomes(pasta).catch(() => [])).join(", ") || "(vazia)");

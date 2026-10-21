@@ -23,8 +23,8 @@ ROOT = Path(__file__).resolve().parent.parent
 # Valores do lote atual e links dos checkouts. price: número (ex.: 197 ou 197.90); installments: texto opcional
 LOTE = "Lote 0"
 INGRESSOS = {
-    "smart": {"price": None, "installments": "", "checkout": "#checkout-smart"},
-    "vip": {"price": None, "installments": "", "checkout": "#checkout-vip"},
+    "smart": {"price": 197, "installments": "", "checkout": "https://chk.eduzz.com/39VKR1KYWR"},
+    "vip": {"price": 297, "installments": "", "checkout": "https://chk.eduzz.com/39YNX2NQWO"},
 }
 WA_DUVIDA = ("https://wa.me/5583996986238?text=Ol%C3%A1!%20Tenho%20uma%20d%C3%BAvida%20sobre%20os%20"
              "ingressos%20do%20Sert%C3%A3o%20Neg%C3%B3cios%202026.")

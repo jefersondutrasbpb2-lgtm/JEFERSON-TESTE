@@ -1,0 +1,3 @@
+# /escalas e o subdomínio escalas.igrejacongregacionalpombal.com.br (pasta public_html/escalas)
+# abrem o app da Escala do Louvor. O navegador mantém o #disponibilidade do convite.
+RedirectMatch 302 .* https://claude.ai/artifact/H8ZFZrMUby8Wcvnn6pyVMx

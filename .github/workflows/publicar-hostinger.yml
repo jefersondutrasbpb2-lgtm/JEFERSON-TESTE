@@ -79,19 +79,8 @@ jobs:
           FTP_PROTOCOLO: ${{ vars.FTP_PROTOCOLO || 'ftps' }}
           DOMINIO: igrejacongregacionalpombal.com.br
         run: |
-          tls=""; [ "$FTP_PROTOCOLO" = "ftps" ] && tls="--ssl-reqd"
-          listar() { curl -sS $tls --max-time 30 --list-only -u "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_SERVER/$1"; }
-          echo "Pastas na raiz da conta FTP:"; listar "" || true
-          if [ -n "$FTP_PASTA" ]; then
-            pasta="$FTP_PASTA"
-          elif listar "domains/$DOMINIO/public_html/" > /dev/null 2>&1; then
-            pasta="domains/$DOMINIO/public_html/"
-          else
-            pasta="public_html/"
-          fi
-          echo "Pasta do site: $pasta"
-          echo "Conteúdo atual:"; listar "$pasta" || true
-          echo "pasta=$pasta" >> "$GITHUB_OUTPUT"
+          npm install --no-save --no-audit --no-fund basic-ftp@5.0.5
+          node scripts/hostinger-ftp.mjs pasta
 
       - name: Enviar para a Hostinger
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -112,11 +101,4 @@ jobs:
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
           FTP_PROTOCOLO: ${{ vars.FTP_PROTOCOLO || 'ftps' }}
           PASTA: ${{ steps.pasta.outputs.pasta }}
-        run: |
-          tls=""; [ "$FTP_PROTOCOLO" = "ftps" ] && tls="--ssl-reqd"
-          if curl -sS $tls --max-time 30 --list-only -u "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_SERVER/$PASTA" | tr -d "\r" | grep -qx 'default.php'; then
-            curl -sS $tls --max-time 30 --list-only -u "$FTP_USERNAME:$FTP_PASSWORD" -Q "DELE ${PASTA}default.php" "ftp://$FTP_SERVER/" > /dev/null
-            echo "default.php removido."
-          else
-            echo "Não há default.php."
-          fi
+        run: node scripts/hostinger-ftp.mjs limpar

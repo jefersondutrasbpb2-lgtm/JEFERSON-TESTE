@@ -2,8 +2,8 @@
 ErrorDocument 404 /404.html
 DirectoryIndex index.html index.php
 
-# escala.igrejacongregacionalpombal.com.br abre o app da Escala do Louvor, caso o
-# subdomínio aponte para esta mesma pasta (o endereço do app fica em escala/.htaccess).
+# escalas.igrejacongregacionalpombal.com.br abre o app da Escala do Louvor, caso o
+# subdomínio aponte para esta mesma pasta (o endereço do app fica em escala/ e escalas/).
 RewriteEngine On
-RewriteCond %{HTTP_HOST} ^escala\. [NC]
+RewriteCond %{HTTP_HOST} ^escalas?\. [NC]
 RewriteRule ^ https://claude.ai/artifact/H8ZFZrMUby8Wcvnn6pyVMx [R=302,L]

@@ -61,8 +61,8 @@ Configuração (uma vez):
 2. No GitHub, em **Settings › Secrets and variables › Actions › Secrets**, crie `FTP_SERVER`, `FTP_USERNAME` e
    `FTP_PASSWORD`.
 3. Opcional, na aba **Variables** da mesma página:
-   - `FTP_PASTA`: pasta do site no servidor. Sem ela, a publicação usa `domains/<domínio>/public_html/` quando essa
-     pasta existe (padrão da Hostinger) e, se não, `public_html/`. Use `./` se a conta FTP já abrir dentro da pasta do
+   - `FTP_PASTA`: pasta do site no servidor. Sem ela, a publicação usa `/domains/<domínio>/public_html/` quando essa
+     pasta abre (padrão da Hostinger; a conta FTP não a mostra na listagem) e, se não, `public_html/`. Use `./` se a conta FTP já abrir dentro da pasta do
      site;
    - `FTP_PROTOCOLO`: `ftps` (padrão, com criptografia) ou `ftp`, se a conexão criptografada falhar;
    - `SITE_URL`: endereço oficial (padrão `https://www.igrejacongregacionalpombal.com.br`);
@@ -74,11 +74,10 @@ Configuração (uma vez):
 
 ### Endereço da Escala do Louvor
 
-`www.igrejacongregacionalpombal.com.br/escala` e o subdomínio `escala.igrejacongregacionalpombal.com.br` levam ao
-app da escala (o Artifact no Claude, onde ficam os dados na nuvem). O link `#disponibilidade` dos convites continua
-funcionando. Para o subdomínio, crie-o no hPanel (**Domínios › Subdomínios**, nome `escala`) com a pasta padrão
-`public_html/escala`; a publicação já envia essa pasta. O endereço do app fica em `public/escala/` e em
-`public/.htaccess`.
+`escalas.igrejacongregacionalpombal.com.br`, `www.igrejacongregacionalpombal.com.br/escalas` e `/escala` levam ao app
+da escala (o Artifact no Claude, onde ficam os dados na nuvem). O link `#disponibilidade` dos convites continua
+funcionando. O subdomínio foi criado no hPanel (**Domínios › Subdomínios**) com a pasta `public_html/escalas`, que a
+publicação envia. O endereço do app fica em `public/escala/`, `public/escalas/` e `public/.htaccess`.
 
 ### Variáveis de ambiente
 

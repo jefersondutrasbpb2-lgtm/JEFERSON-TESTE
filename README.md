@@ -74,10 +74,10 @@ Configuração (uma vez):
 
 ### Endereço da Escala do Louvor
 
-`escalas.igrejacongregacionalpombal.com.br`, `www.igrejacongregacionalpombal.com.br/escalas` e `/escala` levam ao app
-da escala (o Artifact no Claude, onde ficam os dados na nuvem). O link `#disponibilidade` dos convites continua
-funcionando. O subdomínio foi criado no hPanel (**Domínios › Subdomínios**) com a pasta `public_html/escalas`, que a
-publicação envia. O endereço do app fica em `public/escala/`, `public/escalas/` e `public/.htaccess`.
+A escala roda no próprio servidor: `escalas.igrejacongregacionalpombal.com.br` (subdomínio criado no hPanel com a
+pasta `public_html/escalas`) e `www.igrejacongregacionalpombal.com.br/escalas`; `/escala` redireciona para o
+subdomínio. Depois do `next build`, `scripts/montar-escala.mjs` monta `out/escalas/` com o app de `web/escala-louvor/`
+e a API em PHP. A senha do coordenador vem do secret `ESCALA_SENHA` (veja `web/escala-louvor/README.md`).
 
 ### Variáveis de ambiente
 

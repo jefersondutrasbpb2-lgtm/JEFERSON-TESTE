@@ -5,7 +5,8 @@
  * (que sobe da base no celular); exclusões e mudanças grandes podem ser
  * desfeitas pelo aviso no rodapé. O estado inteiro mora em `state`; cada
  * alteração passa por `mudou()`, que salva no navegador e, quando a página roda
- * como Artifact no Claude, também na nuvem. A lógica fica em engine.js.
+ * no site da igreja (com servidor.js e api.php), também no servidor. A lógica
+ * fica em engine.js.
  */
 (function () {
   "use strict";
@@ -80,7 +81,7 @@
   const porId = E.porId;
   const clone = (x) => JSON.parse(JSON.stringify(x));
   const hoje = () => E.isoData(new Date());
-  const local = () => !(window.claude && typeof window.claude.use === "function");
+  const servidor = window.EscalaServidor || null;
   const celular = () => matchMedia(MOBILE).matches;
 
   function proximoDomingo() {
@@ -131,7 +132,7 @@
   const CHAVE_LOCAL = "escala-louvor:v1";
   const SECOES = ["config", "pessoas", "musicas", "cultos"];
   const ANTIGAS = ["liturgias", "oficiais"]; // de versões anteriores; apagadas depois de migrar
-  const armazem = { db: null, downloads: null, user: null, ultimo: {}, antigas: new Set(), timer: null, salvando: false, pendente: false };
+  const armazem = { db: null, user: null, ultimo: {}, antigas: new Set(), timer: null, salvando: false, pendente: false };
 
   function secao(nome) {
     if (nome === "config") return { versao: state.versao, igreja: state.igreja, funcoes: state.funcoes, tags: state.tags, regras: state.regras, pedido: state.pedido || null };
@@ -151,7 +152,7 @@
     try {
       localStorage.setItem(CHAVE_LOCAL, JSON.stringify(state));
     } catch (e) {
-      /* navegador sem armazenamento: segue na memória (ou na nuvem) */
+      /* navegador sem armazenamento: segue na memória (ou no servidor) */
     }
   }
 
@@ -254,14 +255,14 @@
         await armazem.db.doc(`dados/${nome}`).delete();
         armazem.antigas.delete(nome);
       }
-      mostrarSalvo("ok", "Salvo na nuvem");
+      mostrarSalvo("ok", "Salvo");
     } catch (e) {
       const msg = {
         quota_exceeded: "O espaço de dados acabou. Exclua escalas antigas.",
         invalid_argument: "Uma parte dos dados ficou grande demais para salvar. Baixe um backup em Ajustes.",
-        revoked: "Você não tem mais permissão para salvar aqui.",
-      }[e && e.code] || "Não consegui salvar na nuvem agora. Tento de novo na próxima alteração.";
-      mostrarSalvo("erro", "Não salvo na nuvem");
+        revoked: "Sua sessão de coordenador terminou. Entre de novo para salvar.",
+      }[e && e.code] || "Não consegui salvar no servidor agora. Tento de novo na próxima alteração.";
+      mostrarSalvo("erro", "Não salvo");
       avisar(msg);
     } finally {
       armazem.salvando = false;
@@ -282,14 +283,9 @@
 
   async function iniciar() {
     const salvoLocal = lerLocal();
-    if (!local()) {
-      try {
-        armazem.db = await window.claude.use("db");
-        armazem.downloads = await window.claude.use("downloads");
-        armazem.user = await window.claude.use("user");
-      } catch (e) {
-        armazem.db = null;
-      }
+    if (servidor) {
+      armazem.db = servidor.db;
+      armazem.user = servidor.user;
     }
     let remoto = null;
     if (armazem.db) {
@@ -297,14 +293,14 @@
         remoto = await lerNuvem(armazem.db);
       } catch (e) {
         armazem.db = null;
-        avisar("Não consegui abrir os dados da nuvem. Por enquanto, as alterações ficam só neste aparelho.");
+        avisar("Não consegui abrir os dados do servidor. Por enquanto, as alterações ficam só neste aparelho.");
       }
     }
     const base = D.configuracaoBase();
     if (remoto) state = E.migrar(remoto, base, D.repertorio());
     else if (salvoLocal) state = E.migrar(salvoLocal, base, D.repertorio());
     else state = estadoInicial();
-    // Quem não pode editar (a equipe, pelo link compartilhado) só vê a tela de disponibilidade.
+    // Quem não entrou como coordenador (a equipe, pelo link) só vê a tela de disponibilidade.
     if (armazem.db && armazem.user) {
       try { ui.coordena = await armazem.user.canEdit(); } catch (e) { ui.coordena = false; }
     }
@@ -312,7 +308,7 @@
     if (TELAS.some((t) => t.id === hash)) ui.tela = hash;
     if (!ui.coordena || hash === "disponibilidade") ui.tela = "disponibilidade";
     garantirEscalaAtual();
-    if (ui.coordena) salvar(); // grava a migração (ou os dados iniciais) e leva para a nuvem o que estava só no aparelho
+    if (ui.coordena) salvar(); // grava a migração (ou os dados iniciais) e leva para o servidor o que estava só no aparelho
     else mostrarSalvo("ok", armazem.db ? "Conectado" : "Neste aparelho");
     if (armazem.db) acompanharRespostas();
     render();
@@ -685,7 +681,7 @@
       }, icone("sortear"), "Sortear a escala de novo"),
       h("button", { class: "btn largo", onclick: () => cultoExtra(escala) }, icone("mais"), "Adicionar culto extra"),
       h("button", { class: "btn largo", onclick: () => quantasVezes(escala) }, icone("pessoas"), "Quantas vezes cada um serve"),
-      local() ? h("button", { class: "btn largo", onclick: () => { fecharAtual(); setTimeout(() => window.print(), 50); } }, icone("imprimir"), "Imprimir") : null,
+      h("button", { class: "btn largo", onclick: () => { fecharAtual(); setTimeout(() => window.print(), 50); } }, icone("imprimir"), "Imprimir"),
       h("button", {
         class: "btn perigo largo", onclick: () => {
           fecharAtual();
@@ -883,6 +879,37 @@
     return { el: caixa, dias, redesenhar: desenhar };
   }
 
+  /** Senha do coordenador (definida na publicação do site). */
+  async function entrarCoordenador() {
+    if (!(await servidor.senhaDefinida())) return avisar("A senha do coordenador ainda não foi configurada no site.");
+    let senha = "";
+    painel({
+      titulo: "Entrar como coordenador",
+      sub: "Com a senha, este aparelho passa a montar e editar as escalas.",
+      corpo: h("label", { class: "campo" }, "Senha", h("input", { type: "password", id: "senha-coord", autocomplete: "current-password", oninput: (e) => { senha = e.target.value; }, onkeydown: (e) => { if (e.key === "Enter") e.target.closest(".painel").querySelector("footer .btn.primario").click(); } })),
+      rodape: () => [h("button", { class: "btn primario", onclick: async () => {
+        if (!senha) return avisar("Digite a senha.");
+        try {
+          await servidor.entrar(senha);
+          location.hash = "";
+          location.reload();
+        } catch (e) {
+          avisar(e.message || "Não deu para entrar agora.");
+        }
+      } }, "Entrar")],
+      foco: "#senha-coord",
+    });
+  }
+
+  async function sair() {
+    try {
+      await servidor.sair();
+    } finally {
+      location.hash = "disponibilidade";
+      location.reload();
+    }
+  }
+
   function guardarResposta(r) {
     state.respostas = (state.respostas || []).filter((x) => x.id !== r.id).concat(r);
   }
@@ -893,7 +920,8 @@
     let pessoaId = ui.respostaPessoa;
     if (!pessoaId) { try { pessoaId = localStorage.getItem(CHAVE_PESSOA); } catch (e) { /* sem armazenamento */ } }
     const pessoa = porId(state.pessoas, pessoaId);
-    const voltar = ui.coordena ? h("button", { class: "btn texto", onclick: () => irPara("agenda") }, "Voltar ao app") : null;
+    const voltar = ui.coordena ? h("button", { class: "btn texto", onclick: () => irPara("agenda") }, "Voltar ao app")
+      : servidor ? h("button", { class: "btn texto", onclick: entrarCoordenador }, "Sou o coordenador") : null;
     if (!pessoa) {
       const ativas = state.pessoas.filter((p) => p.ativo !== false).sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
       return h("div", { class: "tela" },
@@ -940,7 +968,7 @@
       return avisar("Disponibilidade salva.");
     }
     try {
-      if (!armazem.db) throw new Error("sem nuvem");
+      if (!armazem.db) throw new Error("sem servidor");
       await armazem.db.collection("respostas").doc(r.id).set(r);
       guardarResposta(r);
       render();
@@ -1433,7 +1461,8 @@
       secao("Dados",
         h("ul", { class: "lista cartao" },
           linha("Igreja e link da escala", `${state.igreja.nome || "—"}${state.igreja.link ? " · link cadastrado" : " · sem link"}`, editarIgreja),
-          linha("Backup", armazem.db ? "Salvo na nuvem. Baixe uma cópia de vez em quando." : "Salvo neste aparelho. Baixe uma cópia de vez em quando.", telaBackup))));
+          linha("Backup", armazem.db ? "Salvo no servidor. Baixe uma cópia de vez em quando." : "Salvo neste aparelho. Baixe uma cópia de vez em quando.", telaBackup),
+          servidor ? linha("Sair do modo coordenador", "Neste aparelho, volta a mostrar só a tela de disponibilidade", sair) : null)));
   }
 
   function editarCulto(original) {
@@ -1564,7 +1593,7 @@
       titulo: "Igreja e link da escala",
       corpo: [
         h("label", { class: "campo" }, "Nome da igreja", h("span", { class: "ajuda" }, "Aparece no topo e no texto do WhatsApp."), h("input", { type: "text", id: "igreja-nome", value: nome, oninput: (e) => { nome = e.target.value; } })),
-        h("label", { class: "campo" }, "Link da escala para a equipe", h("span", { class: "ajuda" }, "Vai no pedido de disponibilidade. A equipe precisa ter acesso ao link (menu Compartilhar)."), h("input", { type: "url", id: "igreja-link", value: link, placeholder: "https://claude.ai/artifact/…", oninput: (e) => { link = e.target.value; } })),
+        h("label", { class: "campo" }, "Link da escala para a equipe", h("span", { class: "ajuda" }, "Vai no pedido de disponibilidade."), h("input", { type: "url", id: "igreja-link", value: link, placeholder: "https://escalas.igrejacongregacionalpombal.com.br", oninput: (e) => { link = e.target.value; } })),
       ],
       rodape: (fechar) => [h("button", { class: "btn primario", onclick: () => { fechar(true); mudou(() => { state.igreja.nome = nome.trim(); state.igreja.link = link.trim(); }); } }, "Salvar")],
       foco: "#igreja-nome",
@@ -1574,16 +1603,6 @@
   async function baixarBackup() {
     const dados = JSON.stringify(state, null, 2);
     const nome = `escala-louvor-${hoje()}.json`;
-    if (armazem.downloads) {
-      try {
-        const r = await armazem.downloads.save({ filename: nome, data: dados });
-        if (r && r.status === "saved") avisar("Backup salvo.");
-      } catch (e) {
-        avisar("O download não foi feito. Use Copiar dados.");
-      }
-      return;
-    }
-    if (!local()) return avisar("Download indisponível aqui. Use Copiar dados.");
     const url = URL.createObjectURL(new Blob([dados], { type: "application/json" }));
     const a = h("a", { href: url, download: nome });
     document.body.append(a);
@@ -1616,7 +1635,7 @@
     const n = (k) => state[k].length;
     painel({
       titulo: "Backup",
-      sub: armazem.db ? "Os dados ficam na nuvem, iguais no celular e no computador." : "Os dados ficam neste aparelho. Se limpar o navegador, eles somem: guarde uma cópia.",
+      sub: armazem.db ? "Os dados ficam no servidor da igreja, iguais no celular e no computador." : "Os dados ficam neste aparelho. Se limpar o navegador, eles somem: guarde uma cópia.",
       corpo: [
         h("p", { class: "small muted num" }, `${n("pessoas")} pessoas · ${n("musicas")} músicas · ${n("cultos")} cultos · ${n("escalas")} escalas`),
         h("div", { style: "display:grid;grid-template-columns:1fr 1fr;gap:8px" },

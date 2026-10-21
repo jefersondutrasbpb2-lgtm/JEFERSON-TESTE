@@ -13,6 +13,7 @@
 #     SITE_URL        padrão "https://www.igrejacongregacionalpombal.com.br"
 #     CONTACT_ENDPOINT, PRAYER_ENDPOINT  endereços que recebem os formulários
 #   Secrets do Instagram (opcionais): IG_FEED_BOM_SAMARITANO ou IG_TOKEN_BOM_SAMARITANO
+#   ESCALA_SENHA: senha do coordenador da Escala do Louvor (escalas.igrejacongregacionalpombal.com.br)
 name: Publicar site na Hostinger
 
 on:
@@ -49,6 +50,7 @@ jobs:
         run: npm run build
         env:
           NEXT_PUBLIC_SITE_URL: ${{ vars.SITE_URL || 'https://www.igrejacongregacionalpombal.com.br' }}
+          ESCALA_SENHA: ${{ secrets.ESCALA_SENHA }}
           NEXT_PUBLIC_CONTACT_ENDPOINT: ${{ vars.CONTACT_ENDPOINT }}
           NEXT_PUBLIC_PRAYER_ENDPOINT: ${{ vars.PRAYER_ENDPOINT }}
           IG_FEED_BOM_SAMARITANO: ${{ secrets.IG_FEED_BOM_SAMARITANO }}

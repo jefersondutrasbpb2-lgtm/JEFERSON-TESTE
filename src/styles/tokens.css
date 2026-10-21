@@ -1,0 +1,147 @@
+/* ==========================================================================
+   Design tokens — IEC Pombal
+   Paleta derivada da identidade oficial (azul #195691 e amarelo #FFCC00):
+   papel (base clara), areia (memória), azul profundo (autoridade), azul
+   institucional (destaques), verde profundo (serviço) e dourado solar
+   (detalhes sobre fundos escuros).
+   ========================================================================== */
+
+:root {
+  /* Cores base — derivadas do logotipo (azul #195691, amarelo #FFCC00) */
+  --c-paper: #f7f5f0;
+  --c-paper-2: #efede6;
+  --c-sand: #e7edf5;          /* azul-névoa: tom claro secundário */
+  --c-sand-2: #d3dfec;
+  --c-ink: #0b2447;           /* azul-marinho profundo */
+  --c-ink-2: #0f2f5c;
+  --c-ink-3: #173e73;
+  --c-green: #195691;         /* tom "green" agora é o azul institucional */
+  --c-green-2: #1f62a3;
+  --c-brand: #195691;         /* azul oficial do logotipo */
+  --c-brand-sun: #ffcc00;     /* amarelo oficial do logotipo */
+  --c-gold: #ffcc00;          /* destaque sobre fundos escuros */
+  --c-gold-ink: #7a5c2b;      /* ocre de arquivo sobre fundos claros (AA) */
+  --c-gold-line: #e5b800;     /* linhas e detalhes gráficos */
+
+  /* Texto */
+  --c-text: #10203a;
+  --c-text-muted: #4f5d6e;
+  --c-text-inv: #f7f5f0;
+  --c-text-inv-muted: #a9b8cc;
+  --c-line: rgb(16 32 58 / 0.14);
+  --c-line-strong: rgb(16 32 58 / 0.32);
+  --c-line-inv: rgb(247 245 240 / 0.16);
+
+  /* Tipografia */
+  --ff-display: "Bricolage Grotesque Variable", "Bricolage Grotesque", "Manrope Variable", system-ui, sans-serif;
+  --ff-sans: "Manrope Variable", "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --fs-mega: clamp(5rem, 1rem + 20vw, 20rem);
+  --fs-display: clamp(2.7rem, 1.3rem + 5.4vw, 7rem);
+  --fs-h1: clamp(2.4rem, 1.5rem + 3.6vw, 5.2rem);
+  --fs-h2: clamp(2rem, 1.4rem + 2.4vw, 3.9rem);
+  --fs-h3: clamp(1.45rem, 1.25rem + 0.9vw, 2.05rem);
+  --fs-h4: clamp(1.15rem, 1.08rem + 0.35vw, 1.4rem);
+  --fs-lead: clamp(1.15rem, 1.06rem + 0.42vw, 1.45rem);
+  --fs-body: clamp(1rem, 0.97rem + 0.12vw, 1.0625rem);
+  --fs-small: 0.9rem;
+  --fs-xs: 0.78rem;
+  --fs-eyebrow: 0.75rem;
+
+  --lh-tight: 1.02;
+  --lh-heading: 1.05;
+  --lh-body: 1.68;
+
+  --tracking-eyebrow: 0.2em;
+
+  /* Espaçamento (escala 4/8 fluida) */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+  --sp-7: 3rem;
+  --sp-8: 4rem;
+  --sp-9: 6rem;
+  --section-y: clamp(5rem, 3rem + 8vw, 11rem);
+  --section-y-sm: clamp(3.5rem, 2.5rem + 4vw, 6.5rem);
+
+  /* Layout */
+  --container: 1440px;
+  --container-narrow: 860px;
+  --gutter: clamp(1rem, 0.4rem + 3vw, 4rem);
+  --header-h: 4.5rem;
+
+  /* Bordas e sombras */
+  --radius-sm: 2px;
+  --radius: 4px;
+  --radius-pill: 999px;
+  --shadow-soft: 0 1px 2px rgb(11 36 71 / 0.06), 0 12px 40px -12px rgb(11 36 71 / 0.18);
+
+  /* Movimento */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 180ms;
+  --dur: 360ms;
+  --dur-slow: 700ms;
+
+  /* Textura de papel (ruído SVG discreto) */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Cada tom redefine o conjunto completo de variáveis, para que o elemento
+   mais próximo com [data-tone] sempre prevaleça (inclusive sobre o <html>). */
+:root,
+[data-tone="paper"],
+[data-tone="sand"] {
+  --tone-bg: var(--c-paper);
+  --tone-fg: var(--c-text);
+  --tone-muted: var(--c-text-muted);
+  --tone-line: var(--c-line);
+  --tone-accent: var(--c-brand);
+  --tone-surface: var(--c-sand);
+  --slot-bg:
+    repeating-linear-gradient(135deg, transparent 0 14px, rgb(16 32 58 / 0.035) 14px 15px),
+    radial-gradient(120% 90% at 30% 20%, var(--c-paper-2), var(--c-sand) 60%, var(--c-sand-2));
+  --slot-fg: var(--c-text-muted);
+  --pending-fg: #833a10;
+  --pending-bg: rgb(255 214 170 / 0.45);
+  --c-focus: var(--c-brand);
+  --logo-light: block;
+  --logo-dark: none;
+}
+[data-tone="sand"] {
+  --tone-bg: var(--c-sand);
+  --tone-surface: var(--c-paper-2);
+  --slot-bg:
+    repeating-linear-gradient(135deg, transparent 0 14px, rgb(16 32 58 / 0.04) 14px 15px),
+    radial-gradient(120% 90% at 30% 20%, var(--c-paper), var(--c-paper-2) 55%, var(--c-sand-2));
+}
+[data-tone="ink"],
+[data-tone="green"] {
+  --tone-bg: var(--c-ink);
+  --tone-fg: var(--c-text-inv);
+  --tone-muted: var(--c-text-inv-muted);
+  --tone-line: var(--c-line-inv);
+  --tone-accent: var(--c-gold);
+  --tone-surface: var(--c-ink-3);
+  --slot-bg:
+    repeating-linear-gradient(135deg, transparent 0 14px, rgb(247 245 240 / 0.035) 14px 15px),
+    radial-gradient(120% 90% at 30% 20%, var(--c-ink-3), var(--c-ink-2) 60%, #081a35);
+  --slot-fg: var(--c-text-inv-muted);
+  --pending-fg: #ffd84d;
+  --pending-bg: rgb(242 196 143 / 0.1);
+  --c-focus: var(--c-gold);
+  --logo-light: none;
+  --logo-dark: block;
+}
+[data-tone="green"] {
+  --tone-bg: var(--c-green);
+  --tone-muted: #c9d8ea;
+  --tone-surface: var(--c-green-2);
+  --slot-bg:
+    repeating-linear-gradient(135deg, transparent 0 14px, rgb(247 245 240 / 0.05) 14px 15px),
+    radial-gradient(120% 90% at 30% 20%, var(--c-green-2), var(--c-green) 70%);
+  --slot-fg: #c9d8ea;
+}

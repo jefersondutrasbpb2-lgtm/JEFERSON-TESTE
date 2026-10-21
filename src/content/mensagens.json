@@ -1,0 +1,36 @@
+{
+  "_instrucoes": "Biblioteca de mensagens. 'youtubeId' é o código do vídeo (ex.: dQw4w9WgXcQ). Campos opcionais: series, passage, preacher. Itens com 'example: true' só aparecem no modo de revisão.",
+  "channelUrl": "",
+  "items": [
+    {
+      "id": "exemplo-1",
+      "title": "Título da mensagem",
+      "date": "2026-10-04",
+      "preacher": "Nome do pregador",
+      "passage": "Referência bíblica",
+      "series": "Série de exemplo",
+      "youtubeId": "",
+      "example": true
+    },
+    {
+      "id": "exemplo-2",
+      "title": "Título de um estudo bíblico",
+      "date": "2026-09-30",
+      "preacher": "Nome do pregador",
+      "passage": "Referência bíblica",
+      "series": "Estudos bíblicos",
+      "youtubeId": "",
+      "example": true
+    },
+    {
+      "id": "exemplo-3",
+      "title": "Título da mensagem",
+      "date": "2026-09-27",
+      "preacher": "Nome do pregador",
+      "passage": "Referência bíblica",
+      "series": "Série de exemplo",
+      "youtubeId": "",
+      "example": true
+    }
+  ]
+}

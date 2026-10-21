@@ -61,13 +61,15 @@ Configuração (uma vez):
 2. No GitHub, em **Settings › Secrets and variables › Actions › Secrets**, crie `FTP_SERVER`, `FTP_USERNAME` e
    `FTP_PASSWORD`.
 3. Opcional, na aba **Variables** da mesma página:
-   - `FTP_PASTA`: pasta do site no servidor (padrão `public_html/`; use `./` se a conta FTP já abrir dentro do
-     `public_html`);
+   - `FTP_PASTA`: pasta do site no servidor. Sem ela, a publicação usa `domains/<domínio>/public_html/` quando essa
+     pasta existe (padrão da Hostinger) e, se não, `public_html/`. Use `./` se a conta FTP já abrir dentro da pasta do
+     site;
    - `FTP_PROTOCOLO`: `ftps` (padrão, com criptografia) ou `ftp`, se a conexão criptografada falhar;
    - `SITE_URL`: endereço oficial (padrão `https://www.igrejacongregacionalpombal.com.br`);
    - `CONTACT_ENDPOINT` e `PRAYER_ENDPOINT`: endereços que recebem os formulários.
 4. Se já houver outro site na pasta `public_html`, faça um backup e retire os arquivos antigos antes da primeira
-   publicação. O arquivo `public/.htaccess` faz o `index.html` ter prioridade e usa a página 404 do site.
+   publicação. A publicação retira o `default.php` ("Página padrão") que a Hostinger cria; o arquivo
+   `public/.htaccess` faz o `index.html` ter prioridade e usa a página 404 do site.
 5. No hPanel, ative o SSL gratuito do domínio e a opção **Forçar HTTPS**.
 
 ### Variáveis de ambiente

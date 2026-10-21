@@ -7,7 +7,8 @@
 # Configure em Settings › Secrets and variables › Actions:
 #   Secrets:   FTP_SERVER, FTP_USERNAME, FTP_PASSWORD  (hPanel › Arquivos › Contas FTP)
 #   Variáveis (opcionais):
-#     FTP_PASTA       pasta no servidor; padrão "public_html/"
+#     FTP_PASTA       pasta no servidor; sem ela, usa domains/<domínio>/public_html/
+#                     quando existir (padrão da Hostinger) e, se não, public_html/
 #     FTP_PROTOCOLO   "ftps" (padrão, criptografado) ou "ftp"
 #     SITE_URL        padrão "https://www.igrejacongregacionalpombal.com.br"
 #     CONTACT_ENDPOINT, PRAYER_ENDPOINT  endereços que recebem os formulários
@@ -68,6 +69,30 @@ jobs:
             exit 1
           fi
 
+      - name: Achar a pasta do domínio
+        id: pasta
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PASTA: ${{ vars.FTP_PASTA }}
+          FTP_PROTOCOLO: ${{ vars.FTP_PROTOCOLO || 'ftps' }}
+          DOMINIO: igrejacongregacionalpombal.com.br
+        run: |
+          tls=""; [ "$FTP_PROTOCOLO" = "ftps" ] && tls="--ssl-reqd"
+          listar() { curl -sS $tls --max-time 30 --list-only -u "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_SERVER/$1"; }
+          echo "Pastas na raiz da conta FTP:"; listar "" || true
+          if [ -n "$FTP_PASTA" ]; then
+            pasta="$FTP_PASTA"
+          elif listar "domains/$DOMINIO/public_html/" > /dev/null 2>&1; then
+            pasta="domains/$DOMINIO/public_html/"
+          else
+            pasta="public_html/"
+          fi
+          echo "Pasta do site: $pasta"
+          echo "Conteúdo atual:"; listar "$pasta" || true
+          echo "pasta=$pasta" >> "$GITHUB_OUTPUT"
+
       - name: Enviar para a Hostinger
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -76,4 +101,22 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ${{ vars.FTP_PROTOCOLO || 'ftps' }}
           local-dir: ./out/
-          server-dir: ${{ vars.FTP_PASTA || 'public_html/' }}
+          server-dir: ${{ steps.pasta.outputs.pasta }}
+
+      # A Hostinger cria um default.php ("Página padrão") ao abrir o site; ele
+      # tomaria o lugar da página inicial.
+      - name: Retirar a página padrão da Hostinger
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PROTOCOLO: ${{ vars.FTP_PROTOCOLO || 'ftps' }}
+          PASTA: ${{ steps.pasta.outputs.pasta }}
+        run: |
+          tls=""; [ "$FTP_PROTOCOLO" = "ftps" ] && tls="--ssl-reqd"
+          if curl -sS $tls --max-time 30 --list-only -u "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_SERVER/$PASTA" | tr -d "\r" | grep -qx 'default.php'; then
+            curl -sS $tls --max-time 30 --list-only -u "$FTP_USERNAME:$FTP_PASSWORD" -Q "DELE ${PASTA}default.php" "ftp://$FTP_SERVER/" > /dev/null
+            echo "default.php removido."
+          else
+            echo "Não há default.php."
+          fi

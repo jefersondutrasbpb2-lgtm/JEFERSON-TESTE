@@ -166,4 +166,7 @@ As posições dos campos são aproximadas e identificadas como ilustrativas no s
 
 ## Outros conteúdos do repositório
 
+`web/escala-louvor/` é a ferramenta interna de escalas do ministério de louvor (veja o
+[README](./web/escala-louvor/README.md) dela). Não faz parte do site público.
+
 `tools/` e `web/nam-gain/` contêm uma ferramenta independente (NAM Gain) e não fazem parte do site da igreja.

@@ -1,0 +1,145 @@
+// Testes do motor da escala: node --test web/escala-louvor/engine.test.js
+const test = require("node:test");
+const assert = require("node:assert/strict");
+const E = require("./engine.js");
+const D = require("./dados-iniciais.js");
+
+const novoEstado = () => D.estadoInicial();
+const todosCampos = (escala) =>
+  escala.cultos.flatMap((c) => [
+    ...c.equipe.map((s) => s.pessoaId),
+    ...c.liturgia.flatMap((it) => [...it.musicas, ...it.oficiais]),
+  ]);
+const musicasDo = (s, culto) => culto.liturgia.flatMap((it) => it.musicas).map((id) => E.porId(s.musicas, id));
+
+test("lista os cultos do período e respeita cultos desligados", () => {
+  const s = novoEstado();
+  const oc = E.listarOcorrencias(s.cultos, "2026-11-01", "2026-11-30");
+  assert.equal(oc.filter((o) => o.cultoId === "dom-manha").length, 5);
+  assert.equal(oc.filter((o) => o.cultoId === "dom-noite").length, 5);
+  assert.equal(oc.filter((o) => o.cultoId === "qua-oracao").length, 4);
+  assert.equal(oc.filter((o) => o.cultoId === "doutrina").length, 0);
+  assert.deepEqual(oc.slice(0, 2).map((o) => o.cultoId), ["dom-manha", "dom-noite"]); // ordem pela hora
+});
+
+test("semanas do mês: só as escolhidas, e 'ultima' pega o último domingo", () => {
+  const cultos = [{ id: "u", diaSemana: 0, semanas: [1, "ultima"], ativo: true }];
+  const oc = E.listarOcorrencias(cultos, "2026-11-01", "2026-12-31");
+  assert.deepEqual(oc.map((o) => o.data), ["2026-11-01", "2026-11-29", "2026-12-06", "2026-12-27"]);
+});
+
+test("a escala quinzenal preenche tudo e cumpre a orientação pastoral nos cultos solenes", () => {
+  const s = novoEstado();
+  const esc = E.gerarEscala(s, { inicio: "2026-10-25", fim: "2026-11-07", seed: 3 });
+  assert.ok(todosCampos(esc).every(Boolean), "nenhum campo vazio");
+  assert.deepEqual(E.validarEscala(s, esc).filter((a) => a.nivel === "erro"), []);
+  for (const c of esc.cultos.filter((x) => x.solene)) {
+    for (const m of musicasDo(s, c)) {
+      const exig = m.tipo === "louvor" ? ["cristocentrico", "doutrinario"] : ["trinitario"];
+      assert.ok(exig.every((t) => m.tags.includes(t)), `${E.rotuloMusica(m)} em ${c.nome}`);
+    }
+  }
+});
+
+test("a liturgia segue o modelo da igreja, com a observação padrão preenchida", () => {
+  const s = novoEstado();
+  const esc = E.gerarEscala(s, { inicio: "2026-10-25", fim: "2026-10-25", seed: 1 });
+  const solene = esc.cultos.find((c) => c.cultoId === "dom-noite");
+  assert.equal(solene.liturgia.length, 14);
+  assert.equal(solene.liturgia[3].titulo, "Confissão de pecado");
+  assert.equal(solene.liturgia[3].nota, "Êxodo 20.1–17, leitura participativa");
+  assert.equal(solene.liturgia[5].musicas.length, 2); // 2 louvores
+  assert.equal(solene.liturgia[6].musicas.length, 1); // louvor da contribuição
+});
+
+test("respeita a última vez que a música foi cantada antes da ferramenta", () => {
+  const s = novoEstado();
+  const esc = E.gerarEscala(s, { inicio: "2026-10-25", fim: "2026-10-25", seed: 4 });
+  const usadas = esc.cultos.flatMap((c) => musicasDo(s, c)).map((m) => m.id);
+  assert.ok(!usadas.includes("sh29"), "SH 29 foi cantado em 18/10");
+  const c = E.candidatosMusica(s, esc, 0, 1, 0).find((x) => x.musica.id === "sh29");
+  assert.equal(c.ultima, "2026-10-18");
+  assert.match(c.bloqueio, /^cantada há 7 dias$/);
+});
+
+test("ninguém é escalado em data marcada como indisponível nem em duas funções", () => {
+  const s = novoEstado();
+  s.pessoas.forEach((p) => { if (p.funcoes.includes("ministro") && p.id !== "p11") p.indisponivel = ["2026-10-25"]; });
+  const esc = E.gerarEscala(s, { inicio: "2026-10-25", fim: "2026-10-25", seed: 5 });
+  for (const culto of esc.cultos) {
+    assert.equal(culto.equipe.find((x) => x.funcao === "ministro").pessoaId, "p11");
+    const ids = culto.equipe.map((x) => x.pessoaId).filter(Boolean);
+    assert.equal(new Set(ids).size, ids.length);
+  }
+});
+
+test("a escala mensal distribui o serviço de forma equilibrada", () => {
+  const s = novoEstado();
+  const esc = E.gerarEscala(s, { inicio: "2026-11-01", fim: "2026-11-30", seed: 11 });
+  const totais = E.resumoPessoas(s, esc).map((l) => l.total);
+  assert.ok(Math.max(...totais) - Math.min(...totais) <= 4, `totais: ${totais}`);
+});
+
+test("sortear de novo mantém os campos travados", () => {
+  const s = novoEstado();
+  const esc = E.gerarEscala(s, { inicio: "2026-10-25", fim: "2026-11-07", seed: 1 });
+  const c = esc.cultos[0];
+  c.equipe[0].pessoaId = "p5";
+  c.liturgia[1].musicas[0] = "sh247";
+  c.liturgia[1].nota = "Todos em pé";
+  c.travados = ["e:0", "m:1:0"];
+  const nova = E.gerarEscala(s, { inicio: esc.inicio, fim: esc.fim }, esc);
+  assert.equal(nova.id, esc.id);
+  assert.equal(nova.cultos[0].equipe[0].pessoaId, "p5");
+  assert.equal(nova.cultos[0].liturgia[1].musicas[0], "sh247");
+  assert.equal(nova.cultos[0].liturgia[1].nota, "Todos em pé");
+});
+
+test("louvores não se repetem dentro do intervalo quando há repertório", () => {
+  const s = novoEstado();
+  const esc = E.gerarEscala(s, { inicio: "2026-10-25", fim: "2026-11-07", seed: 2 });
+  const louvores = esc.cultos.flatMap((c) => musicasDo(s, c)).filter((m) => m.tipo === "louvor").map((m) => m.id);
+  assert.equal(new Set(louvores).size, louvores.length);
+});
+
+test("não coloca música sem a etiqueta exigida e avisa o que falta", () => {
+  const s = novoEstado();
+  s.musicas.forEach((m) => { m.tags = m.tags.filter((t) => t !== "trinitario"); });
+  const esc = E.gerarEscala(s, { inicio: "2026-10-25", fim: "2026-10-25", seed: 1 });
+  const solene = esc.cultos.find((c) => c.cultoId === "dom-noite");
+  assert.equal(solene.liturgia[1].musicas[0], null);
+  assert.ok(E.validarEscala(s, esc).some((a) => a.nivel === "erro" && /Cântico: falta escolher a música/.test(a.msg)));
+});
+
+test("lê listas coladas em vários formatos", () => {
+  const s = novoEstado();
+  const lidas = E.lerListaMusicas(s, [
+    "245",
+    "Hino; 30; Castelo Forte; trinitário, doutrinário",
+    "Louvor\tPorque Ele vive\tcristocêntrico",
+    "SH 45. Rude Cruz",
+    "Isaías 53 - https://youtu.be/yTkby6Vgfms",
+    "Hosana; adoração",
+    "",
+  ].join("\n"), { tipo: "hino" });
+  assert.equal(lidas.length, 6);
+  assert.deepEqual([lidas[0].numero, lidas[0].titulo], ["245", ""]);
+  assert.deepEqual(lidas[1].tags, ["trinitario", "doutrinario"]);
+  assert.equal(lidas[2].tipo, "louvor");
+  assert.deepEqual(lidas[2].tags, ["cristocentrico"]);
+  assert.deepEqual([lidas[3].numero, lidas[3].titulo], ["45", "Rude Cruz"]);
+  assert.deepEqual([lidas[4].titulo, lidas[4].link], ["Isaías 53", "https://youtu.be/yTkby6Vgfms"]);
+  assert.deepEqual([lidas[5].titulo, lidas[5].tags], ["Hosana", ["adoracao"]]);
+});
+
+test("rótulos e texto do WhatsApp", () => {
+  const s = novoEstado();
+  assert.equal(E.rotuloMusica(E.porId(s.musicas, "sh247")), "SH 247");
+  assert.equal(E.rotuloMusica(E.porId(s.musicas, "sh-abraao")), "Ao Deus de Abraão");
+  const esc = E.gerarEscala(s, { inicio: "2026-10-25", fim: "2026-10-25", seed: 1 });
+  const txt = E.textoWhatsApp(s, esc, { links: true });
+  assert.match(txt, /\*Dom, 25\/10 · 19:00 · Culto solene\* \(solene\)/);
+  assert.match(txt, /Ministro\(a\) de louvor: /);
+  assert.match(txt, /4\. Confissão de pecado — Dirigente · em pé \(Êxodo 20\.1–17, leitura participativa\)/);
+  assert.match(txt, /https:\/\/youtu\.be\//);
+});

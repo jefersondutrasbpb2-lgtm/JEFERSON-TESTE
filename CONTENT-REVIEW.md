@@ -27,7 +27,8 @@ Os dados abaixo vieram de uma versão anterior do site e **não foram verificado
 - [x] YouTube e Facebook: @iecdepombal (conforme o convite oficial). Conferir se os endereços
       youtube.com/@iecdepombal e facebook.com/iecdepombal abrem os perfis corretos → `src/content/site.ts`
 - [ ] Endereço do canal para a biblioteca de mensagens → `src/content/mensagens.json` (`channelUrl`)
-- [ ] Domínio oficial do site → variável `NEXT_PUBLIC_SITE_URL`
+- [x] Domínio oficial: www.igrejacongregacionalpombal.com.br (hospedagem Hostinger, publicação automática pelo
+      workflow `publicar-hostinger.yml`) → variável `NEXT_PUBLIC_SITE_URL`
 - [x] Logotipo oficial — aplicado no cabeçalho e no rodapé (versão azul em fundos claros, versão branca em fundos
       escuros) e no ícone do site → `public/brand/`, `src/components/layout/BrandLogo.tsx`, `src/app/icon.png`
 - [x] Liderança atual: Pr. Felipe Oliveira, pastor eleito, posse em 14/10/2026 (convite oficial). Exibido em

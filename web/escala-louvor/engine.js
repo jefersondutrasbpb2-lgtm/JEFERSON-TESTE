@@ -228,6 +228,18 @@
 
   /* ---------------------------------------------------------- candidatos */
 
+  const APOIO = 1000; // quem só apoia numa função entra apenas quando nenhum titular pode
+
+  /** "principal", "apoio" ou null: como a pessoa faz esta função. */
+  function nivelFuncao(pessoa, funcao) {
+    if ((pessoa.funcoes || []).includes(funcao)) return "principal";
+    if ((pessoa.apoio || []).includes(funcao)) return "apoio";
+    return null;
+  }
+
+  /** O oficial que é esta pessoa do louvor (ex.: um presbítero que toca bateria). */
+  const oficialDaPessoa = (state, pessoaId) => (state.oficiais || []).find((o) => o.pessoaId && o.pessoaId === pessoaId);
+
   function pontuarPessoa(state, escala, ci, pessoa, usos) {
     const culto = escala.cultos[ci];
     const lista = usos.pessoas[pessoa.id] || [];
@@ -251,14 +263,17 @@
     const usos = montarUsos(state, escala, `${ci}:e:${si}`);
     const acumula = state.regras && state.regras.permitirAcumular;
     return (state.pessoas || [])
-      .filter((p) => p.ativo !== false && (p.funcoes || []).includes(slot.funcao))
+      .filter((p) => p.ativo !== false && nivelFuncao(p, slot.funcao))
       .map((p) => {
+        const apoio = nivelFuncao(p, slot.funcao) === "apoio";
+        const oficial = oficialDaPessoa(state, p.id);
         let bloqueio = "";
         if (indisponivelEm(p.indisponivel, culto.data)) bloqueio = "indisponível nesta data";
         else if (p.cultos && p.cultos.length && culto.cultoId && !p.cultos.includes(culto.cultoId)) bloqueio = "não serve neste culto";
         else if (!acumula && culto.equipe.some((s, i) => i !== si && s.pessoaId === p.id)) bloqueio = "já está em outra função neste culto";
+        else if (oficial && oficialNoCulto(culto, oficial.id)) bloqueio = "tem parte na liturgia como oficial";
         const vezes = (usos.pessoas[p.id] || []).filter((u) => u.ref.atual).length;
-        return { pessoa: p, bloqueio, vezes, score: pontuarPessoa(state, escala, ci, p, usos) };
+        return { pessoa: p, apoio, bloqueio, vezes, score: pontuarPessoa(state, escala, ci, p, usos) + (apoio ? APOIO : 0) };
       })
       .sort((a, b) => (a.bloqueio ? 1 : 0) - (b.bloqueio ? 1 : 0) || a.score - b.score || a.pessoa.nome.localeCompare(b.pessoa.nome));
   }
@@ -275,6 +290,7 @@
       .map((o) => {
         let bloqueio = "";
         if (indisponivelEm(o.indisponivel, culto.data)) bloqueio = "indisponível nesta data";
+        else if (o.pessoaId && serveNoCulto(culto, o.pessoaId)) bloqueio = "está na equipe do louvor neste culto";
         const lista = usos.oficiais[o.id] || [];
         const vezes = lista.filter((u) => u.ref.atual).length;
         const recentes = lista.filter((u) => !u.ref.atual && Math.abs(diasEntre(u.data, culto.data)) <= 90).length;
@@ -381,7 +397,7 @@
   function preencherCulto(state, escala, ci, rand) {
     const culto = escala.cultos[ci];
     const travado = new Set(culto.travados || []);
-    const pessoasPorFuncao = (f) => (state.pessoas || []).filter((p) => p.ativo !== false && (p.funcoes || []).includes(f)).length;
+    const pessoasPorFuncao = (f) => (state.pessoas || []).filter((p) => p.ativo !== false && nivelFuncao(p, f) === "principal").length;
     // Funções com menos gente são preenchidas primeiro, para não "gastar" quem é insubstituível.
     const ordem = culto.equipe.map((s, si) => si).sort((a, b) => pessoasPorFuncao(culto.equipe[a].funcao) - pessoasPorFuncao(culto.equipe[b].funcao));
     for (const si of ordem) {
@@ -518,6 +534,7 @@
         if (!s.pessoaId) return push("erro", campo, `${nomeFuncao(state, s.funcao)} sem ninguém escalado`);
         const p = porId(state.pessoas, s.pessoaId);
         if (!p) return push("erro", campo, `${nomeFuncao(state, s.funcao)}: pessoa removida do cadastro`);
+        if (nivelFuncao(p, s.funcao) === "apoio") push("alerta", campo, `${p.nome} só apoia em ${nomeFuncao(state, s.funcao).toLowerCase()}`);
         if (indisponivelEm(p.indisponivel, culto.data)) push("erro", campo, `${p.nome} marcou indisponibilidade nesta data`);
         if (!(state.regras && state.regras.permitirAcumular) && culto.equipe.some((o, i) => i < si && o.pessoaId === s.pessoaId)) {
           push("alerta", campo, `${p.nome} aparece em mais de uma função`);
@@ -549,6 +566,7 @@
           const o = porId(state.oficiais, id);
           if (!o) return push("erro", campo, `${item.titulo}: oficial removido do cadastro`);
           if (indisponivelEm(o.indisponivel, culto.data)) push("erro", campo, `${nomeOficial(o)} marcou indisponibilidade nesta data`);
+          if (o.pessoaId && serveNoCulto(culto, o.pessoaId)) push("alerta", campo, `${nomeOficial(o)} também está na equipe do louvor neste culto`);
         });
       });
     });
@@ -716,7 +734,7 @@
     criarAleatorio, novoId, porId, rotuloMusica, nomeFuncao, nomeOficial, nomeTag,
     tagsExigidas, atendeItem, listarOcorrencias, montarUsos,
     candidatosPessoa, candidatosOficial, candidatosMusica, itemModelo,
-    gerarEscala, preencherCulto, adicionarCultoAvulso, sortearCampo,
+    nivelFuncao, gerarEscala, preencherCulto, adicionarCultoAvulso, sortearCampo,
     validarEscala, resumoPessoas, textoWhatsApp,
     lerListaMusicas, lerTags, normalizar, migrar,
   };

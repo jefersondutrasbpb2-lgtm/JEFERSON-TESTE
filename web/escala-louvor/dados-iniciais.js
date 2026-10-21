@@ -7,10 +7,12 @@
  * repetidos foram unidos, com o segundo link guardado nas observações).
  * Salmos e Hinos: números informados pelo ministério de louvor.
  *
+ * Equipe do louvor, oficiais, dias e horários: informados pelo ministério de
+ * louvor (out/2026). O grupo canta e conduz a igreja à adoração; não há a
+ * função de "ministro de louvor".
+ *
  * As ETIQUETAS (trinitário, cristocêntrico, doutrinário e temas) são uma
  * primeira sugestão para revisar com o pastor na aba Repertório.
- * Pessoas e oficiais (exceto o pastor) são EXEMPLOS (`exemplo: true`) até a
- * equipe real ser cadastrada.
  */
 (function (root, factory) {
   const api = factory();
@@ -20,15 +22,12 @@
   "use strict";
 
   const funcoes = [
-    { id: "ministro", nome: "Ministro(a) de louvor" },
     { id: "vocal", nome: "Vocal" },
     { id: "violao", nome: "Violão" },
-    { id: "teclado", nome: "Teclado" },
     { id: "guitarra", nome: "Guitarra" },
+    { id: "teclado", nome: "Teclado" },
     { id: "baixo", nome: "Contrabaixo" },
     { id: "bateria", nome: "Bateria" },
-    { id: "projecao", nome: "Projeção" },
-    { id: "som", nome: "Mesa de som" },
   ];
 
   const tags = [
@@ -139,28 +138,25 @@
     },
   ];
 
-  // Composição da equipe: ajuste na aba "Cultos e regras" conforme o grupo de louvor.
+  // Composição da equipe: ainda não informada; ajuste na aba "Cultos e regras".
   const equipeDomingo = [
-    { funcao: "ministro", qtd: 1 },
-    { funcao: "vocal", qtd: 2 },
+    { funcao: "vocal", qtd: 3 },
     { funcao: "violao", qtd: 1 },
+    { funcao: "guitarra", qtd: 1 },
     { funcao: "teclado", qtd: 1 },
     { funcao: "baixo", qtd: 1 },
     { funcao: "bateria", qtd: 1 },
-    { funcao: "projecao", qtd: 1 },
   ];
   const equipeSemana = [
-    { funcao: "ministro", qtd: 1 },
+    { funcao: "vocal", qtd: 2 },
     { funcao: "violao", qtd: 1 },
-    { funcao: "teclado", qtd: 1 },
   ];
 
   const cultos = [
-    { id: "dom-manha", nome: "Culto matinal", diaSemana: 0, hora: "09:00", semanas: [], liturgiaId: "lit-matinal", solene: true, ativo: true, equipe: equipeDomingo },
-    { id: "dom-noite", nome: "Culto solene", diaSemana: 0, hora: "19:00", semanas: [], liturgiaId: "lit-solene", solene: true, ativo: true, equipe: equipeDomingo },
-    { id: "qua-oracao", nome: "Reunião de oração", diaSemana: 3, hora: "19:30", semanas: [], liturgiaId: "lit-oracao", solene: false, ativo: true, equipe: equipeSemana },
-    // Dia ainda não informado: fica desligado até ser configurado.
-    { id: "doutrina", nome: "Reunião de doutrina", diaSemana: 3, hora: "19:30", semanas: [], liturgiaId: "lit-doutrina", solene: false, ativo: false, equipe: equipeSemana },
+    { id: "dom-manha", nome: "Culto matinal e EBD", diaSemana: 0, hora: "09:00", semanas: [], liturgiaId: "lit-matinal", solene: true, ativo: true, equipe: equipeDomingo },
+    { id: "dom-noite", nome: "Culto solene", diaSemana: 0, hora: "18:00", semanas: [], liturgiaId: "lit-solene", solene: true, ativo: true, equipe: equipeDomingo },
+    { id: "ter-oracao", nome: "Culto de oração", diaSemana: 2, hora: "19:30", semanas: [], liturgiaId: "lit-oracao", solene: false, ativo: true, equipe: equipeSemana },
+    { id: "qui-doutrina", nome: "Culto de doutrina (estudo bíblico)", diaSemana: 4, hora: "19:30", semanas: [], liturgiaId: "lit-doutrina", solene: false, ativo: true, equipe: equipeSemana },
   ];
 
   /* ------------------------------------------------------- repertório */
@@ -277,32 +273,37 @@
     L(99, "Livre acesso", "https://youtu.be/-rKr_xS32Q0", "cristocentrico doutrinario graca", ""),
   ];
 
-  /* -------------------------------------------------- pessoas (exemplo) */
+  /* ------------------------------------------------- equipe e oficiais */
 
-  const pessoa = (id, nome, fs) => ({ id, nome, funcoes: fs, cultos: [], indisponivel: [], ativo: true, obs: "", exemplo: true });
+  // `funcoes`: o que a pessoa faz de fato; `apoio`: só quando falta quem faça.
+  const pessoa = (id, nome, funcoes, apoio, obs) => ({ id, nome, funcoes, apoio: apoio || [], cultos: [], indisponivel: [], ativo: true, obs: obs || "" });
   const pessoas = [
-    pessoa("p1", "Ana", ["ministro", "vocal"]),
-    pessoa("p2", "Bruno", ["violao", "guitarra", "vocal"]),
-    pessoa("p3", "Carla", ["vocal", "teclado"]),
-    pessoa("p4", "Daniel", ["bateria"]),
-    pessoa("p5", "Elisa", ["ministro", "vocal", "violao"]),
-    pessoa("p6", "Fábio", ["baixo", "violao"]),
-    pessoa("p7", "Gabriela", ["vocal", "projecao"]),
-    pessoa("p8", "Henrique", ["teclado", "som"]),
-    pessoa("p9", "Isabel", ["vocal", "projecao"]),
-    pessoa("p10", "João", ["bateria", "baixo"]),
-    pessoa("p11", "Lucas", ["ministro", "violao"]),
-    pessoa("p12", "Marta", ["teclado", "vocal"]),
+    pessoa("jeferson", "Jeferson", ["guitarra", "baixo", "violao"], ["vocal"], "Às vezes apoia cantando; não é cantor oficial."),
+    pessoa("valdeci", "Valdeci Junior", ["teclado"]),
+    pessoa("tulio", "Tulio", ["guitarra", "violao"], ["bateria", "vocal"], "Bateria só como apoio; às vezes apoia no vocal."),
+    pessoa("kaio", "Kaio", ["baixo"], ["violao", "vocal"], "Às vezes violão; apoia no vocal, nunca como principal."),
+    pessoa("leonar", "Leonar", ["bateria"], [], "Também é presbítero."),
+    pessoa("natan", "Natan", ["violao"]),
+    pessoa("germano", "Germano", ["vocal"]),
+    pessoa("leticia", "Letícia", ["vocal"]),
+    pessoa("damares", "Dâmares", ["vocal"]),
+    pessoa("suenia", "Suênia", ["vocal"]),
+    pessoa("joacema", "Joacema", ["vocal"]),
+    pessoa("jerlandia", "Jerlandia", ["vocal"]),
+    pessoa("alexandre", "Alexandre", ["vocal"]),
   ];
 
-  const oficial = (id, nome, cargo, exemplo) => ({ id, nome, cargo, indisponivel: [], ativo: true, exemplo });
+  const oficial = (id, nome, cargo, extra) => Object.assign({ id, nome, cargo, indisponivel: [], ativo: true, obs: "", pessoaId: "" }, extra);
   const oficiais = [
-    oficial("o1", "Felipe Oliveira", "Pastor", false),
-    oficial("o2", "Marcos", "Presbítero", true),
-    oficial("o3", "Paulo", "Presbítero", true),
-    oficial("o4", "Tiago", "Presbítero", true),
-    oficial("o5", "André", "Diácono", true),
-    oficial("o6", "Rute", "Diácono", true),
+    oficial("felipe", "Felipe Oliveira", "Pastor"),
+    oficial("ariostenes", "Ariostenes", "Presbítero"),
+    oficial("rodrigo", "Rodrigo", "Presbítero"),
+    oficial("leonar-pb", "Leonar", "Presbítero", { pessoaId: "leonar", obs: "Também toca bateria no louvor." }),
+    oficial("inacio", "Inácio Marinho", "Presbítero", { ativo: false, obs: "Sem condições de servir por problemas de saúde." }),
+    oficial("marcos-sergio", "Marcos Sergio", "Presbítero"),
+    oficial("jose-carlos", "José Carlos", "Diácono"),
+    oficial("marcos", "Marcos", "Diácono"),
+    oficial("eliezer", "Eliezer", "Diácono"),
   ];
 
   function configuracaoBase() {
@@ -313,10 +314,10 @@
     return JSON.parse(JSON.stringify(salmosEHinos.concat(louvores)));
   }
 
-  /** Configuração + repertório da igreja + equipe e oficiais de exemplo. */
+  /** Configuração, repertório, equipe e oficiais da igreja. */
   function estadoInicial() {
     return Object.assign(configuracaoBase(), {
-      exemplo: true,
+      exemplo: false,
       pessoas: JSON.parse(JSON.stringify(pessoas)),
       oficiais: JSON.parse(JSON.stringify(oficiais)),
       musicas: repertorio(),

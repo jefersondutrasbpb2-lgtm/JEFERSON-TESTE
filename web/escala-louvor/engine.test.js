@@ -17,8 +17,10 @@ test("lista os cultos do período e respeita cultos desligados", () => {
   const oc = E.listarOcorrencias(s.cultos, "2026-11-01", "2026-11-30");
   assert.equal(oc.filter((o) => o.cultoId === "dom-manha").length, 5);
   assert.equal(oc.filter((o) => o.cultoId === "dom-noite").length, 5);
-  assert.equal(oc.filter((o) => o.cultoId === "qua-oracao").length, 4);
-  assert.equal(oc.filter((o) => o.cultoId === "doutrina").length, 0);
+  assert.equal(oc.filter((o) => o.cultoId === "ter-oracao").length, 4);
+  assert.equal(oc.filter((o) => o.cultoId === "qui-doutrina").length, 4);
+  s.cultos.find((c) => c.id === "qui-doutrina").ativo = false;
+  assert.equal(E.listarOcorrencias(s.cultos, "2026-11-01", "2026-11-30").filter((o) => o.cultoId === "qui-doutrina").length, 0);
   assert.deepEqual(oc.slice(0, 2).map((o) => o.cultoId), ["dom-manha", "dom-noite"]); // ordem pela hora
 });
 
@@ -62,15 +64,43 @@ test("respeita a última vez que a música foi cantada antes da ferramenta", () 
   assert.match(c.bloqueio, /^cantada há 7 dias$/);
 });
 
-test("ninguém é escalado em data marcada como indisponível nem em duas funções", () => {
+test("ninguém é escalado em data indisponível nem em duas funções; o apoio cobre a falta", () => {
   const s = novoEstado();
-  s.pessoas.forEach((p) => { if (p.funcoes.includes("ministro") && p.id !== "p11") p.indisponivel = ["2026-10-25"]; });
+  E.porId(s.pessoas, "leonar").indisponivel = ["2026-10-25"];
   const esc = E.gerarEscala(s, { inicio: "2026-10-25", fim: "2026-10-25", seed: 5 });
+  const bateristas = esc.cultos.map((c) => c.equipe.find((x) => x.funcao === "bateria").pessoaId);
+  assert.ok(bateristas.includes("tulio"), "Tulio apoia na bateria quando Leonar não pode");
   for (const culto of esc.cultos) {
-    assert.equal(culto.equipe.find((x) => x.funcao === "ministro").pessoaId, "p11");
     const ids = culto.equipe.map((x) => x.pessoaId).filter(Boolean);
+    assert.ok(!ids.includes("leonar"));
     assert.equal(new Set(ids).size, ids.length);
   }
+  assert.ok(E.validarEscala(s, esc).some((a) => a.nivel === "alerta" && /Tulio só apoia em bateria/.test(a.msg)));
+});
+
+test("quem só apoia não é escalado enquanto houver titular disponível", () => {
+  const s = novoEstado();
+  const esc = E.gerarEscala(s, { inicio: "2026-11-01", fim: "2026-11-30", seed: 9 });
+  for (const c of esc.cultos) {
+    for (const slot of c.equipe) {
+      const p = E.porId(s.pessoas, slot.pessoaId);
+      assert.equal(E.nivelFuncao(p, slot.funcao), "principal", `${p.nome} em ${slot.funcao} (${c.data})`);
+    }
+  }
+});
+
+test("o presbítero que toca bateria não recebe parte da liturgia no mesmo culto", () => {
+  const s = novoEstado();
+  const esc = E.gerarEscala(s, { inicio: "2026-11-01", fim: "2026-11-30", seed: 2 });
+  for (const c of esc.cultos) {
+    const toca = c.equipe.some((x) => x.pessoaId === "leonar");
+    const dirige = c.liturgia.some((it) => it.oficiais.includes("leonar-pb"));
+    assert.ok(!(toca && dirige), c.data);
+  }
+  const ci = esc.cultos.findIndex((c) => c.cultoId === "dom-noite");
+  const cand = E.candidatosOficial(s, esc, ci, 0, 0).find((x) => x.oficial.id === "leonar-pb");
+  assert.equal(cand.bloqueio, "está na equipe do louvor neste culto");
+  assert.ok(!E.candidatosOficial(s, esc, ci, 0, 0).some((x) => x.oficial.id === "inacio"), "oficial inativo fica de fora");
 });
 
 test("a escala mensal distribui o serviço de forma equilibrada", () => {
@@ -84,13 +114,13 @@ test("sortear de novo mantém os campos travados", () => {
   const s = novoEstado();
   const esc = E.gerarEscala(s, { inicio: "2026-10-25", fim: "2026-11-07", seed: 1 });
   const c = esc.cultos[0];
-  c.equipe[0].pessoaId = "p5";
+  c.equipe[0].pessoaId = "germano";
   c.liturgia[1].musicas[0] = "sh247";
   c.liturgia[1].nota = "Todos em pé";
   c.travados = ["e:0", "m:1:0"];
   const nova = E.gerarEscala(s, { inicio: esc.inicio, fim: esc.fim }, esc);
   assert.equal(nova.id, esc.id);
-  assert.equal(nova.cultos[0].equipe[0].pessoaId, "p5");
+  assert.equal(nova.cultos[0].equipe[0].pessoaId, "germano");
   assert.equal(nova.cultos[0].liturgia[1].musicas[0], "sh247");
   assert.equal(nova.cultos[0].liturgia[1].nota, "Todos em pé");
 });
@@ -138,8 +168,9 @@ test("rótulos e texto do WhatsApp", () => {
   assert.equal(E.rotuloMusica(E.porId(s.musicas, "sh-abraao")), "Ao Deus de Abraão");
   const esc = E.gerarEscala(s, { inicio: "2026-10-25", fim: "2026-10-25", seed: 1 });
   const txt = E.textoWhatsApp(s, esc, { links: true });
-  assert.match(txt, /\*Dom, 25\/10 · 19:00 · Culto solene\* \(solene\)/);
-  assert.match(txt, /Ministro\(a\) de louvor: /);
+  assert.match(txt, /\*Dom, 25\/10 · 18:00 · Culto solene\* \(solene\)/);
+  assert.match(txt, /Vocal: \S+, \S+, \S+/);
+  assert.doesNotMatch(txt, /Ministro/);
   assert.match(txt, /4\. Confissão de pecado — Dirigente · em pé \(Êxodo 20\.1–17, leitura participativa\)/);
   assert.match(txt, /https:\/\/youtu\.be\//);
 });

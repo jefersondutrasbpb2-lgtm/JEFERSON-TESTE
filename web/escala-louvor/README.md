@@ -16,7 +16,8 @@ computador. Use **Backup** para guardar uma cópia.
 3. **Repertório**: Salmos e Hinos (com número) e louvores, com etiquetas (trinitário, cristocêntrico, doutrinário e
    temas), link do YouTube e a última vez que foram cantados. **Importar lista** aceita texto colado do Word, Excel ou
    WhatsApp.
-4. **Equipe do louvor** e **Oficiais**: funções de cada pessoa, cultos em que serve e datas em que não pode.
+4. **Equipe do louvor** e **Oficiais**: funções de cada pessoa (titular ou só apoio), cultos em que serve e datas em
+   que não pode. Um oficial que também está no louvor fica ligado ao cadastro dele.
 5. **Escalas**: escolha Quinzenal, Mensal ou Outro período e toque em **Gerar escala**. Depois, toque em qualquer campo
    para trocar, use ↻ para sortear outro e o cadeado para travar. **Sortear de novo** refaz tudo o que não está travado.
    **Texto para o WhatsApp** copia a escala formatada.
@@ -30,6 +31,8 @@ computador. Use **Backup** para guardar uma cópia.
   ela repete a que foi cantada há mais tempo e mostra um alerta. Os cultos solenes escolhem as músicas primeiro.
 - Quem serviu menos é escalado primeiro; a ferramenta evita a mesma pessoa em cultos seguidos e em duas funções no mesmo
   culto, e nunca escala ninguém em data marcada como indisponível.
+- Quem só apoia numa função (ex.: bateria de apoio) só entra nela quando nenhum titular pode, e a escala avisa.
+- Um oficial que está tocando ou cantando não recebe parte da liturgia naquele culto.
 
 ## Arquivos
 
@@ -38,15 +41,18 @@ computador. Use **Backup** para guardar uma cópia.
 | `index.html` | Página e estilos |
 | `app.js` | Interface e armazenamento |
 | `engine.js` | Regras da escala (funções puras) |
-| `dados-iniciais.js` | Liturgias e repertório da igreja, regras padrão e equipe de exemplo |
+| `dados-iniciais.js` | Liturgias, repertório, equipe, oficiais e cultos da igreja; regras padrão |
 | `engine.test.js` | Testes: `node --test web/escala-louvor/engine.test.js` |
 
 ## De onde vieram os dados iniciais
 
 - **Liturgias**: "Modelos de liturgia IEC Pombal" (culto solene, culto matinal, reunião de oração e reunião de
-  doutrina). A reunião de doutrina começa desligada até o dia dela ser definido.
+  doutrina).
+- **Cultos**: domingo 9h (culto matinal e EBD) e 18h (culto solene), terça 19h30 (oração) e quinta 19h30 (doutrina
+  ou estudo bíblico). Os dois de domingo são solenes. A equipe de cada culto é uma sugestão inicial.
 - **Louvores**: "Repertório – Grupo de louvor IEC de Pombal/PB" (100 itens). Títulos repetidos viraram uma música só;
   quando o vídeo era outro, o segundo link ficou nas observações.
 - **Salmos e Hinos**: nº 29 (cantado em 18/10/2026), 30, 31, 245, 247 e "Ao Deus de Abraão" (número a confirmar).
 - **Etiquetas**: primeira sugestão, para revisar com o pastor na aba Repertório (filtro "Só aptas ao solene").
-- **Equipe e oficiais**: exemplos fictícios (exceto o Pr. Felipe Oliveira) até a lista real ser cadastrada.
+- **Equipe e oficiais**: lista do ministério de louvor (out/2026). Não existe a função de ministro de louvor: o grupo
+  canta e conduz a igreja à adoração. O Pb. Inácio Marinho está inativo por motivo de saúde.

@@ -289,7 +289,7 @@
     const app = document.getElementById("app");
     const telas = { escalas: telaEscalas, repertorio: telaRepertorio, equipe: telaEquipe, oficiais: telaOficiais, liturgias: telaLiturgias, cultos: telaCultos, backup: telaBackup };
     const y = window.scrollY;
-    app.replaceChildren(avisoExemplo(), telas[ui.aba]());
+    app.replaceChildren(...[avisoExemplo(), telas[ui.aba]()].filter(Boolean));
     window.scrollTo({ top: y });
   }
 
@@ -643,14 +643,15 @@
     const op = (c) => ({
       id: c.pessoa.id, rotulo: c.pessoa.nome,
       direita: `${c.vezes}× na escala`,
-      meta: c.bloqueio ? h("span", { class: "ruim" }, c.bloqueio) : null,
+      meta: c.bloqueio ? h("span", { class: "ruim" }, c.bloqueio) : c.apoio ? "só apoio nesta função" : null,
     });
     escolherDe({
       titulo: E.nomeFuncao(state, slot.funcao),
       sub: `${culto.nome} · ${E.formatarData(culto.data, "dia")}`,
       atual: slot.pessoaId,
       grupos: [
-        { titulo: "Disponíveis (quem serviu menos aparece primeiro)", itens: cands.filter((c) => !c.bloqueio).map(op) },
+        { titulo: "Titulares disponíveis (quem serviu menos aparece primeiro)", itens: cands.filter((c) => !c.bloqueio && !c.apoio).map(op) },
+        { titulo: "Só apoio", itens: cands.filter((c) => !c.bloqueio && c.apoio).map(op) },
         { titulo: "Com restrição", itens: cands.filter((c) => c.bloqueio).map(op) },
       ],
       vazio: "Deixar sem ninguém",
@@ -947,7 +948,7 @@
           h("td", { class: "num" }, m.numero || "—"),
           h("td", {}, m.titulo || "—", m.autor ? h("span", { class: "muted" }, ` · ${m.autor}`) : null, m.link ? h("span", { class: "muted" }, " · com link") : null),
           h("td", { class: "small muted" }, m.tags.map((t) => E.nomeTag(state, t)).join(", "))
-        ))))) : null
+        ))))) : ""
       );
     };
     area.addEventListener("input", atualizar);
@@ -1013,15 +1014,20 @@
 
   function telaEquipe() {
     const pessoas = [...state.pessoas].sort((a, b) => (a.ativo === false) - (b.ativo === false) || a.nome.localeCompare(b.nome, "pt-BR"));
-    const contagem = state.funcoes.map((f) => ({ f, n: state.pessoas.filter((p) => p.ativo !== false && (p.funcoes || []).includes(f.id)).length }));
+    const ativas = state.pessoas.filter((p) => p.ativo !== false);
+    const contagem = state.funcoes.map((f) => ({
+      f,
+      n: ativas.filter((p) => (p.funcoes || []).includes(f.id)).length,
+      apoio: ativas.filter((p) => (p.apoio || []).includes(f.id)).length,
+    }));
     return h("div", { class: "pilha" },
       h("div", { class: "painel" },
         h("header", {}, h("h2", {}, "Equipe do louvor"), h("button", {
           class: "btn primario",
-          onclick: () => mudou(() => { state.pessoas.unshift({ id: E.novoId("p"), nome: "", funcoes: [], cultos: [], indisponivel: [], ativo: true, obs: "" }); }),
+          onclick: () => mudou(() => { state.pessoas.unshift({ id: E.novoId("p"), nome: "", funcoes: [], apoio: [], cultos: [], indisponivel: [], ativo: true, obs: "" }); }),
         }, icone("plus"), "Pessoa")),
-        h("p", { class: "muted" }, "Marque o que cada pessoa faz, em quais cultos ela serve e as datas em que não pode. A escala nunca coloca alguém numa data marcada como indisponível."),
-        h("div", { class: "chips" }, contagem.map(({ f, n }) => h("span", { class: `selo ${n ? "neutro" : "erro"}` }, `${f.nome}: ${n}`)))
+        h("p", { class: "muted" }, "Toque numa função para marcar o que a pessoa faz. Toque de novo para deixar como só apoio: ela só é escalada nessa função quando nenhum titular puder. A escala nunca coloca alguém numa data marcada como indisponível."),
+        h("div", { class: "chips" }, contagem.map(({ f, n, apoio }) => h("span", { class: `selo ${n ? "neutro" : "erro"}` }, `${f.nome}: ${n}${apoio ? ` + ${apoio} apoio` : ""}`)))
       ),
       pessoas.length ? h("div", { class: "cartoes" }, pessoas.map((p) => cartaoPessoa(p))) : h("div", { class: "vazio-estado" }, h("p", {}, "Ninguém cadastrado ainda. Toque em + Pessoa."))
     );
@@ -1034,10 +1040,20 @@
         h("input", { type: "text", id: `pes-nome-${p.id}`, value: p.nome, placeholder: "Nome", "aria-label": "Nome", oninput: (e) => { p.nome = e.target.value; salvarSem(); } }),
         h("button", { class: "btn leve icone perigo", "aria-label": "Excluir pessoa", title: "Excluir", onclick: () => confirmar("Excluir esta pessoa?", `${p.nome || "Esta pessoa"} sai da equipe. Nas escalas já feitas aparecerá como removida. Para só pausar, desmarque "Ativa".`, "Excluir", () => mudou(() => { state.pessoas = state.pessoas.filter((x) => x !== p); })) }, icone("trash"))
       ),
-      h("div", { class: "campo" }, "Funções", h("div", { class: "chips" }, state.funcoes.map((f) => h("button", {
-        class: "chip", "aria-pressed": String((p.funcoes || []).includes(f.id)),
-        onclick: () => mudou(() => { p.funcoes = (p.funcoes || []).includes(f.id) ? p.funcoes.filter((x) => x !== f.id) : [...(p.funcoes || []), f.id]; }),
-      }, f.nome)))),
+      h("div", { class: "campo" }, "Funções", h("div", { class: "chips" }, state.funcoes.map((f) => {
+        const nivel = E.nivelFuncao(p, f.id);
+        return h("button", {
+          class: `chip${nivel === "apoio" ? " apoio" : ""}`, "aria-pressed": String(nivel === "principal"),
+          title: nivel === "principal" ? "Titular. Toque para deixar como só apoio." : nivel === "apoio" ? "Só apoio. Toque para tirar." : "Toque para marcar.",
+          onclick: () => mudou(() => {
+            // nenhuma → titular → só apoio → nenhuma
+            p.funcoes = (p.funcoes || []).filter((x) => x !== f.id);
+            p.apoio = (p.apoio || []).filter((x) => x !== f.id);
+            if (!nivel) p.funcoes.push(f.id);
+            else if (nivel === "principal") p.apoio.push(f.id);
+          }),
+        }, nivel === "apoio" ? `${f.nome} (apoio)` : f.nome);
+      }))),
       h("div", { class: "campo" }, "Serve nos cultos (nenhum marcado = todos)", h("div", { class: "chips" }, state.cultos.map((c) => h("button", {
         class: "chip", "aria-pressed": String((p.cultos || []).includes(c.id)),
         onclick: () => mudou(() => { p.cultos = (p.cultos || []).includes(c.id) ? p.cultos.filter((x) => x !== c.id) : [...(p.cultos || []), c.id]; }),
@@ -1055,9 +1071,9 @@
       h("div", { class: "painel" },
         h("header", {}, h("h2", {}, "Oficiais da igreja"), h("button", {
           class: "btn primario",
-          onclick: () => mudou(() => { state.oficiais.unshift({ id: E.novoId("o"), nome: "", cargo: "Presbítero", indisponivel: [], ativo: true }); }),
+          onclick: () => mudou(() => { state.oficiais.unshift({ id: E.novoId("o"), nome: "", cargo: "Presbítero", indisponivel: [], ativo: true, obs: "", pessoaId: "" }); }),
         }, icone("plus"), "Oficial")),
-        h("p", { class: "muted" }, "Os oficiais são distribuídos nas partes da liturgia (chamada à adoração, orações, leitura, ofertório…). Em cada liturgia você define quais cargos podem fazer cada parte.")
+        h("p", { class: "muted" }, "Os oficiais são distribuídos nas partes da liturgia, como a chamada à adoração feita pelo dirigente do culto. Em cada liturgia você define quais cargos podem fazer cada parte. Quem também está na equipe do louvor nunca recebe uma parte no culto em que está tocando ou cantando.")
       ),
       lista.length ? h("div", { class: "cartoes" }, lista.map((o) => h("div", { class: `cartao${o.ativo === false ? " inativo" : ""}` },
         h("div", { class: "cab" },
@@ -1065,7 +1081,12 @@
           h("button", { class: "btn leve icone perigo", "aria-label": "Excluir oficial", title: "Excluir", onclick: () => confirmar("Excluir este oficial?", `${E.nomeOficial(o) || "Este oficial"} sai do cadastro.`, "Excluir", () => mudou(() => { state.oficiais = state.oficiais.filter((x) => x !== o); })) }, icone("trash"))
         ),
         h("label", { class: "campo" }, "Cargo", h("select", { id: `of-cargo-${o.id}`, onchange: (e) => mudou(() => { o.cargo = e.target.value; }) }, CARGOS.map((c) => h("option", { value: c, selected: o.cargo === c || null }, c)))),
+        h("label", { class: "campo" }, "Também serve no louvor como", h("select", { id: `of-pessoa-${o.id}`, onchange: (e) => mudou(() => { o.pessoaId = e.target.value; }) },
+          h("option", { value: "" }, "Não está na equipe do louvor"),
+          [...state.pessoas].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")).map((p) => h("option", { value: p.id, selected: o.pessoaId === p.id || null }, p.nome))
+        )),
         h("div", { class: "campo" }, "Não pode servir em", editorIndisponivel(o.indisponivel = o.indisponivel || [], () => mudou(null, false))),
+        h("label", { class: "campo" }, "Observações", h("input", { type: "text", id: `of-obs-${o.id}`, value: o.obs || "", oninput: (e) => { o.obs = e.target.value; mudou(null, false); } })),
         h("label", { class: "check" }, h("input", { type: "checkbox", checked: o.ativo !== false, onchange: (e) => mudou(() => { o.ativo = e.target.checked; }) }), "Ativo (entra nas escalas)")
       ))) : h("div", { class: "vazio-estado" }, h("p", {}, "Nenhum oficial cadastrado ainda."))
     );

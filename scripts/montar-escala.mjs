@@ -15,7 +15,7 @@ const versao = Date.now().toString(36);
 rmSync(destino, { recursive: true, force: true });
 mkdirSync(destino, { recursive: true });
 
-for (const arquivo of ["app.js", "engine.js", "dados-iniciais.js", "manifest.webmanifest"]) copyFileSync(join(app, arquivo), join(destino, arquivo));
+for (const arquivo of ["app.js", "engine.js", "dados-iniciais.js", "letras-sh.js", "manifest.webmanifest"]) copyFileSync(join(app, arquivo), join(destino, arquivo));
 cpSync(join(app, "fontes"), join(destino, "fontes"), { recursive: true, filter: (f) => !f.endsWith(".txt") });
 cpSync(join(app, "marca"), join(destino, "marca"), { recursive: true, filter: (f) => !f.endsWith("icone-1024.png") });
 copyFileSync(join(app, "servidor/servidor.js"), join(destino, "servidor.js"));
@@ -34,7 +34,7 @@ if (pagina === antes || !pagina.includes("servidor.js")) throw new Error("index.
 writeFileSync(join(destino, "index.html"), pagina);
 
 const casca = [
-  "index.html", comVersao("engine.js"), comVersao("dados-iniciais.js"), comVersao("servidor.js"), comVersao("app.js"),
+  "index.html", comVersao("engine.js"), comVersao("dados-iniciais.js"), comVersao("servidor.js"), comVersao("app.js"), comVersao("letras-sh.js"),
   "manifest.webmanifest", "fontes/inter.woff2", "fontes/plus-jakarta-sans.woff2",
   "marca/marca.svg", "marca/favicon-32.png", "marca/icone-192.png", "marca/apple-touch-icon.png",
 ];

@@ -207,7 +207,7 @@ test("lê listas coladas em vários formatos", () => {
 
 test("texto do WhatsApp: domingo num bloco só, com a ordem da noite quando muda", () => {
   const s = novoEstado();
-  assert.equal(E.rotuloMusica(E.porId(s.musicas, "sh247")), "SH 247");
+  assert.equal(E.rotuloMusica(E.porId(s.musicas, "sh247")), "SH 247 · Santo! Santo! Santo!");
   const esc = E.gerarEscala(s, { inicio: "2026-10-25", fim: "2026-10-25", seed: 1 });
   let txt = E.textoWhatsApp(s, esc, { links: true });
   assert.match(txt, /\*Dom, 25\/10\*\n_Culto matinal e EBD · 09:00 {2}\| {2}Culto solene · 18:00_/);
@@ -325,7 +325,7 @@ test("a migração completa a seção Trindade do Salmos e Hinos sem duplicar", 
   s.musicas = s.musicas.filter((m) => !["sh32", "sh33", "sh34", "sh35", "sh228"].includes(m.id));
   E.porId(s.musicas, "sh30").titulo = "";
   const m = E.migrar(s, D.configuracaoBase(), D.repertorio());
-  assert.equal(m.versao, 3);
+  assert.equal(m.versao, 4);
   for (const id of ["sh32", "sh33", "sh34", "sh35", "sh228"]) assert.ok(E.porId(m.musicas, id), id);
   assert.equal(E.porId(m.musicas, "sh30").titulo, "Vem, ó Todo-Poderoso!");
   assert.equal(m.musicas.filter((x) => x.id === "sh29").length, 1);
@@ -384,4 +384,26 @@ test("esvaziar a escala tira pessoas, músicas e fixos", () => {
     assert.ok(todosCampos(c).every((x) => x === null));
     assert.deepEqual(c.travados, []);
   }
+});
+
+test("versão 4: entra a coletânea, sem duplicar, e completa o 232 e o 247", () => {
+  const s = novoEstado();
+  s.versao = 3;
+  s.musicas = s.musicas.filter((m) => m.tipo === "louvor" || ["sh29", "sh30", "sh247", "sh-abraao"].includes(m.id));
+  E.porId(s.musicas, "sh247").titulo = "";
+  E.porId(s.musicas, "sh-abraao").numero = "";
+  E.porId(s.musicas, "sh-abraao").obs = "Número no hinário a confirmar.";
+  s.musicas.push({ id: "m-manual", tipo: "hino", numero: "640", titulo: "Castelo Forte", tags: [] });
+  const m = E.migrar(s, D.configuracaoBase(), D.repertorio());
+  const hinos = m.musicas.filter((x) => x.tipo === "hino");
+  assert.equal(m.versao, 4);
+  assert.equal(hinos.filter((x) => x.numero === "640").length, 1, "não duplica hino que a igreja já tinha");
+  assert.equal(hinos.filter((x) => x.numero === "29").length, 1);
+  assert.equal(E.porId(m.musicas, "sh247").titulo, "Santo! Santo! Santo!");
+  assert.equal(E.porId(m.musicas, "sh-abraao").numero, "232");
+  assert.ok(!/a confirmar/.test(E.porId(m.musicas, "sh-abraao").obs));
+  assert.ok(E.porId(m.musicas, "sh51"), "hino da coletânea entra");
+  assert.deepEqual(E.porId(m.musicas, "sh51").tags, [], "sem etiquetas: o pastor marca");
+  assert.equal(E.temaDoHino(E.porId(m.musicas, "sh51")).nome, "Deus");
+  assert.equal(E.temaDoHino({ tipo: "louvor" }), null);
 });

@@ -30,7 +30,7 @@
   let state = null;
   const ui = {
     tela: "inicio", ultimaTela: null, escalaId: null, ordemDe: {}, busca: "", filtro: "todas", coordena: true, resposta: null,
-    agendaMes: null, agendaDia: null, agendaModo: "mes", somenteLeitura: false, instalar: null,
+    agendaMes: null, agendaDia: null, agendaModo: "mes", somenteLeitura: false, instalar: null, tema: "",
   };
 
   /* ------------------------------------------------------------ util */
@@ -947,7 +947,10 @@
     const vaga = culto.musicas[k];
     const cands = E.candidatosMusica(state, escala, ci, k);
     const exigidas = E.tagsExigidas(state, vaga.tipo, culto.solene);
-    const op = (c) => ({ id: c.musica.id, rotulo: E.rotuloMusica(c.musica), busca: `${c.musica.numero} ${c.musica.titulo} ${c.musica.autor}`, direita: c.musica.tom ? `tom ${c.musica.tom}` : "", meta: metaMusica(c) });
+    const op = (c) => {
+      const tema = E.temaDoHino(c.musica);
+      return { id: c.musica.id, rotulo: E.rotuloMusica(c.musica), busca: `${c.musica.numero} ${c.musica.titulo} ${c.musica.autor} ${tema ? tema.nome : ""}`, direita: [tema ? tema.nome : "", c.musica.tom ? `tom ${c.musica.tom}` : ""].filter(Boolean).join(" · "), meta: metaMusica(c) };
+    };
     escolher({
       titulo: E.nomeTipo(vaga.tipo),
       sub: `${E.formatarData(culto.data, "longa")} · ${culto.nome}${exigidas.length ? ` · precisa ser ${exigidas.map((t) => E.nomeTag(state, t)).join(" e ")}` : ""}`,
@@ -1646,8 +1649,10 @@
     const desenhar = () => {
       const f = FILTROS.find((x) => x.id === ui.filtro) || FILTROS[0];
       const q = E.normalizar(ui.busca);
+      const temaDe = (m) => E.temaDoHino(m);
       const itens = state.musicas
-        .filter((m) => f.fn(m) && (!q || E.normalizar(`${m.numero} ${m.titulo} ${m.autor}`).includes(q)))
+        .filter((m) => f.fn(m) && (!ui.tema || (temaDe(m) || {}).id === ui.tema))
+        .filter((m) => !q || E.normalizar(`${m.numero} ${m.titulo} ${m.autor} ${(temaDe(m) || {}).nome || ""}`).includes(q))
         .sort((a, b) => a.tipo.localeCompare(b.tipo) || String(a.numero).localeCompare(String(b.numero), "pt-BR", { numeric: true }) || a.titulo.localeCompare(b.titulo, "pt-BR"));
       contagem.textContent = `${itens.length} de ${state.musicas.length} músicas`;
       lista.replaceChildren(itens.length ? h("ul", { class: "lista" }, itens.map((m) => {
@@ -1661,13 +1666,16 @@
             h("span", { class: `marcador ${m.tipo === "louvor" ? "louvor" : "hino"}`, "aria-hidden": "true" }, m.tipo === "louvor" ? icone("musica") : m.numero ? `SH ${m.numero}` : "SH"),
             h("span", {},
               h("span", { class: "titulo" }, m.titulo || `Salmos e Hinos nº ${m.numero}`), m.ativo === false ? h("span", { class: "selo neutro", style: "margin-left:6px" }, "Fora do rodízio") : null, h("br"),
-              h("span", { class: "sub" }, [m.autor, m.tom ? `tom ${m.tom}` : "", outras || (destaques.length ? "" : temas || "sem etiquetas"), quando].filter(Boolean).join(" · ")),
+              h("span", { class: "sub" }, [(temaDe(m) || {}).nome, m.autor, m.tom ? `tom ${m.tom}` : "", outras || (destaques.length ? "" : temas || (temaDe(m) ? "" : "sem etiquetas")), quando].filter(Boolean).join(" · ")),
               destaques.length ? h("span", { class: "etiquetas" }, destaques.map((t) => h("span", { class: "selo azul" }, E.nomeTag(state, t)))) : null),
             E.aptaSolene(state, m) ? h("span", { class: "selo solene", title: "Segue a orientação do culto solene" }, "Solene") : h("span")),
-          m.link ? h("a", { class: "btn icone", href: m.link, target: "_blank", rel: "noopener", "aria-label": `Ouvir ${m.titulo} no YouTube`, style: "margin-right:8px" }, icone("play")) : h("span"));
+          h("span", { style: "display:flex;margin-right:8px" },
+            letraDe(m) ? h("button", { class: "btn icone", "aria-label": `Letra de ${E.rotuloMusica(m)}`, title: "Letra", onclick: () => verLetra(m) }, icone("livro")) : null,
+            m.link ? h("a", { class: "btn icone", href: m.link, target: "_blank", rel: "noopener", "aria-label": `Ouvir ${m.titulo} no YouTube` }, icone("play")) : null));
       })) : h("div", { class: "vazio", style: "border:0" }, h("span", { class: "icone-vazio" }, icone("busca")), h("p", {}, state.musicas.length ? "Nenhuma música com essa busca ou filtro." : "Repertório vazio. Importe a lista de Salmos e Hinos e a de louvores.")));
     };
     desenhar();
+    if (!window.EscalaLetras) carregarLetras().then(() => { if (ui.tela === "musicas") desenhar(); }).catch(() => { /* sem letras: a lista funciona igual */ });
     const r = state.regras;
     const nomes = (ts) => (ts || []).map((t) => E.nomeTag(state, t)).join(" e ") || "qualquer etiqueta";
     return h("div", { class: "tela" },
@@ -1678,8 +1686,53 @@
           h("button", { class: "btn primario", onclick: () => editarMusica(null) }, icone("mais"), "Música"))),
       h("div", { class: "busca" }, icone("busca"), h("input", { type: "search", id: "busca-musicas", placeholder: "Buscar por título ou número", "aria-label": "Buscar músicas", value: ui.busca, oninput: (e) => { ui.busca = e.target.value; desenhar(); } })),
       h("div", { class: "rolagem-x", role: "group", "aria-label": "Filtrar" }, FILTROS.map((f) => h("button", { class: "chip", "aria-pressed": String(ui.filtro === f.id), onclick: () => { ui.filtro = f.id; render(); } }, f.nome, h("span", { class: "conta" }, String(state.musicas.filter(f.fn).length))))),
-      contagem,
+      h("div", { class: "contador" }, contagem,
+        h("label", { class: "filtro-tema" }, h("span", { class: "sr" }, "Tema do hinário"),
+          h("select", { id: "filtro-tema", "aria-label": "Tema do hinário", onchange: (e) => { ui.tema = e.target.value; if (ui.tema && ui.filtro === "louvor") ui.filtro = "todas"; render(); } },
+            h("option", { value: "" }, "Todos os temas"),
+            E.TEMAS_HINARIO.map((t) => {
+              const n = state.musicas.filter((m) => (E.temaDoHino(m) || {}).id === t.id).length;
+              return n ? h("option", { value: t.id, selected: ui.tema === t.id || null }, `${t.nome} (${n})`) : null;
+            })))),
       lista);
+  }
+
+  /* ------------------------------------------------------------ letras */
+
+  // letras-sh.js (≈60 KB) só é baixado quando alguém abre a tela de músicas ou uma letra.
+  let letrasPedidas = null;
+  function carregarLetras() {
+    if (window.EscalaLetras) return Promise.resolve(window.EscalaLetras);
+    if (!letrasPedidas) {
+      letrasPedidas = new Promise((ok, falha) => {
+        const tag = document.createElement("script");
+        const versao = (document.querySelector('script[src*="app.js"]') || {}).src || "";
+        tag.src = `letras-sh.js${versao.includes("?") ? versao.slice(versao.indexOf("?")) : ""}`;
+        tag.onload = () => ok(window.EscalaLetras || {});
+        tag.onerror = () => { letrasPedidas = null; falha(new Error("sem letras")); };
+        document.head.append(tag);
+      });
+    }
+    return letrasPedidas;
+  }
+  const letraDe = (m) => (m && m.tipo === "hino" && window.EscalaLetras ? window.EscalaLetras[String(m.numero)] || null : null);
+
+  async function verLetra(m) {
+    let letra = letraDe(m);
+    if (!letra) {
+      try { await carregarLetras(); } catch (e) { return avisar("Não deu para abrir a letra agora. Confira a conexão."); }
+      letra = letraDe(m);
+    }
+    if (!letra) return avisar("A letra deste hino não está na coletânea.");
+    const tema = E.temaDoHino(m);
+    const pre = h("pre", { class: "texto letra" }, letra);
+    painel({
+      titulo: E.rotuloMusica(m),
+      sub: tema ? `Salmos e Hinos · ${tema.nome}` : "Salmos e Hinos",
+      corpo: pre,
+      rodape: () => [h("button", { class: "btn", onclick: () => copiar(letra, pre) }, icone("copiar"), "Copiar letra")],
+      foco: "header .btn",
+    });
   }
 
   function seletorTags(selecionadas) {
@@ -1720,6 +1773,9 @@
           h("label", { class: "campo" }, "Autor ou ministério", h("input", { type: "text", id: "mus-autor", value: m.autor, oninput: set("autor") })),
           h("label", { class: "campo" }, "Tom", h("input", { type: "text", id: "mus-tom", value: m.tom, placeholder: "Ex.: Ré", oninput: set("tom") }))),
         h("label", { class: "campo" }, "Link para ouvir", h("input", { type: "url", id: "mus-link", value: m.link || "", placeholder: "https://youtu.be/…", oninput: set("link") })),
+        original && original.tipo === "hino" && original.numero ? h("div", { class: "acoes" },
+          E.temaDoHino(original) ? h("span", { class: "selo azul" }, `Tema: ${E.temaDoHino(original).nome}`) : null,
+          h("button", { type: "button", class: "btn mini", onclick: () => verLetra(original) }, icone("livro"), "Ver letra")) : null,
         h("div", { class: "campo" }, "Etiquetas", h("span", { class: "ajuda" }, "Trinitário, cristocêntrico e doutrinário decidem se a música entra nos cultos solenes."), seletorTags(m.tags)),
         h("label", { class: "campo" }, "Última vez que foi cantada", h("span", { class: "ajuda" }, "Só se foi antes das escalas feitas aqui."), h("input", { type: "date", id: "mus-ultima", value: m.ultimaVez || "", onchange: set("ultimaVez") })),
         h("label", { class: "campo" }, "Observações", h("textarea", { id: "mus-obs", rows: 2, value: m.obs, oninput: set("obs") })),

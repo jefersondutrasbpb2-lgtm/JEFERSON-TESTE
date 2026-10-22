@@ -546,7 +546,9 @@
   .musica-linha .linha { grid-template-columns: auto minmax(0, 1fr) auto; }
   .musica-linha .etiquetas { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
   .musica-linha .etiquetas .selo { font-weight: 600; }
-  .contador { display: flex; align-items: center; justify-content: space-between; gap: var(--e-2); }
+  .contador { display: flex; align-items: center; justify-content: space-between; gap: var(--e-2); flex-wrap: wrap; }
+  .filtro-tema select { width: auto; min-height: 38px; padding: 6px 34px 6px 12px; font-size: var(--t-sm); font-weight: 600; }
+  pre.texto.letra { font-size: var(--t-lg); line-height: 1.7; max-height: none; background: none; border: 0; padding: 0; }
   .equipe-grade { display: grid; gap: var(--e-3); }
   @media (min-width: 700px) { .equipe-grade { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   @media (min-width: 1200px) { .equipe-grade { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

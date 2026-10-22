@@ -13,11 +13,12 @@ aparelho. Em **Ajustes › Backup** dá para baixar uma cópia.
 | Tela | O que faz |
 | --- | --- |
 | **Início** | Visão geral com dados reais: próximo culto (equipe e repertório), escala vigente (cultos, integrantes, pendências), pendências com atalho para o culto, respostas de disponibilidade e repertório. |
-| **Escala** | A escala aberta, com setas para a anterior e a próxima, situação (rascunho ou confirmada) e um cartão por culto (equipe por função, com iniciais, e músicas em ordem). Tocar numa pessoa ou música abre a lista de opções, com "Sortear outra" e "Manter esta escolha". As setas mudam a ordem das músicas. **Enviar no WhatsApp** mostra a prévia editável, avisa se há algo a definir e copia ou abre o WhatsApp. |
+| **Escala** | A escala aberta, com setas para a anterior e a próxima, situação (rascunho ou confirmada) e um cartão por culto (equipe por função, com iniciais, e músicas em ordem). Qualquer pessoa monta ou altera: tocar numa pessoa ou música abre a lista de opções, com "Sortear outra", "Tirar esta vaga" e "Manter esta escolha"; **+ Pessoa** e **+ Música** acrescentam vagas. **Nova escala** pode ser sorteada ou criada **do zero** (só as vagas, para escolher à mão), e **Esvaziar para montar à mão** limpa uma escala já feita. As setas mudam a ordem das músicas. **Enviar no WhatsApp** mostra a prévia editável, avisa se há algo a definir e copia ou abre o WhatsApp. |
 | **Agenda** | Calendário do mês (ou lista) com os cultos de cada dia: com escala, solenes ou ainda sem escala; tocar num culto abre o cartão na escala. Abaixo, o pedido de disponibilidade (padrão: as próximas duas semanas), quem respondeu numa grade pessoa × dia e o botão que gera (ou atualiza) a escala com as respostas. **Pedir no WhatsApp** copia o convite com o link; **Colar respostas** lê os códigos `#disp` de quem respondeu por mensagem. |
 | **Músicas** | Repertório com busca e filtros com contagem (Salmos e Hinos, louvores, aptas ao solene, fora do rodízio). Cada música tem etiquetas, link do YouTube, tom e quando foi e quando será cantada. **Importar** aceita texto colado do Word, Excel ou WhatsApp. |
 | **Equipe** | Titulares por função (e onde falta titular) e um cartão por pessoa: funções, cultos em que serve, quantas vezes está na escala aberta e se já mandou a disponibilidade. |
-| **Ajustes** | Cultos da semana, orientação pastoral, repetição, etiquetas, igreja e link, funções, aparência (automático, claro ou escuro), backup e instalação do app. |
+| **Disponibilidade** | Qualquer pessoa escolhe o próprio nome e marca, no calendário, os dias em que pode (toque de novo desmarca). Fica no menu do computador e nos botões "Minha disponibilidade" do Início e da Agenda. |
+| **Ajustes** | Fora do menu, no endereço `#ajustes`: cultos da semana, orientação pastoral, repetição, etiquetas, igreja e link, funções, aparência, backup e instalação do app. |
 
 ## Disponibilidade da equipe
 
@@ -63,7 +64,7 @@ não tem dados. A publicação monta a pasta `escalas/` do site com `scripts/mon
   as duas variáveis e servidas pelo próprio app (`fontes/`, licença OFL). Ícones Lucide. As cores, a tipografia, os
   espaçamentos, os raios e as sombras são tokens no começo de `index.html`, com versão escura.
 - **Celular**: barra superior compacta com a marca e o estado do salvamento; barra inferior com Início, Escala,
-  Agenda, Músicas e **Mais** (Equipe e Ajustes); edição em painéis que sobem da base; respeito às áreas seguras.
+  Agenda, Músicas e Equipe; edição em painéis que sobem da base; respeito às áreas seguras.
 - **Computador** (a partir de 960 px): menu lateral azul-marinho, conteúdo em grade (painel inicial em três colunas,
   agenda com calendário e dia lado a lado, equipe em cartões).
 - **Salvamento**: o indicador mostra Salvando, Salvo (só depois que o servidor confirma), Sem conexão ou Falha ao

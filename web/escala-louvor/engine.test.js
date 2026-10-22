@@ -333,3 +333,55 @@ test("a migração completa a seção Trindade do Salmos e Hinos sem duplicar", 
   const de_novo = E.migrar(Object.assign(m, { musicas: m.musicas.filter((x) => x.id !== "sh33") }), D.configuracaoBase(), D.repertorio());
   assert.ok(!E.porId(de_novo.musicas, "sh33"), "não recoloca um hino que a igreja apagou depois");
 });
+
+test("escala do zero: só as vagas, e o domingo à noite continua seguindo a manhã", () => {
+  const s = novoEstado();
+  const esc = E.gerarEscala(s, { inicio: "2026-11-01", fim: "2026-11-14", vazia: true });
+  assert.ok(esc.cultos.length > 0);
+  for (const c of esc.cultos) assert.ok(todosCampos(c).every((x) => x === null));
+  const manha = cultoDe(esc, "dom-manha", "2026-11-01");
+  manha.equipe[0].pessoaId = s.pessoas[0].id;
+  E.sincronizarEscala(esc);
+  assert.equal(cultoDe(esc, "dom-noite", "2026-11-01").equipe[0].pessoaId, s.pessoas[0].id);
+});
+
+test("montar à mão: vagas a mais entram e saem, e os fixos são renumerados", () => {
+  const s = novoEstado();
+  const esc = E.gerarEscala(s, { inicio: "2026-11-01", fim: "2026-11-07", seed: 3 });
+  const culto = cultoDe(esc, "ter-oracao");
+  const antes = culto.equipe.length;
+  const si = E.adicionarVaga(culto, "vocal");
+  assert.equal(culto.equipe.length, antes + 1);
+  culto.equipe[si].pessoaId = s.pessoas[0].id;
+  culto.travados = ["e:0", `e:${si}`, "m:1"];
+  E.removerVaga(culto, 0);
+  assert.deepEqual(culto.travados.sort(), [`e:${si - 1}`, "m:1"].sort());
+  const k = E.adicionarMusica(culto, "louvor");
+  assert.equal(culto.musicas[k].id, null);
+  E.removerMusica(culto, 0);
+  assert.deepEqual(culto.travados.filter((t) => t.startsWith("m:")), ["m:0"]);
+});
+
+test("sortear de novo mantém a vaga acrescentada à mão e preenchida", () => {
+  const s = novoEstado();
+  const esc = E.gerarEscala(s, { inicio: "2026-11-01", fim: "2026-11-07", seed: 5 });
+  const culto = cultoDe(esc, "ter-oracao");
+  const si = E.adicionarVaga(culto, "teclado");
+  const tecladista = s.pessoas.find((p) => (p.funcoes || []).includes("teclado"));
+  culto.equipe[si].pessoaId = tecladista.id;
+  culto.travados = [...(culto.travados || []), `e:${si}`];
+  const nova = E.gerarEscala(s, { inicio: esc.inicio, fim: esc.fim }, esc);
+  const depois = cultoDe(nova, "ter-oracao");
+  assert.ok(depois.equipe.some((v) => v.funcao === "teclado" && v.pessoaId === tecladista.id));
+});
+
+test("esvaziar a escala tira pessoas, músicas e fixos", () => {
+  const s = novoEstado();
+  const esc = E.gerarEscala(s, { inicio: "2026-11-01", fim: "2026-11-14", seed: 2 });
+  esc.cultos[0].travados = ["e:0"];
+  E.esvaziarEscala(esc);
+  for (const c of esc.cultos) {
+    assert.ok(todosCampos(c).every((x) => x === null));
+    assert.deepEqual(c.travados, []);
+  }
+});

@@ -627,28 +627,92 @@
 
   /* ---------------------------------------------- temas do hinário */
 
-  /** Seções do Salmos e Hinos por faixa de números (índice do hinologia.org). */
+  /**
+   * Índice de Assuntos do Salmos e Hinos: seções e subtemas por faixa de números. `tambem` são os
+   * números entre parênteses no índice: hinos de outras seções que servem também naquele assunto.
+   */
+  const S = (nome, de, ate, tambem) => ({ nome, de, ate, tambem: tambem || [] });
   const TEMAS_HINARIO = [
-    { id: "salmos", nome: "Salmos", de: 1, ate: 28 },
-    { id: "trindade", nome: "Trindade", de: 29, ate: 36 },
-    { id: "deus", nome: "Deus", de: 37, ate: 70 },
-    { id: "jesus-cristo", nome: "Jesus Cristo", de: 71, ate: 213 },
-    { id: "espirito-santo", nome: "Espírito Santo", de: 214, ate: 218 },
-    { id: "culto-publico", nome: "Culto público", de: 219, ate: 272 },
-    { id: "evangelho", nome: "Evangelho e salvação", de: 273, ate: 311 },
-    { id: "vida-crista", nome: "Vida cristã", de: 312, ate: 485 },
-    { id: "oracao", nome: "Oração e súplica", de: 486, ate: 534 },
-    { id: "igreja", nome: "Igreja", de: 535, ate: 559 },
-    { id: "vida-futura", nome: "Vida futura", de: 560, ate: 592 },
-    { id: "criancas", nome: "Crianças", de: 593, ate: 615 },
-    { id: "especiais", nome: "Assuntos especiais", de: 616, ate: 650 },
+    { id: "salmos", nome: "Salmos", de: 1, ate: 28, subtemas: [] },
+    { id: "trindade", nome: "Trindade", de: 29, ate: 36, subtemas: [S("Invocação", 29, 34, [245]), S("Louvor", 35, 36, [31, 32, 239, 241])] },
+    { id: "deus", nome: "Deus", de: 37, ate: 70, subtemas: [
+      S("Criador e Pai", 37, 38, [6]), S("Governo e Providência", 39, 42, [27, 67]), S("Amor e Compaixão", 43, 45, [22, 233]),
+      S("Fidelidade e Promessa", 46, 50), S("Amparo e Direção", 51, 56, [14, 16, 18, 24]), S("Louvor", 57, 70, [11, 21, 28, 248])] },
+    { id: "jesus-cristo", nome: "Jesus Cristo", de: 71, ate: 213, subtemas: [
+      S("Advento", 71, 72), S("Nascimento", 73, 92), S("Ministério", 93, 102), S("Entrada Triunfal", 103, 107),
+      S("Paixão e Morte", 108, 112, [100, 152, 155, 157]), S("Ressurreição e Ascensão", 113, 123), S("Segunda Vinda", 124, 133, [17]),
+      S("Amor e Compaixão", 134, 150), S("Sacrifício Redentor", 151, 163), S("Pastor e Guia", 164, 167, [7, 8]),
+      S("Amparo e Direção", 168, 177, [28, 144]), S("Obra Completa", 178, 182), S("Preciosidade de Jesus", 183, 193, [142]),
+      S("Louvor e Exaltação", 194, 213, [5, 22, 160])] },
+    { id: "espirito-santo", nome: "Espírito Santo", de: 214, ate: 218, subtemas: [] },
+    { id: "culto-publico", nome: "Culto público", de: 219, ate: 272, subtemas: [
+      S("Invocação", 219, 226), S("Convite à Adoração e Louvor", 227, 244, [20, 182]), S("Início do Culto", 245, 256, [31, 36, 195]),
+      S("Para Leitura Bíblica", 257, 260), S("Ofertório", 261, 261), S("Encerramento do Culto", 262, 270), S("Bênção", 271, 272)] },
+    { id: "evangelho", nome: "Evangelho e salvação", de: 273, ate: 311, subtemas: [
+      S("Boas Novas de Salvação", 273, 276), S("Convite à Salvação", 277, 308), S("Brevidade da Vida", 309, 311)] },
+    { id: "vida-crista", nome: "Vida cristã", de: 312, ate: 485, subtemas: [
+      S("Arrependimento e Contrição", 312, 316), S("Conversão e Rendição", 317, 329), S("Consagração Pessoal", 330, 353),
+      S("Santificação", 354, 357), S("Comunhão, Direção e Presença de Deus", 358, 370, [12, 13]),
+      S("Proteção, Consolação e Paz", 371, 375, [53, 308]), S("Conflito e Vitória", 376, 377, [356]),
+      S("Gratidão e Ação de Graças", 378, 383, [22, 23, 406]), S("Felicidade e Regozijo", 384, 403, [1, 2, 174, 185, 188, 323]),
+      S("Confiança", 404, 418, [9, 54, 342]), S("Segurança e Proteção", 419, 428), S("Fraternidade Cristã", 429, 433, [26]),
+      S("Testemunho Cristão", 434, 438), S("Fidelidade e Serviço", 439, 452), S("Evangelização e Missões", 453, 462),
+      S("Combate e Coroa", 463, 476, [342]), S("Bênção e Salvação", 477, 484, [10, 110, 234, 276, 329, 438]), S("Reconciliação", 485, 485, [303])] },
+    { id: "oracao", nome: "Oração e súplica", de: 486, ate: 534, subtemas: [
+      S("Reunião de Oração", 486, 491, [3, 108, 219]), S("Direção, Compaixão e Auxílio", 492, 509, [4, 15, 25, 170]),
+      S("Santificação, Avivamento e Submissão", 510, 517, [216, 357]), S("Órfãos e Viúvas", 518, 518), S("Viajantes", 519, 519),
+      S("Oração Matutina", 520, 522), S("Oração Vespertina", 523, 524), S("Oração Noturna", 525, 531), S("Por Israel", 532, 533), S("Refeições", 534, 534)] },
+    { id: "igreja", nome: "Igreja", de: 535, ate: 559, subtemas: [
+      S("Alicerce e Redenção", 535, 536), S("Batismo e Recepção de Membros", 537, 539), S("Ceia do Senhor", 540, 548, [159]),
+      S("Consagração de Templo", 549, 549), S("Escolha e Consagração de Obreiros", 550, 551), S("Oração pela Igreja", 552, 552, [432]),
+      S("Casamento", 553, 555), S("Apresentação de Criança", 556, 556, [608]), S("Ofício Fúnebre", 557, 559)] },
+    { id: "vida-futura", nome: "Vida futura", de: 560, ate: 592, subtemas: [
+      S("Insatisfação da Presente Vida", 560, 562, [132, 193]), S("Certeza e Alegria do Céu", 563, 577, [125]),
+      S("O Lar Celeste", 578, 585, [148]), S("A Pátria do Cristão", 586, 592)] },
+    { id: "criancas", nome: "Crianças", de: 593, ate: 615, subtemas: [
+      S("Louvor das Crianças", 593, 594), S("Testemunho de Cristo", 595, 603), S("Nos Estudos", 604, 605),
+      S("Na Presença de Deus", 606, 607), S("Convite à Salvação", 608, 613), S("Oração Infantil", 614, 615)] },
+    { id: "especiais", nome: "Assuntos especiais", de: 616, ate: 650, subtemas: [
+      S("Ano Novo", 616, 620), S("Aniversário", 621, 621), S("Dia das Mães", 622, 622), S("Lar Cristão", 623, 624),
+      S("Bíblia", 625, 626, [257, 260]), S("Pátria", 627, 629, [460, 461]), S("Dia do Senhor", 630, 632, [19]),
+      S("Estudante Cristão", 633, 635), S("Escola Paroquial", 636, 639), S("Dia da Reforma", 640, 640),
+      S("Uniões Femininas", 641, 643), S("Uniões da Mocidade", 644, 649, [469]), S("Despedida", 650, 650)] },
   ];
+  TEMAS_HINARIO.forEach((t) => t.subtemas.forEach((st, i) => { st.id = `${t.id}:${i + 1}`; st.tema = t; }));
+
+  const numeroDoHino = (m) => (m && m.tipo === "hino" ? parseInt(String(m.numero || ""), 10) : NaN);
 
   /** Tema (seção do hinário) de um hino pelo número; null para louvores ou hinos sem número. */
   function temaDoHino(m) {
-    if (!m || m.tipo !== "hino") return null;
-    const n = parseInt(String(m.numero || ""), 10);
+    const n = numeroDoHino(m);
     return TEMAS_HINARIO.find((t) => n >= t.de && n <= t.ate) || null;
+  }
+
+  /** Subtema do hino pelo número (ex.: Jesus Cristo › Nascimento). */
+  function subtemaDoHino(m) {
+    const t = temaDoHino(m);
+    const n = numeroDoHino(m);
+    return t ? t.subtemas.find((st) => n >= st.de && n <= st.ate) || null : null;
+  }
+
+  /** Assuntos em que o índice indica o hino também (os números entre parênteses). */
+  function tambemServeEm(m) {
+    const n = numeroDoHino(m);
+    if (!n) return [];
+    return TEMAS_HINARIO.flatMap((t) => t.subtemas.filter((st) => st.tambem.includes(n)));
+  }
+
+  /** O hino entra no assunto `id` (tema ou subtema), pela faixa de números ou por indicação do índice. */
+  function hinoNoAssunto(m, id) {
+    if (!id) return true;
+    const n = numeroDoHino(m);
+    if (!n) return false;
+    if (!id.includes(":")) {
+      const t = TEMAS_HINARIO.find((x) => x.id === id);
+      return !!t && ((n >= t.de && n <= t.ate) || t.subtemas.some((st) => st.tambem.includes(n)));
+    }
+    const st = TEMAS_HINARIO.flatMap((t) => t.subtemas).find((x) => x.id === id);
+    return !!st && ((n >= st.de && n <= st.ate) || st.tambem.includes(n));
   }
 
   /* ------------------------------------------------- montagem à mão */
@@ -941,7 +1005,7 @@
     liderDe, vincularCultos, sincronizarCulto, sincronizarEscala,
     candidatosPessoa, candidatosMusica,
     gerarEscala, preencherCulto, adicionarCultoExtra, sortearCampo, sortearCulto, colocarMusica, moverMusica,
-    adicionarVaga, removerVaga, adicionarMusica, removerMusica, esvaziarEscala, TEMAS_HINARIO, temaDoHino,
+    adicionarVaga, removerVaga, adicionarMusica, removerMusica, esvaziarEscala, TEMAS_HINARIO, temaDoHino, subtemaDoHino, tambemServeEm, hinoNoAssunto,
     validarEscala, resumoPessoas, equipePorFuncao, textoWhatsApp,
     lerListaMusicas, lerTags, migrar,
     respostaDe, disponivelEm, diasDeCulto, idResposta, codigoResposta, textoResposta, lerRespostas,

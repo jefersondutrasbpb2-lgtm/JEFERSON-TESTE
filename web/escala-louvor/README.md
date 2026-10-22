@@ -15,7 +15,7 @@ aparelho. Em **Ajustes › Backup** dá para baixar uma cópia.
 | **Início** | Visão geral com dados reais: próximo culto (equipe e repertório), escala vigente (cultos, integrantes, pendências), pendências com atalho para o culto, respostas de disponibilidade e repertório. |
 | **Escala** | A escala aberta, com setas para a anterior e a próxima, situação (rascunho ou confirmada) e um cartão por culto (equipe por função, com iniciais, e músicas em ordem). Qualquer pessoa monta ou altera: tocar numa pessoa ou música abre a lista de opções, com "Sortear outra", "Tirar esta vaga" e "Manter esta escolha"; **+ Pessoa** e **+ Música** acrescentam vagas. **Nova escala** pode ser sorteada ou criada **do zero** (só as vagas, para escolher à mão), e **Esvaziar para montar à mão** limpa uma escala já feita. As setas mudam a ordem das músicas. **Enviar no WhatsApp** mostra a prévia editável, avisa se há algo a definir e copia ou abre o WhatsApp. |
 | **Agenda** | Calendário do mês (ou lista) com os cultos de cada dia: com escala, solenes ou ainda sem escala; tocar num culto abre o cartão na escala. Abaixo, o pedido de disponibilidade (padrão: as próximas duas semanas), quem respondeu numa grade pessoa × dia e o botão que gera (ou atualiza) a escala com as respostas. **Pedir no WhatsApp** copia o convite com o link; **Colar respostas** lê os códigos `#disp` de quem respondeu por mensagem. |
-| **Músicas** | Repertório com busca e filtros com contagem (Salmos e Hinos, louvores, aptas ao solene, fora do rodízio) e filtro por **tema do hinário**. Cada música tem etiquetas, link do YouTube, tom e quando foi e quando será cantada; os hinos da coletânea têm a **letra** (ícone de livro). **Importar** aceita texto colado do Word, Excel ou WhatsApp. |
+| **Músicas** | Repertório com busca e filtros com contagem (Salmos e Hinos, louvores, aptas ao solene, fora do rodízio) e filtro por **assunto do hinário** (tema e subtema, ex.: Jesus Cristo › Nascimento). Cada música tem etiquetas, link do YouTube, tom e quando foi e quando será cantada; os hinos da coletânea têm a **letra** (ícone de livro). **Importar** aceita texto colado do Word, Excel ou WhatsApp. |
 | **Equipe** | Titulares por função (e onde falta titular) e um cartão por pessoa: funções, cultos em que serve, quantas vezes está na escala aberta e se já mandou a disponibilidade. |
 | **Disponibilidade** | Qualquer pessoa escolhe o próprio nome e marca, no calendário, os dias em que pode (toque de novo desmarca). Fica no menu do computador e nos botões "Minha disponibilidade" do Início e da Agenda. |
 | **Ajustes** | Fora do menu, no endereço `#ajustes`: cultos da semana, orientação pastoral, repetição, etiquetas, igreja e link, funções, aparência, backup e instalação do app. |
@@ -95,8 +95,9 @@ Dados salvos por versões anteriores (com liturgia e oficiais) são convertidos 
   quando o vídeo era outro, o segundo link ficou nas observações.
 - **Coletânea da igreja**: os 100 hinos da "Coletânea de Hinos dos Salmos e Hinos" (IEC de João Pessoa), com número,
   título e letra (`letras-sh.js`, carregado só quando alguém abre a tela de músicas ou uma letra). Entram sem
-  etiquetas: "trinitário" (que libera o hino para o culto solene) fica para o pastor marcar. O tema de cada hino sai do
-  número, pelas seções do hinário (`TEMAS_HINARIO` em `engine.js`, índice do hinologia.org).
+  etiquetas: "trinitário" (que libera o hino para o culto solene) fica para o pastor marcar. O tema e o subtema de cada hino
+  saem do número, pelo **Índice de Assuntos** do hinário (`TEMAS_HINARIO` em `engine.js`); os números entre parênteses
+  no índice (hinos de outras seções indicados para aquele assunto) também entram no filtro.
 - **Salmos e Hinos**: a seção "Trindade" do hinário (nº 29 Invocação, 30 Vem, ó Todo-Poderoso!, 31 Adoração à Trindade,
   32 Aleluia ao Deus triúno, 33 Invocação e Louvor, 34 Santíssima Trindade, 35 Glória à Trindade), 228 Louvor à Trindade
   e 245 Culto à Trindade, conforme o índice do [hinologia.org](http://www.hinologia.org/salmos-e-hinos-sh/); mais o

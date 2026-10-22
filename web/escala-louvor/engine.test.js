@@ -407,3 +407,24 @@ test("versão 4: entra a coletânea, sem duplicar, e completa o 232 e o 247", ()
   assert.equal(E.temaDoHino(E.porId(m.musicas, "sh51")).nome, "Deus");
   assert.equal(E.temaDoHino({ tipo: "louvor" }), null);
 });
+
+test("índice de assuntos: subtema pela faixa e hinos indicados entre parênteses", () => {
+  const h = (numero) => ({ tipo: "hino", numero: String(numero) });
+  assert.equal(E.subtemaDoHino(h(74)).nome, "Nascimento");
+  assert.equal(E.subtemaDoHino(h(537)).nome, "Batismo e Recepção de Membros");
+  assert.equal(E.subtemaDoHino(h(556)).nome, "Apresentação de Criança");
+  assert.equal(E.subtemaDoHino(h(216)), null, "Espírito Santo não tem subtemas");
+  assert.ok(E.hinoNoAssunto(h(245), "trindade"), "245 é indicado na Trindade");
+  assert.ok(E.hinoNoAssunto(h(245), "trindade:1"));
+  assert.ok(!E.hinoNoAssunto(h(245), "trindade:2"));
+  assert.ok(E.hinoNoAssunto(h(608), "igreja:8"), "608 serve na apresentação de criança");
+  assert.deepEqual(E.tambemServeEm(h(31)).map((x) => x.nome), ["Louvor", "Início do Culto"]);
+  assert.ok(!E.hinoNoAssunto({ tipo: "louvor" }, "trindade"));
+  // as faixas dos subtemas cobrem cada seção sem buracos
+  for (const t of E.TEMAS_HINARIO) {
+    if (!t.subtemas.length) continue;
+    let n = t.de;
+    for (const st of t.subtemas) { assert.equal(st.de, n, `${t.nome} › ${st.nome}`); n = st.ate + 1; }
+    assert.equal(n, t.ate + 1, t.nome);
+  }
+});

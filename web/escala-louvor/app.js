@@ -980,8 +980,9 @@
     const cands = E.candidatosMusica(state, escala, ci, k);
     const exigidas = E.tagsExigidas(state, vaga.tipo, culto.solene);
     const op = (c) => {
+      const st = E.subtemaDoHino(c.musica);
       const tema = E.temaDoHino(c.musica);
-      return { id: c.musica.id, rotulo: E.rotuloMusica(c.musica), busca: `${c.musica.numero} ${c.musica.titulo} ${c.musica.autor} ${tema ? tema.nome : ""}`, direita: [tema ? tema.nome : "", c.musica.tom ? `tom ${c.musica.tom}` : ""].filter(Boolean).join(" · "), meta: metaMusica(c) };
+      return { id: c.musica.id, rotulo: E.rotuloMusica(c.musica), busca: `${c.musica.numero} ${c.musica.titulo} ${c.musica.autor} ${assuntoDe(c.musica)} ${E.tambemServeEm(c.musica).map((x) => x.nome).join(" ")}`, direita: [st ? st.nome : tema ? tema.nome : "", c.musica.tom ? `tom ${c.musica.tom}` : ""].filter(Boolean).join(" · "), meta: metaMusica(c) };
     };
     escolher({
       titulo: E.nomeTipo(vaga.tipo),
@@ -1681,10 +1682,9 @@
     const desenhar = () => {
       const f = FILTROS.find((x) => x.id === ui.filtro) || FILTROS[0];
       const q = E.normalizar(ui.busca);
-      const temaDe = (m) => E.temaDoHino(m);
       const itens = state.musicas
-        .filter((m) => f.fn(m) && (!ui.tema || (temaDe(m) || {}).id === ui.tema))
-        .filter((m) => !q || E.normalizar(`${m.numero} ${m.titulo} ${m.autor} ${(temaDe(m) || {}).nome || ""}`).includes(q))
+        .filter((m) => f.fn(m) && (!ui.tema || E.hinoNoAssunto(m, ui.tema)))
+        .filter((m) => !q || E.normalizar(`${m.numero} ${m.titulo} ${m.autor} ${assuntoDe(m)}`).includes(q))
         .sort((a, b) => a.tipo.localeCompare(b.tipo) || String(a.numero).localeCompare(String(b.numero), "pt-BR", { numeric: true }) || a.titulo.localeCompare(b.titulo, "pt-BR"));
       contagem.textContent = `${itens.length} de ${state.musicas.length} músicas`;
       lista.replaceChildren(itens.length ? h("ul", { class: "lista" }, itens.map((m) => {
@@ -1698,7 +1698,7 @@
             h("span", { class: `marcador ${m.tipo === "louvor" ? "louvor" : "hino"}`, "aria-hidden": "true" }, m.tipo === "louvor" ? icone("musica") : m.numero ? `SH ${m.numero}` : "SH"),
             h("span", {},
               h("span", { class: "titulo" }, m.titulo || `Salmos e Hinos nº ${m.numero}`), m.ativo === false ? h("span", { class: "selo neutro", style: "margin-left:6px" }, "Fora do rodízio") : null, h("br"),
-              h("span", { class: "sub" }, [(temaDe(m) || {}).nome, m.autor, m.tom ? `tom ${m.tom}` : "", outras || (destaques.length ? "" : temas || (temaDe(m) ? "" : "sem etiquetas")), quando].filter(Boolean).join(" · ")),
+              h("span", { class: "sub" }, [assuntoDe(m), m.autor, m.tom ? `tom ${m.tom}` : "", outras || (destaques.length ? "" : temas || (assuntoDe(m) ? "" : "sem etiquetas")), quando].filter(Boolean).join(" · ")),
               destaques.length ? h("span", { class: "etiquetas" }, destaques.map((t) => h("span", { class: "selo azul" }, E.nomeTag(state, t)))) : null),
             E.aptaSolene(state, m) ? h("span", { class: "selo solene", title: "Segue a orientação do culto solene" }, "Solene") : h("span")),
           h("span", { style: "display:flex;margin-right:8px" },
@@ -1719,12 +1719,17 @@
       h("div", { class: "busca" }, icone("busca"), h("input", { type: "search", id: "busca-musicas", placeholder: "Buscar por título ou número", "aria-label": "Buscar músicas", value: ui.busca, oninput: (e) => { ui.busca = e.target.value; desenhar(); } })),
       h("div", { class: "rolagem-x", role: "group", "aria-label": "Filtrar" }, FILTROS.map((f) => h("button", { class: "chip", "aria-pressed": String(ui.filtro === f.id), onclick: () => { ui.filtro = f.id; render(); } }, f.nome, h("span", { class: "conta" }, String(state.musicas.filter(f.fn).length))))),
       h("div", { class: "contador" }, contagem,
-        h("label", { class: "filtro-tema" }, h("span", { class: "sr" }, "Tema do hinário"),
-          h("select", { id: "filtro-tema", "aria-label": "Tema do hinário", onchange: (e) => { ui.tema = e.target.value; if (ui.tema && ui.filtro === "louvor") ui.filtro = "todas"; render(); } },
-            h("option", { value: "" }, "Todos os temas"),
+        h("label", { class: "filtro-tema" }, h("span", { class: "sr" }, "Assunto do hinário"),
+          h("select", { id: "filtro-tema", "aria-label": "Assunto do hinário", onchange: (e) => { ui.tema = e.target.value; if (ui.tema && ui.filtro === "louvor") ui.filtro = "todas"; render(); } },
+            h("option", { value: "" }, "Todos os assuntos"),
             E.TEMAS_HINARIO.map((t) => {
-              const n = state.musicas.filter((m) => (E.temaDoHino(m) || {}).id === t.id).length;
-              return n ? h("option", { value: t.id, selected: ui.tema === t.id || null }, `${t.nome} (${n})`) : null;
+              const conta = (id) => state.musicas.filter((m) => E.hinoNoAssunto(m, id)).length;
+              const n = conta(t.id);
+              if (!n) return null;
+              const opcao = (id, nome, k) => h("option", { value: id, selected: ui.tema === id || null }, `${nome} (${k})`);
+              if (!t.subtemas.length) return opcao(t.id, t.nome, n);
+              return h("optgroup", { label: t.nome }, opcao(t.id, `Todo o tema ${t.nome}`, n),
+                t.subtemas.map((st) => { const k = conta(st.id); return k ? opcao(st.id, st.nome, k) : null; }));
             })))),
       lista);
   }
@@ -1747,6 +1752,13 @@
     }
     return letrasPedidas;
   }
+  /** "Jesus Cristo › Nascimento" para hinos; vazio para louvores. */
+  function assuntoDe(m) {
+    const st = E.subtemaDoHino(m);
+    if (st) return `${st.tema.nome} › ${st.nome}`;
+    const t = E.temaDoHino(m);
+    return t ? t.nome : "";
+  }
   const letraDe = (m) => (m && m.tipo === "hino" && window.EscalaLetras ? window.EscalaLetras[String(m.numero)] || null : null);
 
   async function verLetra(m) {
@@ -1756,11 +1768,11 @@
       letra = letraDe(m);
     }
     if (!letra) return avisar("A letra deste hino não está na coletânea.");
-    const tema = E.temaDoHino(m);
+    const tambem = E.tambemServeEm(m);
     const pre = h("pre", { class: "texto letra" }, letra);
     painel({
       titulo: E.rotuloMusica(m),
-      sub: tema ? `Salmos e Hinos · ${tema.nome}` : "Salmos e Hinos",
+      sub: `Salmos e Hinos${assuntoDe(m) ? ` · ${assuntoDe(m)}` : ""}${tambem.length ? ` · também: ${tambem.map((x) => `${x.tema.nome} › ${x.nome}`).join(", ")}` : ""}`,
       corpo: pre,
       rodape: () => [h("button", { class: "btn", onclick: () => copiar(letra, pre) }, icone("copiar"), "Copiar letra")],
       foco: "header .btn",
@@ -1806,7 +1818,8 @@
           h("label", { class: "campo" }, "Tom", h("input", { type: "text", id: "mus-tom", value: m.tom, placeholder: "Ex.: Ré", oninput: set("tom") }))),
         h("label", { class: "campo" }, "Link para ouvir", h("input", { type: "url", id: "mus-link", value: m.link || "", placeholder: "https://youtu.be/…", oninput: set("link") })),
         original && original.tipo === "hino" && original.numero ? h("div", { class: "acoes" },
-          E.temaDoHino(original) ? h("span", { class: "selo azul" }, `Tema: ${E.temaDoHino(original).nome}`) : null,
+          assuntoDe(original) ? h("span", { class: "selo azul" }, assuntoDe(original)) : null,
+          E.tambemServeEm(original).map((x) => h("span", { class: "selo neutro", title: "Indicado no índice do hinário" }, `também: ${x.tema.nome} › ${x.nome}`)),
           h("button", { type: "button", class: "btn mini", onclick: () => verLetra(original) }, icone("livro"), "Ver letra")) : null,
         h("div", { class: "campo" }, "Etiquetas", h("span", { class: "ajuda" }, "Trinitário, cristocêntrico e doutrinário decidem se a música entra nos cultos solenes."), seletorTags(m.tags)),
         h("label", { class: "campo" }, "Última vez que foi cantada", h("span", { class: "ajuda" }, "Só se foi antes das escalas feitas aqui."), h("input", { type: "date", id: "mus-ultima", value: m.ultimaVez || "", onchange: set("ultimaVez") })),

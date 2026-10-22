@@ -110,6 +110,10 @@
     lixeira: "<path d=\"M3 6h18\" /><path d=\"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6\" /><path d=\"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2\" /><line x1=\"10\" x2=\"10\" y1=\"11\" y2=\"17\" /><line x1=\"14\" x2=\"14\" y1=\"11\" y2=\"17\" />",
     calendario: "<path d=\"M8 2v4\" /><path d=\"M16 2v4\" /><rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\" /><path d=\"M3 10h18\" /><path d=\"M8 14h.01\" /><path d=\"M12 14h.01\" /><path d=\"M16 14h.01\" /><path d=\"M8 18h.01\" /><path d=\"M12 18h.01\" /><path d=\"M16 18h.01\" />",
     nota: "<path d=\"M9 18V5l12-2v13\" /><circle cx=\"6\" cy=\"18\" r=\"3\" /><circle cx=\"18\" cy=\"16\" r=\"3\" />",
+    microfone: "<path d=\"M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z\" /><path d=\"M19 10v2a7 7 0 0 1-14 0v-2\" /><line x1=\"12\" x2=\"12\" y1=\"19\" y2=\"22\" />",
+    corda: "<path d=\"m11.9 12.1 4.514-4.514\" /><path d=\"M20.1 2.3a1 1 0 0 0-1.4 0l-1.114 1.114A2 2 0 0 0 17 4.828v1.344a2 2 0 0 1-.586 1.414A2 2 0 0 1 17.828 7h1.344a2 2 0 0 0 1.414-.586L21.7 5.3a1 1 0 0 0 0-1.4z\" /><path d=\"m6 16 2 2\" /><path d=\"M8.2 9.9C8.7 8.8 9.8 8 11 8c2.8 0 5 2.2 5 5 0 1.2-.8 2.3-1.9 2.8l-.9.4A2 2 0 0 0 12 18a4 4 0 0 1-4 4c-3.3 0-6-2.7-6-6a4 4 0 0 1 4-4 2 2 0 0 0 1.8-1.2z\" /><circle cx=\"11.5\" cy=\"12.5\" r=\".5\" fill=\"currentColor\" />",
+    teclado: "<rect width=\"20\" height=\"16\" x=\"2\" y=\"4\" rx=\"2\" /><path d=\"M6 8h4\" /><path d=\"M14 8h.01\" /><path d=\"M18 8h.01\" /><path d=\"M2 12h20\" /><path d=\"M6 12v4\" /><path d=\"M10 12v4\" /><path d=\"M14 12v4\" /><path d=\"M18 12v4\" />",
+    bateria: "<path d=\"m2 2 8 8\" /><path d=\"m22 2-8 8\" /><ellipse cx=\"12\" cy=\"9\" rx=\"10\" ry=\"5\" /><path d=\"M7 13.4v7.9\" /><path d=\"M12 14v8\" /><path d=\"M17 13.4v7.9\" /><path d=\"M2 9v8a10 5 0 0 0 20 0V9\" />",
   };
   function icone(nome) {
     const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -137,6 +141,34 @@
     let n = 0;
     for (const c of id) n = (n * 31 + c.charCodeAt(0)) % 997;
     return h("span", { class: `avatar${extra ? ` ${extra}` : ""}`, "data-cor": String((n % 6) + 1), "aria-hidden": "true" }, iniciais(p && p.nome));
+  }
+
+  /* ---------------------------------------------- ícone de cada função */
+
+  // Microfone para quem canta, instrumento de corda para violão, guitarra e contrabaixo, teclas para
+  // teclado e tambor para bateria. Funções novas caem no ícone que o nome sugere (ou numa nota).
+  const FUNCOES_VISUAIS = [
+    { padrao: /voc|voz|cant|coral|back/, icone: "microfone", cor: "voz" },
+    { padrao: /violao|viola/, icone: "corda", cor: "violao" },
+    { padrao: /guitarra/, icone: "corda", cor: "guitarra" },
+    { padrao: /baixo/, icone: "corda", cor: "baixo" },
+    { padrao: /teclad|piano|orgao|sintet/, icone: "teclado", cor: "teclado" },
+    { padrao: /bateria|percuss|cajon|pandeiro/, icone: "bateria", cor: "bateria" },
+  ];
+  function visualDaFuncao(funcaoId) {
+    const f = porId(state.funcoes, funcaoId) || { id: funcaoId, nome: funcaoId };
+    const texto = E.normalizar(`${f.id} ${f.nome}`);
+    return FUNCOES_VISUAIS.find((v) => v.padrao.test(texto)) || { icone: "musica", cor: "outra" };
+  }
+  /** Selo colorido com o ícone da função (ex.: microfone para vocal). */
+  function seloFuncao(funcaoId, extra) {
+    const v = visualDaFuncao(funcaoId);
+    return h("span", { class: `instr${extra ? ` ${extra}` : ""}`, "data-cor": v.cor, "aria-hidden": "true", title: E.nomeFuncao(state, funcaoId) }, icone(v.icone));
+  }
+  /** Avatar com o selo da função principal da pessoa no canto. */
+  function avatarComFuncao(p, extra) {
+    const principal = (p.funcoes || [])[0] || (p.apoio || [])[0];
+    return h("span", { class: "avatar-funcao" }, avatar(p, extra), principal ? seloFuncao(principal, "canto") : null);
   }
 
   /* --------------------------------------------------------- tema */
@@ -644,7 +676,7 @@
     const grupo = [base, ...escala.cultos.filter((c) => E.liderDe(escala, c) === base)];
     const d = E.parseData(base.data);
     const equipe = E.equipePorFuncao(base).map((g) => h("div", { class: "funcao" },
-      h("span", {}, E.nomeFuncao(state, g.funcao)),
+      h("span", {}, seloFuncao(g.funcao), E.nomeFuncao(state, g.funcao)),
       h("div", { class: "chips" }, g.vagas.map((v) => {
         const p = porId(state.pessoas, v.pessoaId);
         return h("span", { class: `pessoa leitura${p ? "" : " vazia"}` }, p ? [avatar(p), p.nome] : "a definir");
@@ -815,7 +847,7 @@
     const mci = escala.cultos.indexOf(mostrado);
 
     const equipe = E.equipePorFuncao(culto).map((g) => h("div", { class: "funcao" },
-      h("span", {}, E.nomeFuncao(state, g.funcao)),
+      h("span", {}, seloFuncao(g.funcao), E.nomeFuncao(state, g.funcao)),
       h("div", { class: "chips" }, g.vagas.map((v) => {
         const p = porId(state.pessoas, v.pessoaId);
         const a = aviso(`e:${v.si}`);
@@ -1305,7 +1337,7 @@
             ui.resposta = null;
             try { localStorage.setItem(CHAVE_PESSOA, p.id); } catch (e) { /* sem armazenamento */ }
             render();
-          } }, avatar(p), p.nome)))));
+          } }, avatarComFuncao(p), p.nome)))));
     }
     const id = E.idResposta(pessoa.id, periodo.inicio);
     const existente = (state.respostas || []).find((r) => r.id === id);
@@ -1853,18 +1885,18 @@
       h("section", { "aria-label": "Titulares por função" }, h("div", { class: "cobertura" }, state.funcoes.map((f) => {
         const n = ativas.filter((p) => (p.funcoes || []).includes(f.id)).length;
         const a = ativas.filter((p) => (p.apoio || []).includes(f.id)).length;
-        return h("div", { class: n ? null : "falta" }, h("b", {}, String(n)), h("span", {}, `${f.nome}${a ? ` · +${a} apoio` : ""}${n ? "" : " · sem titular"}`));
+        return h("div", { class: n ? null : "falta" }, h("div", { style: "display:flex;align-items:center;justify-content:space-between;gap:8px" }, h("b", {}, String(n)), seloFuncao(f.id)), h("span", {}, `${f.nome}${a ? ` · +${a} apoio` : ""}${n ? "" : " · sem titular"}`));
       }))),
       pessoas.length ? h("div", { class: "equipe-grade" }, pessoas.map((p) => {
         const datas = (p.indisponivel || []).filter((x) => (x.split("..")[1] || x) >= hoje()).length;
         const cultos = (p.cultos || []).map((id) => porId(state.cultos, id)).filter(Boolean);
         return h("button", { class: `pessoa-cartao${p.ativo === false ? " pausado" : ""}`, onclick: () => editarPessoa(p), "aria-label": `${p.nome}. ${descreverPessoa(p)}. Editar` },
-          h("div", { class: "cab" }, avatar(p),
+          h("div", { class: "cab" }, avatarComFuncao(p),
             h("div", { style: "min-width:0;flex:1" }, h("b", {}, p.nome || "Sem nome"), h("span", {}, cultos.length ? cultos.map((c) => `${E.DIAS_CURTOS[c.diaSemana]} ${c.hora}`).join(" · ") : "Serve em todos os cultos")),
             p.ativo === false ? h("span", { class: "selo neutro" }, "Pausado") : datas ? h("span", { class: "selo alerta" }, `${datas} ${datas === 1 ? "data" : "datas"} fora`) : null),
           h("div", { class: "funcoes-p" },
-            (p.funcoes || []).map((f) => h("span", { class: "selo azul" }, E.nomeFuncao(state, f))),
-            (p.apoio || []).map((f) => h("span", { class: "selo neutro" }, `${E.nomeFuncao(state, f)} · apoio`)),
+            (p.funcoes || []).map((f) => h("span", { class: "selo funcao-selo", "data-cor": visualDaFuncao(f).cor }, icone(visualDaFuncao(f).icone), E.nomeFuncao(state, f))),
+            (p.apoio || []).map((f) => h("span", { class: "selo neutro" }, icone(visualDaFuncao(f).icone), `${E.nomeFuncao(state, f)} · apoio`)),
             !(p.funcoes || []).length && !(p.apoio || []).length ? h("span", { class: "small muted" }, "Sem função") : null),
           h("div", { class: "pe" },
             escala ? h("span", {}, icone("escala"), `${vezes[p.id] || 0}× nesta escala`) : null,

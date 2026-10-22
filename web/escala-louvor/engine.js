@@ -493,15 +493,31 @@
     novo.id = velho.id;
     novo.avulso = !!velho.avulso;
     novo.obs = velho.obs || "";
-    novo.travados = [...fixo];
+    const travados = new Set();
     novo.equipe.forEach((s, si) => {
       const v = velho.equipe[si];
       s.pessoaId = fixo.has(`e:${si}`) && v && v.funcao === s.funcao ? v.pessoaId : null;
+      if (s.pessoaId) travados.add(`e:${si}`);
     });
     novo.musicas.forEach((m, k) => {
       const v = velho.musicas[k];
       m.id = fixo.has(`m:${k}`) && v && v.tipo === m.tipo ? v.id : null;
+      if (m.id) travados.add(`m:${k}`);
     });
+    // Vagas acrescentadas à mão (além do que o culto pede) e já preenchidas continuam.
+    if (!velho.avulso) {
+      velho.equipe.forEach((v, si) => {
+        if (si < novo.equipe.length || !fixo.has(`e:${si}`) || !v.pessoaId) return;
+        novo.equipe.push({ funcao: v.funcao, pessoaId: v.pessoaId });
+        travados.add(`e:${novo.equipe.length - 1}`);
+      });
+      velho.musicas.forEach((v, k) => {
+        if (k < novo.musicas.length || !fixo.has(`m:${k}`) || !v.id) return;
+        novo.musicas.push({ tipo: v.tipo, id: v.id });
+        travados.add(`m:${novo.musicas.length - 1}`);
+      });
+    }
+    novo.travados = [...travados];
     return novo;
   }
 
@@ -535,7 +551,8 @@
     vincularCultos(state, escala);
     // Os cultos solenes escolhem primeiro: o repertório apto a eles costuma ser o mais curto.
     const ordem = escala.cultos.map((_, ci) => ci).sort((a, b) => (escala.cultos[b].solene ? 1 : 0) - (escala.cultos[a].solene ? 1 : 0) || a - b);
-    ordem.filter((ci) => !escala.cultos[ci].acompanha).forEach((ci) => preencherCulto(state, escala, ci, rand));
+    // Com `vazia`, a escala sai só com as vagas: quem monta escolhe pessoas e músicas à mão.
+    if (!opcoes.vazia) ordem.filter((ci) => !escala.cultos[ci].acompanha).forEach((ci) => preencherCulto(state, escala, ci, rand));
     return sincronizarEscala(escala);
   }
 
@@ -548,7 +565,7 @@
     escala.cultos.push(culto);
     ordenarCultos(escala);
     const ci = escala.cultos.indexOf(culto);
-    preencherCulto(state, escala, ci, rand || Math.random);
+    if (!opcoes.vazia) preencherCulto(state, escala, ci, rand || Math.random);
     return ci;
   }
 
@@ -607,6 +624,51 @@
   }
 
   /* ------------------------------------------------------------ avisos */
+
+  /* ------------------------------------------------- montagem à mão */
+
+  /** Renumera os campos fixados ("e:3", "m:1") depois de tirar a vaga `removida` do tipo `prefixo`. */
+  function renumerarFixos(culto, prefixo, removida) {
+    culto.travados = (culto.travados || []).flatMap((t) => {
+      const [p, n] = t.split(":");
+      const i = Number(n);
+      if (p !== prefixo) return [t];
+      if (i === removida) return [];
+      return [`${p}:${i > removida ? i - 1 : i}`];
+    });
+  }
+
+  /** Mais uma vaga de pessoa no culto (ex.: um vocal a mais). Devolve o índice da vaga. */
+  function adicionarVaga(culto, funcao) {
+    culto.equipe.push({ funcao, pessoaId: null });
+    return culto.equipe.length - 1;
+  }
+
+  function removerVaga(culto, si) {
+    culto.equipe.splice(si, 1);
+    renumerarFixos(culto, "e", si);
+  }
+
+  /** Mais uma música no culto, no fim da lista. Devolve a posição. */
+  function adicionarMusica(culto, tipo) {
+    culto.musicas.push({ tipo, id: null });
+    return culto.musicas.length - 1;
+  }
+
+  function removerMusica(culto, k) {
+    culto.musicas.splice(k, 1);
+    renumerarFixos(culto, "m", k);
+  }
+
+  /** Tira todas as pessoas e músicas da escala (para montar do zero), mantendo os cultos e as vagas. */
+  function esvaziarEscala(escala) {
+    for (const c of escala.cultos) {
+      c.equipe.forEach((s) => { s.pessoaId = null; });
+      c.musicas.forEach((m) => { m.id = null; });
+      c.travados = [];
+    }
+    return sincronizarEscala(escala);
+  }
 
   function validarEscala(state, escala) {
     const avisos = [];
@@ -847,6 +909,7 @@
     liderDe, vincularCultos, sincronizarCulto, sincronizarEscala,
     candidatosPessoa, candidatosMusica,
     gerarEscala, preencherCulto, adicionarCultoExtra, sortearCampo, sortearCulto, colocarMusica, moverMusica,
+    adicionarVaga, removerVaga, adicionarMusica, removerMusica, esvaziarEscala,
     validarEscala, resumoPessoas, equipePorFuncao, textoWhatsApp,
     lerListaMusicas, lerTags, migrar,
     respostaDe, disponivelEm, diasDeCulto, idResposta, codigoResposta, textoResposta, lerRespostas,

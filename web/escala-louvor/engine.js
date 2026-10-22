@@ -625,6 +625,32 @@
 
   /* ------------------------------------------------------------ avisos */
 
+  /* ---------------------------------------------- temas do hinário */
+
+  /** Seções do Salmos e Hinos por faixa de números (índice do hinologia.org). */
+  const TEMAS_HINARIO = [
+    { id: "salmos", nome: "Salmos", de: 1, ate: 28 },
+    { id: "trindade", nome: "Trindade", de: 29, ate: 36 },
+    { id: "deus", nome: "Deus", de: 37, ate: 70 },
+    { id: "jesus-cristo", nome: "Jesus Cristo", de: 71, ate: 213 },
+    { id: "espirito-santo", nome: "Espírito Santo", de: 214, ate: 218 },
+    { id: "culto-publico", nome: "Culto público", de: 219, ate: 272 },
+    { id: "evangelho", nome: "Evangelho e salvação", de: 273, ate: 311 },
+    { id: "vida-crista", nome: "Vida cristã", de: 312, ate: 485 },
+    { id: "oracao", nome: "Oração e súplica", de: 486, ate: 534 },
+    { id: "igreja", nome: "Igreja", de: 535, ate: 559 },
+    { id: "vida-futura", nome: "Vida futura", de: 560, ate: 592 },
+    { id: "criancas", nome: "Crianças", de: 593, ate: 615 },
+    { id: "especiais", nome: "Assuntos especiais", de: 616, ate: 650 },
+  ];
+
+  /** Tema (seção do hinário) de um hino pelo número; null para louvores ou hinos sem número. */
+  function temaDoHino(m) {
+    if (!m || m.tipo !== "hino") return null;
+    const n = parseInt(String(m.numero || ""), 10);
+    return TEMAS_HINARIO.find((t) => n >= t.de && n <= t.ate) || null;
+  }
+
   /* ------------------------------------------------- montagem à mão */
 
   /** Renumera os campos fixados ("e:3", "m:1") depois de tirar a vaga `removida` do tipo `prefixo`. */
@@ -885,18 +911,24 @@
       sincronizarEscala(e);
     }
     // Versão 3: completa os Salmos e Hinos da seção Trindade (números e títulos).
-    if ((Number(state.versao) || 0) < 3 && repertorioBase) {
+    // Versão 4: acrescenta os hinos da coletânea da igreja e preenche número e título que faltavam.
+    if ((Number(state.versao) || 0) < 4 && repertorioBase) {
       for (const m of repertorioBase) {
         if (m.tipo !== "hino") continue;
-        const atual = porId(s.musicas, m.id);
-        if (!atual) s.musicas.push(Object.assign({}, m));
-        else if (!atual.titulo && m.titulo) atual.titulo = m.titulo;
+        const atual = porId(s.musicas, m.id) || (m.numero ? s.musicas.find((x) => x.tipo === "hino" && String(x.numero) === String(m.numero)) : null);
+        if (!atual) {
+          s.musicas.push(Object.assign({}, m));
+          continue;
+        }
+        if (!atual.titulo && m.titulo) atual.titulo = m.titulo;
+        if (!String(atual.numero || "").trim() && m.numero) atual.numero = m.numero;
+        if (/a confirmar/i.test(atual.obs || "")) atual.obs = m.obs;
       }
     }
     delete s.liturgias;
     delete s.oficiais;
     delete s.exemplo;
-    s.versao = 3;
+    s.versao = 4;
     return s;
   }
 
@@ -909,7 +941,7 @@
     liderDe, vincularCultos, sincronizarCulto, sincronizarEscala,
     candidatosPessoa, candidatosMusica,
     gerarEscala, preencherCulto, adicionarCultoExtra, sortearCampo, sortearCulto, colocarMusica, moverMusica,
-    adicionarVaga, removerVaga, adicionarMusica, removerMusica, esvaziarEscala,
+    adicionarVaga, removerVaga, adicionarMusica, removerMusica, esvaziarEscala, TEMAS_HINARIO, temaDoHino,
     validarEscala, resumoPessoas, equipePorFuncao, textoWhatsApp,
     lerListaMusicas, lerTags, migrar,
     respostaDe, disponivelEm, diasDeCulto, idResposta, codigoResposta, textoResposta, lerRespostas,

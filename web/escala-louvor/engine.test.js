@@ -309,6 +309,35 @@ test("disponibilidade pelo WhatsApp: o código vai e volta", () => {
   assert.deepEqual([lidas[0].pessoaId, lidas[0].inicio, lidas[0].fim, lidas[0].dias], ["kaio", "2026-10-25", "2026-11-07", ["2026-10-25", "2026-11-05"]]);
 });
 
+test("disponibilidade em três estados: posso, não posso e sem marcar", () => {
+  const s = novoEstado();
+  const inicio = "2026-10-25";
+  const fim = "2026-11-07";
+  // Resposta nova: Kaio pode no dia 25, não pode no 27 e não marcou os outros dias.
+  const r = { id: E.idResposta("kaio", inicio), pessoaId: "kaio", inicio, fim, dias: ["2026-10-25"], nao: ["2026-10-27"], obs: "", em: "x" };
+  s.respostas = [r];
+  assert.equal(E.disponivelEm(s, "kaio", "2026-10-25"), "sim");
+  assert.equal(E.disponivelEm(s, "kaio", "2026-10-27"), "nao");
+  assert.equal(E.disponivelEm(s, "kaio", "2026-10-29"), null);
+  // Resposta antiga (sem "nao"): todo dia não marcado continua valendo como "não posso".
+  assert.equal(E.estadoNoDia({ dias: ["2026-10-25"] }, "2026-10-29"), "nao");
+
+  const texto = E.textoResposta(s, r);
+  assert.match(texto, /Posso: Dom, 25\/10/);
+  assert.match(texto, /Não posso: Ter, 27\/10\n/);
+  assert.match(texto, /Sem resposta: Qui, 29\/10/);
+  assert.match(texto, /#disp kaio 2026-10-25 2026-11-07 25\/10 nao:27\/10/);
+  const [lida] = E.lerRespostas(s, texto);
+  assert.deepEqual([lida.dias, lida.nao], [["2026-10-25"], ["2026-10-27"]]);
+  // Código antigo, sem "nao:", volta como resposta antiga.
+  const [antiga] = E.lerRespostas(s, "#disp kaio 2026-10-25 2026-11-07 25/10");
+  assert.equal(antiga.nao, undefined);
+  assert.equal(E.estadoNoDia(antiga, "2026-10-27"), "nao");
+  // Só "não posso" em todos os dias.
+  const [nenhum] = E.lerRespostas(s, "#disp kaio 2026-10-25 2026-11-07 - nao:25/10,27/10");
+  assert.deepEqual([nenhum.dias, nenhum.nao], [[], ["2026-10-25", "2026-10-27"]]);
+});
+
 test("dias de culto do período agrupam os cultos de cada dia", () => {
   const s = novoEstado();
   const dias = E.diasDeCulto(s, "2026-10-25", "2026-10-31");

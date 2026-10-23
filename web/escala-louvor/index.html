@@ -535,8 +535,10 @@
   .dia-culto:hover { border-color: var(--azul); }
   .dia-culto b { font-size: var(--t-lg); line-height: 1.1; font-weight: 700; }
   .dia-culto small { font-size: 0.625rem; font-weight: 600; color: var(--muted); line-height: 1.2; white-space: nowrap; overflow: hidden; max-width: 100%; }
-  .dia-culto[aria-pressed="true"] { background: var(--ok); border-color: var(--ok); color: #fff; }
-  .dia-culto[aria-pressed="true"] small { color: #fff; opacity: 0.9; }
+  .dia-culto[data-estado="sim"] { background: var(--ok); border-color: var(--ok); color: #fff; }
+  .dia-culto[data-estado="sim"] small { color: #fff; opacity: 0.9; }
+  .dia-culto[data-estado="nao"] { background: var(--erro-suave); border-color: var(--erro); color: var(--erro); }
+  .dia-culto[data-estado="nao"] small { color: var(--erro); }
   .dia-culto svg.i { position: absolute; top: 3px; right: 3px; width: 13px; height: 13px; stroke-width: 3; }
   .barra-envio { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: color-mix(in srgb, var(--surface) 94%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid var(--line);
     padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }

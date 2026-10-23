@@ -201,9 +201,18 @@
 
   /** "sim", "nao" ou null (a pessoa não respondeu para esta data). */
   function disponivelEm(state, pessoaId, data) {
-    const r = respostaDe(state, pessoaId, data);
+    return estadoNoDia(respostaDe(state, pessoaId, data), data);
+  }
+
+  /**
+   * "sim", "nao" ou null (não marcou) para um dia de uma resposta. Respostas novas guardam os dias
+   * em que a pessoa NÃO pode em `nao`; nas antigas (sem `nao`), todo dia não marcado conta como "não posso".
+   */
+  function estadoNoDia(r, data) {
     if (!r) return null;
-    return (r.dias || []).includes(data) ? "sim" : "nao";
+    if ((r.dias || []).includes(data)) return "sim";
+    if (!Array.isArray(r.nao)) return "nao";
+    return r.nao.includes(data) ? "nao" : null;
   }
 
   /** Há pedido de disponibilidade cobrindo esta data (alguém já respondeu)? */
@@ -225,20 +234,24 @@
 
   /** Código curto que a pessoa manda pelo WhatsApp quando não consegue salvar direto. */
   function codigoResposta(r) {
-    const dias = (r.dias || []).slice().sort().map((d) => formatarData(d, "curta")).join(",");
-    return `#disp ${r.pessoaId} ${r.inicio} ${r.fim} ${dias || "-"}`;
+    const lista = (ds) => (ds || []).slice().sort().map((d) => formatarData(d, "curta")).join(",");
+    const nao = Array.isArray(r.nao) && r.nao.length ? ` nao:${lista(r.nao)}` : "";
+    return `#disp ${r.pessoaId} ${r.inicio} ${r.fim} ${lista(r.dias) || "-"}${nao}`;
   }
 
   function textoResposta(state, r) {
     const pessoa = porId(state.pessoas, r.pessoaId);
     const todos = diasDeCulto(state, r.inicio, r.fim).map((d) => d.data);
-    const pode = todos.filter((d) => (r.dias || []).includes(d)).map((d) => formatarData(d, "dia"));
-    const nao = todos.filter((d) => !(r.dias || []).includes(d)).map((d) => formatarData(d, "dia"));
+    const com = (estado) => todos.filter((d) => estadoNoDia(r, d) === estado).map((d) => formatarData(d, "dia"));
+    const pode = com("sim");
+    const nao = com("nao");
+    const semMarca = com(null);
     return [
       `*Disponibilidade · ${pessoa ? pessoa.nome : r.pessoaId}*`,
       `_${formatarPeriodo(r.inicio, r.fim)}_`,
       `Posso: ${pode.join(", ") || "nenhum dia"}`,
       nao.length ? `Não posso: ${nao.join(", ")}` : "",
+      semMarca.length ? `Sem resposta: ${semMarca.join(", ")}` : "",
       r.obs ? `Recado: ${r.obs}` : "",
       "",
       codigoResposta(r),
@@ -248,20 +261,27 @@
   /** Lê os códigos "#disp …" colados (de uma ou várias mensagens). */
   function lerRespostas(state, texto) {
     const saida = [];
-    const re = /#disp\s+(\S+)\s+(\d{4}-\d{2}-\d{2})\s+(\d{4}-\d{2}-\d{2})\s+([\d/,\s-]*)/gi;
+    // "#disp pessoa início fim 25/10,27/10 nao:29/10" (o trecho "nao:" só existe nas respostas novas).
+    const re = /#disp[ \t]+(\S+)[ \t]+(\d{4}-\d{2}-\d{2})[ \t]+(\d{4}-\d{2}-\d{2})[ \t]*([^\n#]*)/gi;
     let m;
     while ((m = re.exec(String(texto || "")))) {
-      const [, pessoaId, inicio, fim, lista] = m;
+      const [, pessoaId, inicio, fim, resto] = m;
       if (!porId(state.pessoas, pessoaId)) continue;
       const datas = diasDeCulto(state, inicio, fim).map((d) => d.data);
-      const dias = [];
-      for (const parte of lista.split(/[,\s]+/)) {
-        const [dd, mm] = parte.split("/").map(Number);
-        if (!dd || !mm) continue;
-        const data = datas.find((x) => parseData(x).getDate() === dd && parseData(x).getMonth() + 1 === mm);
-        if (data && !dias.includes(data)) dias.push(data);
-      }
-      saida.push({ id: idResposta(pessoaId, inicio), pessoaId, inicio, fim, dias, obs: "", em: new Date().toISOString() });
+      const ler = (lista) => {
+        const achadas = [];
+        for (const parte of String(lista || "").split(/[,\s]+/)) {
+          const [dd, mm] = parte.split("/").map(Number);
+          if (!dd || !mm) continue;
+          const data = datas.find((x) => parseData(x).getDate() === dd && parseData(x).getMonth() + 1 === mm);
+          if (data && !achadas.includes(data)) achadas.push(data);
+        }
+        return achadas;
+      };
+      const [podeTxt, naoTxt] = resto.split(/n[aã]o\s*:/i);
+      const r = { id: idResposta(pessoaId, inicio), pessoaId, inicio, fim, dias: ler(podeTxt), obs: "", em: new Date().toISOString() };
+      if (naoTxt !== undefined) r.nao = ler(naoTxt).filter((d) => !r.dias.includes(d));
+      saida.push(r);
     }
     return saida;
   }
@@ -1008,6 +1028,6 @@
     adicionarVaga, removerVaga, adicionarMusica, removerMusica, esvaziarEscala, TEMAS_HINARIO, temaDoHino, subtemaDoHino, tambemServeEm, hinoNoAssunto,
     validarEscala, resumoPessoas, equipePorFuncao, textoWhatsApp,
     lerListaMusicas, lerTags, migrar,
-    respostaDe, disponivelEm, diasDeCulto, idResposta, codigoResposta, textoResposta, lerRespostas,
+    respostaDe, disponivelEm, estadoNoDia, diasDeCulto, idResposta, codigoResposta, textoResposta, lerRespostas,
   };
 });

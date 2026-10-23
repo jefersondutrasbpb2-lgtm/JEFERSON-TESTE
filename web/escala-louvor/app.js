@@ -1269,8 +1269,40 @@
 
   const horaCurta = (hora) => String(hora || "").replace(/^0/, "").replace(":00", "h").replace(":", "h");
 
-  /** Calendário do mês: os dias com culto no período são botões (pode / não pode). */
-  function calendario(periodo, selecionadas, aoMudar) {
+  /** Marcas de uma resposta: dia → "sim" (posso) ou "nao" (não posso); dia sem marca = não respondeu. */
+  function marcasDe(resposta, periodo) {
+    const marcas = new Map();
+    if (!resposta) return marcas;
+    for (const d of E.diasDeCulto(state, periodo.inicio, periodo.fim)) {
+      const v = E.estadoNoDia(resposta, d.data);
+      if (v) marcas.set(d.data, v);
+    }
+    return marcas;
+  }
+
+  const comMarca = (marcas, v) => [...marcas].filter(([, x]) => x === v).map(([d]) => d).sort();
+
+  function resumoMarcas(marcas) {
+    const sim = comMarca(marcas, "sim").length;
+    const nao = comMarca(marcas, "nao").length;
+    if (!sim && !nao) return "nenhum dia marcado";
+    return [sim ? `${sim} posso` : "", nao ? `${nao} não posso` : ""].filter(Boolean).join(" · ");
+  }
+
+  const PROXIMA_MARCA = { undefined: "sim", sim: "nao", nao: undefined };
+  const TEXTO_MARCA = { sim: "posso", nao: "não posso", undefined: "sem marcar" };
+
+  /** Legenda das cores do calendário de disponibilidade. */
+  function legendaMarcas() {
+    const amostra = (estilo, texto) => h("span", { style: "display:inline-flex;gap:6px;align-items:center" }, h("i", { style: `width:12px;height:12px;border-radius:4px;display:inline-block;${estilo}` }), texto);
+    return h("p", { class: "small muted", style: "display:flex;gap:14px;flex-wrap:wrap" },
+      amostra("background:var(--ok)", "Posso"),
+      amostra("background:var(--erro-suave);border:1.5px solid var(--erro)", "Não posso"),
+      amostra("border:1.5px solid var(--azul-linha)", "Sem marcar"));
+  }
+
+  /** Calendário do mês: os dias com culto são botões; cada toque passa por posso → não posso → sem marcar. */
+  function calendario(periodo, marcas, aoMudar) {
     const dias = E.diasDeCulto(state, periodo.inicio, periodo.fim);
     const caixa = h("div", { class: "calendario" });
     const desenhar = () => {
@@ -1294,17 +1326,21 @@
             celulas.push(h("span", { class: "dia-fora", "aria-hidden": "true" }, String(n)));
             continue;
           }
-          const pode = selecionadas.has(iso);
+          const marca = marcas.get(iso);
           celulas.push(h("button", {
-            type: "button", class: "dia-culto", "aria-pressed": String(pode),
-            "aria-label": `${E.formatarData(iso, "longa")}, ${dc.cultos.map((c) => `${c.nome} às ${c.hora}`).join(" e ")}: ${pode ? "posso" : "não posso"}`,
+            type: "button", class: "dia-culto", "data-estado": marca || "",
+            "aria-label": `${E.formatarData(iso, "longa")}, ${dc.cultos.map((c) => `${c.nome} às ${c.hora}`).join(" e ")}: ${TEXTO_MARCA[marca]}. Toque para mudar.`,
             onclick: () => {
-              if (pode) selecionadas.delete(iso);
-              else selecionadas.add(iso);
+              const proxima = PROXIMA_MARCA[marca];
+              if (proxima) marcas.set(iso, proxima);
+              else marcas.delete(iso);
               desenhar();
+              const botao = caixa.querySelector(`[data-dia="${iso}"]`);
+              if (botao) botao.focus();
               if (aoMudar) aoMudar();
             },
-          }, h("b", {}, String(n)), h("small", {}, dc.cultos.map((c) => horaCurta(c.hora)).join(" ")), pode ? icone("ok") : null));
+            "data-dia": iso,
+          }, h("b", {}, String(n)), h("small", {}, dc.cultos.map((c) => horaCurta(c.hora)).join(" ")), marca === "sim" ? icone("ok") : marca === "nao" ? icone("fechar") : null));
         }
         return h("div", { class: "mes" },
           h("h3", {}, `${E.MESES[mes][0].toUpperCase()}${E.MESES[mes].slice(1)} de ${ano}`),
@@ -1313,7 +1349,21 @@
       }));
     };
     desenhar();
-    return { el: caixa, dias, redesenhar: desenhar };
+    const marcarTodos = (v) => { dias.forEach((d) => marcas.set(d.data, v)); desenhar(); if (aoMudar) aoMudar(); };
+    const limpar = () => { marcas.clear(); desenhar(); if (aoMudar) aoMudar(); };
+    const botoes = (quem) => h("div", { class: "acoes" },
+      h("button", { class: "btn tonal", onclick: () => marcarTodos("sim") }, icone("ok"), `${quem} em todos`),
+      h("button", { class: "btn tonal", onclick: () => marcarTodos("nao") }, icone("fechar"), `Não ${quem.toLowerCase()} em nenhum`),
+      h("button", { class: "btn texto", onclick: limpar }, "Limpar"));
+    return { el: caixa, dias, redesenhar: desenhar, botoes };
+  }
+
+  /** Resposta pronta para guardar a partir das marcas (dias = posso, nao = não posso). */
+  function montarResposta(pessoaId, periodo, marcas, obs) {
+    return {
+      id: E.idResposta(pessoaId, periodo.inicio), pessoaId, inicio: periodo.inicio, fim: periodo.fim,
+      dias: comMarca(marcas, "sim"), nao: comMarca(marcas, "nao"), obs: String(obs || "").trim(), em: new Date().toISOString(),
+    };
   }
 
   function guardarResposta(r) {
@@ -1342,11 +1392,16 @@
     }
     const id = E.idResposta(pessoa.id, periodo.inicio);
     const existente = (state.respostas || []).find((r) => r.id === id);
-    if (!ui.resposta || ui.resposta.id !== id) ui.resposta = { id, dias: new Set(existente ? existente.dias : []), obs: existente ? existente.obs || "" : "" };
+    if (!ui.resposta || ui.resposta.id !== id) ui.resposta = { id, marcas: marcasDe(existente, periodo), obs: existente ? existente.obs || "" : "" };
     const rascunho = ui.resposta;
     const contagem = h("span", {});
-    const cal = calendario(periodo, rascunho.dias, () => atualizar());
-    const atualizar = () => { contagem.textContent = `Enviar · ${rascunho.dias.size} ${rascunho.dias.size === 1 ? "dia" : "dias"}`; };
+    const cal = calendario(periodo, rascunho.marcas, () => atualizar());
+    const atualizar = () => {
+      const faltam = cal.dias.filter((d) => !rascunho.marcas.has(d.data)).length;
+      contagem.textContent = rascunho.marcas.size ? `Enviar · ${resumoMarcas(rascunho.marcas)}` : "Enviar";
+      aviso.textContent = faltam && rascunho.marcas.size ? `${faltam} ${faltam === 1 ? "dia ficou" : "dias ficaram"} sem marcar.` : "";
+    };
+    const aviso = h("p", { class: "small muted", "aria-live": "polite" });
     atualizar();
     return h("div", { class: "tela" },
       h("div", { class: "cabecalho" },
@@ -1354,23 +1409,18 @@
         h("div", { class: "acoes" }, h("button", { class: "btn texto", onclick: () => { ui.respostaPessoa = null; ui.resposta = null; try { localStorage.removeItem(CHAVE_PESSOA); } catch (e) { /* */ } render(); } }, "Não sou eu"), voltar)),
       existente ? h("p", { class: "selo ok", style: "justify-self:start;min-height:32px;padding:0 12px" }, `Você respondeu em ${E.formatarData(existente.em.slice(0, 10), "curta")}. Pode mudar e enviar de novo.`) : null,
       h("section", { class: "cartao secao" },
-        h("p", {}, "Toque nos dias em que você ", h("b", {}, "pode"), " servir; toque de novo para desmarcar. Só os dias com culto aparecem para marcar."),
-        h("p", { class: "small muted", style: "display:flex;gap:14px;flex-wrap:wrap" },
-          h("span", { style: "display:inline-flex;gap:6px;align-items:center" }, h("i", { style: "width:12px;height:12px;border-radius:4px;background:var(--ok);display:inline-block" }), "Posso"),
-          h("span", { style: "display:inline-flex;gap:6px;align-items:center" }, h("i", { style: "width:12px;height:12px;border-radius:4px;border:1.5px solid var(--azul-linha);display:inline-block" }), "Não posso")),
+        h("p", {}, "Toque uma vez no dia em que você ", h("b", {}, "pode"), " servir (fica verde). Toque de novo para dizer que ", h("b", {}, "não pode"), " (fica vermelho). Um terceiro toque desmarca. Só os dias com culto aparecem para marcar."),
+        legendaMarcas(),
         cal.el,
-        h("div", { class: "acoes" },
-          h("button", { class: "btn tonal", onclick: () => { cal.dias.forEach((d) => rascunho.dias.add(d.data)); cal.redesenhar(); atualizar(); } }, "Posso em todos"),
-          h("button", { class: "btn texto", onclick: () => { rascunho.dias.clear(); cal.redesenhar(); atualizar(); } }, "Limpar")),
+        cal.botoes("Posso"),
+        aviso,
         h("label", { class: "campo" }, "Recado para o coordenador (opcional)", h("textarea", { id: "disp-obs", rows: 2, value: rascunho.obs, placeholder: "Ex.: no dia 01/11 só posso à noite", oninput: (e) => { rascunho.obs = e.target.value; } }))),
       h("div", { class: "barra-envio" }, h("button", { class: "btn primario largo", onclick: () => enviarResposta(pessoa, periodo, rascunho) }, icone("enviar"), contagem)));
   }
 
   async function enviarResposta(pessoa, periodo, rascunho) {
-    const r = {
-      id: E.idResposta(pessoa.id, periodo.inicio), pessoaId: pessoa.id, inicio: periodo.inicio, fim: periodo.fim,
-      dias: [...rascunho.dias].sort(), obs: rascunho.obs.trim(), em: new Date().toISOString(),
-    };
+    if (!rascunho.marcas.size) return avisar("Marque pelo menos um dia: posso (verde) ou não posso (vermelho).");
+    const r = montarResposta(pessoa.id, periodo, rascunho.marcas, rascunho.obs);
     if (ui.coordena) {
       mudou(() => guardarResposta(r));
       return avisar("Disponibilidade salva.");
@@ -1380,7 +1430,7 @@
       await armazem.db.collection("respostas").doc(r.id).set(r);
       guardarResposta(r);
       render();
-      painel({ titulo: "Recebido, obrigado!", sub: `${r.dias.length} ${r.dias.length === 1 ? "dia marcado" : "dias marcados"}. Se mudar algo, é só abrir o link de novo.`, corpo: h("p", { class: "muted" }, "A escala sai assim que todos responderem."), foco: "header .btn" });
+      painel({ titulo: "Recebido, obrigado!", sub: `${resumoMarcas(rascunho.marcas)[0].toUpperCase()}${resumoMarcas(rascunho.marcas).slice(1)}. Se mudar algo, é só abrir o link de novo.`, corpo: h("p", { class: "muted" }, "A escala sai assim que todos responderem."), foco: "header .btn" });
     } catch (e) {
       // Sem permissão para gravar: a pessoa manda o código pelo WhatsApp.
       const texto = E.textoResposta(state, r);
@@ -1492,11 +1542,11 @@
         return h("tr", {},
           h("th", { scope: "row" }, h("button", { class: "btn texto", style: "padding:0 6px", onclick: () => editarDisponibilidade(p) }, p.nome, r && r.obs ? icone("nota2") : null)),
           dias.map((d) => {
-            const v = r ? (r.dias.includes(d.data) ? "sim" : "nao") : null;
-            return h("td", { class: `disp ${v || "sem"}`, "aria-label": `${p.nome}, ${E.formatarData(d.data, "dia")}: ${v === "sim" ? "pode" : v === "nao" ? "não pode" : "não respondeu"}` }, v === "sim" ? "✓" : v === "nao" ? "✕" : "·");
+            const v = E.estadoNoDia(r, d.data);
+            return h("td", { class: `disp ${v || "sem"}`, "aria-label": `${p.nome}, ${E.formatarData(d.data, "dia")}: ${v === "sim" ? "pode" : v === "nao" ? "não pode" : r ? "não marcou" : "não respondeu"}` }, v === "sim" ? "✓" : v === "nao" ? "✕" : "·");
           }));
       })),
-      h("tfoot", {}, h("tr", {}, h("th", { scope: "row" }, "Podem"), dias.map((d) => h("td", { class: "num" }, String(ativas.filter((p) => { const r = respostaDa(p); return r && r.dias.includes(d.data); }).length))))));
+      h("tfoot", {}, h("tr", {}, h("th", { scope: "row" }, "Podem"), dias.map((d) => h("td", { class: "num" }, String(ativas.filter((p) => E.estadoNoDia(respostaDa(p), d.data) === "sim").length))))));
 
     const recados = responderam.filter((p) => respostaDa(p).obs);
     const modo = (id, nome, ic) => h("button", { "aria-pressed": String(ui.agendaModo === id), onclick: () => { ui.agendaModo = id; render(); } }, icone(ic), nome);
@@ -1559,13 +1609,13 @@
       `*Disponibilidade do louvor*${igreja ? ` · ${igreja}` : ""}`,
       `_${E.formatarPeriodo(periodo.inicio, periodo.fim)}_`,
       "",
-      link ? "Marque no link os dias em que você pode servir:" : "Responda com os dias em que você pode servir:",
+      link ? "Marque no link os dias em que você pode e os que não pode servir:" : "Responda com os dias em que você pode e os que não pode servir:",
       link ? `${link}#disponibilidade` : "",
       "",
       "Dias de culto:",
       ...dias.map((d) => `• ${E.formatarData(d.data, "dia")} · ${d.cultos.map((c) => horaCurta(c.hora)).join(" e ")}`),
       "",
-      link ? "Se o link não abrir, responda aqui com os dias em que pode." : "",
+      link ? "Se o link não abrir, responda aqui com os dias em que pode e os que não pode." : "",
     ].filter((l, i, a) => l || (i > 0 && a[i - 1])).join("\n").trim();
     const pre = h("pre", { class: "texto" }, texto);
     painel({
@@ -1583,7 +1633,7 @@
     let lidas = [];
     area.addEventListener("input", () => {
       lidas = E.lerRespostas(state, area.value);
-      previa.textContent = lidas.length ? lidas.map((r) => `${(porId(state.pessoas, r.pessoaId) || {}).nome}: ${r.dias.length} ${r.dias.length === 1 ? "dia" : "dias"}`).join(" · ") : "Nenhum código #disp encontrado ainda.";
+      previa.textContent = lidas.length ? lidas.map((r) => `${(porId(state.pessoas, r.pessoaId) || {}).nome}: ${resumoMarcas(marcasDe(r, r))}`).join(" · ") : "Nenhum código #disp encontrado ainda.";
     });
     painel({
       titulo: "Colar respostas",
@@ -1603,24 +1653,23 @@
     const periodo = pedidoAtual();
     const id = E.idResposta(pessoa.id, periodo.inicio);
     const existente = (state.respostas || []).find((r) => r.id === id);
-    const dias = new Set(existente ? existente.dias : []);
+    const marcas = marcasDe(existente, periodo);
     let obs = existente ? existente.obs || "" : "";
-    const cal = calendario(periodo, dias);
+    const cal = calendario(periodo, marcas);
     painel({
       titulo: `Disponibilidade de ${pessoa.nome}`,
-      sub: existente ? `Respondida em ${E.formatarData(existente.em.slice(0, 10), "curta")}` : "Ainda não respondeu. Marque os dias em que a pessoa pode.",
+      sub: existente ? `Respondida em ${E.formatarData(existente.em.slice(0, 10), "curta")}` : "Ainda não respondeu. Um toque: pode · dois: não pode · três: sem marcar.",
       corpo: [
+        legendaMarcas(),
         cal.el,
-        h("div", { class: "acoes" },
-          h("button", { class: "btn tonal", onclick: () => { cal.dias.forEach((d) => dias.add(d.data)); cal.redesenhar(); } }, "Pode em todos"),
-          h("button", { class: "btn texto", onclick: () => { dias.clear(); cal.redesenhar(); } }, "Limpar")),
+        cal.botoes("Pode"),
         h("label", { class: "campo" }, "Recado", h("textarea", { rows: 2, value: obs, oninput: (e) => { obs = e.target.value; } })),
       ],
       rodape: (fechar) => [
         existente ? h("button", { class: "btn perigo", style: "margin-right:auto", onclick: () => { fechar(true); comDesfazer("Resposta apagada.", () => { state.respostas = state.respostas.filter((r) => r.id !== id); }); } }, icone("lixo"), "Apagar") : null,
         h("button", { class: "btn primario", onclick: () => {
           fechar(true);
-          mudou(() => guardarResposta({ id, pessoaId: pessoa.id, inicio: periodo.inicio, fim: periodo.fim, dias: [...dias].sort(), obs: obs.trim(), em: new Date().toISOString() }));
+          mudou(() => guardarResposta(montarResposta(pessoa.id, periodo, marcas, obs)));
           avisar(`Disponibilidade de ${pessoa.nome} salva.`);
         } }, "Salvar"),
       ],

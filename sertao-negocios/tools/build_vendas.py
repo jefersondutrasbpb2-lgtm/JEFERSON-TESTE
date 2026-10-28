@@ -71,8 +71,8 @@ html = must_sub(html, r'<meta name="description" content="[^"]*">',
                 'em Patos-PB. Lote 0 com o menor valor do evento.">')
 
 # Menu
-html = must_replace(html, '<a href="#lote-0">Comunidade</a>', '<a href="#ingressos">Ingressos</a>')
-html = must_replace(html, '<a class="btn btn--sm btn--sol nav__cta" href="#cadastro" data-cta="nav">Entrar na comunidade</a>',
+html = must_replace(html, '<a href="#lote-0">Lote 0</a>', '<a href="#ingressos">Ingressos</a>')
+html = must_replace(html, '<a class="btn btn--sm btn--sol nav__cta" href="#cadastro" data-cta="nav">Quero o lote 0</a>',
                     '<a class="btn btn--sm btn--sol nav__cta" href="#ingressos" data-cta="nav">Comprar ingresso</a>')
 
 # Topo: card de compra no lugar do formulário
@@ -190,7 +190,7 @@ faq_new = '''<details class="qa" data-reveal>
         </details>
         <details class="qa" data-reveal>
           <summary><span>Quem conduz o conteúdo de gestão?</span>'''
-html = must_sub(html, r'<details class="qa" data-reveal>\s*<summary><span>O que eu ganho entrando na comunidade\?</span>.*?'
+html = must_sub(html, r'<details class="qa" data-reveal>\s*<summary><span>Quando sai o valor do ingresso\?</span>.*?'
                       r'<details class="qa" data-reveal>\s*<summary><span>Quem conduz o conteúdo de gestão\?</span>', faq_new)
 
 # Sem o formulário de inscrição
@@ -198,7 +198,7 @@ html = must_sub(html, r'  <!-- ====== 09 INSCRIÇÃO ====== -->.*?</section>\n\n
 
 # Final
 html = must_replace(html, '''<a class="btn btn--light btn--lg" href="#cadastro" data-cta="final" data-reveal>
-        <span>Quero entrar na comunidade</span>''', '''<a class="btn btn--light btn--lg" href="#ingressos" data-cta="final" data-reveal>
+        <span>Quero o lote 0</span>''', '''<a class="btn btn--light btn--lg" href="#ingressos" data-cta="final" data-reveal>
         <span>Garantir meu ingresso</span>''')
 html = must_sub(html, r'<p class="finale__ps" data-reveal>.*?</p>',
                 '<p class="finale__ps" data-reveal>Os 400 lugares não aumentam. O lote 0 é o menor valor do evento, e depois dele os lotes sobem.</p>')
@@ -206,7 +206,7 @@ html = must_sub(html, r'<p class="finale__ps" data-reveal>.*?</p>',
 # Barra do celular e WhatsApp
 html = must_replace(html, '<a class="btn btn--sol btn--block" href="#cadastro" data-cta="dock">Entrar na comunidade · grátis</a>',
                     '<a class="btn btn--sol btn--block" href="#ingressos" data-cta="dock">Garantir meu ingresso · lote 0</a>')
-html = must_replace(html, '<span class="wa__opt-d">Ingressos, programação e inscrição</span>',
+html = must_replace(html, '<span class="wa__opt-d">Lote 0, programação e inscrição</span>',
                     '<span class="wa__opt-d">Ingressos, pagamento e programação</span>')
 
 # Privacidade: sem formulário nesta página

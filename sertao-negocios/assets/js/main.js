@@ -22,7 +22,7 @@
      (ex.: anúncios para tráfego frio com a A, mensagens para a base do Moisés com a C). */
   const HEADLINES = {
     b: 'Gestão de verdade com <em>Moisés Ramos</em>, em Patos.',
-    c: 'O lote 0 abre primeiro <em>na comunidade.</em>'
+    c: 'A condição especial sai primeiro <em>na comunidade.</em>'
   };
   const headlineVariant = (new URLSearchParams(location.search).get('titulo') || 'a').toLowerCase();
   const headline = $('[data-headline]');

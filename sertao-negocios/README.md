@@ -12,6 +12,13 @@ python3 -m http.server 8080 --directory sertao-negocios
 
 A pasta `greatpages/` traz a mesma página dividida em blocos para colar em elementos HTML do GreatPages, com o passo a passo em `greatpages/LEIA-ME.md`. Ela é gerada por `python3 tools/build_greatpages.py`; rode de novo depois de qualquer mudança na página.
 
+## Páginas no GreatPages (out/2026)
+
+| Página | Endereço | Origem |
+|---|---|---|
+| sertao-negocios-vendas (3659562) | www.sertaonegocios.com.br | `vendas.html`, gerado por `tools/build_vendas.py` a partir do `index.html`; `python3 tools/build_gp_html.py vendas` monta o arquivo do GreatPages |
+| sertao-negocios-html (3658757) | www.sertaonegocios.com.br/comunidade | Página da comunidade do lançamento. Fica como está no GreatPages: as mudanças de copy agora são só da página de ingressos. O `index.html` daqui serve de base para a de vendas e já não é igual à /comunidade no ar. |
+
 ## Antes de publicar
 
 1. **Formulário:** em `assets/js/config.js`, preencha `leadEndpoint` com a URL do seu webhook ou CRM. Com o campo vazio, a página roda em modo de demonstração: o envio é simulado e um aviso aparece no console.

@@ -1,19 +1,17 @@
 import type { Metadata } from "next";
-import { ministries } from "@/content/ministerios";
-import { reviewMode } from "@/content/site";
+import { departments } from "@/content/departamentos";
 import { PageHero } from "@/components/ui/PageHero";
 import { Section } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
-import { Pending } from "@/components/ui/Pending";
 
 export const metadata: Metadata = {
-  title: "Ministérios",
+  title: "Departamentos",
   description:
-    "Ensino bíblico, culto, crianças, jovens, famílias, oração, missões e ação social: conheça as áreas da vida da Igreja Evangélica Congregacional de Pombal.",
-  alternates: { canonical: "/ministerios/" },
+    "UHC, UAC, DIC, UMEC e UAEC: conheça os departamentos da Igreja Evangélica Congregacional de Pombal, que reúnem homens, mulheres, jovens, adolescentes e crianças.",
+  alternates: { canonical: "/departamentos/" },
 };
 
-export default function MinisteriosPage() {
+export default function DepartamentosPage() {
   return (
     <>
       <PageHero
@@ -23,7 +21,7 @@ export default function MinisteriosPage() {
             Muitos dons, <em>um só corpo.</em>
           </>
         }
-        lead="A vida da igreja se organiza em áreas de serviço que cuidam do ensino, do culto, das gerações, da oração, das missões e da ação social — cada uma a serviço do Evangelho."
+        lead="A vida da igreja se organiza em departamentos que reúnem homens, mulheres, jovens, adolescentes e crianças — cada um a serviço do Evangelho."
         aside={
           <p className="small muted">
             “Servi uns aos outros, cada um conforme o dom que recebeu.”
@@ -36,12 +34,17 @@ export default function MinisteriosPage() {
       <Section tone="paper" labelledBy="areas-title" className="section--tight ministries">
         <div className="container">
           <h2 id="areas-title" className="sr-only">
-            Áreas de ministério
+            Departamentos da igreja
           </h2>
           <ol className="ministries__list">
-            {ministries.map((m, i) => (
+            {departments.map((m) => (
               <li key={m.id} id={m.id} className="ministry" data-reveal>
-                <h3 className="ministry__title h3">{m.title}</h3>
+                <h3 className="ministry__title">
+                  <abbr className="ministry__acronym font-display" title={m.name}>
+                    {m.acronym}
+                  </abbr>
+                  <span className="ministry__name">{m.name}</span>
+                </h3>
                 <div className="ministry__body">
                   <p>{m.summary}</p>
                   {(m.leaders || m.schedule) && (
@@ -60,7 +63,6 @@ export default function MinisteriosPage() {
                       )}
                     </dl>
                   )}
-                  {reviewMode && m.pending && <Pending label="dados a cadastrar" />}
                 </div>
               </li>
             ))}
@@ -77,7 +79,7 @@ export default function MinisteriosPage() {
           </div>
           <div className="serve-call__body" data-reveal>
             <p className="prose">
-              Quer conhecer melhor algum ministério ou saber como participar? Converse conosco: teremos alegria em
+              Quer conhecer melhor algum departamento ou saber como participar? Converse conosco: teremos alegria em
               orientar você.
             </p>
             <div className="btn-row">

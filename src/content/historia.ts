@@ -18,7 +18,7 @@ export const firstCouncil = {
     {
       role: "Presbíteros",
       names: [
-        "Neemias Tertuliano Martins",
+        "Neemias Tertuliano de Sousa",
         "Autinoel Martins Ferreira",
         "Manoel Tertuliano Martins",
         "Francisco Tertuliano Martins",
@@ -28,7 +28,7 @@ export const firstCouncil = {
       role: "Diáconos",
       names: [
         "Oseas Martins Ferreira",
-        "José Norbeto dos Santos",
+        "José Roberto dos Santos",
         "Antônio Tertuliano Martins",
         "Gerson Martins de Sá",
       ],
@@ -39,7 +39,7 @@ export const firstCouncil = {
 export const firstBoard = {
   title: "Primeira diretoria do patrimônio",
   members: [
-    { role: "Presidente", name: "Neemias Tertuliano Martins" },
+    { role: "Presidente", name: "Neemias Tertuliano de Sousa" },
     { role: "Vice-presidente", name: "Autinoel Martins Ferreira" },
     { role: "Tesoureiro", name: "José Roberto dos Santos" },
     { role: "Secretário", name: "Teodomiso Pereira Formiga" },

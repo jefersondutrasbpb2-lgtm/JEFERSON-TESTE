@@ -1,3 +1,6 @@
 # Hostinger (Apache/LiteSpeed): página própria para endereços que não existem.
 ErrorDocument 404 /404.html
 DirectoryIndex index.html index.php
+
+# A página "Ministérios" passou a se chamar "Departamentos".
+Redirect 301 /ministerios/ /departamentos/

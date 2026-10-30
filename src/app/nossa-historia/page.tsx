@@ -5,7 +5,6 @@ import { PageHero } from "@/components/ui/PageHero";
 import { Section } from "@/components/ui/Section";
 import { Photo } from "@/components/ui/Photo";
 import { Button } from "@/components/ui/Button";
-import { Pending } from "@/components/ui/Pending";
 import { Story } from "@/components/history/Story";
 import { Caminhada } from "@/components/home/Caminhada";
 
@@ -17,7 +16,6 @@ export const metadata: Metadata = {
 };
 
 /** Nomes cuja grafia diverge entre os registros fornecidos. */
-const spellingCheck = new Set(["José Norbeto dos Santos", "José Roberto dos Santos"]);
 
 export default function HistoriaPage() {
   return (
@@ -74,7 +72,7 @@ export default function HistoriaPage() {
                   <ul>
                     {g.names.map((n) => (
                       <li key={n}>
-                        {n} <Pending show={spellingCheck.has(n)} label="grafia a confirmar" />
+                        {n}
                       </li>
                     ))}
                   </ul>
@@ -90,7 +88,7 @@ export default function HistoriaPage() {
                   <li key={m.role}>
                     <span className="record__role">{m.role}</span>
                     <span>
-                      {m.name} <Pending show={spellingCheck.has(m.name)} label="grafia a confirmar" />
+                      {m.name}
                     </span>
                   </li>
                 ))}

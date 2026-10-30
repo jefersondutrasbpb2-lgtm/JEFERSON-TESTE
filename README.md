@@ -17,7 +17,7 @@ passado, presente e missão: tipografia clássica, fotografia documental, mapas 
 | `/` | Homepage narrativa: abertura, essência, 1970, linha do tempo, mapa missionário, O Bom Samaritano, comunidade, cultos e visita |
 | `/nossa-historia/` | Scrollytelling em 6 capítulos, registros fundadores, pastores, linha do tempo e chamada para o acervo histórico |
 | `/quem-somos/` | Missão, as cinco solas, convicções e a tradição congregacional |
-| `/ministerios/` | Áreas da vida da igreja |
+| `/departamentos/` | Departamentos da igreja: UHC, UAC, DIC, UMEC e UAEC (o antigo `/ministerios/` redireciona para cá pelo `public/.htaccess`) |
 | `/missoes/` | Mapa interativo, igrejas organizadas, congregação, comunidades rurais, campos missionários e O Bom Samaritano |
 | `/agenda/` | Programação semanal; a seção de eventos aparece quando houver eventos em `agenda.json` |
 | `/visite/` | Planeje sua visita: horários, passo a passo, perguntas frequentes e mapa |
@@ -101,7 +101,7 @@ Todo o conteúdo editável fica em `src/content/` — não é preciso mexer nos 
 | `site.ts` | Nome, endereço, telefone, e-mail, redes sociais, menu e o interruptor `reviewMode` |
 | `historia.ts` | Fundação, primeiro Conselho, primeira diretoria, pastores e marcos da linha do tempo |
 | `fe.ts` | Textos bíblicos, cinco solas, convicções e nota sobre a tradição congregacional |
-| `ministerios.ts` | Áreas e ministérios (com campos opcionais de coordenação e horário) |
+| `departamentos.ts` | Departamentos: sigla, nome oficial, descrição e campos opcionais de coordenação e horário |
 | `missoes.ts` | Campos missionários e o projeto O Bom Samaritano |
 | `agenda.json` | Programação semanal e eventos |
 | `mensagens.json` | Biblioteca de mensagens (fora do ar por enquanto: a página `/mensagens/` e a seção da homepage foram retiradas; os componentes `MessagesLibrary`, `MessageCard` e `home/Mensagens` continuam no projeto para quando voltar) |

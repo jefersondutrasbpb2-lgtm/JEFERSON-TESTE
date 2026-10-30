@@ -68,7 +68,7 @@ export const mainNav: NavItem[] = [
   { href: "/", label: "Início" },
   { href: "/nossa-historia/", label: "Nossa História", short: "História", description: "Desde 13 de dezembro de 1970" },
   { href: "/quem-somos/", label: "Quem Somos", description: "Fé, identidade e fundamentos" },
-  { href: "/ministerios/", label: "Ministérios", description: "A vida da igreja" },
+  { href: "/departamentos/", label: "Departamentos", description: "Homens, mulheres, jovens, adolescentes e crianças" },
   { href: "/missoes/", label: "Missões e Ação Social", short: "Missões", description: "Sertão, Amazônia e Seridó" },
   { href: "/agenda/", label: "Agenda", description: "Cultos e programações" },
   { href: "/contato/", label: "Contato", description: "Fale conosco e pedidos de oração" },

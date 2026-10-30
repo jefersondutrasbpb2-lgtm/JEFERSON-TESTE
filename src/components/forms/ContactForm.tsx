@@ -40,7 +40,7 @@ export function ContactForm() {
         <Field id="assunto" label="Assunto" as="select">
           <option>Informações gerais</option>
           <option>Visita e cultos</option>
-          <option>Ministérios</option>
+          <option>Departamentos</option>
           <option>Missões e ação social</option>
           <option>Acervo histórico</option>
           <option>Outro assunto</option>

@@ -16,8 +16,8 @@ A pasta `greatpages/` traz a mesma página dividida em blocos para colar em elem
 
 | Página | Endereço | Origem |
 |---|---|---|
-| sertao-negocios-vendas (3659562) | www.sertaonegocios.com.br | `vendas.html`, gerado por `tools/build_vendas.py` a partir do `index.html`; `python3 tools/build_gp_html.py vendas` monta o arquivo do GreatPages |
-| sertao-negocios-html (3658757) | www.sertaonegocios.com.br/comunidade | Página da comunidade do lançamento. Fica como está no GreatPages: as mudanças de copy agora são só da página de ingressos. O `index.html` daqui serve de base para a de vendas e já não é igual à /comunidade no ar. |
+| sertao-negocios-vendas (3659562) | www.sertaonegocios.com.br/ingressos | `vendas.html`, gerado por `tools/build_vendas.py` a partir do `index.html`; `python3 tools/build_gp_html.py vendas` monta o arquivo do GreatPages |
+| sertao-negocios-html (3658757) | www.sertaonegocios.com.br (raiz, desde 30/10) | Página da comunidade do lançamento. Fica como está no GreatPages: as mudanças de copy agora são só da página de ingressos. O `index.html` daqui serve de base para a de vendas e já não é igual à /comunidade no ar. |
 
 ## Antes de publicar
 

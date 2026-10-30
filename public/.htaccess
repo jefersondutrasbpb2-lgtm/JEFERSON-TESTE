@@ -4,3 +4,11 @@ DirectoryIndex index.html index.php
 
 # A página "Ministérios" passou a se chamar "Departamentos".
 Redirect 301 /ministerios/ /departamentos/
+
+# Páginas: o navegador sempre confere se há versão nova antes de usar a cópia guardada,
+# para que cada publicação apareça para os visitantes sem precisar limpar o cache.
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html|txt|xml)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>

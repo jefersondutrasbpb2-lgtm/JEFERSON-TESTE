@@ -1,4 +1,5 @@
 import { SiteLink } from "@/components/ui/SiteLink";
+import { t } from "@/i18n/server";
 import { Icon, type IconName } from "./Icon";
 
 type Props = {
@@ -26,7 +27,7 @@ export function Button({ href, children, variant = "solid", icon = "arrow-right"
     return (
       <a className={cls} href={href} target="_blank" rel="noopener noreferrer">
         {content}
-        <span className="sr-only"> (abre em nova aba)</span>
+        <span className="sr-only">{t({ pt: " (abre em nova aba)", en: " (opens in a new tab)", es: " (se abre en una pestaña nueva)" })}</span>
       </a>
     );
   }

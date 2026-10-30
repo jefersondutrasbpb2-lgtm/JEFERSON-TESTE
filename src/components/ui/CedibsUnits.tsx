@@ -1,4 +1,5 @@
 import { bomSamaritano, cedibsTotalServed, cedibsTotalVolunteers } from "@/content/missoes";
+import { t } from "@/i18n/server";
 
 /** Números e unidades do CEDIBS – Centro de Desenvolvimento Integral O Bom Samaritano. */
 export function CedibsUnits() {
@@ -6,17 +7,23 @@ export function CedibsUnits() {
     <div className="cedibs">
       <dl className="cedibs__totals" data-reveal="stagger">
         <div>
-          <dt>crianças, adolescentes e jovens atendidos</dt>
+          <dt>
+            {t({
+              pt: "crianças, adolescentes e jovens atendidos",
+              en: "children, teenagers and young people served",
+              es: "niños, adolescentes y jóvenes atendidos",
+            })}
+          </dt>
           <dd className="numeral" data-count={cedibsTotalServed}>
             {cedibsTotalServed}
           </dd>
         </div>
         <div>
-          <dt>unidades</dt>
+          <dt>{t({ pt: "unidades", en: "units", es: "unidades" })}</dt>
           <dd className="numeral">{bomSamaritano.units.length}</dd>
         </div>
         <div>
-          <dt>voluntários, aproximadamente</dt>
+          <dt>{t({ pt: "voluntários, aproximadamente", en: "volunteers, approximately", es: "voluntarios, aproximadamente" })}</dt>
           <dd className="numeral" data-count={cedibsTotalVolunteers}>
             {cedibsTotalVolunteers}
           </dd>
@@ -26,19 +33,22 @@ export function CedibsUnits() {
       <ul className="cedibs__units" data-reveal="stagger">
         {bomSamaritano.units.map((u) => (
           <li key={u.id} className="cedibs__unit">
-            <p className="cedibs__unit-label">{u.label}</p>
+            <p className="cedibs__unit-label">{t(u.label)}</p>
             <h3 className="cedibs__unit-city">{u.city}</h3>
             <dl className="cedibs__unit-stats">
               <div>
-                <dt>{u.servedLabel}</dt>
+                <dt>{t(u.servedLabel)}</dt>
                 <dd className="numeral">{u.served}</dd>
               </div>
               <div>
-                <dt>voluntários ({bomSamaritano.volunteersTitle.toLowerCase()}), aproximadamente</dt>
+                <dt>
+                  {t({ pt: "voluntários", en: "volunteers", es: "voluntarios" })} ({t(bomSamaritano.volunteersTitle).toLowerCase()}),{" "}
+                  {t({ pt: "aproximadamente", en: "approximately", es: "aproximadamente" })}
+                </dt>
                 <dd className="numeral">{u.volunteers}</dd>
               </div>
             </dl>
-            {u.note && <p className="cedibs__unit-note">{u.note}</p>}
+            {u.note && <p className="cedibs__unit-note">{t(u.note)}</p>}
           </li>
         ))}
       </ul>

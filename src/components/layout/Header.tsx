@@ -7,13 +7,16 @@ import { mainNav, site, visitCta, fullAddress } from "@/content/site";
 import { getLenis } from "@/lib/lenis";
 import { routeFromPathname } from "@/lib/links";
 import { Icon } from "@/components/ui/Icon";
+import { useT } from "@/i18n/client";
 import { BrandLogo } from "./BrandLogo";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 const isCurrent = (pathname: string, href: string) =>
   href === "/" ? pathname === "/" : pathname.startsWith(href.replace(/\/$/, ""));
 
 export function Header() {
   const pathname = routeFromPathname(usePathname() || "/");
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
@@ -96,11 +99,16 @@ export function Header() {
       data-open={open || undefined}
     >
       <div className="site-header__bar container">
-        <SiteLink href="/" className="site-header__brand" aria-label={`${site.name} — página inicial`} title="Página inicial">
+        <SiteLink
+          href="/"
+          className="site-header__brand"
+          aria-label={`${site.name} — ${t({ pt: "página inicial", en: "home page", es: "página de inicio" })}`}
+          title={t({ pt: "Página inicial", en: "Home page", es: "Página de inicio" })}
+        >
           <BrandLogo />
         </SiteLink>
 
-        <nav className="nav-desktop" aria-label="Navegação principal">
+        <nav className="nav-desktop" aria-label={t({ pt: "Navegação principal", en: "Main navigation", es: "Navegación principal" })}>
           <ul>
             {mainNav.slice(1).map((item) => (
               <li key={item.href}>
@@ -109,7 +117,7 @@ export function Header() {
                   className="nav-desktop__link"
                   aria-current={isCurrent(pathname, item.href) ? "page" : undefined}
                 >
-                  {item.short ?? item.label}
+                  {t(item.short ?? item.label)}
                 </SiteLink>
               </li>
             ))}
@@ -117,8 +125,9 @@ export function Header() {
         </nav>
 
         <div className="site-header__actions">
+          <LanguageSwitcher className="lang-switch--bar" />
           <SiteLink href={visitCta.href} className="btn btn--solid btn--sm site-header__cta">
-            <span className="btn__label">{visitCta.label}</span>
+            <span className="btn__label">{t(visitCta.label)}</span>
           </SiteLink>
           <button
             ref={toggleRef}
@@ -128,7 +137,9 @@ export function Header() {
             aria-controls="site-menu"
             onClick={() => setOpen((v) => !v)}
           >
-            <span className="menu-toggle__label">{open ? "Fechar" : "Menu"}</span>
+            <span className="menu-toggle__label">
+              {open ? t({ pt: "Fechar", en: "Close", es: "Cerrar" }) : t({ pt: "Menu", en: "Menu", es: "Menú" })}
+            </span>
             <span className="menu-toggle__icon" aria-hidden="true">
               <Icon name={open ? "close" : "menu"} size={20} />
             </span>
@@ -143,11 +154,11 @@ export function Header() {
         data-tone="ink"
         role="dialog"
         aria-modal="true"
-        aria-label="Menu do site"
+        aria-label={t({ pt: "Menu do site", en: "Site menu", es: "Menú del sitio" })}
         hidden={!open}
       >
         <div className="site-menu__inner container">
-          <nav aria-label="Menu principal" className="site-menu__nav">
+          <nav aria-label={t({ pt: "Menu principal", en: "Main menu", es: "Menú principal" })} className="site-menu__nav">
             <ol>
               {mainNav.map((item, i) => (
                 <li key={item.href} style={{ "--i": i } as React.CSSProperties}>
@@ -157,8 +168,8 @@ export function Header() {
                     aria-current={isCurrent(pathname, item.href) ? "page" : undefined}
                     onClick={() => close(false)}
                   >
-                    <span className="site-menu__label">{item.label}</span>
-                    {item.description && <span className="site-menu__desc">{item.description}</span>}
+                    <span className="site-menu__label">{t(item.label)}</span>
+                    {item.description && <span className="site-menu__desc">{t(item.description)}</span>}
                   </SiteLink>
                 </li>
               ))}
@@ -166,13 +177,16 @@ export function Header() {
           </nav>
           <div className="site-menu__aside">
             <SiteLink href={visitCta.href} className="btn btn--solid" onClick={() => close(false)}>
-              <span className="btn__label">{visitCta.label}</span>
+              <span className="btn__label">{t(visitCta.label)}</span>
               <span className="btn__icon" aria-hidden="true">
                 <Icon name="arrow-right" size={16} />
               </span>
             </SiteLink>
             <p className="small muted">{fullAddress}</p>
-            <p className="xs muted">Fundada em {site.foundedLabel}</p>
+            <p className="xs muted">
+              {t({ pt: "Fundada em", en: "Founded on", es: "Fundada el" })} {t(site.foundedLabel)}
+            </p>
+            <LanguageSwitcher className="lang-switch--menu" onNavigate={() => close(false)} />
           </div>
         </div>
       </div>

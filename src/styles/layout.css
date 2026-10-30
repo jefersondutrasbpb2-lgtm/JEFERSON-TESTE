@@ -244,6 +244,89 @@ html .site-header[data-open][data-tone] {
   visibility: hidden;
 }
 
+/* ---------- Troca de idioma ---------- */
+
+.lang-switch ul {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  list-style: none;
+}
+.lang-switch li {
+  display: flex;
+  align-items: center;
+}
+.lang-switch li + li::before {
+  content: "";
+  display: inline-block;
+  width: 1px;
+  height: 0.9em;
+  margin-inline: 0.15rem;
+  vertical-align: middle;
+  background: var(--tone-line);
+}
+.lang-switch a {
+  display: inline-grid;
+  place-items: center;
+  min-width: 2.25rem;
+  min-height: 44px;
+  padding-inline: 0.35rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  opacity: 0.62;
+  transition: opacity var(--dur-fast);
+}
+.lang-switch a:hover {
+  opacity: 1;
+}
+.lang-switch a[aria-current="true"] {
+  opacity: 1;
+  text-decoration: underline;
+  text-decoration-color: var(--tone-accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.45em;
+}
+.lang-switch--bar a {
+  min-width: 1.9rem;
+}
+.site-header[data-open] .lang-switch--bar {
+  visibility: hidden;
+}
+/* Celular: idiomas compactos e botão de menu só com o ícone */
+@media (max-width: 479px) {
+  .site-header__actions {
+    gap: 0.35rem;
+  }
+  .lang-switch--bar a {
+    min-width: 1.6rem;
+    padding-inline: 0.15rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+  }
+  .lang-switch--bar li + li::before {
+    margin-inline: 0.05rem;
+  }
+  .menu-toggle {
+    padding: 0 0.25rem;
+  }
+  .menu-toggle__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+.lang-switch--menu {
+  margin-top: var(--sp-3);
+}
+.lang-switch--menu a {
+  font-size: 0.9rem;
+}
+
 .menu-toggle {
   display: inline-flex;
   align-items: center;

@@ -4,12 +4,26 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { overviewMap, regionalMap, type GeoMap } from "@/content/geo.generated";
 import { kindLabel, missionFields, type MissionField } from "@/content/missoes";
 import { Pending } from "@/components/ui/Pending";
+import type { L10n } from "@/i18n/config";
+import { useT } from "@/i18n/client";
 
 type View = "regional" | "overview";
 
-const views: { id: View; label: string; caption: string }[] = [
-  { id: "regional", label: "Sertão e Seridó", caption: "Sertão Paraibano e Seridó potiguar" },
-  { id: "overview", label: "Brasil", caption: "Campos missionários no Brasil" },
+const views: { id: View; label: L10n; caption: L10n }[] = [
+  {
+    id: "regional",
+    label: { pt: "Sertão e Seridó", en: "Sertão and Seridó", es: "Sertón y Seridó" },
+    caption: {
+      pt: "Sertão Paraibano e Seridó potiguar",
+      en: "The Sertão of Paraíba and the Seridó of Rio Grande do Norte",
+      es: "Sertón de Paraíba y Seridó de Rio Grande do Norte",
+    },
+  },
+  {
+    id: "overview",
+    label: { pt: "Brasil", en: "Brazil", es: "Brasil" },
+    caption: { pt: "Campos missionários no Brasil", en: "Mission fields in Brazil", es: "Campos misioneros en Brasil" },
+  },
 ];
 
 /** Curva suave entre dois pontos, arqueada para o lado de `bend`. */
@@ -58,13 +72,19 @@ function MapSvg({
   const highlight = view === "regional" ? ["PB"] : ["PB", "RN", "AM"];
   const targets = fields.filter((f) => f.point && f.point !== "pombal");
   const scale = view === "overview" ? 1.25 : 1;
+  const t = useT();
+  const caption = views.find((v) => v.id === view)?.caption;
 
   return (
     <svg
       className={`atlas__map atlas__map--${view} ${current ? "is-current" : ""}`}
       viewBox={`0 0 ${map.width} ${map.height}`}
       role="img"
-      aria-label={`${views.find((v) => v.id === view)?.caption}: mapa ilustrativo com a localização aproximada dos trabalhos.`}
+      aria-label={`${caption ? t(caption) : ""}: ${t({
+        pt: "mapa ilustrativo com a localização aproximada dos trabalhos.",
+        en: "illustrative map with the approximate location of each work.",
+        es: "mapa ilustrativo con la ubicación aproximada de las obras.",
+      })}`}
       aria-hidden={!current}
     >
       <g className="atlas__states">
@@ -140,6 +160,7 @@ function MapSvg({
 }
 
 export function MissionAtlas({ compact = false }: { compact?: boolean }) {
+  const t = useT();
   const [view, setView] = useState<View>("regional");
   const [active, setActive] = useState<string | null>("catole");
   const [inView, setInView] = useState(false);
@@ -184,7 +205,11 @@ export function MissionAtlas({ compact = false }: { compact?: boolean }) {
   return (
     <div className={`atlas ${compact ? "atlas--compact" : ""}`} ref={ref} data-inview={inView || undefined}>
       <div className="atlas__stage">
-        <div className="tabs atlas__tabs" role="tablist" aria-label="Escala do mapa">
+        <div
+          className="tabs atlas__tabs"
+          role="tablist"
+          aria-label={t({ pt: "Escala do mapa", en: "Map scale", es: "Escala del mapa" })}
+        >
           {views.map((v, i) => (
             <button
               key={v.id}
@@ -198,7 +223,7 @@ export function MissionAtlas({ compact = false }: { compact?: boolean }) {
               onClick={() => setView(v.id)}
               onKeyDown={(e) => onTabKey(e, i)}
             >
-              {v.label}
+              {t(v.label)}
             </button>
           ))}
         </div>
@@ -208,12 +233,19 @@ export function MissionAtlas({ compact = false }: { compact?: boolean }) {
           <MapSvg map={overviewMap} view="overview" current={view === "overview"} active={active} onPick={pick} />
         </div>
         <p className="atlas__legend xs">
-          Mapa ilustrativo · localizações aproximadas · base cartográfica IBGE
+          {t({
+            pt: "Mapa ilustrativo · localizações aproximadas · base cartográfica IBGE",
+            en: "Illustrative map · approximate locations · IBGE base map",
+            es: "Mapa ilustrativo · ubicaciones aproximadas · base cartográfica del IBGE",
+          })}
         </p>
       </div>
 
       <div className="atlas__side">
-        <ul className="atlas__list" aria-label="Trabalhos e campos missionários">
+        <ul
+          className="atlas__list"
+          aria-label={t({ pt: "Trabalhos e campos missionários", en: "Works and mission fields", es: "Obras y campos misioneros" })}
+        >
           {missionFields.map((f) => (
             <li key={f.id}>
               <button
@@ -224,7 +256,7 @@ export function MissionAtlas({ compact = false }: { compact?: boolean }) {
                 onMouseEnter={() => pick(f.id)}
               >
                 <span className="atlas__item-name">{f.name}</span>
-                <span className="atlas__item-place">{f.place}</span>
+                <span className="atlas__item-place">{t(f.place)}</span>
               </button>
             </li>
           ))}
@@ -237,14 +269,15 @@ export function MissionAtlas({ compact = false }: { compact?: boolean }) {
 }
 
 function FieldDetail({ field, compact }: { field: MissionField; compact: boolean }) {
+  const t = useT();
   return (
     <div className="atlas__detail" aria-live="polite">
-      <p className="atlas__detail-kind">{kindLabel[field.kind]}</p>
+      <p className="atlas__detail-kind">{t(kindLabel[field.kind])}</p>
       <p className="atlas__detail-name">
-        {field.name} <span className="muted">— {field.place}</span>
+        {field.name} <span className="muted">— {t(field.place)}</span>
       </p>
-      {field.people && <p className="atlas__detail-people">{field.people}</p>}
-      {!compact && <p className="atlas__detail-text">{field.summary}</p>}
+      {field.people && <p className="atlas__detail-people">{t(field.people)}</p>}
+      {!compact && <p className="atlas__detail-text">{t(field.summary)}</p>}
       <Pending show={field.pending} label="situação atual a confirmar" />
     </div>
   );

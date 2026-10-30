@@ -238,6 +238,9 @@ html.motion .hero__img {
 
 /* ---------- 02 · Essência ---------- */
 
+.essencia {
+  overflow-x: clip;
+}
 .essencia__grid {
   display: grid;
   gap: clamp(2.5rem, 5vw, 4.5rem);
@@ -264,10 +267,16 @@ html.motion .hero__img {
     column-gap: 2rem;
     row-gap: clamp(4rem, 7vw, 7rem);
   }
-  .essencia__head { grid-column: 1 / span 7; }
-  .essencia__media { grid-column: 9 / span 4; grid-row: 1 / span 2; align-self: start; margin-top: 4rem; }
+  .essencia__head { grid-column: 1 / span 6; }
+  /* Foto grande: metade direita da seção, sangrando até a borda da tela */
+  .essencia__media {
+    grid-column: 7 / span 6;
+    grid-row: 1 / span 3;
+    align-self: start;
+    margin-right: calc(-1 * (var(--gutter) + max(0px, (100vw - var(--container)) / 2)));
+  }
   .essencia__body { grid-column: 2 / span 5; }
-  .essencia__verse { grid-column: 2 / span 7; padding-top: 1rem; border-top: 1px solid var(--tone-line); }
+  .essencia__verse { grid-column: 2 / span 5; padding-top: 1rem; border-top: 1px solid var(--tone-line); }
 }
 
 /* ---------- 03 · 1970 ---------- */

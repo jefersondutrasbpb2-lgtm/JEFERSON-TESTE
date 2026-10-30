@@ -7,9 +7,8 @@ Marque cada item ao validar com a liderança e atualize o arquivo indicado.
 
 ## 1. Divergências encontradas no histórico fornecido
 
-- [x] **Neemias Tertuliano Martins** — mesma pessoa no Conselho e na diretoria; grafia unificada → `src/content/historia.ts`
-- [ ] **José Norbeto / José Roberto dos Santos** — confirmado que é a mesma pessoa; falta saber a grafia correta para
-      unificar → `src/content/historia.ts`
+- [x] **Neemias Tertuliano de Sousa** — mesma pessoa no Conselho e na diretoria; grafia unificada
+- [x] **José Roberto dos Santos** — mesma pessoa no Conselho e na diretoria; grafia unificada
 - [ ] **Eliézer Zulianelle de Andrade** — confirmar a grafia do sobrenome. → `src/content/historia.ts`
 - [ ] **Relação de pastores** — o registro tem uma lacuna na numeração. Há nomes faltando? Deseja incluir períodos dos
       pastorados (somente se documentados)? → `src/content/historia.ts`
@@ -60,8 +59,9 @@ Os dados abaixo vieram de uma versão anterior do site e **não foram verificado
       "A tradição congregacional" e na seção da Confissão) → `src/content/fe.ts`
 - [x] A Confissão não tem link nem PDF: o acesso é pelo livro impresso, vendido pela Aliança (informado na legenda)
 - [ ] Estatuto da igreja: deseja publicar no site? → `src/content/fe.ts`
-- [ ] Ministérios: por enquanto sem líderes e horários. A igreja se organiza em **departamentos**: renomear a página e
-      cadastrar os departamentos quando a lista vier → `src/content/ministerios.ts`
+- [x] Departamentos: UHC, UAC, DIC, UMEC e UAEC (página `/departamentos/`, no lugar de "Ministérios")
+- [ ] Departamentos: confirmar as descrições curtas de cada um e, se quiserem, informar coordenação e horários
+      → `src/content/departamentos.ts`
 
 ## 6. Formulários, privacidade e LGPD
 

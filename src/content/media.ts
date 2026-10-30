@@ -30,11 +30,11 @@ export const media: Record<string, ImageData | undefined> = {
     variants: [{ src: "/images/fachada-rua-960.webp", width: 960 }],
   },
   pregacao: {
-    src: "/images/pregacao-pulpito.webp",
-    alt: "Pregador ao púlpito com a Bíblia aberta; à frente do púlpito, o símbolo da cruz da igreja",
-    width: 768,
-    height: 1025,
-    focus: "50% 45%",
+    src: "/images/pr-felipe-pregando.webp",
+    alt: "Pr. Felipe Oliveira pregando ao púlpito da igreja, com o microfone na mão",
+    width: 1086,
+    height: 1448,
+    focus: "60% 35%",
   },
   congregacao: {
     src: "/images/culto-louvor-congregacao.webp",

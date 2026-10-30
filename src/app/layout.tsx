@@ -6,7 +6,6 @@ import "@/styles/index.css";
 import { site, siteUrl, fullAddress } from "@/content/site";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { ReviewBanner } from "@/components/layout/ReviewBanner";
 import { SmoothScroll } from "@/components/motion/SmoothScroll";
 
 export const metadata: Metadata = {
@@ -83,7 +82,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </main>
         <Footer />
-        <ReviewBanner />
       </body>
     </html>
   );

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { congregationalNote, pillars, scriptures, solas } from "@/content/fe";
+import { confession, congregationalNote, pillars, scriptures, solas } from "@/content/fe";
 import { currentPastor } from "@/content/historia";
 import { asset } from "@/lib/asset";
 import { media } from "@/content/media";
@@ -8,7 +8,6 @@ import { Section } from "@/components/ui/Section";
 import { Photo } from "@/components/ui/Photo";
 import { Button } from "@/components/ui/Button";
 import { ScriptureQuote } from "@/components/ui/ScriptureQuote";
-import { Pending } from "@/components/ui/Pending";
 
 export const metadata: Metadata = {
   title: "Quem Somos",
@@ -93,8 +92,8 @@ export default function QuemSomosPage() {
               </h2>
             </div>
             <p className="prose" data-reveal>
-              Uma apresentação introdutória e acessível. Documentos doutrinários oficiais serão disponibilizados nesta
-              página conforme orientação da liderança. <Pending label="conteúdo em validação" />
+              Um resumo do que cremos. A declaração completa da nossa fé está na{" "}
+              <a href="#confissao">{confession.title}</a>, adotada pela igreja.
             </p>
           </header>
 
@@ -105,6 +104,36 @@ export default function QuemSomosPage() {
                 <p className="card__text">{p.text}</p>
               </article>
             ))}
+          </div>
+        </div>
+      </Section>
+
+      <Section id="confissao" tone="sand" labelledBy="confissao-title" className="confession">
+        <div className="container confession__grid">
+          <figure className="confession__book" data-slide="left">
+            <img
+              src={asset(confession.image.src)}
+              alt={`Capa do livro ${confession.title}: ${confession.subtitle}, ${confession.publisher}`}
+              width={confession.image.width}
+              height={confession.image.height}
+              loading="lazy"
+              decoding="async"
+            />
+            <figcaption>
+              <strong>{confession.title}</strong>
+              <span>{confession.subtitle}</span>
+              <span className="confession__availability">{confession.availability}</span>
+            </figcaption>
+          </figure>
+          <div className="confession__copy">
+            <h2 id="confissao-title" className="h2" data-split>
+              A Igreja Cristã, os Congregacionais e as <em>Confissões de Fé</em>
+            </h2>
+            <div className="prose" data-reveal>
+              {confession.paragraphs.map((p) => (
+                <p key={p}>{p}</p>
+              ))}
+            </div>
           </div>
         </div>
       </Section>
@@ -159,9 +188,6 @@ export default function QuemSomosPage() {
                 <p key={p}>{p}</p>
               ))}
             </div>
-            <p className="note" data-reveal>
-              {congregationalNote.disclaimer}
-            </p>
             <div className="btn-row" data-reveal>
               <Button href="/nossa-historia/">Nossa história</Button>
               <Button href="/visite/" variant="text">

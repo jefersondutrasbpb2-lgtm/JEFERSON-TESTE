@@ -907,6 +907,59 @@
   margin-top: 0.4rem;
   color: var(--c-gold);
 }
+/* Confissão de fé: o livro "flutua" sobre o fundo, sem moldura */
+.confession__grid {
+  display: grid;
+  gap: 2.5rem;
+  align-items: center;
+}
+@media (min-width: 900px) {
+  .confession__grid {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    column-gap: clamp(3rem, 7vw, 7rem);
+  }
+}
+.confession__book {
+  margin: 0;
+  display: grid;
+  gap: 1.25rem;
+  justify-items: center;
+  text-align: center;
+}
+.confession__book img {
+  width: min(100%, 26rem);
+  height: auto;
+  filter: drop-shadow(0 30px 40px rgb(11 36 71 / 0.28)) drop-shadow(0 8px 12px rgb(11 36 71 / 0.18));
+}
+@media (max-width: 899px) {
+  .confession__book img {
+    width: min(72%, 18rem);
+  }
+}
+.confession__book figcaption {
+  display: grid;
+  gap: 0.25rem;
+  max-width: 26rem;
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+  color: var(--tone-muted);
+}
+.confession__book figcaption strong {
+  font-family: var(--ff-display);
+  font-size: 1rem;
+  color: var(--tone-fg);
+}
+.confession__availability {
+  margin-top: 0.35rem;
+  font-weight: 600;
+  color: var(--tone-fg);
+}
+.confession__copy {
+  display: grid;
+  gap: 1.75rem;
+  justify-items: start;
+}
+
 /* Pastor: foto sem moldura, sangrando até a borda e fundindo-se ao azul da seção */
 .leadership {
   padding-block: 0;

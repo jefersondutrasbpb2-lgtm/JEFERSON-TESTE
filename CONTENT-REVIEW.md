@@ -62,8 +62,12 @@ Os dados abaixo vieram de uma versão anterior do site e **não foram verificado
 - [ ] Textos bíblicos sugeridos (1 Coríntios 3.11; Romanos 11.36; 1 Pedro 4.10 — versão ARA). A liderança pode
       escolher outros → `src/content/fe.ts` e `src/app/ministerios/page.tsx`
 - [ ] Textos de "Quem Somos", cinco solas e convicções: revisão teológica → `src/content/fe.ts`
-- [ ] Vínculo denominacional (ex.: convenção ou união de igrejas congregacionais), documento confessional e estatuto —
-      **não foram atribuídos** à igreja; inclua apenas se oficialmente confirmados → `src/content/fe.ts`
+- [x] Confissão de fé: Confissão de Fé Congregacional — Declaração de Fé da Aliança das Igrejas Evangélicas
+      Congregacionais do Brasil (Editora AGEP). Texto e capa aplicados em "Quem Somos" → `src/content/fe.ts`
+- [x] Filiação confirmada: a igreja é filiada à Aliança das Igrejas Evangélicas Congregacionais do Brasil (citada em
+      "A tradição congregacional" e na seção da Confissão) → `src/content/fe.ts`
+- [x] A Confissão não tem link nem PDF: o acesso é pelo livro impresso, vendido pela Aliança (informado na legenda)
+- [ ] Estatuto da igreja: deseja publicar no site? → `src/content/fe.ts`
 - [ ] Ministérios: nomes oficiais, coordenadores, faixas etárias e horários → `src/content/ministerios.ts`
 
 ## 6. Formulários, privacidade e LGPD

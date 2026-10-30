@@ -623,7 +623,7 @@ button { font: inherit; color: inherit; }
 .ticket__value { font-family: var(--font-display); font-variation-settings: "opsz" 72; font-weight: 800; font-size: clamp(2.2rem, 1.7rem + 2vw, 3.2rem); line-height: 1; letter-spacing: -.04em; }
 .ticket__inst { font-size: .95rem; color: rgb(255 255 255 / .78); }
 .ticket__inst:empty { display: none; }
-.ticket__list { display: grid; gap: 14px; }
+.ticket__list { display: grid; gap: 14px; align-content: start; }
 .ticket__list li { position: relative; padding-left: 32px; line-height: 1.45; }
 .ticket__list li::before {
   content: ""; position: absolute; left: 0; top: .15em; width: 20px; height: 20px; border-radius: 50%;

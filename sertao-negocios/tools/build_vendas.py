@@ -87,7 +87,7 @@ hero_buy = f'''<div class="hero__form buy" id="comprar" data-hero="cta" data-doc
         </a>
         <a class="buy__opt buy__opt--vip" {attrs("vip", "hero-vip")}>
           <span class="buy__name">VIP</span>
-          <span class="buy__desc">Fila exclusiva, assento perto do palco e kit</span>
+          <span class="buy__desc">Assento perto do palco, kit e 3 bônus exclusivos</span>
           <span class="buy__price">{brl(v["price"])}<small>Comprar</small></span>
         </a>
         <a class="buy__more" href="#ingressos" data-cta="hero-comparar">Ver tudo o que cada ingresso inclui</a>
@@ -151,6 +151,9 @@ tickets = f'''<!-- ====== 06 INGRESSOS ====== -->
             <li>Credenciamento exclusivo, com fila diferenciada</li>
             <li>Assento preferencial, mais perto do palco</li>
             <li>Kit do participante, com materiais e brindes</li>
+            <li><strong>Bônus:</strong> Sertão Book, o resumo digital das palestras</li>
+            <li><strong>Bônus:</strong> Treinamento de Gestão de Alta Performance com Moisés Ramos</li>
+            <li><strong>Bônus:</strong> Treinamento online ao vivo de Marketing e Vendas com Moisés Ramos</li>
           </ul>
           <a class="btn btn--sol btn--lg btn--block" {attrs("vip", "ticket-vip")}>
             <span>Comprar o VIP</span>
@@ -179,7 +182,7 @@ html = must_sub(html, r'<!-- ====== 06 LOTE 0 ====== -->.*?</section>\n\n  ', ti
 # Perguntas: as duas do lote 0 viram compra e diferença entre os ingressos
 faq_new = '''<details class="qa" data-reveal>
           <summary><span>Qual a diferença entre o Smart e o VIP?</span><span class="qa__icon" aria-hidden="true"></span></summary>
-          <div class="qa__a"><p>O Smart dá acesso completo ao evento, com pulseira personalizada, área de estandes de negócios e certificado de participação. O VIP inclui tudo isso e acrescenta credenciamento exclusivo com fila diferenciada, assento preferencial mais perto do palco e o kit do participante, com materiais e brindes.</p></div>
+          <div class="qa__a"><p>O Smart dá acesso completo ao evento, com pulseira personalizada, área de estandes de negócios e certificado de participação. O VIP inclui tudo isso e acrescenta credenciamento exclusivo com fila diferenciada, assento preferencial mais perto do palco e o kit do participante, com materiais e brindes. Ainda leva três bônus exclusivos: o Sertão Book, com o resumo digital das palestras, o Treinamento de Gestão de Alta Performance e o treinamento online ao vivo de Marketing e Vendas, os dois com Moisés Ramos.</p></div>
         </details>
         <details class="qa" data-reveal>
           <summary><span>Como faço para comprar?</span><span class="qa__icon" aria-hidden="true"></span></summary>

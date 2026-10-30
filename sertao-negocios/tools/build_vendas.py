@@ -68,7 +68,7 @@ html = must_replace(html, "<title>Sertão Negócios 2026 · 03 e 04 de dezembro 
                     "<title>Ingressos · Sertão Negócios 2026 · 03 e 04 de dezembro · Patos-PB</title>")
 html = must_sub(html, r'<meta name="description" content="[^"]*">',
                 '<meta name="description" content="Ingressos Smart e VIP do Sertão Negócios 2026, com Moisés Ramos, '
-                'Rick Chesther, Rossandro Klinjey, Padre Fabrício Timóteo, Linda Carvalho e mais 9 palestrantes. 03 e 04 de dezembro, '
+                'Rick Chesther, Rossandro Klinjey, Padre Fabrício Timóteo e mais 10 palestrantes. 03 e 04 de dezembro, '
                 f'em Patos-PB. Lote 1 a partir de {PROXIMO}.">')
 
 # Menu
@@ -76,13 +76,18 @@ html = must_replace(html, '<a href="#lote-0">Lote 0</a>', '<a href="#ingressos">
 html = must_replace(html, '<a class="btn btn--sm btn--sol nav__cta" href="#cadastro" data-cta="nav">Quero o lote 0</a>',
                     '<a class="btn btn--sm btn--sol nav__cta" href="#ingressos" data-cta="nav">Comprar ingresso</a>')
 
-# Palco: palestrantes já revelados entre os 10 que completam a programação (o primeiro foi Linda Carvalho, em 30/10)
+# Palco: palestrantes já revelados entre os 10 que completam a programação, na ordem em que foram anunciados
 REVELADOS = [
     {"slug": "linda", "nome": "Linda Carvalho", "nome_html": "Linda<br>Carvalho", "papel": "Palestrante",
      "tema": "Comunicação, imagem e posicionamento",
      "bio": "Comunicadora e empreendedora, tem 20 anos de carreira na TV e no rádio e é uma das vozes mais influentes "
             "da comunicação na Paraíba. Como estrategista de comunicação, ajuda pequenos e médios empresários a vender "
             "mais e a se posicionar melhor usando a própria imagem, e empresta a sua a marcas que querem comunicar os seus valores."},
+    {"slug": "irclebson", "nome": "Irclebson Ramos", "nome_html": "Irclebson<br>Ramos", "papel": "Palestrante",
+     "tema": "Liderança, legado e prosperidade",
+     "bio": "Empresário, autor e presidente do Grupo Makários, holding com mais de 20 empresas no Brasil, em Portugal e nos "
+            "Estados Unidos. Começou a empreender ainda menino, vendendo ovos de Páscoa, e hoje se dedica a formar líderes e "
+            "fortalecer empresários. É autor do livro Dia a Dia de um Afortunado."},
 ]
 A_REVELAR = 10 - len(REVELADOS)
 cards = "".join(f'''
@@ -102,7 +107,11 @@ html = must_replace(html, '''        </article>
 
         <aside class="speaker-cases" data-reveal>''', '        </article>\n' + cards + '''
         <aside class="speaker-cases" data-reveal>''')
-nomes = ", ".join(r["nome"] for r in REVELADOS)
+lista = [r["nome"] for r in REVELADOS]
+nomes = ", ".join(lista)
+nomes_e = " e ".join([", ".join(lista[:-1]), lista[-1]]) if len(lista) > 1 else lista[0]
+html = must_replace(html, "Padre Fabrício Timóteo e mais 10 palestrantes. 03 e 04 de dezembro",
+                    f"Padre Fabrício Timóteo, {nomes} e mais {A_REVELAR} palestrantes. 03 e 04 de dezembro")
 html = must_replace(html, "Padre Fabrício Timóteo e mais 10 palestrantes que já passaram desse ponto.",
                     f"Padre Fabrício Timóteo, {nomes} e mais {A_REVELAR} palestrantes que já passaram desse ponto.")
 html = must_replace(html, '<span class="stat__n" data-count="4">04</span><span class="stat__l">nomes confirmados</span>',
@@ -110,7 +119,7 @@ html = must_replace(html, '<span class="stat__n" data-count="4">04</span><span c
 html = must_replace(html, '<span class="stat__n" data-count="10">10</span><span class="stat__l">palestrantes a revelar</span>',
                     f'<span class="stat__n" data-count="{A_REVELAR}">{A_REVELAR:02d}</span><span class="stat__l">palestrantes a revelar</span>')
 html = must_replace(html, "<p>Outros 10 palestrantes, escolhidos a dedo, completam a programação. Cada nome é revelado no Instagram,",
-                    f"<p>Outros 10 palestrantes, escolhidos a dedo, completam a programação. {nomes} abre a lista, e cada novo nome é revelado no Instagram,")
+                    f"<p>Outros 10 palestrantes, escolhidos a dedo, completam a programação. {nomes_e} {"abrem" if len(lista) > 1 else "abre"} a lista, e cada novo nome é revelado no Instagram,")
 html = must_replace(html, '<span class="speaker-cases__n">+10</span>', f'<span class="speaker-cases__n">+{A_REVELAR}</span>')
 html = must_replace(html, "<p><strong>palestrantes</strong> escolhidos a dedo completam este palco.",
                     "<p><strong>palestrantes</strong> escolhidos a dedo ainda completam este palco.")

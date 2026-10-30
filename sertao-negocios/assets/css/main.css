@@ -461,7 +461,7 @@ button { font: inherit; color: inherit; }
   .speaker--lead { grid-column: 1 / -1; }
   .speaker--b { margin-top: 12vw; }
   .speaker-cases { align-self: center; }
-  .speaker--d ~ .speaker-cases { grid-column: 1 / -1; }
+  .speaker-cases:nth-child(even) { grid-column: 1 / -1; }  /* sem par na última linha: ocupa a largura toda */
 }
 @media (min-width: 1024px) {
   .speakers__grid { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(16px, 2vw, 32px); row-gap: 64px; }
@@ -469,8 +469,10 @@ button { font: inherit; color: inherit; }
   .speaker--a { grid-column: 1 / span 4; }
   .speaker--b { grid-column: 5 / span 4; margin-top: 14vh; }
   .speaker--c { grid-column: 9 / span 4; margin-top: 5vh; }
-  .speaker--d { grid-column: 1 / span 4; }
-  .speaker--d ~ .speaker-cases { align-self: center; }
+  /* Palestrantes revelados depois: lado a lado, três por linha, com o destaque "+N" no próximo espaço livre */
+  .speaker--d { grid-column: span 4; }
+  .speaker--d + .speaker--d { margin-top: 8vh; }
+  .speaker--d ~ .speaker-cases { grid-column: span 4; grid-template-columns: 1fr; align-self: center; }
   .speaker-cases { grid-column: 7 / span 6; grid-template-columns: auto 1fr; align-items: center; column-gap: 28px; }
 }
 

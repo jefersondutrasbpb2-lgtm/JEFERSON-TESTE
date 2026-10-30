@@ -1,4 +1,5 @@
 import type { Scripture } from "@/content/fe";
+import { t } from "@/i18n/server";
 
 export function ScriptureQuote({ verse, size = "md" }: { verse: Scripture; size?: "md" | "lg" }) {
   return (
@@ -7,10 +8,10 @@ export function ScriptureQuote({ verse, size = "md" }: { verse: Scripture; size?
         “
       </span>
       <blockquote className="scripture__text">
-        <p>{verse.text}</p>
+        <p>{t(verse.text)}</p>
       </blockquote>
       <figcaption className="scripture__ref">
-        {verse.ref} <span className="scripture__version">· {verse.version}</span>
+        {t(verse.ref)} <span className="scripture__version">· {t(verse.version)}</span>
       </figcaption>
     </figure>
   );

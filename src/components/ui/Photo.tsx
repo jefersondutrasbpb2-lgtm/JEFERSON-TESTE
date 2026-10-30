@@ -1,9 +1,12 @@
 import { asset } from "@/lib/asset";
 import { reviewMode } from "@/content/site";
+import type { Text } from "@/i18n/config";
+import { t } from "@/i18n/server";
 
 export type ImageData = {
   src: string;
-  alt: string;
+  /** Descrição da imagem nos três idiomas */
+  alt: Text;
   width: number;
   height: number;
   /** Versões em outras larguras, para srcset responsivo */
@@ -19,7 +22,7 @@ type Props = {
   slot: string;
   ratio?: string;
   archival?: boolean;
-  caption?: string;
+  caption?: Text;
   className?: string;
   priority?: boolean;
   parallax?: number;
@@ -60,7 +63,7 @@ export function Photo({
       }
       sizes={image.variants?.length ? sizes : undefined}
       style={image.focus ? { objectPosition: image.focus } : undefined}
-      alt={image.alt}
+      alt={t(image.alt)}
       width={image.width}
       height={image.height}
       loading={priority ? "eager" : "lazy"}
@@ -91,7 +94,7 @@ export function Photo({
       >
         {inner}
       </div>
-      {caption && <figcaption className="photo__caption">{caption}</figcaption>}
+      {caption && <figcaption className="photo__caption">{t(caption)}</figcaption>}
     </figure>
   );
 }

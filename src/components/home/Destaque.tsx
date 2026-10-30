@@ -3,11 +3,13 @@ import { fullAddress, mapsDirectionsUrl } from "@/content/site";
 import { asset } from "@/lib/asset";
 import { Button } from "@/components/ui/Button";
 import { ExpiresAfter } from "@/components/ui/ExpiresAfter";
+import { getLocale, t } from "@/i18n/server";
 
 /** Destaque do próximo evento marcado com `highlight` em agenda.json. */
 export function Destaque() {
   const ev = events.find((e) => e.highlight && !e.example);
   if (!ev) return null;
+  const locale = getLocale();
   return (
     <ExpiresAfter date={ev.date}>
       <section className="section section--tight section-tone destaque" data-tone="green" data-tone-section="green" aria-labelledby="destaque-title">
@@ -19,39 +21,39 @@ export function Destaque() {
           )}
           <div className="destaque__copy">
             <p className="destaque__kicker" data-reveal>
-              <span>Próximo evento</span>
+              <span>{t({ pt: "Próximo evento", en: "Upcoming event", es: "Próximo evento" })}</span>
               <span aria-hidden="true">·</span>
-              <time dateTime={ev.date}>{formatDateLong(ev.date)}</time>
+              <time dateTime={ev.date}>{formatDateLong(ev.date, locale)}</time>
               {ev.time && (
                 <>
                   <span aria-hidden="true">·</span>
-                  <span>{formatTime(ev.time)}</span>
+                  <span>{formatTime(ev.time, locale)}</span>
                 </>
               )}
             </p>
             <h2 id="destaque-title" className="h1" data-split>
-              {ev.title}
+              {t(ev.title)}
             </h2>
             {ev.description && (
               <p className="lead lead--wide" data-reveal>
-                {ev.description}
+                {t(ev.description)}
               </p>
             )}
             {ev.verse && (
               <blockquote className="destaque__verse" data-reveal>
-                <p>“{ev.verse.text}”</p>
-                <cite>{ev.verse.ref}</cite>
+                <p>“{t(ev.verse.text)}”</p>
+                <cite>{t(ev.verse.ref)}</cite>
               </blockquote>
             )}
             <p className="destaque__place small" data-reveal>
-              {ev.location} — {fullAddress}
+              {ev.location ? t(ev.location) : null} — {fullAddress}
             </p>
             <div className="btn-row" data-reveal>
               <Button href={mapsDirectionsUrl} icon="arrow-up-right" external>
-                Como chegar
+                {t({ pt: "Como chegar", en: "Get directions", es: "Cómo llegar" })}
               </Button>
               <Button href="/agenda/" variant="outline">
-                Ver agenda
+                {t({ pt: "Ver agenda", en: "See schedule", es: "Ver agenda" })}
               </Button>
             </div>
           </div>

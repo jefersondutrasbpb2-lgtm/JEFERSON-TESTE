@@ -25,16 +25,22 @@ const relNext = (s) =>
     .replaceAll('href="/apple-icon.png', 'href="./apple-icon.png')
     .replaceAll('href="/favicon.ico', 'href="./favicon.ico');
 
-// Páginas: out/index.html → inicio.html; out/<rota>/index.html → <rota>.html
-const pages = [["index.html", "inicio.html"]];
-for (const entry of readdirSync(OUT)) {
-  const p = join(OUT, entry, "index.html");
-  if (statSync(join(OUT, entry)).isDirectory() && existsSync(p) && !["_next", "_not-found", "404"].includes(entry)) {
-    pages.push([join(entry, "index.html"), `${entry}.html`]);
+// Páginas: out/index.html → inicio.html; out/<rota>/index.html → <rota>.html;
+// versões em inglês e espanhol com prefixo: out/en/<rota>/index.html → en-<rota>.html
+const SKIP = ["_next", "_not-found", "404", "escala", "escalas", "en", "es"];
+const pages = [];
+for (const [lang, base] of [["", OUT], ["en-", join(OUT, "en")], ["es-", join(OUT, "es")]]) {
+  if (!existsSync(join(base, "index.html"))) continue;
+  pages.push([join(base, "index.html"), `${lang}inicio.html`]);
+  for (const entry of readdirSync(base)) {
+    const p = join(base, entry, "index.html");
+    if (statSync(join(base, entry)).isDirectory() && existsSync(p) && !SKIP.includes(entry)) {
+      pages.push([p, `${lang}${entry}.html`]);
+    }
   }
 }
 for (const [src, dest] of pages) {
-  writeFileSync(join(DEST, dest), relNext(readFileSync(join(OUT, src), "utf8")));
+  writeFileSync(join(DEST, dest), relNext(readFileSync(src, "utf8")));
 }
 
 // Arquivos estáticos

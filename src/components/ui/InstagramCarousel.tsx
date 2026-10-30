@@ -3,29 +3,34 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { asset } from "@/lib/asset";
 import { instagramProfileUrl, type InstagramFeed } from "@/content/instagram";
+import { htmlLang, type L10n, type Text } from "@/i18n/config";
+import { useLocale, useT } from "@/i18n/client";
 import { Icon } from "./Icon";
 
-export type CarouselFallbackItem = { image: string; alt: string; caption: string };
+export type CarouselFallbackItem = { image: string; alt: L10n; caption: L10n };
 
 type Props = {
   feed: InstagramFeed;
   /** Fotos exibidas enquanto o feed do Instagram não estiver conectado. */
   fallback: CarouselFallbackItem[];
-  title?: string;
+  title?: Text;
 };
 
-const dateLabel = (iso?: string) => {
+const dateLabel = (iso: string | undefined, lang: string) => {
   if (!iso) return null;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
-  return d.toLocaleDateString("pt-BR", { day: "numeric", month: "short", year: "numeric" });
+  return d.toLocaleDateString(lang, { day: "numeric", month: "short", year: "numeric" });
 };
 
 /**
  * Carrossel de publicações do Instagram, com rolagem horizontal por toque,
  * arraste, teclado ou pelos botões. As imagens são servidas pelo próprio site.
  */
-export function InstagramCarousel({ feed, fallback, title = "No Instagram" }: Props) {
+export function InstagramCarousel({ feed, fallback, title: titleProp }: Props) {
+  const t = useT();
+  const lang = htmlLang[useLocale()];
+  const title = t(titleProp ?? { pt: "No Instagram", en: "On Instagram", es: "En Instagram" });
   const trackRef = useRef<HTMLUListElement>(null);
   const [atStart, setAtStart] = useState(true);
   const [atEnd, setAtEnd] = useState(false);
@@ -68,29 +73,35 @@ export function InstagramCarousel({ feed, fallback, title = "No Instagram" }: Pr
           </p>
           <a className="ig__handle" href={profile} target="_blank" rel="noopener noreferrer">
             @{feed.handle}
-            <span className="sr-only"> (abre o Instagram em nova aba)</span>
+            <span className="sr-only">
+              {t({ pt: " (abre o Instagram em nova aba)", en: " (opens Instagram in a new tab)", es: " (abre Instagram en una pestaña nueva)" })}
+            </span>
           </a>
         </div>
         <div className="ig__controls">
-          <button type="button" className="ig__btn" onClick={() => scrollBy(-1)} disabled={atStart} aria-label="Publicações anteriores">
+          <button type="button" className="ig__btn" onClick={() => scrollBy(-1)} disabled={atStart} aria-label={t({ pt: "Publicações anteriores", en: "Previous posts", es: "Publicaciones anteriores" })}>
             <Icon name="arrow-right" size={18} className="ig__btn-prev" />
           </button>
-          <button type="button" className="ig__btn" onClick={() => scrollBy(1)} disabled={atEnd} aria-label="Próximas publicações">
+          <button type="button" className="ig__btn" onClick={() => scrollBy(1)} disabled={atEnd} aria-label={t({ pt: "Próximas publicações", en: "Next posts", es: "Publicaciones siguientes" })}>
             <Icon name="arrow-right" size={18} />
           </button>
           <a className="btn btn--outline btn--sm ig__follow" href={profile} target="_blank" rel="noopener noreferrer">
-            <span className="btn__label">Seguir no Instagram</span>
+            <span className="btn__label">{t({ pt: "Seguir no Instagram", en: "Follow on Instagram", es: "Seguir en Instagram" })}</span>
           </a>
         </div>
       </div>
 
-      <ul className="ig__track" ref={trackRef} tabIndex={0} aria-label="Publicações; use as setas do teclado para rolar" data-lenis-prevent>
+      <ul className="ig__track" ref={trackRef} tabIndex={0} aria-label={t({
+          pt: "Publicações; use as setas do teclado para rolar",
+          en: "Posts; use the arrow keys to scroll",
+          es: "Publicaciones; usa las flechas del teclado para desplazarte",
+        })} data-lenis-prevent>
         {live
           ? feed.posts.map((p) => (
               <li key={p.id} className="ig__card">
                 <a href={p.permalink} target="_blank" rel="noopener noreferrer" className="ig__link">
                   <span className="ig__media">
-                    <img src={asset(p.image)} alt={p.caption ? p.caption.slice(0, 140) : `Publicação de @${feed.handle}`} loading="lazy" decoding="async" width={1080} height={1080} />
+                    <img src={asset(p.image)} alt={p.caption ? p.caption.slice(0, 140) : `${t({ pt: "Publicação de", en: "Post by", es: "Publicación de" })} @${feed.handle}`} loading="lazy" decoding="async" width={1080} height={1080} />
                     {p.type === "VIDEO" && (
                       <span className="ig__badge" aria-hidden="true">
                         <Icon name="play" size={14} />
@@ -98,8 +109,8 @@ export function InstagramCarousel({ feed, fallback, title = "No Instagram" }: Pr
                     )}
                   </span>
                   {p.caption && <span className="ig__caption">{p.caption}</span>}
-                  {dateLabel(p.timestamp) && <span className="ig__date">{dateLabel(p.timestamp)}</span>}
-                  <span className="sr-only"> (abre no Instagram)</span>
+                  {dateLabel(p.timestamp, lang) && <span className="ig__date">{dateLabel(p.timestamp, lang)}</span>}
+                  <span className="sr-only">{t({ pt: " (abre no Instagram)", en: " (opens on Instagram)", es: " (se abre en Instagram)" })}</span>
                 </a>
               </li>
             ))
@@ -107,10 +118,12 @@ export function InstagramCarousel({ feed, fallback, title = "No Instagram" }: Pr
               <li key={f.image} className="ig__card">
                 <a href={profile} target="_blank" rel="noopener noreferrer" className="ig__link">
                   <span className="ig__media">
-                    <img src={asset(f.image)} alt={f.alt} loading="lazy" decoding="async" width={1080} height={1080} />
+                    <img src={asset(f.image)} alt={t(f.alt)} loading="lazy" decoding="async" width={1080} height={1080} />
                   </span>
-                  <span className="ig__caption">{f.caption}</span>
-                  <span className="sr-only"> (abre o perfil no Instagram)</span>
+                  <span className="ig__caption">{t(f.caption)}</span>
+                  <span className="sr-only">
+                    {t({ pt: " (abre o perfil no Instagram)", en: " (opens the Instagram profile)", es: " (abre el perfil en Instagram)" })}
+                  </span>
                 </a>
               </li>
             ))}

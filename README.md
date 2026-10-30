@@ -23,6 +23,28 @@ passado, presente e missão: tipografia clássica, fotografia documental, mapas 
 | `/visite/` | Planeje sua visita: horários, passo a passo, perguntas frequentes e mapa |
 | `/contato/` | Canais oficiais, formulário de contato, pedido de oração confidencial e política de privacidade |
 
+Todas as páginas existem também em inglês (`/en/…`) e em espanhol (`/es/…`), com as mesmas rotas. Veja
+"Idiomas" abaixo.
+
+## Idiomas
+
+O site tem três versões: português (endereços originais), inglês (`/en/`) e espanhol (`/es/`). A troca de idioma
+fica no topo à direita (e dentro do menu no celular) e leva à mesma página na outra língua.
+
+- **Rotas:** `src/app/(pt)`, `src/app/en` e `src/app/es` têm cada uma o seu layout raiz (com `<html lang>` correto) e
+  arquivos de página mínimos que chamam as telas compartilhadas de `src/views/`. A página 404 única fica em
+  `src/app/global-not-found.tsx` (opção `experimental.globalNotFound` em `next.config.ts`).
+- **Textos:** cada texto traduzível é escrito nos três idiomas lado a lado, como `{ pt: "…", en: "…", es: "…" }`
+  (tipo `L10n` em `src/i18n/config.ts`). Nos componentes de servidor use `t()` de `@/i18n/server`; nos de cliente,
+  `useT()` de `@/i18n/client`. Nomes próprios, siglas e nomes oficiais (igreja, CEDIBS, Aliança, departamentos e o
+  título da Confissão) ficam em português, com tradução entre parênteses quando ajuda.
+- **Links internos:** use `SiteLink`/`Button` com o caminho em português (`/agenda/`); o prefixo do idioma é aplicado
+  automaticamente.
+- **Bíblia:** português ARA, inglês King James Version (KJV) e espanhol Reina-Valera 1960 (RVR1960).
+- **SEO:** cada página informa as versões equivalentes (`hreflang`) e o `sitemap.xml` lista as três.
+
+Ao alterar um texto em português, atualize também o inglês e o espanhol no mesmo objeto.
+
 ## Stack
 
 - **Next.js 16** (App Router) com exportação estática (`output: "export"`) — gera HTML puro em `out/`
@@ -94,7 +116,8 @@ o formulário valida os dados e oferece o envio por e-mail com o texto já preen
 
 ## Atualizando o conteúdo
 
-Todo o conteúdo editável fica em `src/content/` — não é preciso mexer nos componentes.
+Todo o conteúdo editável fica em `src/content/` — não é preciso mexer nos componentes. Os textos estão nos três
+idiomas (`pt`, `en`, `es`).
 
 | Arquivo | O que contém |
 | --- | --- |

@@ -1,3 +1,7 @@
+"use client";
+
+import { useT } from "@/i18n/client";
+
 type Props = {
   id: string;
   label: string;
@@ -46,9 +50,12 @@ export function Field({ id, label, error, hint, required, as = "input", children
 }
 
 export function Honeypot() {
+  const t = useT();
   return (
     <div className="hp-field" aria-hidden="true">
-      <label htmlFor="website">Não preencha este campo</label>
+      <label htmlFor="website">
+        {t({ pt: "Não preencha este campo", en: "Leave this field empty", es: "No completes este campo" })}
+      </label>
       <input id="website" name="website" type="text" tabIndex={-1} autoComplete="off" />
     </div>
   );

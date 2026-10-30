@@ -104,6 +104,15 @@ Espaços reservados aguardando imagens reais e autorizadas (`src/content/media.t
 - [ ] Enviar o logotipo do CEDIBS em arquivo (PNG ou SVG), se quiserem exibi-lo na seção do projeto
 - [x] Entrada do templo
 
+## 9. Versões em inglês e espanhol
+
+- [x] Site traduzido para inglês (`/en/`) e espanhol (`/es/`), com troca de idioma no topo
+- [ ] Revisão por alguém da igreja que leia inglês e/ou espanhol, especialmente termos de fé e nomes de cultos
+      ("Culto solene" → "Evening worship service" / "Culto solemne"; "Culto de doutrina" → "Doctrine service" /
+      "Culto de doctrina"; "Escola Bíblica Dominical" → "Sunday School") → textos `{ pt, en, es }` em `src/`
+- [ ] Os cultos são em português; as versões estrangeiras avisam isso na Agenda e nas perguntas frequentes. Confirmar
+      se há alguém que possa atender visitantes em inglês ou espanhol
+
 ## Para publicar
 
 O modo de revisão está **desligado** (`reviewMode = false` em `src/content/site.ts`) desde a revisão de 30/10/2026:

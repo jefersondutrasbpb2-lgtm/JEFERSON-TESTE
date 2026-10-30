@@ -1,37 +1,65 @@
 {
-  "_instrucoes": "Programação regular (weekly) e eventos (events). Datas no formato AAAA-MM-DD e horários HH:MM. Remova 'pending' após confirmar cada item com a liderança. Eventos com 'example: true' só aparecem no modo de revisão.",
+  "_instrucoes": "Programação regular (weekly) e eventos (events). Datas no formato AAAA-MM-DD e horários HH:MM. Textos em três idiomas: {\"pt\": \"…\", \"en\": \"…\", \"es\": \"…\"}. O nome do dia vem de dayIndex (0 = domingo). Eventos com 'example: true' só aparecem no modo de revisão.",
   "weekly": [
     {
       "id": "domingo-manha",
-      "day": "Domingo",
       "dayIndex": 0,
       "time": "09:00",
-      "title": "Culto da manhã e Escola Bíblica Dominical",
-      "description": "Culto e Escola Bíblica Dominical (EBD), com estudo das Escrituras para todas as idades."
+      "title": {
+        "pt": "Culto da manhã e Escola Bíblica Dominical",
+        "en": "Morning service and Sunday School",
+        "es": "Culto de la mañana y Escuela Bíblica Dominical"
+      },
+      "description": {
+        "pt": "Culto e Escola Bíblica Dominical (EBD), com estudo das Escrituras para todas as idades.",
+        "en": "Worship service and Sunday School, with Bible study for all ages.",
+        "es": "Culto y Escuela Bíblica Dominical (EBD), con estudio de las Escrituras para todas las edades."
+      }
     },
     {
       "id": "domingo-noite",
-      "day": "Domingo",
       "dayIndex": 0,
       "time": "18:00",
-      "title": "Culto solene",
-      "description": "Culto público de adoração e pregação do Evangelho."
+      "title": {
+        "pt": "Culto solene",
+        "en": "Evening worship service",
+        "es": "Culto solemne"
+      },
+      "description": {
+        "pt": "Culto público de adoração e pregação do Evangelho.",
+        "en": "Public worship and preaching of the Gospel.",
+        "es": "Culto público de adoración y predicación del Evangelio."
+      }
     },
     {
       "id": "terca",
-      "day": "Terça-feira",
       "dayIndex": 2,
       "time": "19:30",
-      "title": "Culto de oração",
-      "description": "A igreja reunida em oração e intercessão."
+      "title": {
+        "pt": "Culto de oração",
+        "en": "Prayer service",
+        "es": "Culto de oración"
+      },
+      "description": {
+        "pt": "A igreja reunida em oração e intercessão.",
+        "en": "The church gathered in prayer and intercession.",
+        "es": "La iglesia reunida en oración e intercesión."
+      }
     },
     {
       "id": "quinta",
-      "day": "Quinta-feira",
       "dayIndex": 4,
       "time": "19:30",
-      "title": "Culto de doutrina",
-      "description": "Ensino da doutrina bíblica."
+      "title": {
+        "pt": "Culto de doutrina",
+        "en": "Doctrine service",
+        "es": "Culto de doctrina"
+      },
+      "description": {
+        "pt": "Ensino da doutrina bíblica.",
+        "en": "Teaching of biblical doctrine.",
+        "es": "Enseñanza de la doctrina bíblica."
+      }
     }
   ],
   "events": []

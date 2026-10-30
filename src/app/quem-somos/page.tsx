@@ -122,6 +122,7 @@ export default function QuemSomosPage() {
             <figcaption>
               <strong>{confession.title}</strong>
               <span>{confession.subtitle}</span>
+              <span className="confession__availability">{confession.availability}</span>
             </figcaption>
           </figure>
           <div className="confession__copy">
@@ -187,9 +188,6 @@ export default function QuemSomosPage() {
                 <p key={p}>{p}</p>
               ))}
             </div>
-            <p className="note" data-reveal>
-              {congregationalNote.disclaimer}
-            </p>
             <div className="btn-row" data-reveal>
               <Button href="/nossa-historia/">Nossa história</Button>
               <Button href="/visite/" variant="text">

@@ -1,7 +1,7 @@
 /**
  * Conteúdos de identidade e fé.
- * Textos introdutórios e acessíveis. A confissão de fé adotada pela igreja
- * foi enviada pela liderança; estatuto e vínculos denominacionais ainda não.
+ * Textos introdutórios e acessíveis. A confissão de fé e a filiação à Aliança
+ * foram confirmadas pela liderança; o estatuto ainda não foi enviado.
  */
 
 export type Scripture = { text: string; ref: string; version: string; pending?: boolean };
@@ -91,9 +91,8 @@ export const congregationalNote = {
   paragraphs: [
     "O congregacionalismo é uma tradição protestante nascida da Reforma, que valoriza a autoridade das Escrituras, a comunhão dos membros e a participação da congregação local na vida da igreja.",
     "No Brasil, essa tradição remonta ao trabalho missionário do médico escocês Robert Reid Kalley, iniciado em 1855 no Rio de Janeiro.",
+    "A Igreja Evangélica Congregacional de Pombal é filiada à Aliança das Igrejas Evangélicas Congregacionais do Brasil.",
   ],
-  disclaimer:
-    "Vínculos denominacionais e estatuto da igreja serão apresentados nesta página conforme orientação oficial da liderança.",
 };
 
 /** Confissão de fé adotada pela igreja (texto e imagem enviados pela liderança). */
@@ -101,10 +100,11 @@ export const confession = {
   title: "Confissão de Fé Congregacional",
   subtitle: "Declaração de Fé da Aliança das Igrejas Evangélicas Congregacionais do Brasil",
   publisher: "Editora AGEP",
+  availability: "Edição impressa, vendida pela Aliança.",
   image: { src: "/images/confissao-de-fe-congregacional.webp", width: 900, height: 1163 },
   paragraphs: [
     "A história do Cristianismo é testemunho vivo de que os cristãos, desde cedo, confessaram e publicaram suas crenças por meio de declarações de fé. Quando surgiram os problemas doutrinários, as definições teológicas a respeito de Deus, de Cristo e de outras doutrinas da fé cristã exigiram muita reflexão. Em resposta, a Igreja convocou concílios, estudou os temas controversos e elaborou seus credos.",
     "Com o advento do Protestantismo vieram as suas primeiras expressões de fé, numa caminhada que culmina no Congregacionalismo. Essa história mostra que nem a fé cristã em geral, nem os congregacionais em particular, são avessos a confissões: expressar as crenças em documentos é parte inerente da história do Cristianismo e do Congregacionalismo.",
-    "Fiel a essa herança, a Igreja Evangélica Congregacional de Pombal tem como sua confissão de fé a Confissão de Fé Congregacional, Declaração de Fé da Aliança das Igrejas Evangélicas Congregacionais do Brasil.",
+    "Fiel a essa herança e filiada à Aliança das Igrejas Evangélicas Congregacionais do Brasil, a Igreja Evangélica Congregacional de Pombal tem como sua confissão de fé a Confissão de Fé Congregacional, a Declaração de Fé da Aliança.",
   ],
 };

@@ -63,10 +63,10 @@ Os dados abaixo vieram de uma versão anterior do site e **não foram verificado
 - [ ] Textos de "Quem Somos", cinco solas e convicções: revisão teológica → `src/content/fe.ts`
 - [x] Confissão de fé: Confissão de Fé Congregacional — Declaração de Fé da Aliança das Igrejas Evangélicas
       Congregacionais do Brasil (Editora AGEP). Texto e capa aplicados em "Quem Somos" → `src/content/fe.ts`
-- [ ] A igreja é filiada à Aliança das Igrejas Evangélicas Congregacionais do Brasil? O site hoje diz apenas que adota a
-      confissão. Estatuto e outros vínculos também ainda não foram enviados → `src/content/fe.ts`
-- [ ] Há PDF ou link oficial da Confissão para incluir um botão de acesso? Deseja publicar o sumário dos credos citado
-      no texto de apresentação? → `src/content/fe.ts`
+- [x] Filiação confirmada: a igreja é filiada à Aliança das Igrejas Evangélicas Congregacionais do Brasil (citada em
+      "A tradição congregacional" e na seção da Confissão) → `src/content/fe.ts`
+- [x] A Confissão não tem link nem PDF: o acesso é pelo livro impresso, vendido pela Aliança (informado na legenda)
+- [ ] Estatuto da igreja: deseja publicar no site? → `src/content/fe.ts`
 - [ ] Ministérios: nomes oficiais, coordenadores, faixas etárias e horários → `src/content/ministerios.ts`
 
 ## 6. Formulários, privacidade e LGPD

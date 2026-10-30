@@ -949,6 +949,11 @@
   font-size: 1rem;
   color: var(--tone-fg);
 }
+.confession__availability {
+  margin-top: 0.35rem;
+  font-weight: 600;
+  color: var(--tone-fg);
+}
 .confession__copy {
   display: grid;
   gap: 1.75rem;

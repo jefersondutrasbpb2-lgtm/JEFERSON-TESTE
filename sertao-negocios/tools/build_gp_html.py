@@ -72,6 +72,12 @@ for small in ("logo-sertao-negocios-440.webp", "logo-sertao-negocios-240.webp"):
     data = base64.b64encode((ROOT / "assets/img" / small).read_bytes()).decode()
     html = must_replace(html, f"assets/img/{small}", f"data:image/webp;base64,{data}")
 
+# Fotos dos palestrantes revelados depois (só na página de vendas): embutidas, sem depender da galeria do GreatPages
+for small in ("speaker-linda.webp",):
+    if f"assets/img/{small}" in html:
+        data = base64.b64encode((ROOT / "assets/img" / small).read_bytes()).decode()
+        html = html.replace(f"assets/img/{small}", f"data:image/webp;base64,{data}")
+
 # Imagens: links do GreatPages
 for name, url in links.items():
     html = html.replace(f"assets/img/{name}", url)

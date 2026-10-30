@@ -68,13 +68,52 @@ html = must_replace(html, "<title>Sertão Negócios 2026 · 03 e 04 de dezembro 
                     "<title>Ingressos · Sertão Negócios 2026 · 03 e 04 de dezembro · Patos-PB</title>")
 html = must_sub(html, r'<meta name="description" content="[^"]*">',
                 '<meta name="description" content="Ingressos Smart e VIP do Sertão Negócios 2026, com Moisés Ramos, '
-                'Rick Chesther, Rossandro Klinjey, Padre Fabrício Timóteo e mais 10 palestrantes. 03 e 04 de dezembro, '
+                'Rick Chesther, Rossandro Klinjey, Padre Fabrício Timóteo, Linda Carvalho e mais 9 palestrantes. 03 e 04 de dezembro, '
                 f'em Patos-PB. Lote 1 a partir de {PROXIMO}.">')
 
 # Menu
 html = must_replace(html, '<a href="#lote-0">Lote 0</a>', '<a href="#ingressos">Ingressos</a>')
 html = must_replace(html, '<a class="btn btn--sm btn--sol nav__cta" href="#cadastro" data-cta="nav">Quero o lote 0</a>',
                     '<a class="btn btn--sm btn--sol nav__cta" href="#ingressos" data-cta="nav">Comprar ingresso</a>')
+
+# Palco: palestrantes já revelados entre os 10 que completam a programação (o primeiro foi Linda Carvalho, em 30/10)
+REVELADOS = [
+    {"slug": "linda", "nome": "Linda Carvalho", "nome_html": "Linda<br>Carvalho", "papel": "Palestrante",
+     "tema": "Comunicação, imagem e posicionamento",
+     "bio": "Comunicadora e empreendedora, tem 20 anos de carreira na TV e no rádio e é uma das vozes mais influentes "
+            "da comunicação na Paraíba. Como estrategista de comunicação, ajuda pequenos e médios empresários a vender "
+            "mais e a se posicionar melhor usando a própria imagem, e empresta a sua a marcas que querem comunicar os seus valores."},
+]
+A_REVELAR = 10 - len(REVELADOS)
+cards = "".join(f'''
+        <article class="speaker speaker--d" data-speaker>
+          <div class="speaker__frame" data-speed="0.03">
+            <img src="assets/img/speaker-{r["slug"]}.webp" alt="{r["nome"]}" width="640" height="800" loading="lazy" decoding="async">
+          </div>
+          <div class="speaker__info">
+            <p class="speaker__role">{r["papel"]}</p>
+            <h3 class="speaker__name">{r["nome_html"]}</h3>
+            <p class="speaker__topic">{r["tema"]}</p>
+            <p class="speaker__bio">{r["bio"]}</p>
+          </div>
+        </article>
+''' for r in REVELADOS)
+html = must_replace(html, '''        </article>
+
+        <aside class="speaker-cases" data-reveal>''', '        </article>\n' + cards + '''
+        <aside class="speaker-cases" data-reveal>''')
+nomes = ", ".join(r["nome"] for r in REVELADOS)
+html = must_replace(html, "Padre Fabrício Timóteo e mais 10 palestrantes que já passaram desse ponto.",
+                    f"Padre Fabrício Timóteo, {nomes} e mais {A_REVELAR} palestrantes que já passaram desse ponto.")
+html = must_replace(html, '<span class="stat__n" data-count="4">04</span><span class="stat__l">nomes confirmados</span>',
+                    f'<span class="stat__n" data-count="{4 + len(REVELADOS)}">{4 + len(REVELADOS):02d}</span><span class="stat__l">nomes confirmados</span>')
+html = must_replace(html, '<span class="stat__n" data-count="10">10</span><span class="stat__l">palestrantes a revelar</span>',
+                    f'<span class="stat__n" data-count="{A_REVELAR}">{A_REVELAR:02d}</span><span class="stat__l">palestrantes a revelar</span>')
+html = must_replace(html, "<p>Outros 10 palestrantes, escolhidos a dedo, completam a programação. Cada nome é revelado no Instagram,",
+                    f"<p>Outros 10 palestrantes, escolhidos a dedo, completam a programação. {nomes} abre a lista, e cada novo nome é revelado no Instagram,")
+html = must_replace(html, '<span class="speaker-cases__n">+10</span>', f'<span class="speaker-cases__n">+{A_REVELAR}</span>')
+html = must_replace(html, "<p><strong>palestrantes</strong> escolhidos a dedo completam este palco.",
+                    "<p><strong>palestrantes</strong> escolhidos a dedo ainda completam este palco.")
 
 # Topo: card de compra no lugar do formulário
 s, v = INGRESSOS["smart"], INGRESSOS["vip"]

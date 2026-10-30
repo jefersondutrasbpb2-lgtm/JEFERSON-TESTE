@@ -1,7 +1,7 @@
 /**
  * Conteúdos de identidade e fé.
- * Textos introdutórios e acessíveis. Documentos confessionais, estatuto
- * e posições doutrinárias detalhadas devem vir da liderança da igreja.
+ * Textos introdutórios e acessíveis. A confissão de fé adotada pela igreja
+ * foi enviada pela liderança; estatuto e vínculos denominacionais ainda não.
  */
 
 export type Scripture = { text: string; ref: string; version: string; pending?: boolean };
@@ -93,5 +93,18 @@ export const congregationalNote = {
     "No Brasil, essa tradição remonta ao trabalho missionário do médico escocês Robert Reid Kalley, iniciado em 1855 no Rio de Janeiro.",
   ],
   disclaimer:
-    "Vínculos denominacionais, documentos confessionais e estatuto da igreja serão apresentados nesta página conforme orientação oficial da liderança.",
+    "Vínculos denominacionais e estatuto da igreja serão apresentados nesta página conforme orientação oficial da liderança.",
+};
+
+/** Confissão de fé adotada pela igreja (texto e imagem enviados pela liderança). */
+export const confession = {
+  title: "Confissão de Fé Congregacional",
+  subtitle: "Declaração de Fé da Aliança das Igrejas Evangélicas Congregacionais do Brasil",
+  publisher: "Editora AGEP",
+  image: { src: "/images/confissao-de-fe-congregacional.webp", width: 900, height: 1163 },
+  paragraphs: [
+    "A história do Cristianismo é testemunho vivo de que os cristãos, desde cedo, confessaram e publicaram suas crenças por meio de declarações de fé. Quando surgiram os problemas doutrinários, as definições teológicas a respeito de Deus, de Cristo e de outras doutrinas da fé cristã exigiram muita reflexão. Em resposta, a Igreja convocou concílios, estudou os temas controversos e elaborou seus credos.",
+    "Com o advento do Protestantismo vieram as suas primeiras expressões de fé, numa caminhada que culmina no Congregacionalismo. Essa história mostra que nem a fé cristã em geral, nem os congregacionais em particular, são avessos a confissões: expressar as crenças em documentos é parte inerente da história do Cristianismo e do Congregacionalismo.",
+    "Fiel a essa herança, a Igreja Evangélica Congregacional de Pombal tem como sua confissão de fé a Confissão de Fé Congregacional, Declaração de Fé da Aliança das Igrejas Evangélicas Congregacionais do Brasil.",
+  ],
 };

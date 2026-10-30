@@ -68,7 +68,7 @@ html = must_replace(html, "<title>Sertão Negócios 2026 · 03 e 04 de dezembro 
                     "<title>Ingressos · Sertão Negócios 2026 · 03 e 04 de dezembro · Patos-PB</title>")
 html = must_sub(html, r'<meta name="description" content="[^"]*">',
                 '<meta name="description" content="Ingressos Smart e VIP do Sertão Negócios 2026, com Moisés Ramos, '
-                'Rick Chesther, Rossandro Klinjey, Padre Fabrício Timóteo e 10 cases do Sertão. 03 e 04 de dezembro, '
+                'Rick Chesther, Rossandro Klinjey, Padre Fabrício Timóteo e mais 10 palestrantes. 03 e 04 de dezembro, '
                 f'em Patos-PB. Lote 1 a partir de {PROXIMO}.">')
 
 # Menu

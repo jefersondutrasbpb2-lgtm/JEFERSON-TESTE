@@ -51,7 +51,7 @@ export function PrayerForm() {
       </div>
       <label className="check">
         <input type="checkbox" name="retorno" value="sim" checked={wantsReply} onChange={(e) => setWantsReply(e.target.checked)} />
-        <span>Gostaria que alguém da equipe pastoral entrasse em contato comigo.</span>
+        <span>Gostaria que alguém da igreja entrasse em contato comigo.</span>
       </label>
       <div className="field">
         <label className="check">

@@ -114,15 +114,19 @@ export default function MissoesPage() {
           </header>
 
           <div className="far-fields__grid">
-            {campos.map((f, i) => (
-              <article key={f.id} id={`campo-${f.id}`} className="far-field">
-                <Photo
-                  image={f.id === "purus" ? media.missoesAmazonia : media.missoesCaico}
-                  slot={f.id === "purus" ? "Comunidades ribeirinhas do Rio Purus" : "Trabalho missionário em Caicó — RN"}
-                  ratio="4 / 3"
-                  mask={i ? "left" : "up"}
-                  parallax={5}
-                />
+            {campos.map((f, i) => {
+              const image = f.id === "purus" ? media.missoesAmazonia : media.missoesCaico;
+              return (
+              <article key={f.id} id={`campo-${f.id}`} className={`far-field${image ? "" : " far-field--text"}`}>
+                {image && (
+                  <Photo
+                    image={image}
+                    slot={f.id === "purus" ? "Comunidades ribeirinhas do Rio Purus" : "Trabalho missionário em Caicó — RN"}
+                    ratio="4 / 3"
+                    mask={i ? "left" : "up"}
+                    parallax={5}
+                  />
+                )}
                 <div className="far-field__body" data-reveal>
                   <p className="field-card__kind">{f.place}</p>
                   <h3 className="h3">{f.name}</h3>
@@ -131,7 +135,8 @@ export default function MissoesPage() {
                   <Pending show={f.pending} label="situação atual a confirmar" />
                 </div>
               </article>
-            ))}
+              );
+            })}
           </div>
         </div>
       </Section>

@@ -114,8 +114,8 @@ export default function ContatoPage() {
             <div className="note" data-reveal>
               <strong>Confidencialidade</strong>
               <span>
-                Os pedidos de oração são recebidos de forma reservada pela equipe pastoral da igreja, não são publicados
-                e não são compartilhados com terceiros. <Pending label="responsáveis a definir" />
+                Os pedidos de oração são recebidos de forma reservada pelo secretário da igreja, Valdeci Junior, não são
+                publicados e não são compartilhados com terceiros.
               </span>
             </div>
           </div>
@@ -159,9 +159,6 @@ export default function ContatoPage() {
               Imagens de crianças e adolescentes, inclusive das atividades do projeto O Bom Samaritano, só são publicadas
               com autorização expressa dos responsáveis. Mapas e vídeos de terceiros (Google Maps e YouTube) são
               carregados apenas quando você solicita.
-            </p>
-            <p className="xs">
-              <Pending label="texto a validar com a liderança" />
             </p>
           </div>
         </div>

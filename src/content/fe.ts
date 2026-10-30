@@ -6,19 +6,17 @@
 
 export type Scripture = { text: string; ref: string; version: string; pending?: boolean };
 
-/** Sugestões de textos bíblicos — a seleção final cabe à liderança. */
+/** Textos bíblicos aprovados pela liderança. */
 export const scriptures = {
   fundamento: {
     text: "Porque ninguém pode lançar outro fundamento, além do que foi posto, o qual é Jesus Cristo.",
     ref: "1 Coríntios 3.11",
     version: "ARA",
-    pending: true,
   },
   gloria: {
     text: "Porque dele, e por meio dele, e para ele são todas as coisas. A ele, pois, a glória eternamente. Amém.",
     ref: "Romanos 11.36",
     version: "ARA",
-    pending: true,
   },
 } satisfies Record<string, Scripture>;
 

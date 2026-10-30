@@ -9,7 +9,7 @@
 export type Pendable<T> = T & { pending?: boolean };
 
 /** Ative até que a liderança valide todos os itens marcados como pendentes. */
-export const reviewMode = true;
+export const reviewMode = false;
 
 export type SocialLink = {
   id: "instagram" | "youtube" | "facebook";
@@ -46,7 +46,7 @@ export const site = {
 
   /** Telefone oficial: ainda não há. Preencha { display, href, pending } quando houver. */
   phone: null as null | { display: string; href: string; pending: boolean },
-  email: { value: "sec.iec.2017@gmail.com", pending: true },
+  email: { value: "sec.iec.2017@gmail.com", pending: false },
 
   social: [
     { id: "instagram", label: "Instagram", handle: "@iecdepombal", href: "https://www.instagram.com/iecdepombal/", pending: false },
@@ -70,7 +70,6 @@ export const mainNav: NavItem[] = [
   { href: "/quem-somos/", label: "Quem Somos", description: "Fé, identidade e fundamentos" },
   { href: "/ministerios/", label: "Ministérios", description: "A vida da igreja" },
   { href: "/missoes/", label: "Missões e Ação Social", short: "Missões", description: "Sertão, Amazônia e Seridó" },
-  { href: "/mensagens/", label: "Mensagens", description: "Pregações e estudos bíblicos" },
   { href: "/agenda/", label: "Agenda", description: "Cultos e programações" },
   { href: "/contato/", label: "Contato", description: "Fale conosco e pedidos de oração" },
 ];

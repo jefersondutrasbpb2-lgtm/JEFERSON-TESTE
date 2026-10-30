@@ -7,11 +7,9 @@ Marque cada item ao validar com a liderança e atualize o arquivo indicado.
 
 ## 1. Divergências encontradas no histórico fornecido
 
-- [ ] **Neemias Tertuliano** — aparece como "Neemias Tertuliano **de Sousa**" (presbítero, primeiro Conselho) e
-      "Neemias Tertuliano **Martins**" (presidente da primeira diretoria). É a mesma pessoa? Qual a grafia correta?
-      → `src/content/historia.ts`
-- [ ] **José Norbeto / José Roberto dos Santos** — "José **Norbeto** dos Santos" (diácono) e "José **Roberto** dos Santos"
-      (tesoureiro). Mesma pessoa? Qual a grafia correta? → `src/content/historia.ts`
+- [x] **Neemias Tertuliano Martins** — mesma pessoa no Conselho e na diretoria; grafia unificada → `src/content/historia.ts`
+- [ ] **José Norbeto / José Roberto dos Santos** — confirmado que é a mesma pessoa; falta saber a grafia correta para
+      unificar → `src/content/historia.ts`
 - [ ] **Eliézer Zulianelle de Andrade** — confirmar a grafia do sobrenome. → `src/content/historia.ts`
 - [ ] **Relação de pastores** — o registro tem uma lacuna na numeração. Há nomes faltando? Deseja incluir períodos dos
       pastorados (somente se documentados)? → `src/content/historia.ts`
@@ -22,45 +20,39 @@ Os dados abaixo vieram de uma versão anterior do site e **não foram verificado
 
 - [x] Endereço confirmado: Rua Afro Bandeira, 265 — Nova Vida, Pombal — PB, 58840-000
 - [x] Telefone: a igreja ainda não tem um número oficial; o telefone foi retirado do site → `src/content/site.ts`
-- [ ] E-mail: sec.iec.2017@gmail.com → `src/content/site.ts`
+- [x] E-mail: sec.iec.2017@gmail.com (confirmado)
 - [x] Instagram: @iecdepombal (confirmado)
 - [x] YouTube e Facebook: @iecdepombal (conforme o convite oficial). Conferir se os endereços
       youtube.com/@iecdepombal e facebook.com/iecdepombal abrem os perfis corretos → `src/content/site.ts`
-- [ ] Endereço do canal para a biblioteca de mensagens → `src/content/mensagens.json` (`channelUrl`)
+- [x] Mensagens: retiradas do site por enquanto (página e seção da homepage), por decisão da igreja
 - [x] Domínio oficial: www.igrejacongregacionalpombal.com.br (hospedagem Hostinger, publicação automática pelo
       workflow `publicar-hostinger.yml`) → variável `NEXT_PUBLIC_SITE_URL`
 - [x] Logotipo oficial — aplicado no cabeçalho e no rodapé (versão azul em fundos claros, versão branca em fundos
       escuros) e no ícone do site → `public/brand/`, `src/components/layout/BrandLogo.tsx`, `src/app/icon.png`
 - [x] Liderança atual: Pr. Felipe Oliveira, pastor eleito, posse em 14/10/2026 (convite oficial). Exibido em
       "Quem somos", na lista de pastores e no destaque da página inicial → `src/content/historia.ts`
-- [ ] Após a posse, atualizar o status de "Pastor eleito" para "Pastor" → `src/content/historia.ts`
+- [x] Após a posse, status atualizado para "Pastor" (desde 14/10/2026)
 
 ## 3. Horários e programação
 
-- [ ] Domingo 9h — culto dominical (manhã) → `src/content/agenda.json`
-- [ ] Domingo 19h — culto dominical (noite) → `src/content/agenda.json`
-- [ ] Quarta-feira 19h30 — estudo bíblico e oração → `src/content/agenda.json`
-- [ ] Outras programações regulares (escola bíblica, jovens, crianças, oração…)
-- [ ] Eventos reais (os dois eventos atuais são **exemplos** e somem quando `reviewMode = false`)
-- [ ] Respostas das perguntas frequentes e dicas para visitantes → `src/app/visite/page.tsx` e
-      `src/components/home/Cultos.tsx`
+- [x] Domingo 9h — culto da manhã e Escola Bíblica Dominical; domingo 18h — culto solene; terça 19h30 — culto de
+      oração; quinta 19h30 — culto de doutrina → `src/content/agenda.json`
+- [x] Eventos: retirados até sair o calendário anual da igreja. Ao incluir eventos em `agenda.json`, a seção
+      "Eventos e celebrações" volta a aparecer na Agenda
+- [x] Perguntas frequentes e dicas para visitantes mantidas
 
 ## 4. Missões e ação social
 
-- [ ] Catolé do Rocha, Sousa e Cajazeiras: confirmar a forma de descrever a contribuição da IEC Pombal e se existe
-      vínculo atual. Há datas documentadas para a organização dessas igrejas? → `src/content/missoes.ts`
-- [ ] Congregação em Condado: ainda mantida? → `src/content/missoes.ts`
-- [ ] Comunidades rurais (Santa Maria, São João, Carvalhadas): trabalhos atuais? → `src/content/missoes.ts`
-- [ ] Rio Purus — missionários Eduardo e Donária: campo atual? Grafia dos nomes? Autorizam a publicação? Município de
-      referência (o mapa usa posição aproximada no trecho médio do rio) → `src/content/missoes.ts`
-- [ ] Caicó (RN) — missionários Alberto e Istênia: campo atual? Grafia dos nomes? Autorizam a publicação?
-- [ ] O Bom Samaritano: número de crianças atendidas ("mais de 200" — histórico ou atual?), situação atual do projeto,
-      responsáveis e forma de apoio → `src/content/missoes.ts`
+- [x] Catolé do Rocha, Sousa e Cajazeiras: a IEC Pombal contribuiu para a fundação; hoje são igrejas independentes
+- [x] Condado: congregação com certa autonomia, ainda filiada à IEC Pombal
+- [x] Santa Maria, São João e Carvalhadas: trabalhos continuam
+- [x] Rio Purus (Eduardo e Donária) e Caicó (Alberto e Istênia) são os campos missionários atuais; Caicó já é igreja
+      independente e emancipada
+- [x] Descrição das atividades do CEDIBS confirmada
 
 ## 5. Identidade e fé
 
-- [ ] Textos bíblicos sugeridos (1 Coríntios 3.11; Romanos 11.36; 1 Pedro 4.10 — versão ARA). A liderança pode
-      escolher outros → `src/content/fe.ts` e `src/app/ministerios/page.tsx`
+- [x] Textos bíblicos mantidos (1 Coríntios 3.11; Romanos 11.36; 1 Pedro 4.10 — ARA)
 - [ ] Textos de "Quem Somos", cinco solas e convicções: revisão teológica → `src/content/fe.ts`
 - [x] Confissão de fé: Confissão de Fé Congregacional — Declaração de Fé da Aliança das Igrejas Evangélicas
       Congregacionais do Brasil (Editora AGEP). Texto e capa aplicados em "Quem Somos" → `src/content/fe.ts`
@@ -68,15 +60,15 @@ Os dados abaixo vieram de uma versão anterior do site e **não foram verificado
       "A tradição congregacional" e na seção da Confissão) → `src/content/fe.ts`
 - [x] A Confissão não tem link nem PDF: o acesso é pelo livro impresso, vendido pela Aliança (informado na legenda)
 - [ ] Estatuto da igreja: deseja publicar no site? → `src/content/fe.ts`
-- [ ] Ministérios: nomes oficiais, coordenadores, faixas etárias e horários → `src/content/ministerios.ts`
+- [ ] Ministérios: por enquanto sem líderes e horários. A igreja se organiza em **departamentos**: renomear a página e
+      cadastrar os departamentos quando a lista vier → `src/content/ministerios.ts`
 
 ## 6. Formulários, privacidade e LGPD
 
-- [ ] Quem recebe os **pedidos de oração** (equipe pastoral? quem exatamente?) — o texto da página de contato deve
-      refletir isso → `src/app/contato/page.tsx`
+- [x] Pedidos de oração: recebidos pelo secretário da igreja, Valdeci Junior → `src/app/contato/page.tsx`
 - [ ] Serviço de envio dos formulários (Formspree, Getform ou próprio) → variáveis `NEXT_PUBLIC_CONTACT_ENDPOINT` e
       `NEXT_PUBLIC_PRAYER_ENDPOINT`
-- [ ] Texto de privacidade validado pela liderança (e, se possível, por assessoria jurídica) → `src/app/contato/page.tsx`
+- [x] Texto de privacidade (LGPD) mantido pela liderança
 - [ ] Autorizações de uso de imagem, especialmente de crianças e adolescentes. O site já publica fotos de pessoas
       identificáveis, inclusive crianças (leitura, oração e "as crianças na vida da igreja", na homepage); confirme
       que os responsáveis autorizaram o uso no site → `src/content/media.ts`
@@ -95,9 +87,11 @@ Espaços reservados aguardando imagens reais e autorizadas (`src/content/media.t
       contato e na imagem de compartilhamento (Open Graph)
 - [x] Congregação em culto, pregação, louvor, leitura, oração e crianças — aplicadas em "Nossa essência",
       "Quem somos" e "Nossa comunidade"
-- [ ] Registros da fundação (fotografias ou documentos de 1970)
-- [ ] Documento histórico digitalizado (ata ou registro)
-- [ ] Campos missionários: Rio Purus e Caicó
+- [ ] Registros da fundação (fotografias ou documentos de 1970): em catalogação. O espaço da foto foi retirado e volta
+      ao preencher `arquivo1970` em `src/content/media.ts`
+- [x] Documento histórico digitalizado: não será publicado (espaço retirado)
+- [ ] Campos missionários: Rio Purus e Caicó — fotos a enviar. Sem foto, os cartões aparecem só com texto; preencher
+      `missoesAmazonia` e `missoesCaico` em `src/content/media.ts`
 - [x] O Bom Samaritano — fotos aplicadas na página inicial e em Missões (atendimento, equipe, acolhimento e
       acompanhamento de bebês). **Confirmar a autorização dos responsáveis** para as imagens com bebês e crianças
 - [x] Nome oficial: CEDIBS – Centro de Desenvolvimento Integral O Bom Samaritano
@@ -106,13 +100,11 @@ Espaços reservados aguardando imagens reais e autorizadas (`src/content/media.t
 - [x] Unidade 02 (Paulista): 110 crianças atendidas; cerca de 15 voluntários, ~90% da Igreja Presbiteriana em Paulista
 - [ ] Confirmar: Paulista é o município da Paraíba (ao norte de Pombal)? Os nomes oficiais das igrejas parceiras estão
       corretos? A unidade de Pombal funciona na comunidade de Carvalhadas? → `src/content/missoes.ts`
-- [ ] Confirmar a descrição das atividades (atendimentos de saúde, acompanhamento de bebês e crianças, atividades
-      educativas com ensino bíblico, apoio às famílias) → `src/content/missoes.ts`
+- [x] Descrição das atividades do CEDIBS confirmada
 - [ ] Enviar o logotipo do CEDIBS em arquivo (PNG ou SVG), se quiserem exibi-lo na seção do projeto
 - [x] Entrada do templo
 
 ## Para publicar
 
-1. Atualize os dados acima e remova `pending: true` dos itens confirmados.
-2. Em `src/content/site.ts`, defina `reviewMode = false`.
-3. Configure as variáveis de ambiente e rode `npm run build`.
+O modo de revisão está **desligado** (`reviewMode = false` em `src/content/site.ts`) desde a revisão de 30/10/2026:
+os selos "a confirmar" não aparecem mais. Para voltar a vê-los durante uma nova revisão, ligue-o novamente.

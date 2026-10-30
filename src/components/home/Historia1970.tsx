@@ -11,22 +11,24 @@ export function Historia1970() {
         <span data-drift="6">1970</span>
       </div>
 
-      <div className="container h1970__grid">
+      <div className={`container h1970__grid${media.arquivo1970 ? "" : " h1970__grid--text"}`}>
         <div className="h1970__head">
           <h2 id="h1970-title" className="h2" data-split>
             Tudo começou em uma casa, <em>numa reunião de irmãos.</em>
           </h2>
         </div>
 
-        <div className="h1970__media">
-          <Photo
-            image={media.arquivo1970}
-            slot="Registros da fundação — fotografias ou documentos de 1970"
-            ratio="5 / 6"
-            archival
-            mask="left"
-          />
-        </div>
+        {media.arquivo1970 && (
+          <div className="h1970__media">
+            <Photo
+              image={media.arquivo1970}
+              slot="Registros da fundação — fotografias ou documentos de 1970"
+              ratio="5 / 6"
+              archival
+              mask="left"
+            />
+          </div>
+        )}
 
         <div className="h1970__text">
           <div className="prose" data-reveal>

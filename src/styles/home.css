@@ -365,6 +365,8 @@ html.motion .hero__img {
   .h1970__head { grid-column: 1 / span 8; }
   .h1970__media { grid-column: 1 / span 5; grid-row: 2; align-self: start; }
   .h1970__text { grid-column: 7 / span 6; grid-row: 2; }
+  /* Sem foto do acervo: o texto ocupa a largura principal */
+  .h1970__grid--text .h1970__text { grid-column: 1 / span 8; }
 }
 
 /* ---------- 04 · Linha do tempo ---------- */

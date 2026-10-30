@@ -160,10 +160,10 @@ export default function QuemSomosPage() {
               </em>
             </h2>
             <p className="leadership__status" data-slide="right" data-distance="12" data-delay="0.5">
-              {currentPastor.status} · posse em {currentPastor.installationLabel}
+              {currentPastor.status} da igreja desde {currentPastor.installationLabel}
             </p>
             <p className="prose" data-slide="right" data-distance="8" data-delay="0.6">
-              Eleito pela igreja, o {currentPastor.title} {currentPastor.name} toma posse como pastor da IEC Pombal em{" "}
+              Eleito pela igreja, o {currentPastor.title} {currentPastor.name} tomou posse como pastor da IEC Pombal em{" "}
               {currentPastor.installationLabel}, dando continuidade a uma trajetória pastoral iniciada em 1970.
             </p>
             <div className="btn-row" data-slide="right" data-distance="8" data-delay="0.7">

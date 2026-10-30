@@ -21,7 +21,7 @@ export default function AgendaPage() {
             Tempo de adorar, <em>aprender e servir.</em>
           </>
         }
-        lead="Programação regular da igreja e próximos eventos. Participe — todos são bem-vindos."
+        lead="Programação regular da igreja. Participe — todos são bem-vindos."
       />
 
       <Section tone="paper" labelledBy="semana-title" className="section--tight agenda-week">
@@ -35,6 +35,8 @@ export default function AgendaPage() {
         </div>
       </Section>
 
+      {/* Eventos especiais: a seção aparece quando houver eventos em agenda.json */}
+      {events.length > 0 && (
       <Section tone="sand" labelledBy="eventos-title" className="agenda-events">
         <div className="container agenda__grid">
           <div className="agenda__head">
@@ -43,8 +45,7 @@ export default function AgendaPage() {
             </h2>
           </div>
 
-          {events.length > 0 ? (
-            <ol className="events" data-reveal="stagger">
+          <ol className="events" data-reveal="stagger">
               {events.map((e) => {
                 const d = parseDate(e.date);
                 return (
@@ -74,13 +75,9 @@ export default function AgendaPage() {
                 );
               })}
             </ol>
-          ) : (
-            <div className="library-empty">
-              <p className="muted">Nenhum evento especial programado no momento. Acompanhe a programação regular.</p>
-            </div>
-          )}
         </div>
       </Section>
+      )}
 
       <Section tone="ink" className="section--tight cta-band">
         <div className="container cta-band__inner">

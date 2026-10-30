@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 };
 
 /** Nomes cuja grafia diverge entre os registros fornecidos. */
-const spellingCheck = new Set(["Neemias Tertuliano de Sousa", "Neemias Tertuliano Martins", "José Norbeto dos Santos", "José Roberto dos Santos"]);
+const spellingCheck = new Set(["José Norbeto dos Santos", "José Roberto dos Santos"]);
 
 export default function HistoriaPage() {
   return (
@@ -64,7 +64,7 @@ export default function HistoriaPage() {
             </p>
           </header>
 
-          <div className="records__grid">
+          <div className={`records__grid${media.arquivoDocumento ? "" : " records__grid--two"}`}>
             <article className="record" data-reveal>
               <p className="record__kicker">Ata · 1970</p>
               <h3 className="record__title">{firstCouncil.title}</h3>
@@ -97,15 +97,17 @@ export default function HistoriaPage() {
               </ul>
             </article>
 
-            <div className="records__media">
-              <Photo
-                image={media.arquivoDocumento}
-                slot="Documento histórico digitalizado — ata ou registro de fundação"
-                ratio="3 / 4"
-                archival
-                mask="up"
-              />
-            </div>
+            {media.arquivoDocumento && (
+              <div className="records__media">
+                <Photo
+                  image={media.arquivoDocumento}
+                  slot="Documento histórico digitalizado — ata ou registro de fundação"
+                  ratio="3 / 4"
+                  archival
+                  mask="up"
+                />
+              </div>
+            )}
           </div>
         </div>
       </Section>
@@ -129,7 +131,7 @@ export default function HistoriaPage() {
             <li className="pastors__current">
               {currentPastor.name}
               <span className="pastors__status">
-                {currentPastor.status} · posse em {currentPastor.installationLabel}
+                {currentPastor.status} desde {currentPastor.installationLabel}
               </span>
             </li>
           </ul>

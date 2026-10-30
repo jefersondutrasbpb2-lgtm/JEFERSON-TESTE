@@ -67,7 +67,7 @@ const chapters: Chapter[] = [
         <p>
           Os registros históricos disponíveis apresentam uma lacuna na numeração dos pastorados; por isso, a relação
           completa segue em pesquisa e é apresentada mais abaixo sem períodos atribuídos. Em 14 de outubro de 2026, a
-          igreja celebra a posse de seu pastor eleito, o <strong>Pr. Felipe Oliveira</strong>.
+          igreja celebrou a posse de seu pastor, o <strong>Pr. Felipe Oliveira</strong>.
         </p>
       </>
     ),

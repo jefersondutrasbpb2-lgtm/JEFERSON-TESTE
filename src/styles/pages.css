@@ -260,6 +260,9 @@
   .records__grid {
     grid-template-columns: 1fr 1fr 0.9fr;
   }
+  .records__grid--two {
+    grid-template-columns: 1fr 1fr;
+  }
   .records__media {
     margin-top: 4rem;
   }
@@ -582,6 +585,16 @@
   display: grid;
   gap: 0.6rem;
   justify-items: start;
+}
+/* Campo ainda sem fotografia: cartão de texto com fio superior */
+.far-field--text {
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--tone-line);
+}
+@media (min-width: 900px) {
+  .far-field--text:nth-child(2) {
+    margin-top: 0;
+  }
 }
 .far-field__people {
   font-weight: 600;

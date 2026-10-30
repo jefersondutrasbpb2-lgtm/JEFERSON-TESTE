@@ -19,37 +19,31 @@ export const ministries: Ministry[] = [
     id: "ensino",
     title: "Ensino bíblico",
     summary: "Estudo sistemático das Escrituras para todas as idades, formando discípulos firmados na Palavra.",
-    pending: true,
   },
   {
     id: "culto",
     title: "Culto e música",
     summary: "Serviço na liturgia, nos cânticos e na música, para que a congregação adore a Deus com reverência e alegria.",
-    pending: true,
   },
   {
     id: "criancas",
     title: "Crianças",
     summary: "Ensino do Evangelho às crianças desde a fundação da igreja, com cuidado, segurança e amor.",
-    pending: true,
   },
   {
     id: "jovens",
     title: "Jovens e adolescentes",
     summary: "Comunhão, discipulado e formação de uma nova geração comprometida com Cristo e com a igreja.",
-    pending: true,
   },
   {
     id: "familias",
     title: "Famílias e comunhão",
     summary: "Encontros e cuidado mútuo que fortalecem os lares e os laços entre os membros.",
-    pending: true,
   },
   {
     id: "oracao",
     title: "Oração",
     summary: "A igreja reunida em súplica e intercessão — pelos irmãos, pela cidade e pelos campos missionários.",
-    pending: true,
   },
   {
     id: "missoes",

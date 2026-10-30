@@ -14,13 +14,12 @@ passado, presente e missão: tipografia clássica, fotografia documental, mapas 
 
 | Rota | Conteúdo |
 | --- | --- |
-| `/` | Homepage narrativa em 10 seções: abertura, essência, 1970, linha do tempo, mapa missionário, O Bom Samaritano, mensagens, comunidade, cultos e visita |
+| `/` | Homepage narrativa: abertura, essência, 1970, linha do tempo, mapa missionário, O Bom Samaritano, comunidade, cultos e visita |
 | `/nossa-historia/` | Scrollytelling em 6 capítulos, registros fundadores, pastores, linha do tempo e chamada para o acervo histórico |
 | `/quem-somos/` | Missão, as cinco solas, convicções e a tradição congregacional |
 | `/ministerios/` | Áreas da vida da igreja |
 | `/missoes/` | Mapa interativo, igrejas organizadas, congregação, comunidades rurais, campos missionários e O Bom Samaritano |
-| `/mensagens/` | Biblioteca de pregações com busca e filtros (série, pregador) e player do YouTube sob demanda |
-| `/agenda/` | Programação semanal e eventos |
+| `/agenda/` | Programação semanal; a seção de eventos aparece quando houver eventos em `agenda.json` |
 | `/visite/` | Planeje sua visita: horários, passo a passo, perguntas frequentes e mapa |
 | `/contato/` | Canais oficiais, formulário de contato, pedido de oração confidencial e política de privacidade |
 
@@ -105,7 +104,7 @@ Todo o conteúdo editável fica em `src/content/` — não é preciso mexer nos 
 | `ministerios.ts` | Áreas e ministérios (com campos opcionais de coordenação e horário) |
 | `missoes.ts` | Campos missionários e o projeto O Bom Samaritano |
 | `agenda.json` | Programação semanal e eventos |
-| `mensagens.json` | Biblioteca de mensagens (título, data, pregador, referência, série, `youtubeId`) |
+| `mensagens.json` | Biblioteca de mensagens (fora do ar por enquanto: a página `/mensagens/` e a seção da homepage foram retiradas; os componentes `MessagesLibrary`, `MessageCard` e `home/Mensagens` continuam no projeto para quando voltar) |
 | `media.ts` | Registro das fotografias do site |
 
 Os arquivos JSON têm formato simples e podem ser conectados a um CMS headless (Decap CMS, Sanity, Strapi etc.) sem

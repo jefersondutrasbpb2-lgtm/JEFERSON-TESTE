@@ -1,7 +1,6 @@
 /**
- * Campos missionários e trabalhos regionais.
- * `status` descreve a natureza do vínculo conforme o histórico fornecido;
- * a situação atual de cada campo deve ser confirmada pela liderança.
+ * Campos missionários e trabalhos regionais, com a situação atual
+ * confirmada pela igreja.
  */
 
 export type FieldKind = "organizada" | "congregacao" | "rural" | "missionarios" | "social";
@@ -35,8 +34,7 @@ export const missionFields: MissionField[] = [
     kind: "organizada",
     point: "catole",
     map: "regional",
-    summary: "Uma das igrejas do Sertão Paraibano para cuja organização a IEC Pombal contribuiu ao longo de sua trajetória.",
-    pending: true,
+    summary: "Igreja para cuja fundação a IEC Pombal contribuiu; hoje é uma igreja independente.",
   },
   {
     id: "sousa",
@@ -45,8 +43,7 @@ export const missionFields: MissionField[] = [
     kind: "organizada",
     point: "sousa",
     map: "regional",
-    summary: "Igreja organizada com a contribuição do trabalho missionário da IEC Pombal no Sertão.",
-    pending: true,
+    summary: "Igreja para cuja fundação a IEC Pombal contribuiu; hoje é uma igreja independente.",
   },
   {
     id: "cajazeiras",
@@ -55,8 +52,7 @@ export const missionFields: MissionField[] = [
     kind: "organizada",
     point: "cajazeiras",
     map: "regional",
-    summary: "Igreja organizada com a contribuição do trabalho missionário da IEC Pombal no Sertão.",
-    pending: true,
+    summary: "Igreja para cuja fundação a IEC Pombal contribuiu; hoje é uma igreja independente.",
   },
   {
     id: "condado",
@@ -65,8 +61,7 @@ export const missionFields: MissionField[] = [
     kind: "congregacao",
     point: "condado",
     map: "regional",
-    summary: "Congregação mantida pela igreja, conforme o histórico institucional.",
-    pending: true,
+    summary: "Congregação com certa autonomia, ainda filiada à IEC Pombal.",
   },
   {
     id: "rurais",
@@ -76,7 +71,6 @@ export const missionFields: MissionField[] = [
     point: "pombal",
     map: "regional",
     summary: "Trabalhos congregacionais nas comunidades rurais, levando o ensino da Palavra e a comunhão para perto das famílias do campo.",
-    pending: true,
   },
   {
     id: "cedibs-paulista",
@@ -96,7 +90,6 @@ export const missionFields: MissionField[] = [
     map: "overview",
     people: "Missionários Eduardo e Donária",
     summary: "Atuação entre comunidades ribeirinhas do Rio Purus. A posição no mapa é aproximada.",
-    pending: true,
   },
   {
     id: "caico",
@@ -106,8 +99,7 @@ export const missionFields: MissionField[] = [
     point: "caico",
     map: "overview",
     people: "Missionários Alberto e Istênia",
-    summary: "Trabalho missionário desenvolvido no Seridó potiguar.",
-    pending: true,
+    summary: "Trabalho missionário no Seridó potiguar. Caicó já é uma igreja independente e emancipada, e segue entre os campos missionários atuais da IEC Pombal.",
   },
 ];
 
@@ -129,7 +121,7 @@ export const bomSamaritano = {
   place: "Pombal e Paulista — PB",
   summary:
     "Projeto social abrigado e apoiado pela igreja, dedicado ao desenvolvimento integral de crianças, adolescentes e jovens e ao cuidado de suas famílias.",
-  /** Atividades vistas nas fotografias do projeto; confirmar a descrição com a coordenação. */
+  /** Atividades do projeto (descrição confirmada pela igreja). */
   activities:
     "O CEDIBS oferece atendimentos de saúde, acompanhamento do desenvolvimento de bebês e crianças, atividades educativas com ensino bíblico e apoio às famílias.",
   /** Voluntários que atuam como agentes de desenvolvimento. */
@@ -167,8 +159,7 @@ export const bomSamaritano = {
     { image: "/images/bs-consulta.webp", alt: "Atendimento médico no projeto O Bom Samaritano", caption: "Cuidado com a saúde" },
   ],
   reference: "Lucas 10.25–37",
-  /** Somente a descrição das atividades ainda aguarda confirmação. */
-  pending: true,
+  pending: false,
 };
 
 export const cedibsTotalServed = bomSamaritano.units.reduce((n, u) => n + u.served, 0);

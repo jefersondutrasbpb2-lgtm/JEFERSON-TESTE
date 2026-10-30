@@ -18,7 +18,7 @@ export const firstCouncil = {
     {
       role: "Presbíteros",
       names: [
-        "Neemias Tertuliano de Sousa",
+        "Neemias Tertuliano Martins",
         "Autinoel Martins Ferreira",
         "Manoel Tertuliano Martins",
         "Francisco Tertuliano Martins",
@@ -62,11 +62,11 @@ export const pastors = [
   "Marcone de Carvalho Santana",
 ];
 
-/** Pastor eleito pela igreja (convite oficial da posse pastoral). */
+/** Pastor da igreja, empossado em 14/10/2026 (convite oficial da posse pastoral). */
 export const currentPastor = {
   name: "Felipe Oliveira",
   title: "Pr.",
-  status: "Pastor eleito",
+  status: "Pastor",
   installationISO: "2026-10-14",
   installationLabel: "14 de outubro de 2026",
   image: { src: "/images/pr-felipe-oliveira.webp", width: 1122, height: 1402 },

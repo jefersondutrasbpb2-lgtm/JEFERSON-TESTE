@@ -1,0 +1,104 @@
+# Publica o site da IEC Pombal na Hostinger.
+#
+# A cada envio para o branch principal (ou ao rodar à mão em Actions), o GitHub
+# monta o site estático (pasta out/) e envia por FTP só o que mudou para a
+# pasta do domínio na Hostinger.
+#
+# Configure em Settings › Secrets and variables › Actions:
+#   Secrets:   FTP_SERVER, FTP_USERNAME, FTP_PASSWORD  (hPanel › Arquivos › Contas FTP)
+#   Variáveis (opcionais):
+#     FTP_PASTA       pasta no servidor; sem ela, usa domains/<domínio>/public_html/
+#                     quando existir (padrão da Hostinger) e, se não, public_html/
+#     FTP_PROTOCOLO   "ftps" (padrão, criptografado) ou "ftp"
+#     SITE_URL        padrão "https://www.igrejacongregacionalpombal.com.br"
+#     CONTACT_ENDPOINT, PRAYER_ENDPOINT  endereços que recebem os formulários
+#   Secrets do Instagram (opcionais): IG_FEED_BOM_SAMARITANO ou IG_TOKEN_BOM_SAMARITANO
+name: Publicar site na Hostinger
+
+on:
+  push:
+    branches: [claude/church-website-design-akEr2]
+  workflow_dispatch:
+
+concurrency:
+  group: publicar-hostinger
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci --no-audit --no-fund
+
+      - name: Conferir tipos
+        run: npm run typecheck
+
+      - name: Montar o site
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SITE_URL: ${{ vars.SITE_URL || 'https://www.igrejacongregacionalpombal.com.br' }}
+          NEXT_PUBLIC_CONTACT_ENDPOINT: ${{ vars.CONTACT_ENDPOINT }}
+          NEXT_PUBLIC_PRAYER_ENDPOINT: ${{ vars.PRAYER_ENDPOINT }}
+          IG_FEED_BOM_SAMARITANO: ${{ secrets.IG_FEED_BOM_SAMARITANO }}
+          IG_TOKEN_BOM_SAMARITANO: ${{ secrets.IG_TOKEN_BOM_SAMARITANO }}
+
+      - name: Conferir os dados do FTP
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          faltam=""
+          [ -z "$FTP_SERVER" ] && faltam="$faltam FTP_SERVER"
+          [ -z "$FTP_USERNAME" ] && faltam="$faltam FTP_USERNAME"
+          [ -z "$FTP_PASSWORD" ] && faltam="$faltam FTP_PASSWORD"
+          if [ -n "$faltam" ]; then
+            echo "::error::Faltam os secrets:$faltam. Cadastre em Settings › Secrets and variables › Actions."
+            exit 1
+          fi
+
+      - name: Achar a pasta do domínio
+        id: pasta
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PASTA: ${{ vars.FTP_PASTA }}
+          FTP_PROTOCOLO: ${{ vars.FTP_PROTOCOLO || 'ftps' }}
+          DOMINIO: igrejacongregacionalpombal.com.br
+        run: |
+          npm install --no-save --no-audit --no-fund basic-ftp@5.0.5
+          node scripts/hostinger-ftp.mjs pasta
+
+      - name: Enviar para a Hostinger
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ${{ vars.FTP_PROTOCOLO || 'ftps' }}
+          local-dir: ./out/
+          server-dir: ${{ steps.pasta.outputs.pasta }}
+
+      # A Hostinger cria um default.php ("Página padrão") ao abrir o site; ele
+      # tomaria o lugar da página inicial.
+      - name: Retirar a página padrão da Hostinger
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PROTOCOLO: ${{ vars.FTP_PROTOCOLO || 'ftps' }}
+          PASTA: ${{ steps.pasta.outputs.pasta }}
+        run: node scripts/hostinger-ftp.mjs limpar

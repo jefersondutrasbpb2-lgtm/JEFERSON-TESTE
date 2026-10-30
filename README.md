@@ -48,6 +48,37 @@ definitivo), use `npm run preview:build`; a saída fica em `preview/`.
 O conteúdo de `out/` pode ser hospedado em qualquer serviço estático (Vercel, Netlify, Cloudflare Pages, GitHub Pages,
 hospedagem tradicional).
 
+### Publicação na Hostinger (automática)
+
+O workflow `.github/workflows/publicar-hostinger.yml` monta o site e envia a pasta `out/` por FTP para a Hostinger a
+cada envio para o branch principal (`claude/church-website-design-akEr2`). Também dá para rodar à mão em
+**Actions › Publicar site na Hostinger › Run workflow**. Só os arquivos que mudaram são enviados.
+
+Configuração (uma vez):
+
+1. No hPanel da Hostinger, em **Arquivos › Contas FTP**, veja o servidor (IP ou `ftp.seudominio`), o usuário e a
+   senha da conta FTP.
+2. No GitHub, em **Settings › Secrets and variables › Actions › Secrets**, crie `FTP_SERVER`, `FTP_USERNAME` e
+   `FTP_PASSWORD`.
+3. Opcional, na aba **Variables** da mesma página:
+   - `FTP_PASTA`: pasta do site no servidor. Sem ela, a publicação usa `/domains/<domínio>/public_html/` quando essa
+     pasta abre (padrão da Hostinger; a conta FTP não a mostra na listagem) e, se não, `public_html/`. Use `./` se a conta FTP já abrir dentro da pasta do
+     site;
+   - `FTP_PROTOCOLO`: `ftps` (padrão, com criptografia) ou `ftp`, se a conexão criptografada falhar;
+   - `SITE_URL`: endereço oficial (padrão `https://www.igrejacongregacionalpombal.com.br`);
+   - `CONTACT_ENDPOINT` e `PRAYER_ENDPOINT`: endereços que recebem os formulários.
+4. Se já houver outro site na pasta `public_html`, faça um backup e retire os arquivos antigos antes da primeira
+   publicação. A publicação retira o `default.php` ("Página padrão") que a Hostinger cria; o arquivo
+   `public/.htaccess` faz o `index.html` ter prioridade e usa a página 404 do site.
+5. No hPanel, ative o SSL gratuito do domínio e a opção **Forçar HTTPS**.
+
+### Endereço da Escala do Louvor
+
+A escala roda no próprio servidor: `escalas.igrejacongregacionalpombal.com.br` (subdomínio criado no hPanel com a
+pasta `public_html/escalas`) e `www.igrejacongregacionalpombal.com.br/escalas`; `/escala` redireciona para o
+subdomínio. Depois do `next build`, `scripts/montar-escala.mjs` monta `out/escalas/` com o app de `web/escala-louvor/`
+e a API em PHP. O app é aberto: quem tem o link edita tudo (veja `web/escala-louvor/README.md`).
+
 ### Variáveis de ambiente
 
 Copie `.env.example` para `.env.local` e preencha:
@@ -165,5 +196,8 @@ npm run geo -- /tmp/brazil-states.geojson
 As posições dos campos são aproximadas e identificadas como ilustrativas no site.
 
 ## Outros conteúdos do repositório
+
+`web/escala-louvor/` é a ferramenta interna de escalas do ministério de louvor (veja o
+[README](./web/escala-louvor/README.md) dela). Não faz parte do site público.
 
 `tools/` e `web/nam-gain/` contêm uma ferramenta independente (NAM Gain) e não fazem parte do site da igreja.

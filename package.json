@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "postbuild": "node scripts/montar-escala.mjs",
     "start": "npx serve out",
     "typecheck": "tsc --noEmit",
     "geo": "node scripts/build-geo.mjs",

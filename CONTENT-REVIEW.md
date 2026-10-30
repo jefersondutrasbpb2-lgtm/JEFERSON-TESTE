@@ -60,7 +60,7 @@ Os dados abaixo vieram de uma versão anterior do site e **não foram verificado
 - [x] A Confissão não tem link nem PDF: o acesso é pelo livro impresso, vendido pela Aliança (informado na legenda)
 - [ ] Estatuto da igreja: deseja publicar no site? → `src/content/fe.ts`
 - [x] Departamentos: UHC, UAC, DIC, UMEC e UAEC (página `/departamentos/`, no lugar de "Ministérios")
-- [ ] Departamentos: confirmar as descrições curtas de cada um e, se quiserem, informar coordenação e horários
+- [x] Descrições curtas dos departamentos aprovadas. Coordenação e horários podem ser incluídos quando quiserem
       → `src/content/departamentos.ts`
 
 ## 6. Formulários, privacidade e LGPD

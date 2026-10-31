@@ -9,11 +9,19 @@ export type Validator = (data: Record<string, string>) => Errors;
 const MIN_FILL_MS = 2500;
 
 /**
- * Envio de formulários para um serviço externo (ex.: Formspree, Getform ou
- * endpoint próprio), com validação, honeypot e checagem de tempo contra spam.
- * Sem endpoint configurado, o formulário oferece envio por e-mail.
+ * Endereço que recebe os formulários: por padrão, o serviço em PHP do próprio
+ * site na Hostinger (public/api/formulario.php), que envia por e-mail à
+ * secretaria. NEXT_PUBLIC_CONTACT_ENDPOINT / NEXT_PUBLIC_PRAYER_ENDPOINT
+ * permitem trocar por outro serviço.
  */
-export function useFormSubmit(endpoint: string | undefined, validate: Validator) {
+export const defaultFormEndpoint = `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/api/formulario.php`;
+
+/**
+ * Envio de formulários com validação, honeypot e checagem de tempo contra spam.
+ * `extra` vai junto no corpo (ex.: tipo do formulário e idioma da página).
+ * Sem endpoint ou se o envio falhar, o formulário oferece envio por e-mail.
+ */
+export function useFormSubmit(endpoint: string | undefined, validate: Validator, extra: Record<string, string> = {}) {
   const [status, setStatus] = useState<Status>("idle");
   const [errors, setErrors] = useState<Errors>({});
   const startedAt = useRef<number>(0);
@@ -48,7 +56,6 @@ export function useFormSubmit(endpoint: string | undefined, validate: Validator)
       form.reset();
       return;
     }
-    delete data.website;
     lastData.current = data;
 
     if (!endpoint) {
@@ -61,9 +68,10 @@ export function useFormSubmit(endpoint: string | undefined, validate: Validator)
       const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...extra, ...data }),
       });
-      if (!res.ok) throw new Error(String(res.status));
+      const json = (await res.json().catch(() => null)) as { ok?: boolean } | null;
+      if (!res.ok || !json?.ok) throw new Error(String(res.status));
       setStatus("success");
       form.reset();
       startedAt.current = 0;

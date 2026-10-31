@@ -87,7 +87,8 @@ Configuração (uma vez):
      site;
    - `FTP_PROTOCOLO`: `ftps` (padrão, com criptografia) ou `ftp`, se a conexão criptografada falhar;
    - `SITE_URL`: endereço oficial (padrão `https://www.igrejacongregacionalpombal.com.br`);
-   - `CONTACT_ENDPOINT` e `PRAYER_ENDPOINT`: endereços que recebem os formulários.
+   - `CONTACT_ENDPOINT` e `PRAYER_ENDPOINT` (opcionais): outro serviço para receber os formulários. Sem eles, vale o
+     envio próprio do site (`/api/formulario.php`).
 4. Se já houver outro site na pasta `public_html`, faça um backup e retire os arquivos antigos antes da primeira
    publicação. A publicação retira o `default.php` ("Página padrão") que a Hostinger cria; o arquivo
    `public/.htaccess` faz o `index.html` ter prioridade e usa a página 404 do site.
@@ -108,11 +109,19 @@ Copie `.env.example` para `.env.local` e preencha:
 | --- | --- |
 | `NEXT_PUBLIC_SITE_URL` | Domínio oficial (canonical, Open Graph, sitemap) |
 | `NEXT_PUBLIC_BASE_PATH` | Subdiretório, se houver (ex.: `/site` no GitHub Pages) |
-| `NEXT_PUBLIC_CONTACT_ENDPOINT` | Endpoint que recebe o formulário de contato (POST JSON) |
-| `NEXT_PUBLIC_PRAYER_ENDPOINT` | Endpoint que recebe os pedidos de oração (POST JSON) |
+| `NEXT_PUBLIC_CONTACT_ENDPOINT` | Opcional: outro endpoint para o formulário de contato (POST JSON) |
+| `NEXT_PUBLIC_PRAYER_ENDPOINT` | Opcional: outro endpoint para os pedidos de oração (POST JSON) |
 
-Os formulários funcionam com serviços como Formspree ou Getform, ou com um endpoint próprio. Sem endpoint configurado,
-o formulário valida os dados e oferece o envio por e-mail com o texto já preenchido.
+### Formulários (Contato e Pedido de oração)
+
+Os dois formulários enviam para `public/api/formulario.php`, que roda no PHP da Hostinger e manda um e-mail à secretaria
+(`DESTINO` no início do arquivo; o remetente é `site@igrejacongregacionalpombal.com.br`, com resposta direta ao
+visitante). Nada fica guardado no servidor. Proteções: aceita só envios vindos do próprio domínio, campo-armadilha contra
+robôs, tempo mínimo de preenchimento, validação dos campos, bloqueio de quebras de linha nos cabeçalhos e no máximo
+5 envios a cada 10 minutos por visitante (só um resumo do IP fica registrado, fora da pasta pública).
+
+Se o envio falhar, o formulário oferece mandar por e-mail com o texto já preenchido. Para testar o serviço, abra
+`/api/formulario.php` no navegador: `{"ok":true,"email":true}` indica que o envio de e-mail está disponível.
 
 ## Atualizando o conteúdo
 

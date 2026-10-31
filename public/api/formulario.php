@@ -15,6 +15,7 @@ declare(strict_types=1);
 
 // Quem recebe as mensagens e quem aparece como remetente. O remetente precisa ser um endereço do
 // próprio domínio para o e-mail não ser recusado; a resposta vai direto ao visitante (Reply-To).
+// Com o envio autenticado (config.php), o remetente passa a ser a caixa usada no login.
 const DESTINO = 'sec.iec.2017@gmail.com';
 const REMETENTE = 'site@igrejacongregacionalpombal.com.br';
 const NOME_REMETENTE = 'Site IEC Pombal';
@@ -46,6 +47,13 @@ function configSmtp(): ?array
     if (!is_file($arquivo)) return null;
     $c = include $arquivo;
     return is_array($c) && !empty($c['senha']) ? $c : null;
+}
+
+/** Endereço do remetente: a caixa do login SMTP, quando configurada; senão, REMETENTE. */
+function remetente(): string
+{
+    $usuario = (string) (configSmtp()['usuario'] ?? '');
+    return filter_var($usuario, FILTER_VALIDATE_EMAIL) ? $usuario : REMETENTE;
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
@@ -181,7 +189,7 @@ $cabecalhos = [
     'MIME-Version: 1.0',
     'Content-Type: text/plain; charset=UTF-8',
     'Content-Transfer-Encoding: 8bit',
-    'From: =?UTF-8?B?' . base64_encode(NOME_REMETENTE) . '?= <' . REMETENTE . '>',
+    'From: =?UTF-8?B?' . base64_encode(NOME_REMETENTE) . '?= <' . remetente() . '>',
 ];
 if ($replyTo !== '') $cabecalhos[] = 'Reply-To: ' . linha($replyTo);
 
@@ -202,14 +210,14 @@ function enviarSmtp(array $config, string $assunto, string $corpo, array $cabeca
     $conexao = @stream_socket_client('ssl://' . SMTP_HOST . ':' . SMTP_PORTA, $erro, $texto, 15);
     if ($conexao === false) return false;
     stream_set_timeout($conexao, 15);
-    $usuario = $config['usuario'] ?? REMETENTE;
+    $usuario = remetente();
     $passos = [
         [null, 220],
         ['EHLO igrejacongregacionalpombal.com.br', 250],
         ['AUTH LOGIN', 334],
         [base64_encode($usuario), 334],
         [base64_encode((string) $config['senha']), 235],
-        ['MAIL FROM:<' . REMETENTE . '>', 250],
+        ['MAIL FROM:<' . $usuario . '>', 250],
         ['RCPT TO:<' . DESTINO . '>', 250],
         ['DATA', 354],
     ];

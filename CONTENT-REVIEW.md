@@ -68,9 +68,11 @@ Os dados abaixo vieram de uma versão anterior do site e **não foram verificado
 - [x] Pedidos de oração: recebidos pelo secretário da igreja, Valdeci Junior → `src/app/contato/page.tsx`
 - [x] Envio dos formulários: serviço próprio na Hostinger (`public/api/formulario.php`), com e-mail para
       sec.iec.2017@gmail.com
-- [ ] O primeiro teste não chegou (a função mail() do PHP é descartada). Para ativar o envio autenticado: criar a caixa
-      `site@igrejacongregacionalpombal.com.br` no hPanel › E-mails e cadastrar a senha no GitHub como secret
-      `SMTP_SENHA` (Settings › Secrets and variables › Actions). Depois, enviar um teste pelo site
+- [x] Envio autenticado configurado (31/10/2026): caixa `contato@igrejacongregacionalpombal.com.br` criada no hPanel,
+      secret `SMTP_SENHA` e variável `SMTP_USUARIO` cadastrados no GitHub
+- [ ] Enviar um teste pelo formulário de Contato e confirmar a chegada em sec.iec.2017@gmail.com
+- [ ] Encaminhar contato@ para o Gmail (hPanel › E-mails › Encaminhamentos) e configurar "Enviar e-mail como" no Gmail
+- [ ] Depois disso, trocar o e-mail exibido no site para contato@igrejacongregacionalpombal.com.br
 - [x] Texto de privacidade (LGPD) mantido pela liderança
 - [ ] Autorizações de uso de imagem, especialmente de crianças e adolescentes. O site já publica fotos de pessoas
       identificáveis, inclusive crianças (leitura, oração e "as crianças na vida da igreja", na homepage); confirme

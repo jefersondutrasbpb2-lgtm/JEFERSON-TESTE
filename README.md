@@ -22,6 +22,7 @@ passado, presente e missão: tipografia clássica, fotografia documental, mapas 
 | `/agenda/` | Programação semanal; a seção de eventos aparece quando houver eventos em `agenda.json` |
 | `/visite/` | Planeje sua visita: horários, passo a passo, perguntas frequentes e mapa |
 | `/contato/` | Canais oficiais, formulário de contato, pedido de oração confidencial e política de privacidade |
+| `/contribua/` | Dízimos e ofertas: QR Code PIX, chave CNPJ e código copia e cola com botões de copiar, e dados bancários (dados em `src/content/contribuicao.ts`) |
 
 Todas as páginas existem também em inglês (`/en/…`) e em espanhol (`/es/…`), com as mesmas rotas. Veja
 "Idiomas" abaixo.

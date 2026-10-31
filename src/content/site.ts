@@ -114,6 +114,11 @@ export const mainNav: NavItem[] = [
     description: { pt: "Sertão, Amazônia e Seridó", en: "Sertão, Amazon and Seridó", es: "Sertón, Amazonía y Seridó" },
   },
   {
+    href: "/contribua/",
+    label: { pt: "Contribua", en: "Give", es: "Ofrendas" },
+    description: { pt: "Dízimos e ofertas pelo PIX", en: "Tithes and offerings by PIX", es: "Diezmos y ofrendas por PIX" },
+  },
+  {
     href: "/agenda/",
     label: { pt: "Agenda", en: "Schedule", es: "Agenda" },
     description: { pt: "Cultos e programações", en: "Services and gatherings", es: "Cultos y actividades" },

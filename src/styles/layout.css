@@ -184,7 +184,8 @@ html .site-header[data-open][data-tone] {
 .nav-desktop {
   display: none;
 }
-@media (min-width: 1180px) {
+/* 7 itens + idiomas + botão: a partir de 1280 px cabem numa linha (antes, o menu) */
+@media (min-width: 1280px) {
   .nav-desktop {
     display: block;
   }
@@ -197,6 +198,7 @@ html .site-header[data-open][data-tone] {
 .nav-desktop__link {
   position: relative;
   display: inline-block;
+  white-space: nowrap;
   padding-block: 0.4rem;
   font-size: 0.86rem;
   font-weight: 500;
@@ -377,7 +379,7 @@ html .site-header[data-open][data-tone] {
   background: var(--c-paper);
   color: var(--c-ink);
 }
-@media (min-width: 1180px) {
+@media (min-width: 1280px) {
   .menu-toggle {
     display: none;
   }

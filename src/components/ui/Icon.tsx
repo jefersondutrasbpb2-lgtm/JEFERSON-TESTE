@@ -13,6 +13,7 @@ type IconName =
   | "menu"
   | "close"
   | "check"
+  | "copy"
   | "calendar"
   | "book"
   | "search";
@@ -63,6 +64,12 @@ const paths: Record<IconName, React.ReactNode> = {
   menu: <path d="M4 8h16M4 16h16" />,
   close: <path d="m6 6 12 12M18 6 6 18" />,
   check: <path d="m5 12.5 4.5 4.5L19 7.5" />,
+  copy: (
+    <>
+      <rect x="9" y="9" width="11" height="11" rx="2" />
+      <path d="M5 15V6a2 2 0 0 1 2-2h9" />
+    </>
+  ),
   calendar: (
     <>
       <rect x="3.5" y="5" width="17" height="15" rx="1.5" />

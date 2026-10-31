@@ -359,6 +359,19 @@ export default function MissoesPage() {
                 {t({ pt: "Entrar em contato", en: "Get in touch", es: "Ponerse en contacto" })}
               </Button>
             </li>
+            <li>
+              <h3 className="h4">{t({ pt: "Contribua", en: "Give", es: "Contribuye" })}</h3>
+              <p className="muted">
+                {t({
+                  pt: "Ofertas pelo PIX ou transferência ajudam a sustentar as missões e as obras sociais.",
+                  en: "Offerings by PIX or bank transfer help sustain the missions and social outreach.",
+                  es: "Las ofrendas por PIX o transferencia ayudan a sostener las misiones y las obras sociales.",
+                })}
+              </p>
+              <Button href="/contribua/" variant="text">
+                {t({ pt: "Como contribuir", en: "How to give", es: "Cómo contribuir" })}
+              </Button>
+            </li>
           </ul>
         </div>
       </Section>

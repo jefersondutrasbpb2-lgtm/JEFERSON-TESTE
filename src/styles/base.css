@@ -98,6 +98,10 @@ a {
   text-decoration-thickness: 1px;
   text-underline-offset: 0.22em;
 }
+/* E-mails longos quebram a linha em telas estreitas em vez de vazar */
+a[href^="mailto:"] {
+  overflow-wrap: anywhere;
+}
 
 ::selection {
   background: var(--c-gold);

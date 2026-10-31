@@ -65,7 +65,8 @@ export const site = {
 
   /** Telefone oficial: ainda não há. Preencha { display, href, pending } quando houver. */
   phone: null as null | { display: string; href: string; pending: boolean },
-  email: { value: "sec.iec.2017@gmail.com", pending: false },
+  /** Caixa da Hostinger, encaminhada para o Gmail da secretaria (sec.iec.2017@gmail.com) */
+  email: { value: "contato@igrejacongregacionalpombal.com.br", pending: false },
 
   social: [
     { id: "instagram", label: "Instagram", handle: "@iecdepombal", href: "https://www.instagram.com/iecdepombal/", pending: false },

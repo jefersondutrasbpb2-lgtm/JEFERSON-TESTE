@@ -4,7 +4,7 @@ import { useState } from "react";
 import { site } from "@/content/site";
 import { Field, Honeypot } from "./Field";
 import { FormStatus, buildMailto } from "./FormStatus";
-import { isEmail, useFormSubmit, type Errors } from "./useFormSubmit";
+import { defaultFormEndpoint, isEmail, useFormSubmit, type Errors } from "./useFormSubmit";
 import { useLocale, useT } from "@/i18n/client";
 
 export function PrayerForm() {
@@ -32,8 +32,9 @@ export function PrayerForm() {
   };
   const [wantsReply, setWantsReply] = useState(false);
   const { status, errors, onSubmit, onFocusCapture, lastData } = useFormSubmit(
-    process.env.NEXT_PUBLIC_PRAYER_ENDPOINT,
+    process.env.NEXT_PUBLIC_PRAYER_ENDPOINT || defaultFormEndpoint,
     validate,
+    { tipo: "oracao", idioma: locale },
   );
   const d = lastData.current;
   const mailto = buildMailto(

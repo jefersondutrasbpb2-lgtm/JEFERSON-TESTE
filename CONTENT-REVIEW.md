@@ -66,8 +66,10 @@ Os dados abaixo vieram de uma versão anterior do site e **não foram verificado
 ## 6. Formulários, privacidade e LGPD
 
 - [x] Pedidos de oração: recebidos pelo secretário da igreja, Valdeci Junior → `src/app/contato/page.tsx`
-- [ ] Serviço de envio dos formulários (Formspree, Getform ou próprio) → variáveis `NEXT_PUBLIC_CONTACT_ENDPOINT` e
-      `NEXT_PUBLIC_PRAYER_ENDPOINT`
+- [x] Envio dos formulários: serviço próprio na Hostinger (`public/api/formulario.php`), com e-mail para
+      sec.iec.2017@gmail.com
+- [ ] Confirmar que as mensagens de teste chegaram (olhar também o Spam). Se não chegarem, criar a caixa
+      `site@igrejacongregacionalpombal.com.br` no hPanel (E-mails), usada como remetente
 - [x] Texto de privacidade (LGPD) mantido pela liderança
 - [ ] Autorizações de uso de imagem, especialmente de crianças e adolescentes. O site já publica fotos de pessoas
       identificáveis, inclusive crianças (leitura, oração e "as crianças na vida da igreja", na homepage); confirme

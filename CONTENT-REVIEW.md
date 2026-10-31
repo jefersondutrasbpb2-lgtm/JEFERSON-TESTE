@@ -19,7 +19,8 @@ Os dados abaixo vieram de uma versão anterior do site e **não foram verificado
 
 - [x] Endereço confirmado: Rua Afro Bandeira, 265 — Nova Vida, Pombal — PB, 58840-000
 - [x] Telefone: a igreja ainda não tem um número oficial; o telefone foi retirado do site → `src/content/site.ts`
-- [x] E-mail: sec.iec.2017@gmail.com (confirmado)
+- [x] E-mail exibido no site: contato@igrejacongregacionalpombal.com.br (caixa da Hostinger, encaminhada para o
+      Gmail da secretaria, sec.iec.2017@gmail.com, que também responde como contato@ pelo "Enviar e-mail como")
 - [x] Instagram: @iecdepombal (confirmado)
 - [x] YouTube e Facebook: @iecdepombal (conforme o convite oficial). Conferir se os endereços
       youtube.com/@iecdepombal e facebook.com/iecdepombal abrem os perfis corretos → `src/content/site.ts`
@@ -70,9 +71,10 @@ Os dados abaixo vieram de uma versão anterior do site e **não foram verificado
       sec.iec.2017@gmail.com
 - [x] Envio autenticado configurado (31/10/2026): caixa `contato@igrejacongregacionalpombal.com.br` criada no hPanel,
       secret `SMTP_SENHA` e variável `SMTP_USUARIO` cadastrados no GitHub
-- [ ] Enviar um teste pelo formulário de Contato e confirmar a chegada em sec.iec.2017@gmail.com
-- [ ] Encaminhar contato@ para o Gmail (hPanel › E-mails › Encaminhamentos) e configurar "Enviar e-mail como" no Gmail
-- [ ] Depois disso, trocar o e-mail exibido no site para contato@igrejacongregacionalpombal.com.br
+- [x] Teste do formulário pelo envio autenticado: chegou na Caixa de entrada (31/10/2026)
+- [x] contato@ encaminhado para o Gmail (hPanel › E-mails › Encaminhamentos, com cópia salva) e "Enviar e-mail como"
+      configurado no Gmail
+- [x] E-mail exibido no site trocado para contato@igrejacongregacionalpombal.com.br
 - [x] Texto de privacidade (LGPD) mantido pela liderança
 - [ ] Autorizações de uso de imagem, especialmente de crianças e adolescentes. O site já publica fotos de pessoas
       identificáveis, inclusive crianças (leitura, oração e "as crianças na vida da igreja", na homepage); confirme

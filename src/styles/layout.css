@@ -266,8 +266,10 @@ html .site-header[data-open][data-tone] {
   background: var(--tone-line);
 }
 .lang-switch a {
-  display: inline-grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
   min-width: 2.25rem;
   min-height: 44px;
   padding-inline: 0.35rem;
@@ -280,6 +282,15 @@ html .site-header[data-open][data-tone] {
 }
 .lang-switch a:hover {
   opacity: 1;
+}
+.lang-switch .flag {
+  flex-shrink: 0;
+  display: block;
+  width: 18px;
+  height: 12px;
+  border-radius: 2px;
+  /* fio sutil para a bandeira não se perder em fundos claros ou escuros */
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.12);
 }
 .lang-switch a[aria-current="true"] {
   opacity: 1;
@@ -301,9 +312,14 @@ html .site-header[data-open][data-tone] {
   }
   .lang-switch--bar a {
     min-width: 1.6rem;
-    padding-inline: 0.15rem;
-    font-size: 0.7rem;
-    letter-spacing: 0.06em;
+    padding-inline: 0.2rem;
+  }
+  /* no celular, só a bandeira no topo (o nome do idioma segue para leitores de tela) */
+  .lang-switch--bar a > span[aria-hidden="true"] {
+    display: none;
+  }
+  .lang-switch--bar a[aria-current="true"] .flag {
+    box-shadow: 0 0 0 2px var(--tone-accent);
   }
   .lang-switch--bar li + li::before {
     margin-inline: 0.05rem;

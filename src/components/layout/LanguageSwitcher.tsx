@@ -5,6 +5,7 @@ import { SiteLink } from "@/components/ui/SiteLink";
 import { htmlLang, localeNames, localizeHref, locales } from "@/i18n/config";
 import { useLocale, useT } from "@/i18n/client";
 import { routeFromPathname } from "@/lib/links";
+import { Flag } from "./Flag";
 
 /** Troca de idioma: leva à mesma página na versão escolhida. */
 export function LanguageSwitcher({ className = "", onNavigate }: { className?: string; onNavigate?: () => void }) {
@@ -26,6 +27,7 @@ export function LanguageSwitcher({ className = "", onNavigate }: { className?: s
               aria-current={l === current ? "true" : undefined}
               onClick={onNavigate}
             >
+              <Flag locale={l} />
               <span aria-hidden="true">{localeNames[l].short}</span>
               <span className="sr-only">{localeNames[l].name}</span>
             </SiteLink>

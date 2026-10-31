@@ -7,3 +7,7 @@ next-env.d.ts
 .DS_Store
 __pycache__/
 preview/
+
+# Senha do e-mail dos formulários (gerada na publicação)
+public/api/config.php
+out/api/config.php

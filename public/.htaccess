@@ -2,6 +2,14 @@
 ErrorDocument 404 /404.html
 DirectoryIndex index.html index.php
 
+# Um endereço só para o Google: quem abrir sem "www" vai para o endereço com "www" (o oficial).
+# Só o domínio principal é redirecionado; subdomínios (como escalas.) não são afetados.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTP_HOST} ^igrejacongregacionalpombal\.com\.br$ [NC]
+  RewriteRule ^ https://www.igrejacongregacionalpombal.com.br%{REQUEST_URI} [L,R=301]
+</IfModule>
+
 # A página "Ministérios" passou a se chamar "Departamentos".
 Redirect 301 /ministerios/ /departamentos/
 

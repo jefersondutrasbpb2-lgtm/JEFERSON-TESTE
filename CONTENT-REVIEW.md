@@ -111,7 +111,14 @@ Espaços reservados aguardando imagens reais e autorizadas (`src/content/media.t
 - [ ] Enviar o logotipo do CEDIBS em arquivo (PNG ou SVG), se quiserem exibi-lo na seção do projeto
 - [x] Entrada do templo
 
-## 9. Versões em inglês e espanhol
+## 9. Contribuição (dízimos e ofertas)
+
+- [x] Página `/contribua/` com o QR Code PIX enviado pela igreja, chave CNPJ 09.317.231/0001-06 e conta Sicredi
+      (agência 2216, conta corrente 9368-8). O QR Code foi conferido: é um PIX dessa chave, com código de controle válido
+- [ ] O QR Code tem o campo de nome do recebedor preenchido com traços ("----------"). Funciona normalmente (o banco
+      mostra o nome cadastrado na chave), mas, se a igreja gerar um QR novo no app do Sicredi, envie para substituir
+
+## 10. Versões em inglês e espanhol
 
 - [x] Site traduzido para inglês (`/en/`) e espanhol (`/es/`), com troca de idioma no topo
 - [ ] Revisão por alguém da igreja que leia inglês e/ou espanhol, especialmente termos de fé e nomes de cultos

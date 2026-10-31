@@ -43,6 +43,15 @@ export const scriptures = {
     ref: { pt: "1 Pedro 4.10", en: "1 Peter 4:10", es: "1 Pedro 4:10" },
     version: versions,
   },
+  generosidade: {
+    text: {
+      pt: "Cada um contribua segundo tem proposto no coração, não com tristeza ou por necessidade; porque Deus ama a quem dá com alegria.",
+      en: "Every man according as he purposeth in his heart, so let him give; not grudgingly, or of necessity: for God loveth a cheerful giver.",
+      es: "Cada uno dé como propuso en su corazón: no con tristeza, ni por necesidad, porque Dios ama al dador alegre.",
+    },
+    ref: { pt: "2 Coríntios 9.7", en: "2 Corinthians 9:7", es: "2 Corintios 9:7" },
+    version: versions,
+  },
 } satisfies Record<string, Scripture>;
 
 export const solas: { latin: string; name: L10n; text: L10n; ref: L10n }[] = [

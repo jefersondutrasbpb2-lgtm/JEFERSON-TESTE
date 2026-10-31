@@ -1199,3 +1199,111 @@
   font-size: var(--fs-small);
   color: var(--tone-muted);
 }
+
+/* ---------- Contribua (PIX e transferência) ---------- */
+
+.give__grid {
+  display: grid;
+  gap: clamp(2.5rem, 5vw, 4rem);
+  align-items: start;
+}
+@media (min-width: 900px) {
+  .give__grid {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    column-gap: clamp(3rem, 7vw, 7rem);
+  }
+}
+.give__qr {
+  margin: 0;
+  justify-self: center;
+  width: min(100%, 22rem);
+}
+.give__qr img {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 24px 32px rgb(11 36 71 / 0.22));
+}
+@media (min-width: 900px) {
+  .give__qr {
+    position: sticky;
+    top: 7rem;
+  }
+}
+.give__copy {
+  display: grid;
+  gap: 2rem;
+  align-content: start;
+}
+.give__steps {
+  display: grid;
+  gap: 0.6rem;
+  padding-left: 1.25rem;
+  color: var(--tone-muted);
+}
+.give__steps li::marker {
+  color: var(--c-brand);
+  font-weight: 700;
+}
+.give__key,
+.give__bank {
+  display: grid;
+  gap: 0.75rem;
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+  border: 1px solid var(--tone-line);
+  border-radius: var(--radius);
+  background: var(--c-paper);
+}
+.give__label {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--tone-muted);
+}
+.give__value {
+  font-family: var(--ff-display);
+  font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.3rem);
+  line-height: 1.1;
+  color: var(--c-ink);
+  overflow-wrap: anywhere;
+}
+.give__hint {
+  color: var(--tone-muted);
+}
+.give__bank dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+  gap: 1rem 1.5rem;
+  margin: 0;
+}
+.give__bank dt {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--tone-muted);
+}
+.give__bank dd {
+  margin: 0.2rem 0 0;
+  white-space: nowrap;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--c-ink);
+}
+.give__abroad {
+  color: var(--tone-muted);
+}
+.copy-btn.is-copied {
+  border-color: var(--c-brand);
+  color: var(--c-brand);
+}
+.give-verse .scripture {
+  max-width: 46rem;
+  margin-inline: auto;
+  justify-items: center;
+  text-align: center;
+}
+.give-verse__ctas {
+  justify-content: center;
+  margin-top: 2rem;
+}

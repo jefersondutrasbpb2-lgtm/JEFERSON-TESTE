@@ -116,12 +116,20 @@ Copie `.env.example` para `.env.local` e preencha:
 
 Os dois formulários enviam para `public/api/formulario.php`, que roda no PHP da Hostinger e manda um e-mail à secretaria
 (`DESTINO` no início do arquivo; o remetente é `site@igrejacongregacionalpombal.com.br`, com resposta direta ao
-visitante). Nada fica guardado no servidor. Proteções: aceita só envios vindos do próprio domínio, campo-armadilha contra
+visitante). Nada fica guardado no servidor.
+
+Para o e-mail chegar (o Gmail descarta mensagens enviadas pela função `mail()` sem autenticação), o envio usa o SMTP da
+Hostinger com login na caixa `site@`:
+
+1. No hPanel › E-mails, crie a caixa `site@igrejacongregacionalpombal.com.br` com uma senha forte.
+2. No GitHub › Settings › Secrets and variables › Actions, crie o secret `SMTP_SENHA` com essa senha.
+3. Na próxima publicação, `scripts/config-smtp.mjs` grava `out/api/config.php` com a senha (bloqueado ao navegador pelo
+   `public/api/.htaccess`). Sem o secret, o formulário tenta a função `mail()`. Proteções: aceita só envios vindos do próprio domínio, campo-armadilha contra
 robôs, tempo mínimo de preenchimento, validação dos campos, bloqueio de quebras de linha nos cabeçalhos e no máximo
 5 envios a cada 10 minutos por visitante (só um resumo do IP fica registrado, fora da pasta pública).
 
 Se o envio falhar, o formulário oferece mandar por e-mail com o texto já preenchido. Para testar o serviço, abra
-`/api/formulario.php` no navegador: `{"ok":true,"email":true}` indica que o envio de e-mail está disponível.
+`/api/formulario.php` no navegador: `"smtp":true` indica que o envio autenticado está configurado.
 
 ## Atualizando o conteúdo
 

@@ -1,0 +1,4 @@
+# A senha do e-mail (config.php) é gerada na publicação e nunca deve ser aberta pelo navegador.
+<Files "config.php">
+  Require all denied
+</Files>

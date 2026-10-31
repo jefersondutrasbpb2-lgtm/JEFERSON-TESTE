@@ -4,6 +4,10 @@
 //   POST /api/formulario.php   corpo JSON: { tipo: "contato" | "oracao", idioma, ...campos }
 //   GET  /api/formulario.php   verificação: informa se o envio de e-mail está disponível
 //
+// Envio: pela caixa site@ da Hostinger, com login (SMTP), quando a senha estiver configurada em
+// config.php (gerado na publicação a partir do secret SMTP_SENHA do GitHub). Sem ela, tenta a
+// função mail() do PHP, que costuma ser descartada pelo Gmail.
+//
 // Nada é guardado no servidor: a mensagem segue só por e-mail. Para limitar abusos, guarda-se
 // apenas um resumo (hash) do IP com o horário dos envios recentes, fora da pasta pública quando dá.
 
@@ -15,6 +19,9 @@ const DESTINO = 'sec.iec.2017@gmail.com';
 const REMETENTE = 'site@igrejacongregacionalpombal.com.br';
 const NOME_REMETENTE = 'Site IEC Pombal';
 const DOMINIOS = ['igrejacongregacionalpombal.com.br', 'www.igrejacongregacionalpombal.com.br'];
+
+const SMTP_HOST = 'smtp.hostinger.com';
+const SMTP_PORTA = 465;
 
 const LIMITE_CORPO = 20_000;
 const ENVIOS_POR_JANELA = 5;
@@ -32,8 +39,17 @@ function responder(int $status, array $corpo): never
     exit;
 }
 
+/** Senha da caixa site@ (config.php gerado na publicação), ou null se não configurada. */
+function configSmtp(): ?array
+{
+    $arquivo = __DIR__ . '/config.php';
+    if (!is_file($arquivo)) return null;
+    $c = include $arquivo;
+    return is_array($c) && !empty($c['senha']) ? $c : null;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    responder(200, ['ok' => true, 'email' => function_exists('mail')]);
+    responder(200, ['ok' => true, 'email' => function_exists('mail'), 'smtp' => configSmtp() !== null]);
 }
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     responder(405, ['ok' => false, 'erro' => 'metodo']);
@@ -169,13 +185,61 @@ $cabecalhos = [
 ];
 if ($replyTo !== '') $cabecalhos[] = 'Reply-To: ' . linha($replyTo);
 
-$enviado = function_exists('mail') && @mail(
-    DESTINO,
-    '=?UTF-8?B?' . base64_encode(linha('[Site] ' . $titulo)) . '?=',
-    $corpo,
-    implode("\r\n", $cabecalhos),
-    '-f' . REMETENTE
-);
+/** Lê a resposta do servidor SMTP (pode ter várias linhas) e confere o código esperado. */
+function smtpResposta($conexao, int $esperado): bool
+{
+    $codigo = 0;
+    while (($linha = fgets($conexao, 1024)) !== false) {
+        $codigo = (int) substr($linha, 0, 3);
+        if (strlen($linha) < 4 || $linha[3] === ' ') break;
+    }
+    return $codigo === $esperado;
+}
+
+/** Envia pela caixa da Hostinger com login (SSL na porta 465). */
+function enviarSmtp(array $config, string $assunto, string $corpo, array $cabecalhos): bool
+{
+    $conexao = @stream_socket_client('ssl://' . SMTP_HOST . ':' . SMTP_PORTA, $erro, $texto, 15);
+    if ($conexao === false) return false;
+    stream_set_timeout($conexao, 15);
+    $usuario = $config['usuario'] ?? REMETENTE;
+    $passos = [
+        [null, 220],
+        ['EHLO igrejacongregacionalpombal.com.br', 250],
+        ['AUTH LOGIN', 334],
+        [base64_encode($usuario), 334],
+        [base64_encode((string) $config['senha']), 235],
+        ['MAIL FROM:<' . REMETENTE . '>', 250],
+        ['RCPT TO:<' . DESTINO . '>', 250],
+        ['DATA', 354],
+    ];
+    foreach ($passos as [$comando, $codigo]) {
+        if ($comando !== null) fwrite($conexao, $comando . "\r\n");
+        if (!smtpResposta($conexao, $codigo)) {
+            fclose($conexao);
+            return false;
+        }
+    }
+    $mensagem = implode("\r\n", array_merge([
+        'Date: ' . date('r'),
+        'To: <' . DESTINO . '>',
+        "Subject: $assunto",
+        'Message-ID: <' . bin2hex(random_bytes(12)) . '@igrejacongregacionalpombal.com.br>',
+    ], $cabecalhos)) . "\r\n\r\n";
+    // Linhas que começam com "." recebem outro ponto (regra do SMTP)
+    $mensagem .= preg_replace('/^\./m', '..', str_replace("\n", "\r\n", $corpo));
+    fwrite($conexao, $mensagem . "\r\n.\r\n");
+    $ok = smtpResposta($conexao, 250);
+    fwrite($conexao, "QUIT\r\n");
+    fclose($conexao);
+    return $ok;
+}
+
+$assunto = '=?UTF-8?B?' . base64_encode(linha('[Site] ' . $titulo)) . '?=';
+$smtp = configSmtp();
+$enviado = $smtp !== null
+    ? enviarSmtp($smtp, $assunto, $corpo, $cabecalhos)
+    : function_exists('mail') && @mail(DESTINO, $assunto, $corpo, implode("\r\n", $cabecalhos), '-f' . REMETENTE);
 
 if (!$enviado) responder(502, ['ok' => false, 'erro' => 'envio']);
 responder(200, ['ok' => true]);

@@ -13,6 +13,9 @@
 #     SITE_URL        padrão "https://www.igrejacongregacionalpombal.com.br"
 #     CONTACT_ENDPOINT, PRAYER_ENDPOINT  endereços que recebem os formulários
 #   Secrets do Instagram (opcionais): IG_FEED_BOM_SAMARITANO ou IG_TOKEN_BOM_SAMARITANO
+#   Secret do e-mail dos formulários (recomendado): SMTP_SENHA, a senha da caixa
+#     site@igrejacongregacionalpombal.com.br (crie em hPanel › E-mails). Variável opcional
+#     SMTP_USUARIO, se a caixa tiver outro endereço.
 name: Publicar site na Hostinger
 
 on:
@@ -53,6 +56,14 @@ jobs:
           NEXT_PUBLIC_PRAYER_ENDPOINT: ${{ vars.PRAYER_ENDPOINT }}
           IG_FEED_BOM_SAMARITANO: ${{ secrets.IG_FEED_BOM_SAMARITANO }}
           IG_TOKEN_BOM_SAMARITANO: ${{ secrets.IG_TOKEN_BOM_SAMARITANO }}
+
+      # Senha da caixa site@igrejacongregacionalpombal.com.br, usada pelos formulários do site
+      # para enviar e-mail pelo SMTP da Hostinger (opcional; sem ela, usam a função mail()).
+      - name: Configurar o envio dos formulários
+        env:
+          SMTP_SENHA: ${{ secrets.SMTP_SENHA }}
+          SMTP_USUARIO: ${{ vars.SMTP_USUARIO }}
+        run: node scripts/config-smtp.mjs
 
       - name: Conferir os dados do FTP
         env:

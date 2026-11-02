@@ -54,6 +54,7 @@
 
   // Ícones Lucide (lucide.dev, licença ISC), só os traços.
   const ICONES = {
+    arquivo: "<rect width=\"20\" height=\"5\" x=\"2\" y=\"3\" rx=\"1\" /><path d=\"M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8\" /><path d=\"M10 12h4\" />",
     inicio: "<path d=\"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8\" /><path d=\"M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\" />",
     escala: "<path d=\"M8 2v4\" /><path d=\"M16 2v4\" /><rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\" /><path d=\"M3 10h18\" /><path d=\"m9 16 2 2 4-4\" />",
     agenda: "<path d=\"M8 2v4\" /><path d=\"M16 2v4\" /><rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\" /><path d=\"M3 10h18\" /><path d=\"M8 14h.01\" /><path d=\"M12 14h.01\" /><path d=\"M16 14h.01\" /><path d=\"M8 18h.01\" /><path d=\"M12 18h.01\" /><path d=\"M16 18h.01\" />",
@@ -491,10 +492,6 @@
     return s;
   }
 
-  function escalasOrdenadas() {
-    return [...state.escalas].sort((a, b) => b.inicio.localeCompare(a.inicio));
-  }
-
   const CHAVE_ABERTA = "escala-louvor:aberta";
 
   /** Lembra, só neste aparelho, qual escala estava aberta. */
@@ -506,11 +503,18 @@
     if (!ui.escalaId) {
       try { ui.escalaId = localStorage.getItem(CHAVE_ABERTA) || null; } catch (e) { /* sem armazenamento */ }
     }
-    if (porId(state.escalas, ui.escalaId)) return;
-    // Mostra a escala em vigor (ou a próxima); se não houver, a mais recente.
-    const lista = [...state.escalas].sort((a, b) => a.inicio.localeCompare(b.inicio));
-    const atual = lista.find((e) => e.fim >= hoje()) || lista[lista.length - 1];
-    ui.escalaId = atual ? atual.id : null;
+    // Mostra a escala em vigor (ou a próxima). As cumpridas ficam no arquivo e só abrem quando alguém escolhe.
+    const ativas = E.escalasAtivas(state, hoje());
+    const lembrada = porId(state.escalas, ui.escalaId);
+    if (lembrada && (!E.escalaCumprida(lembrada, hoje()) || !ativas.length)) return;
+    ui.escalaId = ativas.length ? ativas[0].id : null;
+  }
+
+  /** Escala do início: a aberta, se ainda não terminou; senão a que está em vigor (ou a próxima). */
+  function escalaDoInicio() {
+    const aberta = porId(state.escalas, ui.escalaId);
+    if (aberta && !E.escalaCumprida(aberta, hoje())) return aberta;
+    return E.escalasAtivas(state, hoje())[0] || null;
   }
 
   /* ---------------------------------------------------------- moldura */
@@ -628,7 +632,7 @@
 
   function vigencia(escala) {
     if (escala.inicio <= hoje() && escala.fim >= hoje()) return "Em vigor";
-    return escala.inicio > hoje() ? "Próxima escala" : "Encerrada";
+    return escala.inicio > hoje() ? "Próxima escala" : "Cumprida";
   }
 
   function abrirCulto(escala, cultoId) {
@@ -643,13 +647,16 @@
   }
 
   function telaInicio() {
-    const escala = porId(state.escalas, ui.escalaId);
+    const escala = escalaDoInicio();
     const igreja = (state.igreja && state.igreja.nome) || "";
     const cab = h("div", { class: "cabecalho" },
       h("div", {}, h("h1", {}, "Visão geral"), h("p", { class: "muted" }, `${E.formatarData(hoje(), "longa")}${igreja ? ` · ${igreja}` : ""}`)),
       h("div", { class: "acoes" },
         h("button", { class: "btn tonal", onclick: () => irPara("disponibilidade") }, icone("certo"), "Minha disponibilidade"),
         h("button", { class: "btn", onclick: novaEscala }, icone("calendarioMais"), "Nova escala")));
+    if (!escala && state.escalas.length) {
+      return h("div", { class: "tela" }, cab, h("div", { class: "painel-inicio" }, cartaoProximo(), cartaoDisponibilidade(), cartaoRepertorio()));
+    }
     if (!escala) {
       return h("div", { class: "tela" }, cab,
         h("div", { class: "vazio" }, h("span", { class: "icone-vazio" }, icone("escala")),
@@ -669,7 +676,9 @@
     if (!prox) {
       return h("section", { class: "cartao largo-2" }, h("div", { class: "cartao-cab" }, h("h2", {}, icone("relogio"), "Próximo culto")),
         h("div", { class: "secao" }, h("p", { class: "muted" }, "Nenhum culto programado nas escalas. Crie a escala do próximo período."),
-          h("button", { class: "btn primario", style: "justify-self:start", onclick: novaEscala }, icone("mais"), "Nova escala")));
+          h("div", { class: "acoes" },
+            h("button", { class: "btn primario", onclick: novaEscala }, icone("mais"), "Nova escala"),
+            botaoArquivo())));
     }
     const { escala } = prox;
     const base = E.liderDe(escala, prox.culto) || prox.culto;
@@ -736,7 +745,7 @@
 
   function cartaoDisponibilidade() {
     const periodo = pedidoAtual();
-    const dias = E.diasDeCulto(state, periodo.inicio, periodo.fim);
+    const dias = diasParaMarcar(periodo);
     const ativas = state.pessoas.filter((p) => p.ativo !== false);
     const resp = ativas.filter((p) => (state.respostas || []).some((r) => r.id === E.idResposta(p.id, periodo.inicio))).length;
     const pct = ativas.length ? Math.round((resp / ativas.length) * 100) : 0;
@@ -771,6 +780,16 @@
 
   function telaEscala() {
     const escala = porId(state.escalas, ui.escalaId);
+    if (!escala && state.escalas.length) {
+      return h("div", { class: "tela" },
+        h("div", { class: "cabecalho" }, h("div", {}, h("h1", {}, "Escala"))),
+        h("div", { class: "vazio" }, h("span", { class: "icone-vazio" }, icone("arquivo")),
+          h("h2", {}, "Nenhuma escala em andamento"),
+          h("p", {}, "As escalas já cumpridas ficam guardadas no arquivo. Crie a escala do próximo período."),
+          h("div", { class: "acoes", style: "justify-content:center" },
+            h("button", { class: "btn primario", onclick: novaEscala }, icone("mais"), "Nova escala"),
+            botaoArquivo())));
+    }
     if (!escala) {
       return h("div", { class: "tela" },
         h("div", { class: "cabecalho" }, h("div", {}, h("h1", {}, "Escala"))),
@@ -792,7 +811,9 @@
       : alertas
         ? h("button", { class: "btn", onclick: () => verAvisos(escala, avisos) }, h("span", { class: "selo alerta" }, String(alertas)), alertas > 1 ? "alertas" : "alerta")
         : h("span", { class: "selo ok", style: "min-height:32px;padding:0 12px" }, icone("certo"), "Tudo certo");
-    const ordem = [...state.escalas].sort((a, b) => a.inicio.localeCompare(b.inicio));
+    // As setas andam entre as escalas atuais; numa escala do arquivo, entre as cumpridas.
+    const cumprida = E.escalaCumprida(escala, hoje());
+    const ordem = cumprida ? E.escalasArquivadas(state, hoje()).reverse() : E.escalasAtivas(state, hoje());
     const pos = ordem.indexOf(escala);
     const vizinha = (passo) => ordem[pos + passo];
     const seta = (passo, nomeIcone, texto) => {
@@ -812,7 +833,10 @@
 
     return h("div", { class: "tela" },
       h("div", { class: "cabecalho" }, h("div", {}, h("h1", {}, "Escala"), h("p", { class: "muted" }, "Toque numa pessoa ou música para trocar; use + Pessoa e + Música para acrescentar.")),
-        h("button", { class: "btn", onclick: novaEscala }, icone("calendarioMais"), "Nova escala")),
+        h("div", { class: "acoes" }, botaoArquivo(), h("button", { class: "btn", onclick: novaEscala }, icone("calendarioMais"), "Nova escala"))),
+      cumprida ? h("div", { class: "faixa info", role: "status" }, icone("arquivo"),
+        h("span", {}, h("b", {}, "Escala cumprida."), " Ela fica guardada no arquivo e não aparece mais no início nem no calendário."),
+        E.escalasAtivas(state, hoje()).length ? h("button", { class: "btn tonal", onclick: () => { ui.escalaId = E.escalasAtivas(state, hoje())[0].id; render(); } }, "Ver a escala atual") : null) : null,
       h("section", { class: "cartao" },
         h("div", { class: "seletor-escala" },
           seta(-1, "esq", "Escala anterior"),
@@ -825,7 +849,7 @@
           h("button", { class: "btn icone", "aria-label": "Mais opções da escala", onclick: () => opcoesEscala(escala) }, icone("opcoes"))),
         h("div", { class: "resumo" },
           h("button", { class: "btn zap", onclick: () => enviarWhatsApp(escala) }, icone("whatsapp"), "Enviar no WhatsApp"),
-          estado)),
+          cumprida ? null : estado)),
       h("div", { class: "dias" }, dias.map((d) => {
         const [semana, resto] = E.formatarData(d.data, "longa").split(", ");
         return h("section", { class: "dia", "aria-label": E.formatarData(d.data, "longa") },
@@ -1102,22 +1126,46 @@
     painel({ titulo: "Opções da escala", sub: E.formatarPeriodo(escala.inicio, escala.fim), corpo: h("div", { style: "display:grid;gap:10px" }, itens), foco: ".btn.tonal" });
   }
 
+  function linhaEscala(e) {
+    const cumprida = E.escalaCumprida(e, hoje());
+    const erros = cumprida ? 0 : E.validarEscala(state, e).filter((a) => a.nivel === "erro").length;
+    const sub = cumprida
+      ? `Cumprida · ${e.cultos.length} ${e.cultos.length === 1 ? "culto" : "cultos"}`
+      : `${vigencia(e)} · ${e.status === "confirmada" ? "Confirmada" : "Rascunho"}${erros ? ` · ${erros} pendência${erros > 1 ? "s" : ""}` : ""}`;
+    return h("li", {}, h("button", { class: "linha", "aria-current": String(e.id === ui.escalaId), onclick: () => { fecharAtual(true); ui.escalaId = e.id; irPara("escala"); window.scrollTo({ top: 0 }); } },
+      h("span", { class: "avatar", "aria-hidden": "true" }, icone(cumprida ? "arquivo" : "calendario")),
+      h("span", {}, h("span", { class: "titulo" }, E.formatarPeriodo(e.inicio, e.fim)), h("br"), h("span", { class: "sub" }, sub)),
+      e.id === ui.escalaId ? h("span", { class: "selo ok" }, "Aberta") : h("span")));
+  }
+
   function trocarEscala() {
+    const ativas = E.escalasAtivas(state, hoje());
+    const cumpridas = E.escalasArquivadas(state, hoje());
     painel({
       titulo: "Escalas",
       corpo: [
         h("button", { class: "btn primario largo", onclick: novaEscala }, icone("mais"), "Nova escala"),
-        h("ul", { class: "lista cartao" }, escalasOrdenadas().map((e) => {
-          const erros = E.validarEscala(state, e).filter((a) => a.nivel === "erro").length;
-          return h("li", {}, h("button", { class: "linha", "aria-current": String(e.id === ui.escalaId), onclick: () => { fecharAtual(true); ui.escalaId = e.id; render(); window.scrollTo({ top: 0 }); } },
-            h("span", { class: "avatar", "aria-hidden": "true" }, icone("calendario")),
-            h("span", {}, h("span", { class: "titulo" }, E.formatarPeriodo(e.inicio, e.fim)), h("br"),
-              h("span", { class: "sub" }, `${e.status === "confirmada" ? "Confirmada" : "Rascunho"}${erros ? ` · ${erros} pendência${erros > 1 ? "s" : ""}` : ""}`)),
-            e.id === ui.escalaId ? h("span", { class: "selo ok" }, "Aberta") : h("span")));
-        })),
+        ativas.length ? h("ul", { class: "lista cartao" }, ativas.map(linhaEscala)) : h("p", { class: "muted" }, "Nenhuma escala em andamento."),
+        cumpridas.length ? h("button", { class: "btn tonal largo", onclick: () => { fecharAtual(true); verArquivo(); } }, icone("arquivo"), `Arquivo · ${cumpridas.length} ${cumpridas.length === 1 ? "escala cumprida" : "escalas cumpridas"}`) : null,
       ],
       foco: ".btn.primario",
     });
+  }
+
+  /** Escalas cumpridas: guardadas para consulta, fora do início e do calendário. */
+  function verArquivo() {
+    const cumpridas = E.escalasArquivadas(state, hoje());
+    painel({
+      titulo: "Arquivo de escalas",
+      sub: "Escalas que já foram cumpridas. Toque para ver como foi.",
+      corpo: cumpridas.length ? h("ul", { class: "lista cartao" }, cumpridas.map(linhaEscala)) : h("p", { class: "muted" }, "Nenhuma escala cumprida ainda."),
+      foco: ".linha",
+    });
+  }
+
+  function botaoArquivo() {
+    const n = E.escalasArquivadas(state, hoje()).length;
+    return n ? h("button", { class: "btn texto", onclick: verArquivo }, icone("arquivo"), `Arquivo (${n})`) : null;
   }
 
   function novaEscala() {
@@ -1158,7 +1206,7 @@
           const esc = E.gerarEscala(state, { inicio: p.inicio, fim: p.fim, tipo: f.tipo, vazia: f.modo === "zero" });
           fechar(true);
           ui.tela = "escala";
-          mudou(() => { state.escalas.push(esc); ui.escalaId = esc.id; });
+          mudou(() => { state.escalas.push(esc); ui.escalaId = esc.id; state.pedido = null; });
           window.scrollTo({ top: 0 });
           avisar(f.modo === "zero" ? `Escala criada com ${esc.cultos.length} cultos vazios. Toque em cada vaga para escolher.` : `Escala criada com ${esc.cultos.length} cultos.`);
         },
@@ -1260,14 +1308,32 @@
 
   const CHAVE_PESSOA = "escala-louvor:eu";
 
-  /** Período em que a equipe responde a disponibilidade (padrão: as próximas duas semanas). */
+  /** Período em que a equipe responde a disponibilidade: o da escala mais nova (padrão: as próximas duas semanas). */
   function pedidoAtual() {
-    if (state.pedido && state.pedido.inicio && state.pedido.fim) return state.pedido;
+    const p = E.periodoDeDisponibilidade(state, hoje());
+    if (p) return p;
     const inicio = proximoDomingo();
     return { inicio, fim: E.somarDias(inicio, 13) };
   }
 
   const horaCurta = (hora) => String(hora || "").replace(/^0/, "").replace(":00", "h").replace(":", "h");
+
+  /** Dias de culto do período que ainda não passaram (os que dá para marcar). */
+  const diasParaMarcar = (periodo) => E.diasDeCulto(state, periodo.inicio, periodo.fim).filter((d) => d.data >= hoje());
+
+  /**
+   * Marcas com que a pessoa começa: as da resposta deste período ou, se ainda não respondeu, o que ela
+   * já marcou antes para esses mesmos dias (num pedido anterior que os cobria).
+   */
+  function marcasIniciais(pessoaId, periodo, existente) {
+    if (existente) return { marcas: marcasDe(existente, periodo), trazidas: false };
+    const marcas = new Map();
+    for (const d of diasParaMarcar(periodo)) {
+      const v = E.disponivelEm(state, pessoaId, d.data);
+      if (v) marcas.set(d.data, v);
+    }
+    return { marcas, trazidas: marcas.size > 0 };
+  }
 
   /** Marcas de uma resposta: dia → "sim" (posso) ou "nao" (não posso); dia sem marca = não respondeu. */
   function marcasDe(resposta, periodo) {
@@ -1303,7 +1369,7 @@
 
   /** Calendário do mês: os dias com culto são botões; cada toque passa por posso → não posso → sem marcar. */
   function calendario(periodo, marcas, aoMudar) {
-    const dias = E.diasDeCulto(state, periodo.inicio, periodo.fim);
+    const dias = diasParaMarcar(periodo);
     const caixa = h("div", { class: "calendario" });
     const desenhar = () => {
       const meses = [];
@@ -1392,7 +1458,7 @@
     }
     const id = E.idResposta(pessoa.id, periodo.inicio);
     const existente = (state.respostas || []).find((r) => r.id === id);
-    if (!ui.resposta || ui.resposta.id !== id) ui.resposta = { id, marcas: marcasDe(existente, periodo), obs: existente ? existente.obs || "" : "" };
+    if (!ui.resposta || ui.resposta.id !== id) ui.resposta = { id, ...marcasIniciais(pessoa.id, periodo, existente), obs: existente ? existente.obs || "" : "" };
     const rascunho = ui.resposta;
     const contagem = h("span", {});
     const cal = calendario(periodo, rascunho.marcas, () => atualizar());
@@ -1407,7 +1473,8 @@
       h("div", { class: "cabecalho" },
         h("div", {}, h("h1", {}, `Olá, ${pessoa.nome}`), h("p", { class: "muted" }, `Cultos de ${E.formatarPeriodo(periodo.inicio, periodo.fim)}`)),
         h("div", { class: "acoes" }, h("button", { class: "btn texto", onclick: () => { ui.respostaPessoa = null; ui.resposta = null; try { localStorage.removeItem(CHAVE_PESSOA); } catch (e) { /* */ } render(); } }, "Não sou eu"), voltar)),
-      existente ? h("p", { class: "selo ok", style: "justify-self:start;min-height:32px;padding:0 12px" }, `Você respondeu em ${E.formatarData(existente.em.slice(0, 10), "curta")}. Pode mudar e enviar de novo.`) : null,
+      existente ? h("p", { class: "selo ok", style: "justify-self:start;min-height:32px;padding:0 12px" }, `Você respondeu em ${E.formatarData(existente.em.slice(0, 10), "curta")}. Pode mudar e enviar de novo.`)
+        : rascunho.trazidas ? h("p", { class: "selo neutro", style: "justify-self:start;min-height:32px;padding:4px 12px" }, "Já trouxemos o que você marcou antes para alguns destes dias. Confira e envie.") : null,
       h("section", { class: "cartao secao" },
         h("p", {}, "Toque uma vez no dia em que você ", h("b", {}, "pode"), " servir (fica verde). Toque de novo para dizer que ", h("b", {}, "não pode"), " (fica vermelho). Um terceiro toque desmarca. Só os dias com culto aparecem para marcar."),
         legendaMarcas(),
@@ -1451,12 +1518,14 @@
     const fim = E.isoData(new Date(ano, mes + 1, 0, 12));
     const porData = {};
     const por = (d) => (porData[d] = porData[d] || []);
+    // Dias que já passaram ficam vazios: as escalas cumpridas estão no arquivo.
+    const deHoje = (d) => d >= hoje();
     for (const e of state.escalas) {
-      for (const c of e.cultos) if (c.data >= inicio && c.data <= fim) por(c.data).push({ hora: c.hora, nome: c.nome, solene: !!c.solene, escala: e, culto: c });
+      for (const c of e.cultos) if (c.data >= inicio && c.data <= fim && deHoje(c.data)) por(c.data).push({ hora: c.hora, nome: c.nome, solene: !!c.solene, escala: e, culto: c });
     }
     const coberto = (d) => state.escalas.some((e) => e.inicio <= d && e.fim >= d);
     for (const o of E.listarOcorrencias(state.cultos, inicio, fim)) {
-      if (coberto(o.data)) continue;
+      if (!deHoje(o.data) || coberto(o.data)) continue;
       const c = porId(state.cultos, o.cultoId);
       if (c) por(o.data).push({ hora: c.hora, nome: c.nome, solene: !!c.solene, escala: null, culto: null });
     }
@@ -1520,7 +1589,9 @@
         h("div", { class: "legenda" }, h("span", {}, h("i"), "Culto com escala"), h("span", {}, h("i", { class: "solene" }), "Culto solene"), h("span", {}, h("i", { class: "sem" }), "Sem escala"))),
       h("section", { class: "cartao" },
         h("div", { class: "cartao-cab", style: "padding-bottom:var(--e-3)" }, h("h2", {}, icone("relogio"), E.formatarData(ui.agendaDia, "longa"))),
-        doDia.length ? h("div", { class: "compromissos" }, doDia.map(compromisso)) : h("div", { class: "secao", style: "padding-top:0" }, h("p", { class: "muted" }, "Nenhum culto neste dia.")),
+        doDia.length ? h("div", { class: "compromissos" }, doDia.map(compromisso))
+          : ui.agendaDia < hoje() ? h("div", { class: "secao", style: "padding-top:0" }, h("p", { class: "muted" }, "Este dia já passou. As escalas cumpridas ficam no arquivo."), botaoArquivo())
+          : h("div", { class: "secao", style: "padding-top:0" }, h("p", { class: "muted" }, "Nenhum culto neste dia.")),
         semEscala ? h("div", { class: "rodape-cartao" }, h("button", { class: "btn tonal", onclick: novaEscala }, icone("calendarioMais"), "Criar escala")) : null),
     ];
   }
@@ -1528,7 +1599,7 @@
   /** Agenda: calendário dos cultos e, abaixo, o pedido e a grade de disponibilidade. */
   function telaAgenda() {
     const periodo = pedidoAtual();
-    const dias = E.diasDeCulto(state, periodo.inicio, periodo.fim);
+    const dias = diasParaMarcar(periodo);
     const ativas = state.pessoas.filter((p) => p.ativo !== false).sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
     const respostaDa = (p) => (state.respostas || []).find((r) => r.id === E.idResposta(p.id, periodo.inicio));
     const responderam = ativas.filter(respostaDa);
@@ -1542,11 +1613,11 @@
         return h("tr", {},
           h("th", { scope: "row" }, h("button", { class: "btn texto", style: "padding:0 6px", onclick: () => editarDisponibilidade(p) }, p.nome, r && r.obs ? icone("nota2") : null)),
           dias.map((d) => {
-            const v = E.estadoNoDia(r, d.data);
+            const v = E.disponivelEm(state, p.id, d.data);
             return h("td", { class: `disp ${v || "sem"}`, "aria-label": `${p.nome}, ${E.formatarData(d.data, "dia")}: ${v === "sim" ? "pode" : v === "nao" ? "não pode" : r ? "não marcou" : "não respondeu"}` }, v === "sim" ? "✓" : v === "nao" ? "✕" : "·");
           }));
       })),
-      h("tfoot", {}, h("tr", {}, h("th", { scope: "row" }, "Podem"), dias.map((d) => h("td", { class: "num" }, String(ativas.filter((p) => E.estadoNoDia(respostaDa(p), d.data) === "sim").length))))));
+      h("tfoot", {}, h("tr", {}, h("th", { scope: "row" }, "Podem"), dias.map((d) => h("td", { class: "num" }, String(ativas.filter((p) => E.disponivelEm(state, p.id, d.data) === "sim").length))))));
 
     const recados = responderam.filter((p) => respostaDa(p).obs);
     const modo = (id, nome, ic) => h("button", { "aria-pressed": String(ui.agendaModo === id), onclick: () => { ui.agendaModo = id; render(); } }, icone(ic), nome);
@@ -1653,7 +1724,7 @@
     const periodo = pedidoAtual();
     const id = E.idResposta(pessoa.id, periodo.inicio);
     const existente = (state.respostas || []).find((r) => r.id === id);
-    const marcas = marcasDe(existente, periodo);
+    const { marcas } = marcasIniciais(pessoa.id, periodo, existente);
     let obs = existente ? existente.obs || "" : "";
     const cal = calendario(periodo, marcas);
     painel({
@@ -1687,7 +1758,7 @@
         });
       } else {
         const esc = E.gerarEscala(state, { inicio: periodo.inicio, fim: periodo.fim, tipo: "personalizado" });
-        mudou(() => { state.escalas.push(esc); ui.escalaId = esc.id; });
+        mudou(() => { state.escalas.push(esc); ui.escalaId = esc.id; state.pedido = null; });
         avisar(`Escala criada com ${esc.cultos.length} cultos.`);
       }
       irPara("escala");

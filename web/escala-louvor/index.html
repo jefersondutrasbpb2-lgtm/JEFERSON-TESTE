@@ -357,6 +357,9 @@
   .faixa { display: flex; gap: var(--e-3); align-items: center; padding: var(--e-3) var(--e-4); border-radius: var(--r-lg); font-size: var(--t-sm); }
   .faixa.alerta { background: var(--alerta-suave); color: var(--alerta); border: 1px solid color-mix(in srgb, var(--alerta) 30%, transparent); }
   .faixa.erro { background: var(--erro-suave); color: var(--erro); border: 1px solid color-mix(in srgb, var(--erro) 30%, transparent); }
+  .faixa.info { background: var(--azul-suave); color: var(--ink); border: 1px solid var(--azul-linha); flex-wrap: wrap; }
+  .faixa.info > svg.i { color: var(--azul); }
+  .faixa.info > span { flex: 1 1 220px; }
   .faixa > span { flex: 1; }
   .faixa .btn { min-height: 36px; }
 

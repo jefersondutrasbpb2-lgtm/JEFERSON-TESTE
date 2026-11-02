@@ -338,6 +338,28 @@ test("disponibilidade em três estados: posso, não posso e sem marcar", () => {
   assert.deepEqual([nenhum.dias, nenhum.nao], [[], ["2026-10-25", "2026-10-27"]]);
 });
 
+test("escalas cumpridas vão para o arquivo e a disponibilidade segue a escala nova", () => {
+  const s = novoEstado();
+  const velha = { id: "a", inicio: "2026-10-25", fim: "2026-11-01", cultos: [] };
+  const nova = { id: "b", inicio: "2026-11-03", fim: "2026-11-30", cultos: [] };
+  s.escalas = [nova, velha];
+  s.pedido = { inicio: "2026-10-25", fim: "2026-11-07" };
+  const hoje = "2026-11-02";
+  assert.equal(E.escalaCumprida(velha, hoje), true);
+  assert.equal(E.escalaCumprida(nova, hoje), false);
+  assert.equal(E.escalaCumprida({ fim: hoje }, hoje), false, "no último dia ainda está em vigor");
+  assert.deepEqual(E.escalasAtivas(s, hoje).map((e) => e.id), ["b"]);
+  assert.deepEqual(E.escalasArquivadas(s, hoje).map((e) => e.id), ["a"]);
+  // O pedido antigo ainda não terminou, mas a escala nova começa depois: vale a escala nova.
+  assert.deepEqual(E.periodoDeDisponibilidade(s, hoje), { inicio: "2026-11-03", fim: "2026-11-30" });
+  // Um pedido escolhido à mão para depois da escala nova passa na frente.
+  s.pedido = { inicio: "2026-12-01", fim: "2026-12-31" };
+  assert.deepEqual(E.periodoDeDisponibilidade(s, hoje), s.pedido);
+  // Tudo cumprido e pedido vencido: nada em aberto.
+  s.pedido = { inicio: "2026-10-25", fim: "2026-11-07" };
+  assert.equal(E.periodoDeDisponibilidade(s, "2026-12-10"), null);
+});
+
 test("dias de culto do período agrupam os cultos de cada dia", () => {
   const s = novoEstado();
   const dias = E.diasDeCulto(s, "2026-10-25", "2026-10-31");

@@ -11,3 +11,7 @@ preview/
 # Senha do e-mail dos formulários (gerada na publicação)
 public/api/config.php
 out/api/config.php
+
+# Cache do /api/youtube.php ao testar com php -S
+site-cache/
+public/api/_cache/

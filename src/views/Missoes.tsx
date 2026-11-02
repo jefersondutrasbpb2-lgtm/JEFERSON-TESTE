@@ -146,26 +146,26 @@ export default function MissoesPage() {
                 {t({
                   pt: (
                     <>
-                      Congregação e <em>comunidades rurais.</em>
+                      Congregações e <em>comunidades rurais.</em>
                     </>
                   ),
                   en: (
                     <>
-                      A congregation and <em>rural communities.</em>
+                      Congregations and <em>rural communities.</em>
                     </>
                   ),
                   es: (
                     <>
-                      Congregación y <em>comunidades rurales.</em>
+                      Congregaciones y <em>comunidades rurales.</em>
                     </>
                   ),
                 })}
               </h2>
               <p className="prose" data-reveal>
                 {t({
-                  pt: "A igreja mantém uma congregação em Condado e trabalhos congregacionais nas comunidades rurais de Santa Maria, São João e Carvalhadas.",
-                  en: "The church keeps a congregation in Condado and congregational work in the rural communities of Santa Maria, São João and Carvalhadas.",
-                  es: "La iglesia mantiene una congregación en Condado y obras congregacionales en las comunidades rurales de Santa Maria, São João y Carvalhadas.",
+                  pt: "A igreja mantém congregações em Condado e nas comunidades rurais de Santa Maria, São João e Carvalhadas, além da congregação de Caicó — RN, que também é campo missionário.",
+                  en: "The church keeps congregations in Condado and in the rural communities of Santa Maria, São João and Carvalhadas, as well as the congregation in Caicó, Rio Grande do Norte, which is also a mission field.",
+                  es: "La iglesia mantiene congregaciones en Condado y en las comunidades rurales de Santa Maria, São João y Carvalhadas, además de la congregación de Caicó, Rio Grande do Norte, que también es campo misionero.",
                 })}
               </p>
             </div>

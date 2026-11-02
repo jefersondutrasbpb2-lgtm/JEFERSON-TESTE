@@ -878,6 +878,210 @@ html:not(.js) .atlas__route {
   gap: 0.35rem;
 }
 
+/* ---------- Assista aos cultos (YouTube) ---------- */
+
+.watch__grid {
+  display: grid;
+  gap: clamp(2rem, 4vw, 3.5rem);
+  align-items: start;
+}
+@media (min-width: 1000px) {
+  .watch__grid { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+}
+.watch__stage {
+  display: grid;
+  gap: 1.1rem;
+  scroll-margin-top: 6rem;
+}
+.watch__media {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: #000;
+}
+.watch__media.is-live {
+  box-shadow: 0 0 0 2px #e5352b;
+}
+.watch__media iframe,
+.watch__play,
+.watch__play img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  padding: 0;
+  object-fit: cover;
+}
+.watch__play {
+  cursor: pointer;
+  background: #000;
+}
+.watch__play img {
+  transition: transform 0.8s var(--ease-out), opacity 0.4s;
+  opacity: 0.9;
+}
+.watch__play:hover img,
+.watch__play:focus-visible img {
+  transform: scale(1.03);
+  opacity: 1;
+}
+.watch__play-icon {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: clamp(3.75rem, 7vw, 5rem);
+  height: clamp(3.75rem, 7vw, 5rem);
+  border-radius: 50%;
+  background: var(--c-paper);
+  color: var(--c-ink);
+  translate: -50% -50%;
+  box-shadow: 0 10px 40px rgb(0 0 0 / 0.35);
+  transition: transform 0.4s var(--ease-out);
+}
+.watch__play:hover .watch__play-icon,
+.watch__play:focus-visible .watch__play-icon {
+  transform: scale(1.08);
+}
+.watch__live {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem 0.35rem 0.6rem;
+  border-radius: 999px;
+  background: #e5352b;
+  color: #fff;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+.watch__live::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: #fff;
+  animation: watch-pulse 1.6s ease-in-out infinite;
+}
+@keyframes watch-pulse {
+  50% { opacity: 0.25; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .watch__live::before { animation: none; }
+}
+.watch__caption {
+  display: grid;
+  gap: 0.4rem;
+}
+.watch__meta {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--tone-accent);
+}
+.watch__meta.is-live {
+  color: #ff6b61;
+}
+.watch__title {
+  font-size: var(--fs-h3);
+  line-height: 1.15;
+}
+.watch__side {
+  display: grid;
+  gap: 1rem;
+}
+.watch__side-title {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--tone-muted);
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--tone-line);
+}
+.watch__list {
+  display: grid;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.watch__list li + li {
+  border-top: 1px solid var(--tone-line);
+}
+.watch__item {
+  display: grid;
+  grid-template-columns: clamp(7.5rem, 32%, 9.5rem) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: center;
+  width: 100%;
+  padding: 0.9rem 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.watch__list li:first-child .watch__item {
+  padding-top: 0;
+}
+.watch__thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: calc(var(--radius-sm) * 0.75);
+  background: #000;
+}
+.watch__thumb img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+  transition: opacity 0.3s, transform 0.6s var(--ease-out);
+}
+.watch__item:hover .watch__thumb img,
+.watch__item:focus-visible .watch__thumb img {
+  opacity: 1;
+  transform: scale(1.05);
+}
+.watch__thumb-icon {
+  position: absolute;
+  left: 0.45rem;
+  bottom: 0.45rem;
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: var(--c-paper);
+  color: var(--c-ink);
+}
+.watch__item-text {
+  display: grid;
+  gap: 0.3rem;
+}
+.watch__item-title {
+  font-family: var(--ff-display);
+  font-size: 1.05rem;
+  line-height: 1.25;
+  transition: color 0.3s;
+}
+.watch__item:hover .watch__item-title,
+.watch__item:focus-visible .watch__item-title {
+  color: var(--tone-accent);
+}
+
 /* ---------- 08 · Comunidade ---------- */
 
 .mosaic {

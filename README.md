@@ -180,6 +180,20 @@ As publicações se atualizam a cada novo build do site; na hospedagem, configur
 diário) para manter o carrossel em dia. Para incluir outro perfil, acrescente-o em `FEEDS` no script e registre o
 arquivo JSON em `src/content/instagram.ts`.
 
+### Vídeos do YouTube (Assista aos cultos)
+
+A seção "Assista aos cultos" da página inicial mostra o culto mais recente do canal
+[@igrejacongregacionaldepombal](https://www.youtube.com/@igrejacongregacionaldepombal) e os quatro anteriores,
+e avisa "Ao vivo agora" durante as transmissões. Não precisa atualizar nada à mão:
+
+- no build, `scripts/fetch-youtube.mjs` (também `npm run youtube`) lê o feed RSS público do canal e grava a lista
+  em `src/content/youtube.json`, que já vai no HTML;
+- no ar, a seção consulta `public/api/youtube.php` na Hostinger, que lê o feed (cache de 15 min) e a página
+  `/live` do canal (cache de 3 min). Vídeos novos e transmissões aparecem sem republicar o site.
+
+Sem chave de API. O player (youtube-nocookie) só carrega quando a pessoa clica. Para trocar de canal, altere
+`CHANNEL_ID`/`CANAL_ID` nesses dois arquivos e o link em `src/content/site.ts`.
+
 ### Identidade visual
 
 O logotipo oficial está em `public/brand/` (versão azul para fundos claros e versão branca para fundos escuros) e é

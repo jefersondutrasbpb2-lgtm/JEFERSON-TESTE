@@ -76,9 +76,9 @@ export const missionFields: MissionField[] = [
     point: "condado",
     map: "regional",
     summary: {
-      pt: "Congregação com certa autonomia, ainda filiada à IEC Pombal.",
-      en: "A congregation with some autonomy, still affiliated with IEC Pombal.",
-      es: "Congregación con cierta autonomía, todavía afiliada a la IEC Pombal.",
+      pt: "Congregação da IEC Pombal, com certa autonomia no trabalho local.",
+      en: "A congregation of IEC Pombal, with some autonomy in its local work.",
+      es: "Congregación de la IEC Pombal, con cierta autonomía en su labor local.",
     },
   },
   {
@@ -89,9 +89,9 @@ export const missionFields: MissionField[] = [
     point: "pombal",
     map: "regional",
     summary: {
-      pt: "Trabalhos congregacionais nas comunidades rurais, levando o ensino da Palavra e a comunhão para perto das famílias do campo.",
-      en: "Congregational work in rural communities, bringing the teaching of the Word and Christian fellowship close to farming families.",
-      es: "Obra congregacional en las comunidades rurales, que acerca la enseñanza de la Palabra y la comunión a las familias del campo.",
+      pt: "Congregações da IEC Pombal nas comunidades rurais, levando o ensino da Palavra e a comunhão para perto das famílias do campo.",
+      en: "Congregations of IEC Pombal in rural communities, bringing the teaching of the Word and Christian fellowship close to farming families.",
+      es: "Congregaciones de la IEC Pombal en las comunidades rurales, que acercan la enseñanza de la Palabra y la comunión a las familias del campo.",
     },
   },
   {
@@ -130,9 +130,9 @@ export const missionFields: MissionField[] = [
     map: "overview",
     people: { pt: "Missionários Alberto e Istênia", en: "Missionaries Alberto and Istênia", es: "Misioneros Alberto e Istênia" },
     summary: {
-      pt: "Trabalho missionário no Seridó potiguar. Caicó já é uma igreja independente e emancipada, e segue entre os campos missionários atuais da IEC Pombal.",
-      en: "Mission work in the Seridó region of Rio Grande do Norte. Caicó is now an independent, self-governing church and remains one of IEC Pombal's current mission fields.",
-      es: "Obra misionera en el Seridó de Rio Grande do Norte. Caicó ya es una iglesia independiente y emancipada, y sigue entre los campos misioneros actuales de la IEC Pombal.",
+      pt: "Trabalho missionário no Seridó potiguar. Caicó é uma congregação da IEC Pombal e um dos campos missionários atuais da igreja.",
+      en: "Mission work in the Seridó region of Rio Grande do Norte. Caicó is a congregation of IEC Pombal and one of the church's current mission fields.",
+      es: "Obra misionera en el Seridó de Rio Grande do Norte. Caicó es una congregación de la IEC Pombal y uno de los campos misioneros actuales de la iglesia.",
     },
   },
 ];

@@ -241,7 +241,7 @@ function chapters(): Chapter[] {
             <p>
               O compromisso missionário se estende a outros campos: na <strong>Região Amazônica</strong>, com o casal de
               missionários <strong>Eduardo e Donária</strong>, entre comunidades ribeirinhas do Rio Purus; e em{" "}
-              <strong>Caicó — RN</strong>, com o trabalho do casal <strong>Alberto e Istênia</strong>.
+              <strong>Caicó — RN</strong>, congregação da IEC Pombal, com o trabalho do casal <strong>Alberto e Istênia</strong>.
             </p>
             <p>
               A igreja também abriga e apoia o <strong>CEDIBS – Centro de Desenvolvimento Integral O Bom Samaritano</strong>,
@@ -254,7 +254,7 @@ function chapters(): Chapter[] {
             <p>
               The missionary commitment reaches other fields: in the <strong>Amazon region</strong>, with missionary couple{" "}
               <strong>Eduardo and Donária</strong>, among the riverside communities of the Purus River; and in{" "}
-              <strong>Caicó, Rio Grande do Norte</strong>, with the work of <strong>Alberto and Istênia</strong>.
+              <strong>Caicó, Rio Grande do Norte</strong>, a congregation of IEC Pombal, with the work of <strong>Alberto and Istênia</strong>.
             </p>
             <p>
               The church also hosts and supports <strong>CEDIBS – Centro de Desenvolvimento Integral O Bom Samaritano</strong>{" "}
@@ -268,7 +268,7 @@ function chapters(): Chapter[] {
             <p>
               El compromiso misionero se extiende a otros campos: en la <strong>región amazónica</strong>, con el matrimonio
               de misioneros <strong>Eduardo y Donária</strong>, entre las comunidades ribereñas del río Purus; y en{" "}
-              <strong>Caicó, Rio Grande do Norte</strong>, con la obra del matrimonio <strong>Alberto e Istênia</strong>.
+              <strong>Caicó, Rio Grande do Norte</strong>, congregación de la IEC Pombal, con la obra del matrimonio <strong>Alberto e Istênia</strong>.
             </p>
             <p>
               La iglesia también acoge y apoya el{" "}

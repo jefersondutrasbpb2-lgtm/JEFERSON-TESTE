@@ -45,10 +45,10 @@ Os dados abaixo vieram de uma versão anterior do site e **não foram verificado
 ## 4. Missões e ação social
 
 - [x] Catolé do Rocha, Sousa e Cajazeiras: a IEC Pombal contribuiu para a fundação; hoje são igrejas independentes
-- [x] Condado: congregação com certa autonomia, ainda filiada à IEC Pombal
-- [x] Santa Maria, São João e Carvalhadas: trabalhos continuam
-- [x] Rio Purus (Eduardo e Donária) e Caicó (Alberto e Istênia) são os campos missionários atuais; Caicó já é igreja
-      independente e emancipada
+- [x] Condado: congregação da IEC Pombal, com certa autonomia no trabalho local
+- [x] Santa Maria, São João e Carvalhadas: congregações da IEC Pombal; os trabalhos continuam
+- [x] Rio Purus (Eduardo e Donária) e Caicó (Alberto e Istênia) são os campos missionários atuais; Caicó **não** é
+      emancipada: continua sendo congregação da IEC Pombal, assim como Condado e as da zona rural
 - [x] Descrição das atividades do CEDIBS confirmada
 
 ## 5. Identidade e fé

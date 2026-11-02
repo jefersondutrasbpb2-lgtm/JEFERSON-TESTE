@@ -190,6 +190,34 @@
    * `dias` são as datas em que a pessoa PODE servir; as outras datas do período
    * contam como "não posso".
    */
+  /** Escala cumprida: o último dia já passou. Ela vai para o arquivo e sai do início e do calendário. */
+  function escalaCumprida(escala, hoje) {
+    return !!escala && String(escala.fim || "") < hoje;
+  }
+
+  /** Escalas que ainda não terminaram, da que está em vigor (ou da mais próxima) para a mais distante. */
+  function escalasAtivas(state, hoje) {
+    return (state.escalas || []).filter((e) => !escalaCumprida(e, hoje)).sort((a, b) => a.inicio.localeCompare(b.inicio));
+  }
+
+  /** Escalas cumpridas, da mais recente para a mais antiga. */
+  function escalasArquivadas(state, hoje) {
+    return (state.escalas || []).filter((e) => escalaCumprida(e, hoje)).sort((a, b) => b.inicio.localeCompare(a.inicio));
+  }
+
+  /**
+   * Período em que a equipe marca a disponibilidade: o da escala mais nova que ainda não terminou, ou o
+   * período escolhido à mão (state.pedido), se for mais novo que ela. Nada em aberto: null.
+   */
+  function periodoDeDisponibilidade(state, hoje) {
+    const opcoes = escalasAtivas(state, hoje).map((e) => ({ inicio: e.inicio, fim: e.fim }));
+    const p = state.pedido;
+    if (p && p.inicio && p.fim && p.fim >= hoje) opcoes.push({ inicio: p.inicio, fim: p.fim });
+    let escolhido = null;
+    for (const o of opcoes) if (!escolhido || o.inicio > escolhido.inicio) escolhido = o;
+    return escolhido;
+  }
+
   function respostaDe(state, pessoaId, data) {
     let achada = null;
     for (const r of state.respostas || []) {
@@ -1028,6 +1056,7 @@
     adicionarVaga, removerVaga, adicionarMusica, removerMusica, esvaziarEscala, TEMAS_HINARIO, temaDoHino, subtemaDoHino, tambemServeEm, hinoNoAssunto,
     validarEscala, resumoPessoas, equipePorFuncao, textoWhatsApp,
     lerListaMusicas, lerTags, migrar,
-    respostaDe, disponivelEm, estadoNoDia, diasDeCulto, idResposta, codigoResposta, textoResposta, lerRespostas,
+    respostaDe, disponivelEm, estadoNoDia, diasDeCulto,
+    escalaCumprida, escalasAtivas, escalasArquivadas, periodoDeDisponibilidade, idResposta, codigoResposta, textoResposta, lerRespostas,
   };
 });

@@ -4,7 +4,12 @@ const assert = require("node:assert/strict");
 const E = require("./engine.js");
 const D = require("./dados-iniciais.js");
 
-const novoEstado = () => D.estadoInicial();
+// A maioria dos testes trata das outras regras: sem respostas de disponibilidade, sorteia com todos.
+const novoEstado = () => {
+  const s = D.estadoInicial();
+  s.regras.soQuemPode = false;
+  return s;
+};
 const cultoDe = (esc, cultoId, data) => esc.cultos.find((c) => c.cultoId === cultoId && (!data || c.data === data));
 const musicasDo = (s, culto) => culto.musicas.map((m) => E.porId(s.musicas, m.id));
 const todosCampos = (culto) => [...culto.equipe.map((x) => x.pessoaId), ...culto.musicas.map((m) => m.id)];
@@ -285,15 +290,41 @@ test("disponibilidade: quem marcou que não pode fica de fora; quem confirmou ve
   assert.ok(cand.find((c) => c.pessoa.id === "tulio").semResposta);
 });
 
-test("disponibilidade: opção de escalar só quem respondeu", () => {
-  const s = novoEstado();
-  s.regras.soQuemRespondeu = true;
+test("disponibilidade: o sorteio só põe quem marcou que pode no dia (regra padrão)", () => {
+  const s = D.estadoInicial();
+  assert.equal(E.soQuemPode(s), true);
   const inicio = "2026-10-25";
-  s.respostas = [{ id: E.idResposta("germano", inicio), pessoaId: "germano", inicio, fim: "2026-10-31", dias: ["2026-10-27"], em: "x" }];
-  const esc = E.gerarEscala(s, { inicio, fim: "2026-10-31", seed: 1 });
+  const fim = "2026-10-31";
+  s.respostas = [
+    // Germano pode na terça; Alexandre respondeu mas deixou a terça sem marcar; Kaio não pode; o resto não respondeu.
+    { id: E.idResposta("germano", inicio), pessoaId: "germano", inicio, fim, dias: ["2026-10-27"], nao: [], em: "x" },
+    { id: E.idResposta("alexandre", inicio), pessoaId: "alexandre", inicio, fim, dias: ["2026-10-29"], nao: [], em: "x" },
+    { id: E.idResposta("kaio", inicio), pessoaId: "kaio", inicio, fim, dias: [], nao: ["2026-10-27"], em: "x" },
+  ];
+  const esc = E.gerarEscala(s, { inicio, fim, seed: 1 });
   const ter = cultoDe(esc, "ter-oracao");
   assert.deepEqual(ter.equipe.map((x) => x.pessoaId), ["germano", null, null]);
+  // Em nenhum culto entra alguém que não marcou "posso" naquele dia.
+  for (const c of esc.cultos) for (const v of c.equipe) if (v.pessoaId) assert.equal(E.disponivelEm(s, v.pessoaId, c.data), "sim", `${v.pessoaId} em ${c.data}`);
   assert.ok(E.validarEscala(s, esc).some((a) => a.nivel === "erro" && /ninguém escalado/.test(a.msg)));
+  // Na lista para escolher à mão, quem não marcou aparece com o motivo.
+  const cand = E.candidatosPessoa(s, esc, esc.cultos.indexOf(ter), 1);
+  assert.equal(cand.find((c) => c.pessoa.id === "alexandre").bloqueio, "não marcou que pode");
+  assert.equal(cand.find((c) => c.pessoa.id === "kaio").bloqueio, "marcou que não pode");
+  // Se alguém põe à mão quem não marcou, a escala avisa.
+  ter.equipe[1].pessoaId = "alexandre";
+  assert.ok(E.validarEscala(s, esc).some((a) => a.nivel === "alerta" && /Alexandre não marcou que pode/.test(a.msg)));
+});
+
+test("versão 5: dados antigos passam a sortear só quem marcou que pode", () => {
+  const s = D.estadoInicial();
+  s.versao = 4;
+  s.regras = Object.assign({}, s.regras, { soQuemRespondeu: false });
+  delete s.regras.soQuemPode;
+  const m = E.migrar(s, D.configuracaoBase());
+  assert.equal(m.versao, 5);
+  assert.equal(m.regras.soQuemPode, true);
+  assert.equal("soQuemRespondeu" in m.regras, false);
 });
 
 test("disponibilidade pelo WhatsApp: o código vai e volta", () => {
@@ -376,7 +407,7 @@ test("a migração completa a seção Trindade do Salmos e Hinos sem duplicar", 
   s.musicas = s.musicas.filter((m) => !["sh32", "sh33", "sh34", "sh35", "sh228"].includes(m.id));
   E.porId(s.musicas, "sh30").titulo = "";
   const m = E.migrar(s, D.configuracaoBase(), D.repertorio());
-  assert.equal(m.versao, 4);
+  assert.equal(m.versao, 5);
   for (const id of ["sh32", "sh33", "sh34", "sh35", "sh228"]) assert.ok(E.porId(m.musicas, id), id);
   assert.equal(E.porId(m.musicas, "sh30").titulo, "Vem, ó Todo-Poderoso!");
   assert.equal(m.musicas.filter((x) => x.id === "sh29").length, 1);
@@ -447,7 +478,7 @@ test("versão 4: entra a coletânea, sem duplicar, e completa o 232 e o 247", ()
   s.musicas.push({ id: "m-manual", tipo: "hino", numero: "640", titulo: "Castelo Forte", tags: [] });
   const m = E.migrar(s, D.configuracaoBase(), D.repertorio());
   const hinos = m.musicas.filter((x) => x.tipo === "hino");
-  assert.equal(m.versao, 4);
+  assert.equal(m.versao, 5);
   assert.equal(hinos.filter((x) => x.numero === "640").length, 1, "não duplica hino que a igreja já tinha");
   assert.equal(hinos.filter((x) => x.numero === "29").length, 1);
   assert.equal(E.porId(m.musicas, "sh247").titulo, "Santo! Santo! Santo!");

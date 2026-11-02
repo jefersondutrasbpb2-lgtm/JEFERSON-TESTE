@@ -57,8 +57,8 @@
     soleneTagsLouvor: ["cristocentrico", "doutrinario"],
     intervaloMusicaSemanas: 3,
     permitirAcumular: false,
-    // Disponibilidade: quem não respondeu ainda pode ser escalado (depois de quem confirmou).
-    soQuemRespondeu: false,
+    // Disponibilidade: o sorteio só põe quem marcou "posso" naquele dia.
+    soQuemPode: true,
   };
 
   // Composição da equipe: sugestão inicial; ajuste em Ajustes › Cultos.
@@ -327,7 +327,7 @@
   ];
 
   function configuracaoBase() {
-    return JSON.parse(JSON.stringify({ versao: 4, igreja: { nome: "IEC Pombal", link: "https://escalas.igrejacongregacionalpombal.com.br" }, funcoes, tags, regras, cultos }));
+    return JSON.parse(JSON.stringify({ versao: 5, igreja: { nome: "IEC Pombal", link: "https://escalas.igrejacongregacionalpombal.com.br" }, funcoes, tags, regras, cultos }));
   }
 
   function repertorio() {

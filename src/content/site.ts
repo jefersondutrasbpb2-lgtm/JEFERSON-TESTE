@@ -70,7 +70,7 @@ export const site = {
 
   social: [
     { id: "instagram", label: "Instagram", handle: "@iecdepombal", href: "https://www.instagram.com/iecdepombal/", pending: false },
-    { id: "youtube", label: "YouTube", handle: "@iecdepombal", href: "https://www.youtube.com/@iecdepombal", pending: false },
+    { id: "youtube", label: "YouTube", handle: "@igrejacongregacionaldepombal", href: "https://www.youtube.com/@igrejacongregacionaldepombal", pending: false },
     { id: "facebook", label: "Facebook", handle: "@iecdepombal", href: "https://www.facebook.com/iecdepombal", pending: false },
   ] as SocialLink[],
 } as const;

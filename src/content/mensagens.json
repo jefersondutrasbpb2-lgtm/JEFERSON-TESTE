@@ -1,6 +1,6 @@
 {
   "_instrucoes": "Biblioteca de mensagens. 'youtubeId' é o código do vídeo (ex.: dQw4w9WgXcQ). Campos opcionais: series, passage, preacher. Itens com 'example: true' só aparecem no modo de revisão.",
-  "channelUrl": "",
+  "channelUrl": "https://www.youtube.com/@igrejacongregacionaldepombal",
   "items": [
     {
       "id": "exemplo-1",

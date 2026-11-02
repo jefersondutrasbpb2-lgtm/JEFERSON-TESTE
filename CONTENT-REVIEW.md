@@ -22,8 +22,9 @@ Os dados abaixo vieram de uma versão anterior do site e **não foram verificado
 - [x] E-mail exibido no site: contato@igrejacongregacionalpombal.com.br (caixa da Hostinger, encaminhada para o
       Gmail da secretaria, sec.iec.2017@gmail.com, que também responde como contato@ pelo "Enviar e-mail como")
 - [x] Instagram: @iecdepombal (confirmado)
-- [x] YouTube e Facebook: @iecdepombal (conforme o convite oficial). Conferir se os endereços
-      youtube.com/@iecdepombal e facebook.com/iecdepombal abrem os perfis corretos → `src/content/site.ts`
+- [x] Facebook: @iecdepombal (facebook.com/iecdepombal, verificado)
+- [x] YouTube: @igrejacongregacionaldepombal (youtube.com/@igrejacongregacionaldepombal, confirmado pela igreja;
+      o endereço antigo @iecdepombal não existia) → `src/content/site.ts`
 - [x] Mensagens: retiradas do site por enquanto (página e seção da homepage), por decisão da igreja
 - [x] Domínio oficial: www.igrejacongregacionalpombal.com.br (hospedagem Hostinger, publicação automática pelo
       workflow `publicar-hostinger.yml`) → variável `NEXT_PUBLIC_SITE_URL`

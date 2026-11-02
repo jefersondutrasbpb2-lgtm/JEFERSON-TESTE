@@ -244,6 +244,9 @@
   }
 
   /** Há pedido de disponibilidade cobrindo esta data (alguém já respondeu)? */
+  /** Sorteio só com quem marcou "posso" no dia (ligado, a não ser que a regra seja desligada). */
+  const soQuemPode = (state) => !(state.regras && state.regras.soQuemPode === false);
+
   const pedidoCobre = (state, data) => (state.respostas || []).some((r) => data >= r.inicio && data <= r.fim);
 
   /** Dias de culto do período, cada um com os cultos daquele dia. */
@@ -424,7 +427,8 @@
         let bloqueio = "";
         if (indisponivelEm(p.indisponivel, culto.data)) bloqueio = "não pode nesta data";
         else if (disp === "nao") bloqueio = "marcou que não pode";
-        else if (semResposta && state.regras && state.regras.soQuemRespondeu) bloqueio = "não respondeu a disponibilidade";
+        // Regra da igreja: o sorteio só põe quem marcou "posso" neste dia na disponibilidade.
+        else if (disp !== "sim" && soQuemPode(state)) bloqueio = "não marcou que pode";
         else if (p.cultos && p.cultos.length && culto.cultoId && !p.cultos.includes(culto.cultoId)) bloqueio = "não serve neste culto";
         else if (!acumula && culto.equipe.some((s, i) => i !== si && s.pessoaId === p.id)) bloqueio = "já tem outra função neste culto";
         const vezes = (usos.pessoas[p.id] || []).filter((u) => u.ref.atual).length;
@@ -820,7 +824,9 @@
         if (!s.pessoaId) return push("erro", campo, `${funcao}: ninguém escalado`);
         const p = porId(state.pessoas, s.pessoaId);
         if (!p) return push("erro", campo, `${funcao}: pessoa removida da equipe`);
-        if (indisponivelEm(p.indisponivel, culto.data) || disponivelEm(state, p.id, culto.data) === "nao") push("erro", campo, `${p.nome} não pode nesta data`);
+        const disp = disponivelEm(state, p.id, culto.data);
+        if (indisponivelEm(p.indisponivel, culto.data) || disp === "nao") push("erro", campo, `${p.nome} não pode nesta data`);
+        else if (disp !== "sim" && soQuemPode(state)) push("alerta", campo, `${p.nome} não marcou que pode neste dia`);
         if (nivelFuncao(p, s.funcao) === "apoio") push("alerta", campo, `${p.nome} só apoia em ${funcao.toLowerCase()}`);
         if (!(state.regras && state.regras.permitirAcumular) && culto.equipe.some((o, i) => i < si && o.pessoaId === s.pessoaId)) {
           push("alerta", campo, `${p.nome} está em duas funções`);
@@ -1037,10 +1043,15 @@
         if (/a confirmar/i.test(atual.obs || "")) atual.obs = m.obs;
       }
     }
+    // Versão 5: o sorteio passa a usar só quem marcou "posso" no dia.
+    if ((Number(state.versao) || 0) < 5) {
+      s.regras.soQuemPode = true;
+      delete s.regras.soQuemRespondeu;
+    }
     delete s.liturgias;
     delete s.oficiais;
     delete s.exemplo;
-    s.versao = 4;
+    s.versao = 5;
     return s;
   }
 
@@ -1056,7 +1067,7 @@
     adicionarVaga, removerVaga, adicionarMusica, removerMusica, esvaziarEscala, TEMAS_HINARIO, temaDoHino, subtemaDoHino, tambemServeEm, hinoNoAssunto,
     validarEscala, resumoPessoas, equipePorFuncao, textoWhatsApp,
     lerListaMusicas, lerTags, migrar,
-    respostaDe, disponivelEm, estadoNoDia, diasDeCulto,
+    respostaDe, disponivelEm, estadoNoDia, diasDeCulto, soQuemPode,
     escalaCumprida, escalasAtivas, escalasArquivadas, periodoDeDisponibilidade, idResposta, codigoResposta, textoResposta, lerRespostas,
   };
 });

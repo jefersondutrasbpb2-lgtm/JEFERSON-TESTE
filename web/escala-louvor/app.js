@@ -211,6 +211,13 @@
   }
 
   /** Faz uma alteração que pode ser desfeita pelo aviso do rodapé. */
+  /** Aviso das vagas que o sorteio deixou vazias por falta de quem marcou "posso". */
+  function avisoVazias(esc) {
+    if (!E.soQuemPode(state)) return "";
+    const n = esc.cultos.filter((c) => !E.liderDe(esc, c)).reduce((t, c) => t + c.equipe.filter((v) => !v.pessoaId).length, 0);
+    return n ? ` ${n} ${n === 1 ? "vaga ficou vazia" : "vagas ficaram vazias"}: só entra quem marcou "posso" no dia.` : "";
+  }
+
   function comDesfazer(msg, fn) {
     if (ui.somenteLeitura) return avisarSemConexao();
     const antes = JSON.stringify(state);
@@ -1102,8 +1109,9 @@
       h("button", {
         class: "btn tonal largo", onclick: () => {
           fecharAtual();
-          comDesfazer("Escala sorteada de novo. O que estava fixado foi mantido.", () => {
-            state.escalas[state.escalas.indexOf(escala)] = E.gerarEscala(state, { inicio: escala.inicio, fim: escala.fim }, escala);
+          const nova = E.gerarEscala(state, { inicio: escala.inicio, fim: escala.fim }, escala);
+          comDesfazer(`Escala sorteada de novo. O que estava fixado foi mantido.${avisoVazias(nova)}`, () => {
+            state.escalas[state.escalas.indexOf(escala)] = nova;
           });
         },
       }, icone("sortear"), "Sortear a escala de novo"),
@@ -1185,7 +1193,7 @@
       corpo.replaceChildren(
         h("div", { class: "campo" }, "Como montar",
           h("div", { class: "segmentado", role: "group", "aria-label": "Como montar", style: "display:grid" }, modo("sortear", "Sortear", "sortear"), modo("zero", "Do zero", "editar")),
-          h("span", { class: "ajuda" }, f.modo === "zero" ? "Os cultos vêm com as vagas vazias; você escolhe cada pessoa e cada música." : "O app distribui a equipe e as músicas; depois dá para trocar qualquer uma.")),
+          h("span", { class: "ajuda" }, f.modo === "zero" ? "Os cultos vêm com as vagas vazias; você escolhe cada pessoa e cada música." : E.soQuemPode(state) ? "O app distribui a equipe só com quem marcou \"posso\" em cada dia na disponibilidade (Agenda), e escolhe as músicas. Onde ninguém marcou, a vaga fica vazia." : "O app distribui a equipe e as músicas; depois dá para trocar qualquer uma.")),
         h("div", { class: "segmentado", role: "group", "aria-label": "Período", style: "display:grid" }, tipo("quinzenal", "Quinzenal"), tipo("mensal", "Mensal"), tipo("personalizado", "Outro")),
         f.tipo === "mensal"
           ? h("label", { class: "campo" }, "Mês", h("input", { type: "month", id: "nova-mes", value: f.mes, onchange: (e) => { f.mes = e.target.value || f.mes; desenhar(); } }))
@@ -1208,7 +1216,7 @@
           ui.tela = "escala";
           mudou(() => { state.escalas.push(esc); ui.escalaId = esc.id; state.pedido = null; });
           window.scrollTo({ top: 0 });
-          avisar(f.modo === "zero" ? `Escala criada com ${esc.cultos.length} cultos vazios. Toque em cada vaga para escolher.` : `Escala criada com ${esc.cultos.length} cultos.`);
+          avisar(f.modo === "zero" ? `Escala criada com ${esc.cultos.length} cultos vazios. Toque em cada vaga para escolher.` : `Escala criada com ${esc.cultos.length} cultos.${avisoVazias(esc)}`);
         },
       }, "Gerar escala")],
       foco: ".segmentado button",
@@ -1752,21 +1760,22 @@
     const faltam = state.pessoas.filter((p) => p.ativo !== false && !(state.respostas || []).some((r) => r.id === E.idResposta(p.id, periodo.inicio))).length;
     const gerar = () => {
       if (existente) {
-        comDesfazer("Escala atualizada com as respostas. O que estava fixado foi mantido.", () => {
-          state.escalas[state.escalas.indexOf(existente)] = E.gerarEscala(state, { inicio: periodo.inicio, fim: periodo.fim }, existente);
+        const nova = E.gerarEscala(state, { inicio: periodo.inicio, fim: periodo.fim }, existente);
+        comDesfazer(`Escala atualizada com as respostas. O que estava fixado foi mantido.${avisoVazias(nova)}`, () => {
+          state.escalas[state.escalas.indexOf(existente)] = nova;
           ui.escalaId = existente.id;
         });
       } else {
         const esc = E.gerarEscala(state, { inicio: periodo.inicio, fim: periodo.fim, tipo: "personalizado" });
         mudou(() => { state.escalas.push(esc); ui.escalaId = esc.id; state.pedido = null; });
-        avisar(`Escala criada com ${esc.cultos.length} cultos.`);
+        avisar(`Escala criada com ${esc.cultos.length} cultos.${avisoVazias(esc)}`);
       }
       irPara("escala");
     };
     if (!faltam) return gerar();
     painel({
       titulo: `${faltam} ${faltam === 1 ? "pessoa ainda não respondeu" : "pessoas ainda não responderam"}`,
-      sub: state.regras.soQuemRespondeu ? "Pelos ajustes, quem não respondeu não entra na escala." : "Quem não respondeu pode entrar, mas só depois de quem confirmou que pode.",
+      sub: E.soQuemPode(state) ? "Só entra na escala quem marcou \"posso\" no dia; quem não respondeu fica de fora." : "Quem não respondeu pode entrar, mas só depois de quem confirmou que pode.",
       corpo: h("p", { class: "muted" }, "Dá para gerar agora e atualizar depois, quando chegarem as outras respostas. O que você fixar à mão é mantido."),
       rodape: (fechar) => [h("button", { class: "btn" , onclick: () => fechar() }, "Esperar"), h("button", { class: "btn primario", onclick: () => { fechar(true); gerar(); } }, "Gerar agora")],
       foco: "footer .btn.primario",
@@ -2254,7 +2263,7 @@
         h("div", { class: "campo" }, "Louvores precisam ser", seletorTags(r.soleneTagsLouvor)),
         h("div", { class: "interruptor" }, h("span", {}, "Semanas antes de repetir uma música", h("small", {}, "Com repertório curto, ela repete a mais antiga e avisa")), passo(r.intervaloMusicaSemanas || 0, 0, 12, (v) => { r.intervaloMusicaSemanas = v; }, "Semanas antes de repetir")),
         h("label", { class: "interruptor" }, h("span", {}, "Duas funções no mesmo culto", h("small", {}, "Ex.: tocar e cantar ao mesmo tempo")), h("input", { type: "checkbox", role: "switch", checked: !!r.permitirAcumular, onchange: (e) => { r.permitirAcumular = e.target.checked; } })),
-        h("label", { class: "interruptor" }, h("span", {}, "Só escalar quem respondeu a disponibilidade", h("small", {}, "Desligado: quem não respondeu entra depois de quem confirmou")), h("input", { type: "checkbox", role: "switch", checked: !!r.soQuemRespondeu, onchange: (e) => { r.soQuemRespondeu = e.target.checked; } })),
+        h("label", { class: "interruptor" }, h("span", {}, "Sortear só quem marcou \"posso\" no dia", h("small", {}, "Desligado: quem não marcou entra depois de quem confirmou")), h("input", { type: "checkbox", role: "switch", checked: r.soQuemPode !== false, onchange: (e) => { r.soQuemPode = e.target.checked; } })),
       ],
       rodape: (fechar) => [h("button", { class: "btn primario", onclick: () => { fechar(true); mudou(() => { state.regras = r; }); avisar("Ajustes salvos."); } }, "Salvar")],
       foco: ".chip",

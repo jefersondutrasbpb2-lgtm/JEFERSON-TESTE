@@ -29,8 +29,9 @@ dias em que **pode** servir e envia.
 - A resposta vai direto para o servidor e aparece na Agenda de quem estiver com o app aberto em até 20 segundos.
 - Se o envio falhar (sem internet, por exemplo), a ferramenta mostra um texto com o código `#disp` para mandar pelo
   WhatsApp, e quem monta a escala usa **Colar respostas**.
-- Na geração, quem marcou que não pode fica de fora; quem confirmou vem antes de quem não respondeu. Em Ajustes ›
-  Escolha das músicas dá para escalar **só** quem respondeu.
+- No sorteio só entra quem marcou **posso** naquele dia; quem marcou que não pode, deixou o dia sem marcar ou não
+  respondeu fica de fora, e a vaga fica vazia se ninguém marcou. À mão dá para pôr qualquer pessoa, e a escala avisa
+  quando ela não marcou que pode. A regra pode ser desligada em Ajustes › Escolha das músicas.
 
 ## Servidor
 
@@ -39,8 +40,9 @@ dias em que **pode** servir e envia.
 antes da primeira alteração (`escala-dados/backup-AAAA-MM-DD.php`, últimos 60 dias); além disso, **Ajustes › Backup**
 baixa uma cópia. `servidor/semente.json` são os dados de partida, usados só enquanto o servidor
 não tem dados. A publicação monta a pasta `escalas/` do site com `scripts/montar-escala.mjs`.
-- Na geração, quem marcou que não pode fica de fora; quem confirmou vem antes de quem não respondeu. Em Ajustes ›
-  Escolha das músicas dá para escalar **só** quem respondeu.
+- No sorteio só entra quem marcou **posso** naquele dia; quem marcou que não pode, deixou o dia sem marcar ou não
+  respondeu fica de fora, e a vaga fica vazia se ninguém marcou. À mão dá para pôr qualquer pessoa, e a escala avisa
+  quando ela não marcou que pode. A regra pode ser desligada em Ajustes › Escolha das músicas.
 
 ## Regras da geração
 

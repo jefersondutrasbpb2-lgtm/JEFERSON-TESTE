@@ -628,6 +628,10 @@ button { font: inherit; color: inherit; }
 .ticket__value { font-family: var(--font-display); font-variation-settings: "opsz" 72; font-weight: 800; font-size: clamp(2.2rem, 1.7rem + 2vw, 3.2rem); line-height: 1; letter-spacing: -.04em; }
 .ticket__inst { font-size: .95rem; color: rgb(255 255 255 / .78); }
 .ticket__inst:empty { display: none; }
+.ticket__from { font-size: .9rem; color: rgb(255 255 255 / .78); }
+.ticket--vip .ticket__from { color: var(--tinta-2); }
+.ticket__inst strong { color: var(--branco); }
+.ticket--vip .ticket__inst strong { color: var(--tinta); }
 .ticket__value small { margin-right: .15em; font-size: .42em; font-weight: 700; letter-spacing: 0; vertical-align: .55em; }
 .ticket__lot .lot__dot { display: inline-block; margin-right: 8px; vertical-align: 1px; }
 /* Lote que já fechou: riscado, apagado e com selo de encerrado */

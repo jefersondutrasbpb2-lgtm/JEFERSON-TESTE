@@ -19,13 +19,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 
-# Lote à venda e links dos checkouts. price: valor cheio; parcelas/parcela: o destaque do card (ex.: 12 e 24.63);
-# anterior: valor do lote que já fechou, mostrado riscado e apagado
+# Lote à venda e links dos checkouts. de: valor de referência ("De R$ 397 por apenas"); parcelas/parcela: o destaque
+# do card; price: valor à vista; anterior: valor do lote que já fechou, mostrado riscado e apagado
 LOTE = "Lote 1"
 LOTE_ANTERIOR = "Lote 0"
 INGRESSOS = {
-    "smart": {"price": None, "parcelas": None, "parcela": None, "anterior": 197, "checkout": "https://chk.eduzz.com/39VKR1KYWR"},
-    "vip": {"price": None, "parcelas": None, "parcela": None, "anterior": 297, "checkout": "https://chk.eduzz.com/39YNX2NQWO"},
+    "smart": {"de": 397, "parcelas": 12, "parcela": 25.55, "price": 247, "anterior": 197, "checkout": "https://chk.eduzz.com/39VKR1KYWR"},
+    "vip": {"de": 597, "parcelas": 12, "parcela": 35.89, "price": 347, "anterior": 297, "checkout": "https://chk.eduzz.com/39YNX2NQWO"},
 }
 WA_DUVIDA = ("https://wa.me/5583996986238?text=Ol%C3%A1!%20Tenho%20uma%20d%C3%BAvida%20sobre%20os%20"
              "ingressos%20do%20Sert%C3%A3o%20Neg%C3%B3cios%202026.")
@@ -160,8 +160,9 @@ def ticket_price(key):
     t = INGRESSOS[key]
     return (f'<div class="ticket__price">'
             f'<span class="ticket__lot"><span class="lot__dot" aria-hidden="true"></span>{LOTE} · disponível</span>'
+            f'<span class="ticket__from">De <s>{brl(t["de"])}</s> por apenas</span>'
             f'<span class="ticket__value"><small>{t["parcelas"] or "00"}x de</small> {brl(t["parcela"])}</span>'
-            f'<span class="ticket__inst">ou {brl(t["price"])} à vista</span>'
+            f'<span class="ticket__inst">ou <strong>{brl(t["price"])}</strong> à vista</span>'
             f'<span class="ticket__old">{LOTE_ANTERIOR} <s>{brl(t["anterior"])}</s> <em>encerrado</em></span></div>')
 
 

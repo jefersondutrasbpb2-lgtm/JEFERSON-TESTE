@@ -473,6 +473,8 @@ button { font: inherit; color: inherit; }
   .speaker--d { grid-column: span 4; }
   .speaker--d + .speaker--d { margin-top: 8vh; }
   .speaker--d ~ .speaker-cases { grid-column: span 4; grid-template-columns: 1fr; align-self: center; }
+  /* Linha dos revelados completa: o "+N" desce e ocupa a largura toda */
+  .speaker--d ~ .speaker-cases:nth-child(3n+2) { grid-column: 1 / -1; grid-template-columns: auto 1fr; }
   .speaker-cases { grid-column: 7 / span 6; grid-template-columns: auto 1fr; align-items: center; column-gap: 28px; }
 }
 

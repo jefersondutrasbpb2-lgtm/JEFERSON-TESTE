@@ -93,6 +93,11 @@ REVELADOS = [
      "bio": "Empresário, autor e presidente do Grupo Makários, holding com mais de 20 empresas no Brasil, em Portugal e nos "
             "Estados Unidos. Começou a empreender ainda menino, vendendo ovos de Páscoa, e hoje se dedica a formar líderes e "
             "fortalecer empresários. É autor do livro Dia a Dia de um Afortunado."},
+    {"slug": "fabio", "nome": "Fábio Farias", "nome_html": "Fábio<br>Farias", "papel": "Palestrante",
+     "tema": "Expansão, vendas e experiência do cliente",
+     "bio": "Fundador da franquia Love Gifts, com mais de 100 unidades no Brasil, é formado em Marketing e tem MBA em Gestão "
+            "Empresarial. Especialista em expansão de negócios, aceleração de vendas, importação, comportamento de consumo e "
+            "experiência do cliente, também criou o projeto social Criança Empreendedora."},
 ]
 A_REVELAR = 10 - len(REVELADOS)
 cards = "".join(f'''

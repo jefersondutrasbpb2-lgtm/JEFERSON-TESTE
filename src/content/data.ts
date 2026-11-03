@@ -13,20 +13,34 @@ export type WeeklyItem = {
   pending?: boolean;
 };
 
+export type EventPoster = { src: string; width: number; height: number; alt: Text };
+
 export type EventItem = {
   id: string;
   date: string;
   time?: string;
+  /** Horário de término (só usado no link "Adicionar à agenda"; padrão: 2 h depois) */
+  endTime?: string;
   title: Text;
   location?: Text;
   description?: Text;
+  /** Texto para "Eventos recentes", depois que o evento passou (padrão: description) */
+  recap?: Text;
   category?: Text;
+  speaker?: Text;
   example?: boolean;
   /** Destacar na página inicial até a data do evento */
   highlight?: boolean;
   verse?: { text: Text; ref: Text };
-  image?: string;
+  /** Cartaz do evento (arquivo em public/images/eventos/) */
+  poster?: EventPoster;
 };
+
+/** Data de hoje em Pombal (UTC−3), no formato AAAA-MM-DD. */
+export const todayInPombal = (now = Date.now()) => new Date(now - 3 * 3600 * 1000).toISOString().slice(0, 10);
+
+/** Evento ainda por acontecer (ou acontecendo hoje). */
+export const isUpcoming = (e: EventItem, today = todayInPombal()) => e.date >= today;
 
 export type Message = {
   id: string;

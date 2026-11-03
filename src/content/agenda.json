@@ -1,5 +1,5 @@
 {
-  "_instrucoes": "Programação regular (weekly) e eventos (events). Datas no formato AAAA-MM-DD e horários HH:MM. Textos em três idiomas: {\"pt\": \"…\", \"en\": \"…\", \"es\": \"…\"}. O nome do dia vem de dayIndex (0 = domingo). Eventos com 'example: true' só aparecem no modo de revisão.",
+  "_instrucoes": "Programação regular (weekly) e eventos (events). Datas no formato AAAA-MM-DD e horários HH:MM. Textos em três idiomas: {\"pt\": \"…\", \"en\": \"…\", \"es\": \"…\"}. O nome do dia vem de dayIndex (0 = domingo). Eventos: até a data aparecem em 'Próximos eventos' na Agenda; depois, passam sozinhos para 'Eventos recentes'. Campos opcionais: time, endTime, category, speaker, location, description, verse, recap (texto para quando o evento já passou), poster {src, width, height, alt} (cartaz em public/images/eventos/) e highlight: true para destacar na página inicial até a data. Eventos com 'example: true' só aparecem no modo de revisão.",
   "weekly": [
     {
       "id": "domingo-manha",
@@ -62,5 +62,104 @@
       }
     }
   ],
-  "events": []
+  "events": [
+    {
+      "id": "encontro-adoradoras-2026",
+      "date": "2026-11-02",
+      "category": {
+        "pt": "Encontro",
+        "en": "Gathering",
+        "es": "Encuentro"
+      },
+      "title": {
+        "pt": "XIV Encontro de Adoradoras",
+        "en": "14th Women Worshipers' Gathering",
+        "es": "XIV Encuentro de Adoradoras"
+      },
+      "description": {
+        "pt": "Com o tema “Do altar em ruínas à restauração”, a 14ª edição do encontro reuniu as adoradoras da igreja em torno da Palavra, a partir de 1 Reis 18.30.",
+        "en": "Under the theme “From the altar in ruins to restoration”, the 14th edition of the gathering brought the church's women worshipers together around the Word, from 1 Kings 18:30.",
+        "es": "Con el tema “Del altar en ruinas a la restauración”, la 14.ª edición del encuentro reunió a las adoradoras de la iglesia en torno a la Palabra, a partir de 1 Reyes 18:30."
+      },
+      "speaker": {
+        "pt": "Missionária Cinthia Emanuela",
+        "en": "Missionary Cinthia Emanuela",
+        "es": "Misionera Cinthia Emanuela"
+      },
+      "location": {
+        "pt": "IEC Pombal",
+        "en": "IEC Pombal",
+        "es": "IEC Pombal"
+      },
+      "verse": {
+        "text": {
+          "pt": "Então Elias disse a todo o povo: Chegai-vos a mim. E todo o povo se chegou a ele; e reparou o altar do SENHOR, que estava em ruínas.",
+          "en": "And Elijah said unto all the people, Come near unto me. And all the people came near unto him. And he repaired the altar of the LORD that was broken down.",
+          "es": "Entonces dijo Elías a todo el pueblo: Acercaos a mí. Y todo el pueblo se le acercó; y arregló el altar de Jehová que estaba arruinado."
+        },
+        "ref": {
+          "pt": "1 Reis 18.30",
+          "en": "1 Kings 18:30 (KJV)",
+          "es": "1 Reyes 18:30 (RVR1960)"
+        }
+      },
+      "poster": {
+        "src": "/images/eventos/encontro-adoradoras-2026.webp",
+        "width": 1400,
+        "height": 1050,
+        "alt": {
+          "pt": "Cartaz do XIV Encontro de Adoradoras, “Do altar em ruínas à restauração”, com a missionária Cinthia Emanuela, em 2 de novembro de 2026 na IEC Pombal",
+          "en": "Poster for the 14th Women Worshipers' Gathering, “From the altar in ruins to restoration”, with missionary Cinthia Emanuela, on November 2, 2026 at IEC Pombal",
+          "es": "Cartel del XIV Encuentro de Adoradoras, “Del altar en ruinas a la restauración”, con la misionera Cinthia Emanuela, el 2 de noviembre de 2026 en la IEC Pombal"
+        }
+      }
+    },
+    {
+      "id": "novembro-azul-2026",
+      "date": "2026-11-10",
+      "time": "19:30",
+      "endTime": "21:30",
+      "highlight": true,
+      "category": {
+        "pt": "Palestra",
+        "en": "Talk",
+        "es": "Charla"
+      },
+      "title": {
+        "pt": "Novembro Azul: prevenção do câncer de próstata",
+        "en": "Blue November: prostate cancer prevention",
+        "es": "Noviembre Azul: prevención del cáncer de próstata"
+      },
+      "description": {
+        "pt": "Palestra com o urologista Dr. Alexandre Andrade sobre a prevenção do câncer de próstata, dentro da campanha Novembro Azul. Convide os homens da sua família.",
+        "en": "A talk by urologist Dr. Alexandre Andrade on preventing prostate cancer, as part of the Blue November campaign. Invite the men in your family. (In Portuguese.)",
+        "es": "Charla del urólogo Dr. Alexandre Andrade sobre la prevención del cáncer de próstata, dentro de la campaña Noviembre Azul. Invita a los hombres de tu familia. (En portugués.)"
+      },
+      "speaker": {
+        "pt": "Dr. Alexandre Andrade, urologista",
+        "en": "Dr. Alexandre Andrade, urologist",
+        "es": "Dr. Alexandre Andrade, urólogo"
+      },
+      "location": {
+        "pt": "IEC Pombal",
+        "en": "IEC Pombal",
+        "es": "IEC Pombal"
+      },
+      "poster": {
+        "src": "/images/eventos/novembro-azul-2026.webp",
+        "width": 1000,
+        "height": 1250,
+        "alt": {
+          "pt": "Cartaz da palestra Novembro Azul sobre prevenção do câncer de próstata, com o urologista Dr. Alexandre Andrade, em 10 de novembro às 19h30 na IEC Pombal",
+          "en": "Poster for the Blue November talk on prostate cancer prevention with urologist Dr. Alexandre Andrade, November 10 at 7:30 p.m. at IEC Pombal",
+          "es": "Cartel de la charla Noviembre Azul sobre la prevención del cáncer de próstata, con el urólogo Dr. Alexandre Andrade, el 10 de noviembre a las 19:30 en la IEC Pombal"
+        }
+      },
+      "recap": {
+        "pt": "Palestra com o urologista Dr. Alexandre Andrade sobre a prevenção do câncer de próstata, dentro da campanha Novembro Azul.",
+        "en": "A talk by urologist Dr. Alexandre Andrade on preventing prostate cancer, as part of the Blue November campaign.",
+        "es": "Charla del urólogo Dr. Alexandre Andrade sobre la prevención del cáncer de próstata, dentro de la campaña Noviembre Azul."
+      }
+    }
+  ]
 }

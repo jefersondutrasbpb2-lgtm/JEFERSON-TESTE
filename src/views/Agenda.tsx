@@ -1,8 +1,9 @@
-import { events, formatTime, parseDate } from "@/content/data";
+import { events, todayInPombal } from "@/content/data";
 import { PageHero } from "@/components/ui/PageHero";
 import { Section } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
 import { WeeklySchedule } from "@/components/ui/WeeklySchedule";
+import { EventsBoard } from "@/components/ui/EventsBoard";
 import type { Locale } from "@/i18n/config";
 import { pageMetadata } from "@/i18n/metadata";
 import { getLocale, t } from "@/i18n/server";
@@ -48,6 +49,15 @@ export default function AgendaPage() {
         })}
       />
 
+      {/* Eventos especiais (agenda.json): próximos e recentes */}
+      {events.length > 0 && (
+        <Section id="eventos" tone="sand" labelledBy="eventos-title" className="agenda-events">
+          <div className="container" data-reveal>
+            <EventsBoard items={events} builtOn={todayInPombal()} />
+          </div>
+        </Section>
+      )}
+
       <Section tone="paper" labelledBy="semana-title" className="section--tight agenda-week">
         <div className="container agenda__grid">
           <div className="agenda__head">
@@ -58,66 +68,6 @@ export default function AgendaPage() {
           <WeeklySchedule />
         </div>
       </Section>
-
-      {/* Eventos especiais: a seção aparece quando houver eventos em agenda.json */}
-      {events.length > 0 && (
-      <Section tone="sand" labelledBy="eventos-title" className="agenda-events">
-        <div className="container agenda__grid">
-          <div className="agenda__head">
-            <h2 id="eventos-title" className="h2" data-split>
-              {t({
-                pt: (
-                  <>
-                    Eventos e <em>celebrações</em>
-                  </>
-                ),
-                en: (
-                  <>
-                    Events and <em>celebrations</em>
-                  </>
-                ),
-                es: (
-                  <>
-                    Eventos y <em>celebraciones</em>
-                  </>
-                ),
-              })}
-            </h2>
-          </div>
-
-          <ol className="events" data-reveal="stagger">
-              {events.map((e) => {
-                const d = parseDate(e.date, locale);
-                return (
-                  <li key={e.id} className="event">
-                    <time className="event__date" dateTime={e.date}>
-                      <span className="event__day numeral">{String(d.day).padStart(2, "0")}</span>
-                      <span className="event__month">
-                        {d.monthShort} {d.year}
-                      </span>
-                    </time>
-                    <div className="event__body">
-                      {e.category && <p className="event__cat">{t(e.category)}</p>}
-                      <h3 className="event__title">{t(e.title)}</h3>
-                      <p className="event__meta small">
-                        {e.time && <span>{formatTime(e.time, locale)}</span>}
-                        {e.location && <span>{t(e.location)}</span>}
-                      </p>
-                      {e.description && <p className="small muted">{t(e.description)}</p>}
-                      {e.verse && (
-                        <p className="small event__verse">
-                          “{t(e.verse.text)}” <span className="muted">— {t(e.verse.ref)}</span>
-                        </p>
-                      )}
-                      {e.example && <span className="pending">exemplo de layout</span>}
-                    </div>
-                  </li>
-                );
-              })}
-            </ol>
-        </div>
-      </Section>
-      )}
 
       <Section tone="ink" className="section--tight cta-band">
         <div className="container cta-band__inner">

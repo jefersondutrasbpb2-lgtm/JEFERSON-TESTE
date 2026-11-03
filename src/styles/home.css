@@ -196,6 +196,16 @@ html.motion .hero__img {
   height: 100%;
   object-fit: cover;
 }
+.destaque__media--poster {
+  aspect-ratio: auto;
+  border-radius: var(--radius-sm);
+}
+.destaque__media--poster img {
+  height: auto;
+}
+.destaque__speaker {
+  font-size: var(--fs-small);
+}
 .destaque__copy {
   display: grid;
   gap: 1.4rem;

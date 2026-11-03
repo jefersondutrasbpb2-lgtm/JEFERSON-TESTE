@@ -202,9 +202,20 @@ exibido por `src/components/layout/BrandLogo.tsx`, que escolhe a versão conform
 `#0B2447` nos blocos escuros, azul `#195691` como destaque sobre fundos claros e em blocos institucionais, e o amarelo
 `#FFCC00` como destaque sobre fundos escuros.
 
+### Eventos (próximos e recentes)
+
+Os eventos ficam em `src/content/agenda.json`, na lista `events`, com textos nos três idiomas. Na Agenda, até a
+data eles aparecem em **Próximos eventos**, com cartaz, horário, local, botão "Adicionar à agenda" (Google Agenda) e
+"Como chegar". No dia seguinte passam sozinhos para **Eventos recentes**, que mostra os 6 mais recentes. Isso não
+exige nova publicação: a divisão é refeita no navegador com a data de hoje.
+
+Campos: `id`, `date` (AAAA-MM-DD) e `title` são obrigatórios. Os opcionais são `time` e `endTime` (HH:MM),
+`category`, `speaker`, `location`, `description`, `recap` (texto para quando o evento já passou), `verse` e `poster`. O `poster` leva `src`, `width`, `height` e `alt`,
+e o arquivo vai em `public/images/eventos/`, em .webp com cerca de 1000–1400 px de largura.
+
 ### Destaque de evento
 
-Um evento com `"highlight": true` em `agenda.json` aparece em destaque logo abaixo da abertura da página inicial e
+Um evento com `"highlight": true` aparece em destaque logo abaixo da abertura da página inicial, com o cartaz, e
 some automaticamente no dia seguinte à data do evento, sem precisar republicar o site.
 
 ### Modo de revisão

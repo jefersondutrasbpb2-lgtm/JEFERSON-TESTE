@@ -117,8 +117,6 @@ nomes = ", ".join(lista)
 nomes_e = " e ".join([", ".join(lista[:-1]), lista[-1]]) if len(lista) > 1 else lista[0]
 html = must_replace(html, "Padre Fabrício Timóteo e mais 10 palestrantes. 03 e 04 de dezembro",
                     f"Padre Fabrício Timóteo, {nomes} e mais {A_REVELAR} palestrantes. 03 e 04 de dezembro")
-html = must_replace(html, "Padre Fabrício Timóteo e mais 10 palestrantes que já passaram desse ponto.",
-                    f"Padre Fabrício Timóteo, {nomes} e mais {A_REVELAR} palestrantes que já passaram desse ponto.")
 html = must_replace(html, '<span class="stat__n" data-count="4">04</span><span class="stat__l">nomes confirmados</span>',
                     f'<span class="stat__n" data-count="{4 + len(REVELADOS)}">{4 + len(REVELADOS):02d}</span><span class="stat__l">nomes confirmados</span>')
 html = must_replace(html, '<span class="stat__n" data-count="10">10</span><span class="stat__l">palestrantes a revelar</span>',

@@ -472,7 +472,7 @@ button { font: inherit; color: inherit; }
   .speaker--lead { grid-column: 1 / -1; }
   .speaker--b { margin-top: 12vw; }
   .speaker-cases { align-self: center; }
-  .speaker--d ~ .speaker-cases { grid-column: 1 / -1; }
+  .speaker-cases:nth-child(even) { grid-column: 1 / -1; }  /* sem par na última linha: ocupa a largura toda */
 }
 @media (min-width: 1024px) {
   .speakers__grid { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(16px, 2vw, 32px); row-gap: 64px; }
@@ -480,8 +480,10 @@ button { font: inherit; color: inherit; }
   .speaker--a { grid-column: 1 / span 4; }
   .speaker--b { grid-column: 5 / span 4; margin-top: 14vh; }
   .speaker--c { grid-column: 9 / span 4; margin-top: 5vh; }
-  .speaker--d { grid-column: 1 / span 4; }
-  .speaker--d ~ .speaker-cases { align-self: center; }
+  /* Palestrantes revelados depois: lado a lado, três por linha, com o destaque "+N" no próximo espaço livre */
+  .speaker--d { grid-column: span 4; }
+  .speaker--d + .speaker--d { margin-top: 8vh; }
+  .speaker--d ~ .speaker-cases { grid-column: span 4; grid-template-columns: 1fr; align-self: center; }
   .speaker-cases { grid-column: 7 / span 6; grid-template-columns: auto 1fr; align-items: center; column-gap: 28px; }
 }
 
@@ -637,6 +639,16 @@ button { font: inherit; color: inherit; }
 .ticket__value { font-family: var(--font-display); font-variation-settings: "opsz" 72; font-weight: 800; font-size: clamp(2.2rem, 1.7rem + 2vw, 3.2rem); line-height: 1; letter-spacing: -.04em; }
 .ticket__inst { font-size: .95rem; color: rgb(255 255 255 / .78); }
 .ticket__inst:empty { display: none; }
+.ticket__from { font-size: .9rem; color: rgb(255 255 255 / .78); }
+.ticket--vip .ticket__from { color: var(--tinta-2); }
+.ticket__inst strong { color: var(--branco); }
+.ticket--vip .ticket__inst strong { color: var(--tinta); }
+.ticket__value small { margin-right: .15em; font-size: .42em; font-weight: 700; letter-spacing: 0; vertical-align: .55em; }
+.ticket__lot .lot__dot { display: inline-block; margin-right: 8px; vertical-align: 1px; }
+/* Lote que já fechou: riscado, apagado e com selo de encerrado */
+.ticket__old { margin-top: 6px; font-size: .85rem; opacity: .55; }
+.ticket__old s { margin-inline: .25em; }
+.ticket__old em { margin-left: .2em; padding: .15em .6em; border: 1px solid currentColor; border-radius: 999px; font-style: normal; font-size: .68rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
 .ticket__list { display: grid; gap: 14px; align-content: start; }
 .ticket__list li { position: relative; padding-left: 32px; line-height: 1.45; }
 .ticket__list li::before {
@@ -670,6 +682,7 @@ button { font: inherit; color: inherit; }
 .buy__name { font-family: var(--font-display); font-weight: 800; font-size: 1.35rem; line-height: 1; letter-spacing: -.02em; }
 .buy__desc { grid-column: 1; font-size: .82rem; line-height: 1.3; color: var(--tinta-2); }
 .buy__price { grid-column: 2; grid-row: 1 / span 2; display: grid; justify-items: end; gap: 2px; font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; line-height: 1; white-space: nowrap; }
+.buy__opt .buy__price small.buy__x { font-weight: 700; letter-spacing: 0; text-transform: none; color: inherit; opacity: .75; }
 .buy__price small { font-family: var(--font-body); font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--sol-ink); }
 .buy__opt--vip { background: var(--noite); color: var(--branco); box-shadow: inset 0 0 0 1.5px var(--sol); }
 .buy__opt--vip .buy__desc { color: rgb(255 255 255 / .75); }
@@ -1094,7 +1107,7 @@ button { font: inherit; color: inherit; }
         </div>
         <!-- Frase principal: versão A. As versões B e C abrem com ?titulo=b ou ?titulo=c no link (veja main.js) -->
         <h1 class="hero__lead" id="hero-title" data-hero="lead" data-headline>Sua empresa cresce até onde você <em>sabe ir sozinho.</em></h1>
-        <p class="hero__sub" data-hero="sub">Dois dias em Patos com Moisés Ramos, Rick Chesther, Rossandro Klinjey, Padre Fabrício Timóteo e mais 10 palestrantes que já passaram desse ponto. Conteúdo de capital, sem sair do Sertão.</p>
+        <p class="hero__sub" data-hero="sub">Dois dias em Patos com Moisés Ramos, Rick Chesther, Rossandro Klinjey e outros grandes nomes. O próximo passo da sua empresa começa quando você para de tentar sozinho.</p>
       </div>
 
       <div class="hero__form" id="cadastro" data-hero="cta" data-form-card>

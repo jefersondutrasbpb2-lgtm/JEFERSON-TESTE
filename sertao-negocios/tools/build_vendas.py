@@ -19,12 +19,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 
-# Valores do lote atual e links dos checkouts. price: número (ex.: 197 ou 197.90); installments: texto opcional
-LOTE = "Lote 0"
-PROXIMO = "03/11"         # dia em que abre o próximo lote (Lote 1)
+# Lote à venda e links dos checkouts. price: valor cheio; parcelas/parcela: o destaque do card (ex.: 12 e 24.63);
+# anterior: valor do lote que já fechou, mostrado riscado e apagado
+LOTE = "Lote 1"
+LOTE_ANTERIOR = "Lote 0"
 INGRESSOS = {
-    "smart": {"price": 197, "installments": "", "checkout": "https://chk.eduzz.com/39VKR1KYWR"},
-    "vip": {"price": 297, "installments": "", "checkout": "https://chk.eduzz.com/39YNX2NQWO"},
+    "smart": {"price": None, "parcelas": None, "parcela": None, "anterior": 197, "checkout": "https://chk.eduzz.com/39VKR1KYWR"},
+    "vip": {"price": None, "parcelas": None, "parcela": None, "anterior": 297, "checkout": "https://chk.eduzz.com/39YNX2NQWO"},
 }
 WA_DUVIDA = ("https://wa.me/5583996986238?text=Ol%C3%A1!%20Tenho%20uma%20d%C3%BAvida%20sobre%20os%20"
              "ingressos%20do%20Sert%C3%A3o%20Neg%C3%B3cios%202026.")
@@ -55,6 +56,10 @@ def brl(value):
     return f"R$ {inteiro}" if centavos == "00" else f"R$ {inteiro},{centavos}"
 
 
+def parcelado(t):
+    return f'{t["parcelas"] or "00"}x de {brl(t["parcela"])}'
+
+
 def attrs(key, cta):
     t = INGRESSOS[key]
     price = f' data-price="{t["price"]}"' if t["price"] is not None else ""
@@ -69,7 +74,7 @@ html = must_replace(html, "<title>Sertão Negócios 2026 · 03 e 04 de dezembro 
 html = must_sub(html, r'<meta name="description" content="[^"]*">',
                 '<meta name="description" content="Ingressos Smart e VIP do Sertão Negócios 2026, com Moisés Ramos, '
                 'Rick Chesther, Rossandro Klinjey, Padre Fabrício Timóteo e mais 10 palestrantes. 03 e 04 de dezembro, '
-                f'em Patos-PB. Lote 1 a partir de {PROXIMO}.">')
+                f'em Patos-PB. {LOTE} disponível.">')
 
 # Menu
 html = must_replace(html, '<a href="#lote-0">Lote 0</a>', '<a href="#ingressos">Ingressos</a>')
@@ -127,16 +132,16 @@ html = must_replace(html, "<p><strong>palestrantes</strong> escolhidos a dedo co
 # Topo: card de compra no lugar do formulário
 s, v = INGRESSOS["smart"], INGRESSOS["vip"]
 hero_buy = f'''<div class="hero__form buy" id="comprar" data-hero="cta" data-dock-after>
-        <p class="buy__tag"><span class="lot__dot" aria-hidden="true"></span>Lote 1 abre em {PROXIMO}</p>
+        <p class="buy__tag"><span class="lot__dot" aria-hidden="true"></span>{LOTE} · disponível</p>
         <a class="buy__opt" {attrs("smart", "hero-smart")}>
           <span class="buy__name">Smart</span>
           <span class="buy__desc">Acesso completo aos dois dias</span>
-          <span class="buy__price">{brl(s["price"])}<small>Comprar</small></span>
+          <span class="buy__price"><small class="buy__x">{s["parcelas"] or "00"}x de</small>{brl(s["parcela"])}<small>Comprar</small></span>
         </a>
         <a class="buy__opt buy__opt--vip" {attrs("vip", "hero-vip")}>
           <span class="buy__name">VIP</span>
           <span class="buy__desc">Assento perto do palco, kit e 3 bônus exclusivos</span>
-          <span class="buy__price">{brl(v["price"])}<small>Comprar</small></span>
+          <span class="buy__price"><small class="buy__x">{v["parcelas"] or "00"}x de</small>{brl(v["parcela"])}<small>Comprar</small></span>
         </a>
         <a class="buy__more" href="#ingressos" data-cta="hero-comparar">Ver tudo o que cada ingresso inclui</a>
       </div>
@@ -153,9 +158,11 @@ html = must_replace(html, "<p>Credenciais, pulseiras e moleskine para cada parti
 
 def ticket_price(key):
     t = INGRESSOS[key]
-    return (f'<div class="ticket__price"><span class="ticket__lot">{LOTE}</span>'
-            f'<span class="ticket__value">{brl(t["price"])}</span>'
-            f'<span class="ticket__inst">{escape(t["installments"])}</span></div>')
+    return (f'<div class="ticket__price">'
+            f'<span class="ticket__lot"><span class="lot__dot" aria-hidden="true"></span>{LOTE} · disponível</span>'
+            f'<span class="ticket__value"><small>{t["parcelas"] or "00"}x de</small> {brl(t["parcela"])}</span>'
+            f'<span class="ticket__inst">ou {brl(t["price"])} à vista</span>'
+            f'<span class="ticket__old">{LOTE_ANTERIOR} <s>{brl(t["anterior"])}</s> <em>encerrado</em></span></div>')
 
 
 # Ingressos no lugar do lote 0
@@ -165,7 +172,7 @@ tickets = f'''<!-- ====== 06 INGRESSOS ====== -->
       <header class="tickets__head">
         <p class="kicker"><span class="kicker__num">05</span>Ingressos</p>
         <h2 class="h-display" id="tickets-title" data-split>Escolha como você vai viver o Sertão Negócios.</h2>
-        <p class="tickets__lead" data-reveal>O <strong>Lote 0</strong> é a condição de abertura, com o <strong>menor valor do evento</strong>. No dia <strong>{PROXIMO}</strong>, abre o Lote 1, com valor maior.</p>
+        <p class="tickets__lead" data-reveal>O <strong>{LOTE}</strong> está aberto, com pagamento em até <strong>{INGRESSOS["smart"]["parcelas"] or "00"}x</strong>. O {LOTE_ANTERIOR}, a condição de abertura das vendas, já foi encerrado, e os próximos lotes sobem de valor.</p>
       </header>
 
       <div class="tickets__grid">
@@ -214,7 +221,7 @@ tickets = f'''<!-- ====== 06 INGRESSOS ====== -->
         <div class="presale__text">
           <p class="presale__title">São 400 lugares.</p>
           <p>Ficou com alguma dúvida antes de comprar? Fale com o Atendimento Sertão Negócios.</p>
-          <p class="presale__urgency">No dia {PROXIMO}, abre o Lote 1, com valor maior.</p>
+          <p class="presale__urgency">O {LOTE} está aberto, e os próximos lotes sobem de valor.</p>
         </div>
         <a class="btn btn--light btn--lg" href="{WA_DUVIDA}" target="_blank" rel="noopener" data-wa-direct="duvida-ingresso">
           <span>Tirar dúvida no WhatsApp</span>
@@ -237,8 +244,12 @@ faq_new = '''<details class="qa" data-reveal>
           <div class="qa__a"><p>Escolha o Smart ou o VIP aqui na página, clique em comprar e finalize o pagamento no checkout. Se precisar de ajuda, fale com o Atendimento Sertão Negócios pelo WhatsApp, <a href="''' + WA_DUVIDA + '''" target="_blank" rel="noopener" data-wa-direct="duvida-ingresso">(83) 9 9698-6238</a>.</p></div>
         </details>
         <details class="qa" data-reveal>
-          <summary><span>Quando abre o Lote 1?</span><span class="qa__icon" aria-hidden="true"></span></summary>
-          <div class="qa__a"><p>No dia ''' + PROXIMO + ''', com valor maior que o do Lote 0, a condição de abertura das vendas.</p></div>
+          <summary><span>Qual lote está à venda?</span><span class="qa__icon" aria-hidden="true"></span></summary>
+          <div class="qa__a"><p>O ''' + LOTE + '''. O ''' + LOTE_ANTERIOR + ''', a condição de abertura das vendas, já foi encerrado, e os próximos lotes sobem de valor.</p></div>
+        </details>
+        <details class="qa" data-reveal>
+          <summary><span>Posso parcelar?</span><span class="qa__icon" aria-hidden="true"></span></summary>
+          <div class="qa__a"><p>Pode. O Smart sai em ''' + parcelado(INGRESSOS["smart"]) + ''' e o VIP em ''' + parcelado(INGRESSOS["vip"]) + ''', ou ''' + brl(INGRESSOS["smart"]["price"]) + ''' e ''' + brl(INGRESSOS["vip"]["price"]) + ''' à vista.</p></div>
         </details>
         <details class="qa" data-reveal>
           <summary><span>Quem conduz o conteúdo de gestão?</span>'''
@@ -253,11 +264,11 @@ html = must_replace(html, '''<a class="btn btn--light btn--lg" href="#cadastro" 
         <span>Quero o lote 0</span>''', '''<a class="btn btn--light btn--lg" href="#ingressos" data-cta="final" data-reveal>
         <span>Garantir meu ingresso</span>''')
 html = must_sub(html, r'<p class="finale__ps" data-reveal>.*?</p>',
-                f'<p class="finale__ps" data-reveal>Os 400 lugares não aumentam. No dia {PROXIMO}, abre o Lote 1, com valor maior.</p>')
+                f'<p class="finale__ps" data-reveal>Os 400 lugares não aumentam. O {LOTE} está aberto, e os próximos lotes sobem de valor.</p>')
 
 # Barra do celular e WhatsApp
 html = must_replace(html, '<a class="btn btn--sol btn--block" href="#cadastro" data-cta="dock">Entrar na comunidade · grátis</a>',
-                    '<a class="btn btn--sol btn--block" href="#ingressos" data-cta="dock">Garantir meu ingresso · Lote 0</a>')
+                    f'<a class="btn btn--sol btn--block" href="#ingressos" data-cta="dock">Garantir meu ingresso · {LOTE}</a>')
 html = must_replace(html, '<span class="wa__opt-d">Lote 0, programação e inscrição</span>',
                     '<span class="wa__opt-d">Ingressos, pagamento e programação</span>')
 

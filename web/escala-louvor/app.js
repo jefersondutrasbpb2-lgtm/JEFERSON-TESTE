@@ -23,6 +23,7 @@
     { id: "equipe", nome: "Equipe", icone: "pessoas" },
     { id: "ajustes", nome: "Ajustes", icone: "ajustes" },
     { id: "louvores", nome: "Louvores", icone: "musica" }, // lista para compartilhar (link sem os menus)
+    { id: "guia", nome: "Guia visual", icone: "lista" }, // design system: tokens e componentes (fora do menu)
   ];
   const NAV_LATERAL = ["inicio", "escala", "agenda", "disponibilidade", "musicas", "equipe"];
   const NAV_CELULAR = ["inicio", "escala", "agenda", "musicas", "equipe"]; // disponibilidade: botões no Início e na Agenda
@@ -173,7 +174,7 @@
   /** Selo colorido com o ícone da função (ex.: microfone para vocal). */
   function seloFuncao(funcaoId, extra) {
     const v = visualDaFuncao(funcaoId);
-    return h("span", { class: `instr${extra ? ` ${extra}` : ""}`, "data-cor": v.cor, "aria-hidden": "true", title: E.nomeFuncao(state, funcaoId) }, icone(v.icone));
+    return h("span", { class: `instr${extra ? ` ${extra}` : ""}`, "data-funcao": v.cor, "aria-hidden": "true", title: E.nomeFuncao(state, funcaoId) }, icone(v.icone));
   }
   /** Avatar com o selo da função principal da pessoa no canto. */
   function avatarComFuncao(p, extra) {
@@ -232,6 +233,36 @@
     const antes = JSON.stringify(state);
     mudou(fn);
     avisar(msg, { rotulo: "Desfazer", fazer: () => { state = JSON.parse(antes); garantirEscalaAtual(); mudou(); } });
+  }
+
+  /**
+   * Erro num campo de formulário: marca o campo (aria-invalid), mostra a mensagem logo abaixo, ligada a ele
+   * (aria-describedby), e põe o foco nele. Some quando a pessoa corrige.
+   */
+  function erroNoCampo(alvo, msg) {
+    const campo = typeof alvo === "string" ? document.querySelector(alvo) : alvo;
+    if (!campo) return avisar(msg);
+    const id = `${campo.id || "campo"}-erro`;
+    let el = document.getElementById(id);
+    if (!el) {
+      el = h("span", { class: "erro-campo", id, role: "alert" });
+      campo.insertAdjacentElement("afterend", el);
+    }
+    el.replaceChildren(icone("alerta"), msg);
+    const descritos = (campo.getAttribute("aria-describedby") || "").split(" ").filter(Boolean);
+    campo.setAttribute("aria-invalid", "true");
+    campo.setAttribute("aria-describedby", [...new Set([...descritos, id])].join(" "));
+    campo.focus();
+    const limpar = () => {
+      campo.removeAttribute("aria-invalid");
+      if (descritos.length) campo.setAttribute("aria-describedby", descritos.join(" "));
+      else campo.removeAttribute("aria-describedby");
+      el.remove();
+      campo.removeEventListener("input", limpar);
+      campo.removeEventListener("change", limpar);
+    };
+    campo.addEventListener("input", limpar);
+    campo.addEventListener("change", limpar);
   }
 
   async function copiar(texto, alvo) {
@@ -601,7 +632,7 @@
     document.getElementById("hoje-lateral").textContent = E.formatarData(hoje(), "longa");
     document.getElementById("topo-titulo").replaceChildren(h("b", {}, nomeTela(ui.tela)), igreja ? ` · ${igreja}` : "");
     document.title = `${nomeTela(ui.tela)} · Escala do Louvor`;
-    const telas = { inicio: telaInicio, escala: telaEscala, agenda: telaAgenda, disponibilidade: telaDisponibilidade, musicas: telaMusicas, equipe: telaEquipe, ajustes: telaAjustes, louvores: telaLouvores };
+    const telas = { inicio: telaInicio, escala: telaEscala, agenda: telaAgenda, disponibilidade: telaDisponibilidade, musicas: telaMusicas, equipe: telaEquipe, ajustes: telaAjustes, louvores: telaLouvores, guia: telaGuia };
     lembrarAberta();
     const novaTela = ui.ultimaTela !== ui.tela;
     ui.ultimaTela = ui.tela;
@@ -668,7 +699,7 @@
         }
       }
       if (vazio) blocos.push(h("button", { class: "opcao", onclick: () => { fechar(); aoEscolher(null); } }, h("b", { class: "muted" }, vazio), h("span")));
-      if (!blocos.length) blocos.push(h("p", { class: "muted small", style: "padding:12px" }, "Nada encontrado."));
+      if (!blocos.length) blocos.push(h("p", { class: "muted small", style: "padding:var(--e-3)" }, "Nada encontrado."));
       lista.replaceChildren(...blocos);
     };
     campo.addEventListener("input", desenhar);
@@ -739,7 +770,7 @@
     }
     if (!escala) {
       return h("div", { class: "tela" }, cab,
-        h("div", { class: "vazio" }, h("span", { class: "icone-vazio" }, icone("escala")),
+        h("div", { class: "estado-vazio" }, h("span", { class: "estado-vazio-icone" }, icone("escala")),
           h("h2", {}, "Nenhuma escala ainda"),
           h("p", {}, "Escolha o período e o app distribui a equipe e as músicas de cada culto, seguindo a orientação do pastor para os cultos solenes."),
           h("button", { class: "btn primario", onclick: novaEscala }, icone("mais"), "Criar a primeira escala")));
@@ -779,14 +810,14 @@
       h("div", { class: "destaque-culto" },
         h("div", { class: "data-grande" },
           h("div", { class: "calendario-mini", "aria-hidden": "true" }, h("span", {}, E.MESES[d.getMonth()].slice(0, 3)), h("b", {}, String(d.getDate()))),
-          h("div", { style: "min-width:0" },
+          h("div", { class: "encolhe" },
             h("span", { class: "rotulo" }, `Próximo culto · ${quandoFalta(base.data)}`),
             h("h2", {}, grupo.map((x) => x.nome).filter((n, i, a) => a.indexOf(n) === i).join(" · ")),
             h("p", { class: "quando" }, `${E.DIAS[d.getDay()]} · `, grupo.flatMap((x, i) => [i ? " e " : "", h("b", {}, x.hora)])))),
         base.solene ? h("div", { class: "selos" }, h("span", { class: "selo solene" }, "Culto solene")) : null,
         h("div", { class: "destaque-corpo" },
-          equipe.length ? h("div", { style: "display:grid;gap:8px" }, h("span", { class: "rotulo" }, "Equipe"), h("div", { class: "funcoes" }, equipe)) : null,
-          musicas.length ? h("div", { style: "display:grid;gap:4px" }, h("span", { class: "rotulo" }, "Repertório"), h("ul", { class: "lista-compacta", style: "padding:0" }, musicas)) : null)),
+          equipe.length ? h("div", { class: "pilha pilha-2" }, h("span", { class: "rotulo" }, "Equipe"), h("div", { class: "funcoes" }, equipe)) : null,
+          musicas.length ? h("div", { class: "pilha pilha-1" }, h("span", { class: "rotulo" }, "Repertório"), h("ul", { class: "lista-compacta sem-recuo" }, musicas)) : null)),
       h("div", { class: "rodape-cartao" },
         h("button", { class: "btn primario", onclick: () => abrirCulto(escala, base.id) }, "Abrir na escala", icone("seta"))));
   }
@@ -796,17 +827,17 @@
     return h("section", { class: "cartao" },
       h("div", { class: "cartao-cab" }, h("h2", {}, icone("escala"), vigencia(escala)),
         h("span", { class: `selo ${escala.status === "confirmada" ? "ok" : "neutro"}` }, escala.status === "confirmada" ? "Confirmada" : "Rascunho")),
-      h("div", { class: "secao", style: "gap:6px" },
+      h("div", { class: "secao junto" },
         h("b", { style: "font-family:var(--f-titulo);font-size:var(--t-xl);letter-spacing:-0.02em" }, E.formatarPeriodo(escala.inicio, escala.fim)),
         integrantes.length ? h("div", { class: "avatares", "aria-label": `${integrantes.length} integrantes` }, integrantes.slice(0, 8).map((p) => avatar(p)),
-          integrantes.length > 8 ? h("span", { class: "small muted", style: "margin-left:8px" }, `+${integrantes.length - 8}`) : null) : null),
+          integrantes.length > 8 ? h("span", { class: "small muted", style: "margin-left:var(--e-2)" }, `+${integrantes.length - 8}`) : null) : null),
       h("div", { class: "dados", style: "border-radius:0" },
         h("div", {}, h("b", {}, String(escala.cultos.length)), h("span", {}, escala.cultos.length === 1 ? "culto" : "cultos")),
         h("div", {}, h("b", {}, String(integrantes.length)), h("span", {}, "integrantes")),
         h("div", { class: n ? (conta.temErro ? "erro" : "alerta") : "ok" }, h("b", {}, String(n)), h("span", {}, "a resolver"))),
       conta.espera.length ? h("p", { class: "linha-espera" }, icone("relogio"), vagasTexto(conta.espera.length)) : null,
       h("div", { class: "rodape-cartao" },
-        h("button", { class: "btn zap", style: "flex:1 1 auto", onclick: () => enviarWhatsApp(escala) }, icone("whatsapp"), "Enviar no WhatsApp"),
+        h("button", { class: "btn zap cresce", onclick: () => enviarWhatsApp(escala) }, icone("whatsapp"), "Enviar no WhatsApp"),
         h("button", { class: "btn", onclick: () => irPara("escala") }, "Ver escala")));
   }
 
@@ -822,10 +853,10 @@
     return h("section", { class: "cartao" },
       h("div", { class: "cartao-cab" }, h("h2", {}, icone("alerta"), "A resolver"), lista.length ? h("span", { class: `selo ${conta.temErro ? "erro" : "alerta"}` }, String(lista.length)) : null),
       lista.length
-        ? [h("ul", { class: "lista-compacta", style: "padding-top:8px" }, itens), lista.length > 5 ? h("div", { class: "rodape-cartao" }, h("button", { class: "btn texto", onclick: () => verAvisos(escala, avisos) }, `Ver todas (${lista.length})`)) : null]
-        : h("div", { class: "secao" }, h("p", { style: "display:flex;gap:8px;align-items:center;color:var(--ok);font-weight:600" }, icone("certo"), "Nada a resolver."), h("p", { class: "small muted" }, conta.espera.length ? "As vagas vazias só esperam a equipe marcar a disponibilidade." : "Todas as funções e músicas estão definidas e seguem as regras.")),
+        ? [h("ul", { class: "lista-compacta recuo-topo-2" }, itens), lista.length > 5 ? h("div", { class: "rodape-cartao" }, h("button", { class: "btn texto", onclick: () => verAvisos(escala, avisos) }, `Ver todas (${lista.length})`)) : null]
+        : h("div", { class: "secao" }, h("p", { class: "linha-icone texto-ok" }, icone("certo"), "Nada a resolver."), h("p", { class: "small muted" }, conta.espera.length ? "As vagas vazias só esperam a equipe marcar a disponibilidade." : "Todas as funções e músicas estão definidas e seguem as regras.")),
       conta.espera.length ? h("div", { class: "rodape-cartao" },
-        h("span", { class: "linha-espera", style: "padding:0;flex:1;border:0" }, icone("relogio"), vagasTexto(conta.espera.length)),
+        h("span", { class: "linha-espera sem-recuo cresce sem-borda" }, icone("relogio"), vagasTexto(conta.espera.length)),
         h("button", { class: "btn texto", onclick: () => irPara("agenda") }, "Ver agenda")) : null);
   }
 
@@ -869,17 +900,17 @@
     if (!escala && state.escalas.length) {
       return h("div", { class: "tela" },
         h("div", { class: "cabecalho" }, h("div", {}, h("h1", {}, "Escala"))),
-        h("div", { class: "vazio" }, h("span", { class: "icone-vazio" }, icone("arquivo")),
+        h("div", { class: "estado-vazio" }, h("span", { class: "estado-vazio-icone" }, icone("arquivo")),
           h("h2", {}, "Nenhuma escala em andamento"),
           h("p", {}, "As escalas já cumpridas ficam guardadas no arquivo. Crie a escala do próximo período."),
-          h("div", { class: "acoes", style: "justify-content:center" },
+          h("div", { class: "acoes centro" },
             h("button", { class: "btn primario", onclick: novaEscala }, icone("mais"), "Nova escala"),
             botaoArquivo())));
     }
     if (!escala) {
       return h("div", { class: "tela" },
         h("div", { class: "cabecalho" }, h("div", {}, h("h1", {}, "Escala"))),
-        h("div", { class: "vazio" }, h("span", { class: "icone-vazio" }, icone("escala")),
+        h("div", { class: "estado-vazio" }, h("span", { class: "estado-vazio-icone" }, icone("escala")),
           h("h2", {}, "Nenhuma escala ainda"),
           h("p", {}, "Escolha o período e a ferramenta distribui a equipe e as músicas de cada culto, seguindo a orientação do pastor para os cultos solenes."),
           h("button", { class: "btn primario", onclick: novaEscala }, icone("mais"), "Criar escala")));
@@ -895,7 +926,7 @@
     const estado = [
       conta.resolver.length ? h("button", { class: "btn", onclick: ver }, h("span", { class: `selo ${conta.temErro ? "erro" : "alerta"}` }, String(conta.resolver.length)), "a resolver") : null,
       conta.espera.length ? h("button", { class: "btn", onclick: ver, "aria-label": vagasTexto(conta.espera.length) }, h("span", { class: "selo neutro" }, String(conta.espera.length)), "aguardando") : null,
-      !conta.resolver.length && !conta.espera.length ? h("span", { class: "selo ok", style: "min-height:32px;padding:0 12px" }, icone("certo"), "Tudo certo") : null,
+      !conta.resolver.length && !conta.espera.length ? h("span", { class: "selo ok selo-grande" }, icone("certo"), "Tudo certo") : null,
     ];
     // As setas andam entre as escalas atuais; numa escala do arquivo, entre as cumpridas.
     const cumprida = E.escalaCumprida(escala, hoje());
@@ -956,12 +987,12 @@
         passados.length ? h("button", { class: "btn texto", "aria-expanded": String(!!ui.verPassados), onclick: () => { ui.verPassados = !ui.verPassados; render(); } },
           icone("arquivo"), ui.verPassados ? "Ocultar os dias que já passaram" : `${passados.length} ${passados.length === 1 ? "dia já cumprido" : "dias já cumpridos"} · ver`) : h("span"),
         idsVisiveis.length > 1 ? h("button", { class: "btn texto", onclick: () => abrirTodos(!todosAbertos) }, icone(todosAbertos ? "cima" : "baixo"), todosAbertos ? "Resumir todos" : "Abrir todos") : null),
-      visiveis.length ? null : h("div", { class: "vazio" }, h("p", {}, "Todos os dias desta escala já passaram.")),
+      visiveis.length ? null : h("div", { class: "estado-vazio" }, h("p", {}, "Todos os dias desta escala já passaram.")),
       h("div", { class: "dias" }, visiveis.map((d) => {
         const [semana, resto] = E.formatarData(d.data, "longa").split(", ");
         const jaFoi = passados.includes(d);
         return h("section", { class: `dia${jaFoi ? " passado" : ""}`, "aria-label": E.formatarData(d.data, "longa") },
-          h("h2", {}, h("span", {}, h("b", {}, semana), resto ? `, ${resto}` : ""), d.data === hoje() ? h("span", { class: "selo azul" }, "Hoje") : jaFoi ? h("span", { class: "selo neutro" }, "Cumprido") : null),
+          h("h2", {}, h("span", {}, h("b", {}, semana), resto ? `, ${resto}` : ""), d.data === hoje() ? h("span", { class: "selo info" }, "Hoje") : jaFoi ? h("span", { class: "selo neutro" }, "Cumprido") : null),
           h("div", { class: `cultos-do-dia${d.cultos.length > 1 ? " dois" : ""}` }, d.cultos.map((ci) => cartaoCulto(escala, ci, porCampo, estaAberto(escala.cultos[ci].id)))));
       })));
   }
@@ -1011,7 +1042,7 @@
           faltam ? h("span", { class: "linha-resumo falta" }, h("b", {}, "Faltam"), h("span", {}, faltam)) : null,
           h("span", { class: "linha-resumo" }, h("b", {}, "Músicas"), h("span", { class: "num" }, `${musicasOk}/${culto.musicas.length}`),
             h("span", { class: "nomes-resumo" }, culto.musicas.map((v) => porId(state.musicas, v.id)).filter(Boolean).map((m) => m.titulo || `SH ${m.numero}`).join(" · ") || "a definir")),
-          problemas ? h("span", { class: "selo erro", style: "justify-self:start" }, `${problemas} a resolver`) : null,
+          problemas ? h("span", { class: "selo erro a-esquerda" }, `${problemas} a resolver`) : null,
           h("span", { class: "abrir" }, "Toque para abrir e editar", icone("baixo"))));
     }
 
@@ -1062,7 +1093,7 @@
       h("div", { class: "bloco" },
         h("div", { class: "bloco-cab" },
           h("span", { class: "rotulo" }, "Músicas"),
-          h("div", { class: "acoes", style: "gap:6px" },
+          h("div", { class: "acoes junto" },
             seguidores.length ? h("div", { class: "segmentado", role: "group", "aria-label": "Ver a ordem das músicas de qual culto" }, grupo.map((x) => h("button", {
               "aria-pressed": String(x === mostrado), onclick: () => { ui.ordemDe[culto.id] = x.id; render(); },
             }, x.hora || x.nome))) : null,
@@ -1086,7 +1117,7 @@
       titulo: "O que precisa de atenção",
       sub: "Toque num item para ir até o culto.",
       corpo: [["A resolver", avisos.filter((a) => a.nivel !== "espera")], ["Aguardando disponibilidade", avisos.filter((a) => a.nivel === "espera")]].filter(([, l]) => l.length).map(([titulo, l]) => [
-        h("p", { class: "rotulo", style: "margin:8px 0 2px" }, `${titulo} · ${l.length}`),
+        h("p", { class: "rotulo rotulo-grupo" }, `${titulo} · ${l.length}`),
         h("ul", { class: "avisos" }, l.map((a) => {
           const c = escala.cultos[a.ci];
           const alvo = (E.liderDe(escala, c) || c).id;
@@ -1131,12 +1162,12 @@
       id: c.pessoa.id, rotulo: c.pessoa.nome,
       direita: c.vezes ? `${c.vezes}× nesta escala` : "ainda não escalado",
       meta: c.bloqueio ? h("span", { class: "ruim" }, c.bloqueio)
-        : [c.disp === "sim" ? h("span", { style: "color:var(--ok);font-weight:700" }, "confirmou que pode") : c.semResposta ? "não respondeu a disponibilidade" : "", c.apoio ? "só apoio nesta função" : ""].filter(Boolean).flatMap((x, i) => (i ? [" · ", x] : [x])),
+        : [c.disp === "sim" ? h("span", { class: "texto-ok forte" }, "confirmou que pode") : c.semResposta ? "não respondeu a disponibilidade" : "", c.apoio ? "só apoio nesta função" : ""].filter(Boolean).flatMap((x, i) => (i ? [" · ", x] : [x])),
     });
     escolher({
       titulo: E.nomeFuncao(state, vaga.funcao),
       sub: `${E.formatarData(culto.data, "longa")} · ${culto.nome}`,
-      topo: h("div", { style: "display:grid;gap:8px" },
+      topo: h("div", { class: "pilha pilha-2" },
         h("div", { class: "barra-painel" },
           h("button", { class: "btn tonal", onclick: () => { fecharAtual(); mudou(() => E.sortearCampo(state, escala, ci, `e:${si}`)); } }, icone("sortear"), "Sortear outra pessoa"),
           h("button", { class: "btn perigo", onclick: () => { fecharAtual(); comDesfazer(`Vaga de ${E.nomeFuncao(state, vaga.funcao).toLowerCase()} tirada do culto.`, () => E.removerVaga(culto, si)); } }, icone("lixo"), "Tirar esta vaga")),
@@ -1172,7 +1203,7 @@
     escolher({
       titulo: E.nomeTipo(vaga.tipo),
       sub: `${E.formatarData(culto.data, "longa")} · ${culto.nome}${exigidas.length ? ` · precisa ser ${exigidas.map((t) => E.nomeTag(state, t)).join(" e ")}` : ""}`,
-      topo: h("div", { style: "display:grid;gap:8px" },
+      topo: h("div", { class: "pilha pilha-2" },
         h("div", { class: "barra-painel" },
           h("button", { class: "btn tonal", onclick: () => { fecharAtual(); mudou(() => E.sortearCampo(state, escala, ci, `m:${k}`)); } }, icone("sortear"), "Sortear outra música"),
           h("button", { class: "btn perigo", onclick: () => { fecharAtual(); comDesfazer("Música tirada do culto.", () => E.removerMusica(culto, k)); } }, icone("lixo"), "Tirar esta música")),
@@ -1257,7 +1288,7 @@
   function opcoesEscala(escala) {
     const itens = [
       h("div", { class: "campo" }, "Situação",
-        h("div", { class: "segmentado", role: "group", "aria-label": "Situação da escala", style: "display:grid" },
+        h("div", { class: "segmentado pilha", role: "group", "aria-label": "Situação da escala" },
           h("button", { "aria-pressed": String(escala.status !== "confirmada"), onclick: () => { fecharAtual(); mudou(() => { escala.status = "rascunho"; }); } }, "Rascunho"),
           h("button", { "aria-pressed": String(escala.status === "confirmada"), onclick: () => { fecharAtual(); mudou(() => { escala.status = "confirmada"; }); avisar("Escala confirmada."); } }, "Confirmada"))),
       h("button", {
@@ -1285,7 +1316,7 @@
         },
       }, icone("lixo"), "Excluir esta escala"),
     ];
-    painel({ titulo: "Opções da escala", sub: E.formatarPeriodo(escala.inicio, escala.fim), corpo: h("div", { style: "display:grid;gap:10px" }, itens), foco: ".btn.tonal" });
+    painel({ titulo: "Opções da escala", sub: E.formatarPeriodo(escala.inicio, escala.fim), corpo: h("div", { class: "pilha pilha-3" }, itens), foco: ".btn.tonal" });
   }
 
   function linhaEscala(e) {
@@ -1332,7 +1363,7 @@
 
   function novaEscala() {
     const f = { tipo: "quinzenal", inicio: proximoDomingo(), mes: proximoMes(), fim: "", modo: "sortear" };
-    const corpo = h("div", { style: "display:grid;gap:16px" });
+    const corpo = h("div", { class: "pilha pilha-4" });
     const periodo = () => {
       if (f.tipo === "mensal") return { inicio: `${f.mes}-01`, fim: E.fimDoMes(f.mes) };
       if (f.tipo === "quinzenal") return { inicio: f.inicio, fim: E.somarDias(f.inicio, 13) };
@@ -1346,12 +1377,12 @@
       const modo = (id, nome, ic) => h("button", { "aria-pressed": String(f.modo === id), onclick: () => { f.modo = id; desenhar(); } }, icone(ic), nome);
       corpo.replaceChildren(
         h("div", { class: "campo" }, "Como montar",
-          h("div", { class: "segmentado", role: "group", "aria-label": "Como montar", style: "display:grid" }, modo("sortear", "Sortear", "sortear"), modo("zero", "Do zero", "editar")),
+          h("div", { class: "segmentado pilha", role: "group", "aria-label": "Como montar" }, modo("sortear", "Sortear", "sortear"), modo("zero", "Do zero", "editar")),
           h("span", { class: "ajuda" }, f.modo === "zero" ? "Os cultos vêm com as vagas vazias; você escolhe cada pessoa e cada música." : E.soQuemPode(state) ? "O app distribui a equipe só com quem marcou \"posso\" em cada dia na disponibilidade (Agenda), e escolhe as músicas. Onde ninguém marcou, a vaga fica vazia." : "O app distribui a equipe e as músicas; depois dá para trocar qualquer uma.")),
-        h("div", { class: "segmentado", role: "group", "aria-label": "Período", style: "display:grid" }, tipo("quinzenal", "Quinzenal"), tipo("mensal", "Mensal"), tipo("personalizado", "Outro")),
+        h("div", { class: "segmentado pilha", role: "group", "aria-label": "Período" }, tipo("quinzenal", "Quinzenal"), tipo("mensal", "Mensal"), tipo("personalizado", "Outro")),
         f.tipo === "mensal"
           ? h("label", { class: "campo" }, "Mês", h("input", { type: "month", id: "nova-mes", value: f.mes, onchange: (e) => { f.mes = e.target.value || f.mes; desenhar(); } }))
-          : h("div", { style: "display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px" },
+          : h("div", { class: "grade-campos" },
               h("label", { class: "campo" }, f.tipo === "quinzenal" ? "Começa em" : "De", h("input", { type: "date", id: "nova-inicio", value: f.inicio, onchange: (e) => { f.inicio = e.target.value || f.inicio; desenhar(); } })),
               f.tipo === "personalizado" ? h("label", { class: "campo" }, "Até", h("input", { type: "date", id: "nova-fim", value: p.fim, min: f.inicio, onchange: (e) => { f.fim = e.target.value; desenhar(); } })) : null),
         h("p", { class: "muted" }, `${E.formatarPeriodo(p.inicio, p.fim)} · ${qtd} ${qtd === 1 ? "culto" : "cultos"}`));
@@ -1383,10 +1414,10 @@
     const f = { data: escala.inicio, cultoId: (modelos[0] || {}).id, nome: "", hora: "19:00", solene: false, sortear: true };
     const doModelo = () => { const m = porId(modelos, f.cultoId); if (m) { f.hora = m.hora; f.solene = !!m.solene; } };
     doModelo();
-    const corpo = h("div", { style: "display:grid;gap:16px" });
+    const corpo = h("div", { class: "pilha pilha-4" });
     const desenhar = () => corpo.replaceChildren(
       h("label", { class: "campo" }, "Nome", h("input", { type: "text", id: "ex-nome", placeholder: "Ex.: Culto de Natal", value: f.nome, oninput: (e) => { f.nome = e.target.value; } })),
-      h("div", { style: "display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px" },
+      h("div", { class: "grade-campos" },
         h("label", { class: "campo" }, "Data", h("input", { type: "date", id: "ex-data", value: f.data, onchange: (e) => { f.data = e.target.value; } })),
         h("label", { class: "campo" }, "Hora", h("input", { type: "time", id: "ex-hora", value: f.hora, onchange: (e) => { f.hora = e.target.value; } }))),
       h("label", { class: "campo" }, "Equipe e músicas como no culto", h("select", { id: "ex-modelo", onchange: (e) => { f.cultoId = e.target.value; doModelo(); desenhar(); } },
@@ -1400,8 +1431,8 @@
       corpo,
       rodape: (fechar) => [h("button", {
         class: "btn primario", onclick: () => {
-          if (!f.nome.trim()) return avisar("Dê um nome ao culto.");
-          if (!f.data) return avisar("Escolha a data.");
+          if (!f.nome.trim()) return erroNoCampo("#ex-nome", "Dê um nome ao culto.");
+          if (!f.data) return erroNoCampo("#ex-data", "Escolha a data.");
           fechar(true);
           let ci = 0;
           mudou(() => { ci = E.adicionarCultoExtra(state, escala, { ...f, nome: f.nome.trim(), vazia: !f.sortear }); });
@@ -1522,8 +1553,8 @@
 
   /** Legenda das cores do calendário de disponibilidade. */
   function legendaMarcas() {
-    const amostra = (estilo, texto) => h("span", { style: "display:inline-flex;gap:6px;align-items:center" }, h("i", { style: `width:12px;height:12px;border-radius:4px;display:inline-block;${estilo}` }), texto);
-    return h("p", { class: "small muted", style: "display:flex;gap:14px;flex-wrap:wrap" },
+    const amostra = (estilo, texto) => h("span", { class: "linha-icone em-linha" }, h("i", { style: `width:12px;height:12px;border-radius:4px;display:inline-block;${estilo}` }), texto);
+    return h("p", { class: "small muted", style: "display:flex;gap:var(--e-35);flex-wrap:wrap" },
       amostra("background:var(--ok)", "Posso"),
       amostra("background:var(--erro-suave);border:1.5px solid var(--erro)", "Não posso"),
       amostra("border:1.5px solid var(--azul-linha)", "Sem marcar"));
@@ -1638,7 +1669,7 @@
       return h("div", { class: "tela" },
         h("div", { class: "cabecalho" }, h("div", {}, h("h1", {}, "Sua disponibilidade"), h("p", { class: "muted" }, `Cultos de ${E.formatarPeriodo(periodo.inicio, periodo.fim)}`)), voltar),
         h("section", { class: "cartao secao" },
-          h("h2", { style: "font-size:1.15rem" }, "Quem é você?"),
+          h("h2", { class: "texto-lg" }, "Quem é você?"),
           h("div", { class: "nomes" }, ativas.map((p) => h("button", { class: "btn", "aria-label": p.nome, onclick: () => {
             ui.respostaPessoa = p.id;
             ui.resposta = null;
@@ -1663,8 +1694,8 @@
       h("div", { class: "cabecalho" },
         h("div", {}, h("h1", {}, `Olá, ${pessoa.nome}`), h("p", { class: "muted" }, `Cultos de ${E.formatarPeriodo(periodo.inicio, periodo.fim)}`)),
         h("div", { class: "acoes" }, h("button", { class: "btn texto", onclick: () => { ui.respostaPessoa = null; ui.resposta = null; try { localStorage.removeItem(CHAVE_PESSOA); } catch (e) { /* */ } render(); } }, "Não sou eu"), voltar)),
-      existente ? h("p", { class: "selo ok", style: "justify-self:start;min-height:32px;padding:0 12px" }, `Você respondeu em ${E.formatarData(existente.em.slice(0, 10), "curta")}. Pode mudar e enviar de novo.`)
-        : rascunho.trazidas ? h("p", { class: "selo neutro", style: "justify-self:start;min-height:32px;padding:4px 12px" }, "Já trouxemos o que você marcou antes para alguns destes dias. Confira e envie.") : null,
+      existente ? h("p", { class: "selo ok a-esquerda selo-grande" }, `Você respondeu em ${E.formatarData(existente.em.slice(0, 10), "curta")}. Pode mudar e enviar de novo.`)
+        : rascunho.trazidas ? h("p", { class: "selo neutro a-esquerda selo-grande selo-texto" }, "Já trouxemos o que você marcou antes para alguns destes dias. Confira e envie.") : null,
       h("section", { class: "cartao secao" },
         h("p", {}, "Toque uma vez no dia em que você ", h("b", {}, "pode"), " servir (fica verde). Toque de novo para dizer que ", h("b", {}, "não pode"), " (fica vermelho). Um terceiro toque desmarca. Só os dias com culto aparecem para marcar."),
         legendaMarcas(),
@@ -1728,8 +1759,8 @@
     const pessoas = lider ? lider.equipe.map((v) => porId(state.pessoas, v.pessoaId)).filter(Boolean) : [];
     const sub = item.escala ? `${pessoas.length} ${pessoas.length === 1 ? "pessoa" : "pessoas"} · ${lider.musicas.filter((m) => m.id).length} músicas` : "Ainda sem escala";
     const conteudo = [h("span", { class: "h" }, item.hora || "—"),
-      h("span", { style: "min-width:0" }, h("span", { class: "t" }, item.nome), h("br"), h("span", { class: "s" }, sub)),
-      h("span", { class: "selos", style: "display:flex;gap:6px;align-items:center" }, item.solene ? h("span", { class: "selo solene" }, "Solene") : null, item.escala ? icone("dir") : null)];
+      h("span", { class: "encolhe" }, h("span", { class: "t" }, item.nome), h("br"), h("span", { class: "s" }, sub)),
+      h("span", { class: "selos linha-icone" }, item.solene ? h("span", { class: "selo solene" }, "Solene") : null, item.escala ? icone("dir") : null)];
     return item.escala
       ? h("button", { class: "compromisso", onclick: () => abrirCulto(item.escala, lider.id) }, conteudo)
       : h("div", { class: "compromisso" }, conteudo);
@@ -1755,7 +1786,7 @@
       h("button", { class: "btn icone", "aria-label": "Próximo mês", onclick: () => trocarMes(1) }, icone("dir")));
     if (ui.agendaModo === "lista") {
       return [h("section", { class: "cartao" }, cab,
-        datas.length ? h("div", { class: "lista-dias" }, datas.map((d) => h("div", {}, h("h3", {}, E.formatarData(d, "longa"), d === hoje() ? " · hoje" : ""), h("div", { class: "compromissos", style: "padding:0" }, porData[d].map(compromisso)))))
+        datas.length ? h("div", { class: "lista-dias" }, datas.map((d) => h("div", {}, h("h3", {}, E.formatarData(d, "longa"), d === hoje() ? " · hoje" : ""), h("div", { class: "compromissos sem-recuo" }, porData[d].map(compromisso)))))
           : h("div", { class: "secao" }, h("p", { class: "muted" }, "Nenhum culto neste mês.")))];
     }
     const celulas = [];
@@ -1778,10 +1809,10 @@
         h("div", { class: "cal" }, h("div", { class: "semana", "aria-hidden": "true" }, E.DIAS_CURTOS.map((d) => h("span", {}, d))), h("div", { class: "grade" }, celulas)),
         h("div", { class: "legenda" }, h("span", {}, h("i"), "Culto com escala"), h("span", {}, h("i", { class: "solene" }), "Culto solene"), h("span", {}, h("i", { class: "sem" }), "Sem escala"))),
       h("section", { class: "cartao" },
-        h("div", { class: "cartao-cab", style: "padding-bottom:var(--e-3)" }, h("h2", {}, icone("relogio"), E.formatarData(ui.agendaDia, "longa"))),
+        h("div", { class: "cartao-cab recuo-baixo-3" }, h("h2", {}, icone("relogio"), E.formatarData(ui.agendaDia, "longa"))),
         doDia.length ? h("div", { class: "compromissos" }, doDia.map(compromisso))
-          : ui.agendaDia < hoje() ? h("div", { class: "secao", style: "padding-top:0" }, h("p", { class: "muted" }, "Este dia já passou. As escalas cumpridas ficam no arquivo."), botaoArquivo())
-          : h("div", { class: "secao", style: "padding-top:0" }, h("p", { class: "muted" }, "Nenhum culto neste dia.")),
+          : ui.agendaDia < hoje() ? h("div", { class: "secao sem-recuo-topo" }, h("p", { class: "muted" }, "Este dia já passou. As escalas cumpridas ficam no arquivo."), botaoArquivo())
+          : h("div", { class: "secao sem-recuo-topo" }, h("p", { class: "muted" }, "Nenhum culto neste dia.")),
         semEscala ? h("div", { class: "rodape-cartao" }, h("button", { class: "btn tonal", onclick: novaEscala }, icone("calendarioMais"), "Criar escala")) : null),
     ];
   }
@@ -1801,7 +1832,7 @@
       h("tbody", {}, ativas.map((p) => {
         const r = respostaDa(p);
         return h("tr", {},
-          h("th", { scope: "row" }, h("button", { class: "btn texto", style: "padding:0 6px", onclick: () => editarDisponibilidade(p) }, p.nome, r && r.obs ? icone("nota2") : null)),
+          h("th", { scope: "row" }, h("button", { class: "btn texto", style: "padding:0 var(--e-15)", onclick: () => editarDisponibilidade(p) }, p.nome, r && r.obs ? icone("nota2") : null)),
           dias.map((d) => {
             const v = E.disponivelEm(state, p.id, d.data);
             return h("td", { class: `disp ${v || "sem"}`, "aria-label": `${p.nome}, ${E.formatarData(d.data, "dia")}: ${v === "sim" ? "pode" : v === "nao" ? "não pode" : r ? "não marcou" : "não respondeu"}` }, v === "sim" ? "✓" : v === "nao" ? "✕" : "·");
@@ -1816,8 +1847,8 @@
         h("div", {}, h("h1", {}, "Agenda"), h("p", { class: "muted" }, "Os cultos do mês e a disponibilidade da equipe.")),
         h("div", { class: "segmentado", role: "group", "aria-label": "Ver como" }, modo("mes", "Mês", "grade"), modo("lista", "Lista", "lista"))),
       h("div", { class: "agenda-grade" }, calendarioCultos()),
-      h("div", { class: "cabecalho", style: "padding-top:var(--e-4)" },
-        h("div", {}, h("h2", { style: "font-size:var(--t-xl)" }, "Disponibilidade da equipe"), h("p", { class: "small muted" }, "Cada pessoa marca os dias em que pode servir; a escala é montada com essas respostas.")),
+      h("div", { class: "cabecalho recuo-topo-4" },
+        h("div", {}, h("h2", { class: "texto-xl" }, "Disponibilidade da equipe"), h("p", { class: "small muted" }, "Cada pessoa marca os dias em que pode servir; a escala é montada com essas respostas.")),
         h("button", { class: "btn primario", onclick: () => irPara("disponibilidade") }, icone("certo"), "Marcar minha disponibilidade")),
       h("section", { class: "cartao" },
         h("div", { class: "seletor-escala" },
@@ -1825,7 +1856,7 @@
             h("span", { class: "rotulo" }, "Pedido de disponibilidade"),
             h("b", {}, E.formatarPeriodo(periodo.inicio, periodo.fim), icone("baixo")),
             h("span", { class: "small muted" }, `${dias.length} dias de culto · toque para mudar o período`))),
-        h("div", { class: "resumo", style: "display:grid;gap:12px;border-top:0;padding-top:0" },
+        h("div", { class: "resumo", style: "display:grid;gap:var(--e-3);border-top:0;padding-top:0" },
           h("div", { class: "progresso", role: "progressbar", "aria-valuemin": 0, "aria-valuemax": ativas.length, "aria-valuenow": responderam.length, "aria-label": "Respostas" },
             h("div", { class: "barra" }, h("span", { style: `width:${pct}%` })),
             h("span", { class: "small" }, h("b", {}, `${responderam.length} de ${ativas.length}`), " responderam")),
@@ -1834,7 +1865,7 @@
             h("button", { class: "btn", onclick: colarRespostas }, icone("colar"), "Colar respostas")),
           h("button", { class: "btn primario largo", onclick: () => gerarComRespostas(periodo, existente) }, icone("sortear"), existente ? "Atualizar a escala com as respostas" : "Gerar a escala com as respostas"))),
 
-      dias.length ? h("section", { class: "cartao", style: "overflow:hidden" }, h("div", { class: "rolagem-tabela" }, tabela)) : h("div", { class: "vazio" }, h("p", {}, "Nenhum culto ativo neste período.")),
+      dias.length ? h("section", { class: "cartao recorte" }, h("div", { class: "rolagem-tabela" }, tabela)) : h("div", { class: "estado-vazio" }, h("p", {}, "Nenhum culto ativo neste período.")),
       recados.length ? h("section", { class: "cartao secao" }, h("span", { class: "rotulo" }, "Recados"), recados.map((p) => h("p", { class: "nota" }, h("b", {}, `${p.nome}: `), respostaDa(p).obs))) : null,
       h("p", { class: "small muted" }, "Toque no nome de alguém para marcar os dias por essa pessoa (por exemplo, quando ela responde por mensagem)."));
   }
@@ -1852,10 +1883,10 @@
       sub: "A equipe marca a disponibilidade para estes dias.",
       corpo: [
         h("div", { class: "acoes" }, rapido("Próximas 2 semanas", dom, E.somarDias(dom, 13)), rapido("Próximo mês", `${mes}-01`, E.fimDoMes(mes))),
-        h("div", { style: "display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px" }, h("label", { class: "campo" }, "De", inicioEl), h("label", { class: "campo" }, "Até", fimEl)),
+        h("div", { class: "grade-campos" }, h("label", { class: "campo" }, "De", inicioEl), h("label", { class: "campo" }, "Até", fimEl)),
       ],
       rodape: (fechar) => [h("button", { class: "btn primario", onclick: () => {
-        if (f.fim < f.inicio) return avisar("A data final vem antes da inicial.");
+        if (f.fim < f.inicio) return erroNoCampo("#ped-fim", "A data final vem antes da inicial.");
         fechar(true);
         mudou(() => { state.pedido = { inicio: f.inicio, fim: f.fim }; });
       } }, "Salvar")],
@@ -1928,7 +1959,7 @@
         h("label", { class: "campo" }, "Recado", h("textarea", { rows: 2, value: obs, oninput: (e) => { obs = e.target.value; } })),
       ],
       rodape: (fechar) => [
-        existente ? h("button", { class: "btn perigo", style: "margin-right:auto", onclick: () => { fechar(true); comDesfazer("Resposta apagada.", () => { state.respostas = state.respostas.filter((r) => r.id !== id); ajustarEscalas(); }); } }, icone("lixo"), "Apagar") : null,
+        existente ? h("button", { class: "btn perigo empurra", onclick: () => { fechar(true); comDesfazer("Resposta apagada.", () => { state.respostas = state.respostas.filter((r) => r.id !== id); ajustarEscalas(); }); } }, icone("lixo"), "Apagar") : null,
         h("button", { class: "btn primario", onclick: () => {
           fechar(true);
           mudou(() => guardarResposta(montarResposta(pessoa.id, periodo, marcas, obs)));
@@ -1988,7 +2019,7 @@
       { id: "fora", nome: "Fora do rodízio", fn: (m) => m.ativo === false },
     ];
     const usos = usosMusicas();
-    const lista = h("div", { class: "cartao", style: "overflow:hidden" });
+    const lista = h("div", { class: "cartao recorte" });
     const PRINCIPAIS = ["trinitario", "cristocentrico", "doutrinario"];
     const contagem = h("p", { class: "small muted", "aria-live": "polite" });
     const desenhar = () => {
@@ -2009,14 +2040,14 @@
           h("button", { class: "linha", onclick: () => editarMusica(m), "aria-label": `${E.rotuloMusica(m)}. Editar` },
             h("span", { class: `marcador ${m.tipo === "louvor" ? "louvor" : "hino"}`, "aria-hidden": "true" }, m.tipo === "louvor" ? icone("musica") : m.numero ? `SH ${m.numero}` : "SH"),
             h("span", {},
-              h("span", { class: "titulo" }, m.titulo || `Salmos e Hinos nº ${m.numero}`), m.ativo === false ? h("span", { class: "selo neutro", style: "margin-left:6px" }, "Fora do rodízio") : null, h("br"),
+              h("span", { class: "titulo" }, m.titulo || `Salmos e Hinos nº ${m.numero}`), m.ativo === false ? h("span", { class: "selo neutro", style: "margin-left:var(--e-15)" }, "Fora do rodízio") : null, h("br"),
               h("span", { class: "sub" }, [assuntoDe(m), m.autor, m.tom ? `tom ${m.tom}` : "", outras || (destaques.length ? "" : temas || (assuntoDe(m) ? "" : "sem etiquetas")), quando].filter(Boolean).join(" · ")),
-              destaques.length ? h("span", { class: "etiquetas" }, destaques.map((t) => h("span", { class: "selo azul" }, E.nomeTag(state, t)))) : null),
+              destaques.length ? h("span", { class: "etiquetas" }, destaques.map((t) => h("span", { class: "selo info" }, E.nomeTag(state, t)))) : null),
             E.aptaSolene(state, m) ? h("span", { class: "selo solene", title: "Segue a orientação do culto solene" }, "Solene") : h("span")),
-          h("span", { style: "display:flex;margin-right:8px" },
+          h("span", { style: "display:flex;margin-right:var(--e-2)" },
             letraDe(m) ? h("button", { class: "btn icone", "aria-label": `Letra de ${E.rotuloMusica(m)}`, title: "Letra", onclick: () => verLetra(m) }, icone("livro")) : null,
             m.link ? h("a", { class: "btn icone", href: m.link, target: "_blank", rel: "noopener", "aria-label": `Ouvir ${m.titulo} no YouTube` }, icone("play")) : null));
-      })) : h("div", { class: "vazio", style: "border:0" }, h("span", { class: "icone-vazio" }, icone("busca")), h("p", {}, state.musicas.length ? "Nenhuma música com essa busca ou filtro." : "Repertório vazio. Importe a lista de Salmos e Hinos e a de louvores.")));
+      })) : h("div", { class: "estado-vazio sem-borda" }, h("span", { class: "estado-vazio-icone" }, icone("busca")), h("p", {}, state.musicas.length ? "Nenhuma música com essa busca ou filtro." : "Repertório vazio. Importe a lista de Salmos e Hinos e a de louvores.")));
     };
     desenhar();
     if (!window.EscalaLetras) carregarLetras().then(() => { if (ui.tela === "musicas") desenhar(); }).catch(() => { /* sem letras: a lista funciona igual */ });
@@ -2024,7 +2055,7 @@
     const nomes = (ts) => (ts || []).map((t) => E.nomeTag(state, t)).join(" e ") || "qualquer etiqueta";
     return h("div", { class: "tela" },
       h("div", { class: "cabecalho" },
-        h("div", {}, h("h1", {}, "Músicas"), h("p", { class: "muted", style: "max-width:70ch" }, `No culto solene entram Salmos e Hinos marcados como ${nomes(r.soleneTagsHinario)} e louvores marcados como ${nomes(r.soleneTagsLouvor)}.`)),
+        h("div", {}, h("h1", {}, "Músicas"), h("p", { class: "muted medida" }, `No culto solene entram Salmos e Hinos marcados como ${nomes(r.soleneTagsHinario)} e louvores marcados como ${nomes(r.soleneTagsLouvor)}.`)),
         h("div", { class: "acoes" },
           h("button", { class: "btn", onclick: compartilharLouvores }, icone("compartilhar"), "Compartilhar louvores"),
           h("button", { class: "btn", onclick: importarMusicas }, icone("importar"), "Importar"),
@@ -2078,7 +2109,7 @@
       { id: "tocados", nome: "Tocados", fn: (x) => x.tocadas.length > 0 },
       { id: "nao", nome: "Não tocados", fn: (x) => !x.tocadas.length },
     ];
-    const caixa = h("div", { class: "cartao", style: "overflow:hidden" });
+    const caixa = h("div", { class: "cartao recorte" });
     const contagem = h("p", { class: "small muted", "aria-live": "polite" });
     const desenhar = () => {
       const f = FILTROS.find((x) => x.id === ui.louvoresFiltro) || FILTROS[0];
@@ -2096,11 +2127,11 @@
           h("span", {},
             h("span", { class: "titulo" }, m.titulo), h("br"),
             h("span", { class: "sub" }, [m.autor, m.tom ? `tom ${m.tom}` : "", quando, x.proxima ? `programado para ${E.formatarData(x.proxima, "curta")}` : ""].filter(Boolean).join(" · "))),
-          h("span", { style: "display:flex;gap:6px;align-items:center" },
+          h("span", { class: "linha-icone" },
             n ? h("span", { class: "selo ok" }, "Tocado") : null,
             m.link ? h("a", { class: "btn icone", href: m.link, target: "_blank", rel: "noopener", "aria-label": `Ouvir ${m.titulo} no YouTube` }, icone("play")) : null,
             h("button", { class: "btn icone tonal", "aria-label": `Pôr ${m.titulo} na escala`, title: "Pôr na escala", onclick: () => porNaEscala(m) }, icone("mais")))));
-      })) : h("div", { class: "vazio", style: "border:0" }, h("p", {}, lista.length ? "Nenhum louvor com essa busca ou filtro." : "Nenhum louvor no repertório ainda.")));
+      })) : h("div", { class: "estado-vazio sem-borda" }, h("p", {}, lista.length ? "Nenhum louvor com essa busca ou filtro." : "Nenhum louvor no repertório ainda.")));
     };
     desenhar();
     const mudarPeriodo = (d) => {
@@ -2113,11 +2144,11 @@
       h("div", { class: "cabecalho" },
         h("div", {}, h("h1", {}, "Louvores"), h("p", { class: "muted" }, `${igreja ? `${igreja} · ` : ""}${lista.length} louvores · ${tocados.length} tocados ${nomePeriodo(dias)}`)),
         h("div", { class: "acoes" }, h("button", { class: "btn", onclick: () => compartilharLouvores() }, icone("compartilhar"), "Compartilhar"), voltar)),
-      h("div", { class: "segmentado", role: "group", "aria-label": "Período das marcações", style: "display:grid" },
+      h("div", { class: "segmentado pilha", role: "group", "aria-label": "Período das marcações" },
         PERIODOS_LOUVORES.map((p) => h("button", { "aria-pressed": String(p.dias === dias), onclick: () => mudarPeriodo(p.dias) }, p.nome))),
       h("div", { class: "busca" }, icone("busca"), h("input", { type: "search", id: "busca-louvores", placeholder: "Buscar louvor ou autor", "aria-label": "Buscar louvores", value: ui.louvoresBusca, oninput: (e) => { ui.louvoresBusca = e.target.value; desenhar(); } })),
       h("div", { class: "rolagem-x", role: "group", "aria-label": "Filtrar" }, FILTROS.map((f) => h("button", { class: "chip", "aria-pressed": String(ui.louvoresFiltro === f.id), onclick: () => { ui.louvoresFiltro = f.id; render(); } }, f.nome, h("span", { class: "conta" }, String(lista.filter(f.fn).length))))),
-      h("div", { class: "contador" }, contagem, h("span", { class: "small muted", style: "display:inline-flex;gap:6px;align-items:center" }, icone("mais"), "põe o louvor na escala (o fim de semana aparece primeiro)")),
+      h("div", { class: "contador" }, contagem, h("span", { class: "small muted linha-icone em-linha" }, icone("mais"), "põe o louvor na escala (o fim de semana aparece primeiro)")),
       caixa,
       h("p", { class: "small muted" }, `✓ Tocado = entrou em algum culto ${nomePeriodo(dias)} (${E.formatarData(E.somarDias(hoje(), -dias + 1), "curta")} a ${E.formatarData(hoje(), "curta")}). Os Salmos e Hinos não entram nesta lista.`));
   }
@@ -2164,7 +2195,7 @@
   function compartilharLouvores() {
     let dias = ui.louvoresDias;
     const campo = h("input", { type: "text", id: "link-louvores", readonly: true, "aria-label": "Link da lista de louvores", onfocus: (e) => e.target.select() });
-    const grupo = h("div", { class: "segmentado", role: "group", "aria-label": "Marcar os tocados", style: "display:grid" });
+    const grupo = h("div", { class: "segmentado pilha", role: "group", "aria-label": "Marcar os tocados" });
     const desenhar = () => {
       campo.value = linkLouvores(dias);
       grupo.replaceChildren(...PERIODOS_LOUVORES.map((p) => h("button", { "aria-pressed": String(p.dias === dias), onclick: () => { dias = p.dias; desenhar(); } }, p.nome)));
@@ -2192,6 +2223,92 @@
       ],
       foco: "footer .btn.zap",
     });
+  }
+
+  /* ------------------------------------------------------- guia visual */
+
+  // Tokens mostrados no guia, na ordem em que aparecem em index.html.
+  const GUIA_CORES = [
+    ["Marca", ["navy", "navy-2", "azul", "azul-forte", "azul-suave", "azul-linha", "dourado", "dourado-suave", "dourado-tinta"]],
+    ["Superfícies e linhas", ["bg", "surface", "surface-2", "surface-3", "line", "line-2"]],
+    ["Texto", ["ink", "ink-2", "muted"]],
+    ["Estados", ["ok", "ok-suave", "alerta", "alerta-suave", "erro", "erro-suave", "espera", "espera-suave"]],
+    ["Sobre cor e destaques", ["sobre-cor", "ativo", "sobre-navy", "zap", "zap-forte"]],
+    ["Funções", ["funcao-voz", "funcao-violao", "funcao-guitarra", "funcao-baixo", "funcao-teclado", "funcao-bateria"]],
+    ["Avatares", ["avatar-1", "avatar-2", "avatar-3", "avatar-4", "avatar-5", "avatar-6"]],
+  ];
+  const GUIA_TEXTO = [["t-3xs", "rótulos em caixa-alta"], ["t-2xs", "rótulos pequenos"], ["t-xs", "legendas"], ["t-sm", "texto secundário, botões pequenos"], ["t-md", "texto corrido"], ["t-lg", "títulos de cartão"], ["t-xl", "títulos de seção"], ["t-2xl", "destaques"], ["t-3xl", "título da tela"], ["t-campo", "campos (16 px: o iPhone não dá zoom)"]];
+  const GUIA_ESPACO = ["e-05", "e-1", "e-15", "e-2", "e-25", "e-3", "e-35", "e-4", "e-5", "e-6", "e-8"];
+
+  /** Guia visual (#guia): os tokens e os componentes com o CSS de verdade, nos dois temas. */
+  function telaGuia() {
+    const valor = (t) => getComputedStyle(document.documentElement).getPropertyValue(`--${t}`).trim();
+    const secao = (titulo, sub, ...corpo) => h("section", { class: "cartao secao guia-secao" }, h("h2", {}, titulo), sub ? h("p", { class: "small muted" }, sub) : null, ...corpo);
+    const exemplo = (nome, uso, ...itens) => h("div", { class: "guia-exemplo" }, h("div", { class: "guia-rotulo" }, h("b", {}, nome), uso ? h("span", { class: "small muted" }, uso) : null), h("div", { class: "guia-itens" }, ...itens));
+    const vaga = (txt, attrs, comAvatar) => h("span", Object.assign({ class: "pessoa leitura" }, attrs), comAvatar ? avatar({ id: txt, nome: txt }) : null, txt);
+    const campoComErro = h("input", { type: "text", id: "guia-campo-erro", value: "", "aria-invalid": "true", "aria-describedby": "guia-campo-erro-msg" });
+    return h("div", { class: "tela" },
+      h("div", { class: "cabecalho" },
+        h("div", {}, h("h1", {}, "Guia visual"), h("p", { class: "muted medida" }, "O design system da Escala do Louvor: os tokens (cores, textos, espaços) e os componentes, desenhados com o próprio estilo do app. Troque o tema em Ajustes para ver a versão escura.")),
+        h("button", { class: "btn texto", onclick: () => irPara("ajustes") }, "Voltar aos ajustes")),
+
+      secao("Cores", "Use sempre o token (var(--nome)), nunca o código da cor. O tema escuro troca os valores sozinho.",
+        GUIA_CORES.map(([grupo, tokens]) => h("div", { class: "pilha pilha-2" }, h("span", { class: "rotulo" }, grupo),
+          h("div", { class: "guia-cores" }, tokens.map((t) => h("div", { class: "guia-cor" },
+            h("span", { class: "guia-amostra", style: `background:var(--${t})` }),
+            h("b", {}, `--${t}`), h("span", { class: "small muted num" }, valor(t)))))))),
+
+      secao("Tipografia", "Títulos em Plus Jakarta Sans (--f-titulo), texto em Inter (--f-texto).",
+        h("div", { class: "pilha pilha-2" }, GUIA_TEXTO.map(([t, uso]) => h("div", { class: "guia-texto" },
+          h("span", { style: `font-size:var(--${t})` }, "Escala do Louvor"), h("span", { class: "small muted" }, `--${t} · ${valor(t)} · ${uso}`))))),
+
+      secao("Espaçamento", "Passos de 4 px; os meios-passos (2, 6, 10 e 14 px) só dentro de componentes pequenos.",
+        h("div", { class: "pilha pilha-1" }, GUIA_ESPACO.map((t) => h("div", { class: "guia-espaco" },
+          h("span", { class: "guia-barra", style: `width:var(--${t})` }), h("span", { class: "small num" }, `--${t} · ${valor(t)}`))))),
+
+      secao("Cantos, sombras e alturas", null,
+        h("div", { class: "guia-cores" },
+          ["r-xs", "r-sm", "r-md", "r-lg", "r-xl", "r-full"].map((t) => h("div", { class: "guia-cor" }, h("span", { class: "guia-amostra guia-canto", style: `border-radius:var(--${t})` }), h("b", {}, `--${t}`), h("span", { class: "small muted num" }, valor(t)))),
+          ["sombra-1", "sombra-2", "sombra-3"].map((t) => h("div", { class: "guia-cor" }, h("span", { class: "guia-amostra guia-sombra", style: `box-shadow:var(--${t})` }), h("b", {}, `--${t}`), h("span", { class: "small muted" }, { "sombra-1": "cartões", "sombra-2": "item em destaque", "sombra-3": "painéis e avisos" }[t])))),
+        h("div", { class: "guia-itens" }, ["toque-sm", "toque", "toque-lg"].map((t) => h("span", { class: "guia-toque", style: `min-height:var(--${t})` }, `--${t} · ${valor(t)}`))),
+        h("p", { class: "small muted" }, "Alvos de toque: 44 px no padrão; 40 px só em listas densas e dentro de cartões; 52 px para a ação principal.")),
+
+      secao("Botões", "Um botão primário por tela ou painel. Verde só para o WhatsApp; vermelho só para excluir.",
+        exemplo(".btn.primario", "ação principal", h("button", { class: "btn primario" }, icone("mais"), "Nova escala")),
+        exemplo(".btn", "ação comum", h("button", { class: "btn" }, icone("importar"), "Importar")),
+        exemplo(".btn.tonal", "ação de apoio", h("button", { class: "btn tonal" }, icone("certo"), "Minha disponibilidade")),
+        exemplo(".btn.texto", "ação leve, links", h("button", { class: "btn texto" }, "Ver agenda")),
+        exemplo(".btn.perigo", "excluir", h("button", { class: "btn perigo" }, icone("lixo"), "Excluir")),
+        exemplo(".btn.zap", "enviar no WhatsApp", h("button", { class: "btn zap" }, icone("whatsapp"), "Enviar no WhatsApp")),
+        exemplo("Modificadores", ".mini (40 px), .icone (quadrado, com aria-label), .largo (100%); desativado com disabled",
+          h("button", { class: "btn texto mini" }, icone("mais"), "Pessoa"), h("button", { class: "btn icone", "aria-label": "Opções" }, icone("opcoes")), h("button", { class: "btn", disabled: true }, "Desativado"))),
+
+      secao("Selos e filtros", null,
+        exemplo(".selo", "estado curto: ok · alerta · erro · neutro · info · solene",
+          h("span", { class: "selo ok" }, "Confirmada"), h("span", { class: "selo alerta" }, "Aviso"), h("span", { class: "selo erro" }, "2 a resolver"),
+          h("span", { class: "selo neutro" }, "Rascunho"), h("span", { class: "selo info" }, "Hoje"), h("span", { class: "selo solene" }, "Culto solene")),
+        exemplo(".selo.funcao-selo", "função, com o ícone do instrumento", ...["vocal", "violao", "teclado"].map((f) => h("span", { class: "selo funcao-selo", "data-funcao": visualDaFuncao(f).cor }, icone(visualDaFuncao(f).icone), E.nomeFuncao(state, f) || f))),
+        exemplo(".chip", "filtro; aria-pressed marca o ativo", h("button", { class: "chip", "aria-pressed": "true" }, "Todos", h("span", { class: "conta" }, "93")), h("button", { class: "chip", "aria-pressed": "false" }, "Tocados", h("span", { class: "conta" }, "12")), h("span", { class: "chip apoio" }, "Violão · apoio")),
+        exemplo(".segmentado", "escolha entre 2 ou 3 opções", h("div", { class: "segmentado", role: "group", "aria-label": "Exemplo" }, h("button", { "aria-pressed": "true" }, "Mês"), h("button", { "aria-pressed": "false" }, "Lista")))),
+
+      secao("Vagas da escala", "A cor diz o estado; erro e aviso também têm o ícone ⚠ (não dependem só da cor).",
+        exemplo("Preenchida", null, vaga("Valdeci Junior", {}, true)),
+        exemplo("Fixada à mão", "alfinete: não muda ao sortear de novo", h("span", { class: "pessoa leitura" }, avatar({ id: "jeferson", nome: "Jeferson" }), "Jeferson", icone("pino"))),
+        exemplo("Aguardando", "data-nivel=espera · ninguém marcou \"posso\" ainda", vaga("aguardando", { class: "pessoa leitura vazia", "data-nivel": "espera" })),
+        exemplo("A definir", "vaga vazia sem a regra \"só quem pode\"", vaga("a definir", { class: "pessoa leitura vazia", "data-nivel": "erro" })),
+        exemplo("Com aviso", "data-nivel=alerta ou erro", h("span", { class: "pessoa leitura", "data-nivel": "alerta" }, avatar({ id: "jeferson", nome: "Jeferson" }), "Jeferson", h("span", { class: "aviso-i" }, icone("alerta"))))),
+
+      secao("Formulários e mensagens", null,
+        exemplo(".campo", "rótulo em cima, ajuda embaixo", h("label", { class: "campo cresce" }, "Nome", h("span", { class: "ajuda" }, "Como aparece na escala."), h("input", { type: "text", value: "Jerlandia" }))),
+        exemplo("Campo com erro", "aria-invalid + mensagem ligada por aria-describedby", h("label", { class: "campo cresce" }, "Título", campoComErro, h("span", { class: "erro-campo", id: "guia-campo-erro-msg" }, icone("alerta"), "Escreva o título ou o número."))),
+        exemplo(".interruptor", "liga/desliga com efeito imediato", h("label", { class: "interruptor cresce" }, h("span", {}, "No rodízio", h("small", {}, "Desligue para pausar sem apagar")), h("input", { type: "checkbox", role: "switch", checked: true }))),
+        exemplo(".faixa", "aviso no topo da tela: alerta · erro · info",
+          h("div", { class: "faixa alerta cresce" }, icone("alerta"), h("span", {}, "2 itens ainda estão a definir.")),
+          h("div", { class: "faixa info cresce" }, icone("arquivo"), h("span", {}, "Escala cumprida."))),
+        exemplo("Aviso de rodapé", "confirma o que aconteceu; pode ter uma ação (Desfazer)", h("button", { class: "btn", onclick: () => avisar("Exemplo de aviso.", { rotulo: "Desfazer", fazer: () => avisar("Desfeito.") }) }, "Mostrar um aviso")),
+        exemplo(".estado-vazio", "tela ou lista sem conteúdo, com a próxima ação", h("div", { class: "estado-vazio cresce" }, h("span", { class: "estado-vazio-icone" }, icone("escala")), h("h2", {}, "Nenhuma escala ainda"), h("button", { class: "btn primario" }, icone("mais"), "Criar escala")))),
+
+      h("p", { class: "small muted" }, "Regras: cores, textos, espaços, cantos e alturas vêm dos tokens no começo de index.html; layout repetido usa os utilitários (.pilha, .grade-campos, .linha-icone, .a-esquerda…); style no código só para valores calculados (ex.: largura de uma barra)."));
   }
 
   /* ------------------------------------------------------------ letras */
@@ -2255,7 +2372,7 @@
   }
 
   function segmentado(rotulo, opcoes, atual, aoMudar) {
-    const caixa = h("div", { class: "segmentado", role: "group", "aria-label": rotulo, style: "display:grid" });
+    const caixa = h("div", { class: "segmentado pilha", role: "group", "aria-label": rotulo });
     caixa.append(...opcoes.map((o) => h("button", {
       type: "button", "aria-pressed": String(o.id === atual),
       onclick: (e) => { [...caixa.children].forEach((b) => b.setAttribute("aria-pressed", String(b === e.currentTarget))); aoMudar(o.id); },
@@ -2273,12 +2390,12 @@
         segmentado("Tipo", E.TIPOS_MUSICA, m.tipo, (id) => { m.tipo = id; numero.hidden = id !== "hino"; }),
         numero,
         h("label", { class: "campo" }, "Título", h("input", { type: "text", id: "mus-titulo", value: m.titulo, oninput: set("titulo") })),
-        h("div", { style: "display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px" },
+        h("div", { class: "grade-campos" },
           h("label", { class: "campo" }, "Autor ou ministério", h("input", { type: "text", id: "mus-autor", value: m.autor, oninput: set("autor") })),
           h("label", { class: "campo" }, "Tom", h("input", { type: "text", id: "mus-tom", value: m.tom, placeholder: "Ex.: Ré", oninput: set("tom") }))),
         h("label", { class: "campo" }, "Link para ouvir", h("input", { type: "url", id: "mus-link", value: m.link || "", placeholder: "https://youtu.be/…", oninput: set("link") })),
         original && original.tipo === "hino" && original.numero ? h("div", { class: "acoes" },
-          assuntoDe(original) ? h("span", { class: "selo azul" }, assuntoDe(original)) : null,
+          assuntoDe(original) ? h("span", { class: "selo info" }, assuntoDe(original)) : null,
           E.tambemServeEm(original).map((x) => h("span", { class: "selo neutro", title: "Indicado no índice do hinário" }, `também: ${x.tema.nome} › ${x.nome}`)),
           h("button", { type: "button", class: "btn mini", onclick: () => verLetra(original) }, icone("livro"), "Ver letra")) : null,
         h("div", { class: "campo" }, "Etiquetas", h("span", { class: "ajuda" }, "Trinitário, cristocêntrico e doutrinário decidem se a música entra nos cultos solenes."), seletorTags(m.tags)),
@@ -2287,10 +2404,10 @@
         h("label", { class: "interruptor" }, h("span", {}, "No rodízio", h("small", {}, "Desligue para não entrar nas próximas escalas")), h("input", { type: "checkbox", role: "switch", checked: m.ativo !== false, onchange: set("ativo") })),
       ],
       rodape: (fechar) => [
-        original ? h("button", { class: "btn perigo", style: "margin-right:auto", onclick: () => { fechar(true); comDesfazer("Música excluída.", () => { state.musicas = state.musicas.filter((x) => x.id !== original.id); }); } }, icone("lixo"), "Excluir") : null,
+        original ? h("button", { class: "btn perigo empurra", onclick: () => { fechar(true); comDesfazer("Música excluída.", () => { state.musicas = state.musicas.filter((x) => x.id !== original.id); }); } }, icone("lixo"), "Excluir") : null,
         h("button", {
           class: "btn primario", onclick: () => {
-            if (!m.titulo.trim() && !String(m.numero).trim()) return avisar("Escreva o título ou o número.");
+            if (!m.titulo.trim() && !String(m.numero).trim()) return erroNoCampo("#mus-titulo", "Escreva o título ou o número.");
             if (m.tipo === "louvor") m.numero = "";
             m.titulo = m.titulo.trim();
             fechar(true);
@@ -2358,27 +2475,27 @@
       h("section", { "aria-label": "Titulares por função" }, h("div", { class: "cobertura" }, state.funcoes.map((f) => {
         const n = ativas.filter((p) => (p.funcoes || []).includes(f.id)).length;
         const a = ativas.filter((p) => (p.apoio || []).includes(f.id)).length;
-        return h("div", { class: n ? null : "falta" }, h("div", { style: "display:flex;align-items:center;justify-content:space-between;gap:8px" }, h("b", {}, String(n)), seloFuncao(f.id)), h("span", {}, `${f.nome}${a ? ` · +${a} apoio` : ""}${n ? "" : " · sem titular"}`));
+        return h("div", { class: n ? null : "falta" }, h("div", { style: "display:flex;align-items:center;justify-content:space-between;gap:var(--e-2)" }, h("b", {}, String(n)), seloFuncao(f.id)), h("span", {}, `${f.nome}${a ? ` · +${a} apoio` : ""}${n ? "" : " · sem titular"}`));
       }))),
       pessoas.length ? h("div", { class: "equipe-grade" }, pessoas.map((p) => {
         const datas = (p.indisponivel || []).filter((x) => (x.split("..")[1] || x) >= hoje()).length;
         const cultos = (p.cultos || []).map((id) => porId(state.cultos, id)).filter(Boolean);
         return h("button", { class: `pessoa-cartao${p.ativo === false ? " pausado" : ""}`, onclick: () => editarPessoa(p), "aria-label": `${p.nome}. ${descreverPessoa(p)}. Editar` },
           h("div", { class: "cab" }, avatarComFuncao(p),
-            h("div", { style: "min-width:0;flex:1" }, h("b", {}, p.nome || "Sem nome"), h("span", {}, cultos.length ? cultos.map((c) => `${E.DIAS_CURTOS[c.diaSemana]} ${c.hora}`).join(" · ") : "Serve em todos os cultos")),
+            h("div", { class: "encolhe cresce" }, h("b", {}, p.nome || "Sem nome"), h("span", {}, cultos.length ? cultos.map((c) => `${E.DIAS_CURTOS[c.diaSemana]} ${c.hora}`).join(" · ") : "Serve em todos os cultos")),
             p.ativo === false ? h("span", { class: "selo neutro" }, "Pausado") : datas ? h("span", { class: "selo alerta" }, `${datas} ${datas === 1 ? "data" : "datas"} fora`) : null),
           h("div", { class: "funcoes-p" },
-            (p.funcoes || []).map((f) => h("span", { class: "selo funcao-selo", "data-cor": visualDaFuncao(f).cor }, icone(visualDaFuncao(f).icone), E.nomeFuncao(state, f))),
+            (p.funcoes || []).map((f) => h("span", { class: "selo funcao-selo", "data-funcao": visualDaFuncao(f).cor }, icone(visualDaFuncao(f).icone), E.nomeFuncao(state, f))),
             (p.apoio || []).map((f) => h("span", { class: "selo neutro" }, icone(visualDaFuncao(f).icone), `${E.nomeFuncao(state, f)} · apoio`)),
             !(p.funcoes || []).length && !(p.apoio || []).length ? h("span", { class: "small muted" }, "Sem função") : null),
           h("div", { class: "pe" },
             escala ? h("span", {}, icone("escala"), `${vezes[p.id] || 0}× nesta escala`) : null,
             h("span", { style: respondeu(p) ? "color:var(--ok)" : null }, icone(respondeu(p) ? "certo" : "agenda"), respondeu(p) ? "Disponibilidade enviada" : "Não respondeu")));
-      })) : h("div", { class: "vazio" }, h("span", { class: "icone-vazio" }, icone("pessoas")), h("p", {}, "Ninguém cadastrado ainda.")));
+      })) : h("div", { class: "estado-vazio" }, h("span", { class: "estado-vazio-icone" }, icone("pessoas")), h("p", {}, "Ninguém cadastrado ainda.")));
   }
 
   function editorDatas(lista) {
-    const caixa = h("div", { style: "display:grid;gap:10px" });
+    const caixa = h("div", { class: "pilha pilha-3" });
     const desenhar = () => {
       const de = h("input", { type: "date", min: hoje() });
       const ate = h("input", { type: "date" });
@@ -2386,13 +2503,13 @@
       caixa.replaceChildren(
         futuras.length ? h("div", { class: "chips" }, futuras.map((x) => {
           const [a, b] = x.split("..");
-          return h("span", { class: "chip", style: "padding-right:4px" }, b ? `${E.formatarData(a, "curta")} a ${E.formatarData(b, "curta")}` : E.formatarData(a, "dia"),
+          return h("span", { class: "chip", style: "padding-right:var(--e-1)" }, b ? `${E.formatarData(a, "curta")} a ${E.formatarData(b, "curta")}` : E.formatarData(a, "dia"),
             h("button", { class: "btn icone", style: "width:32px;min-height:32px", "aria-label": "Tirar esta data", onclick: () => { lista.splice(lista.indexOf(x), 1); desenhar(); } }, icone("fechar")));
         })) : h("p", { class: "small muted" }, "Nenhuma data marcada."),
-        h("div", { style: "display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:8px;align-items:end" },
+        h("div", { style: "display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:var(--e-2);align-items:end" },
           h("label", { class: "campo" }, "De", de), h("label", { class: "campo" }, "Até (opcional)", ate),
           h("button", { class: "btn tonal", onclick: () => {
-            if (!de.value) return avisar("Escolha a data.");
+            if (!de.value) return erroNoCampo(de, "Escolha a data.");
             lista.push(ate.value && ate.value > de.value ? `${de.value}..${ate.value}` : de.value);
             desenhar();
           } }, "Marcar")));
@@ -2437,10 +2554,10 @@
         h("label", { class: "interruptor" }, h("span", {}, "No rodízio", h("small", {}, "Desligue para pausar sem apagar")), h("input", { type: "checkbox", role: "switch", checked: p.ativo !== false, onchange: (e) => { p.ativo = e.target.checked; } })),
       ],
       rodape: (fechar) => [
-        original ? h("button", { class: "btn perigo", style: "margin-right:auto", onclick: () => { fechar(true); comDesfazer(`${original.nome || "Pessoa"} saiu da equipe.`, () => { state.pessoas = state.pessoas.filter((x) => x.id !== original.id); }); } }, icone("lixo"), "Excluir") : null,
+        original ? h("button", { class: "btn perigo empurra", onclick: () => { fechar(true); comDesfazer(`${original.nome || "Pessoa"} saiu da equipe.`, () => { state.pessoas = state.pessoas.filter((x) => x.id !== original.id); }); } }, icone("lixo"), "Excluir") : null,
         h("button", {
           class: "btn primario", onclick: () => {
-            if (!p.nome.trim()) return avisar("Escreva o nome.");
+            if (!p.nome.trim()) return erroNoCampo("#pes-nome", "Escreva o nome.");
             p.nome = p.nome.trim();
             fechar(true);
             mudou(() => { if (original) Object.assign(original, p); else state.pessoas.push(p); });
@@ -2471,7 +2588,7 @@
     const linha = (titulo, sub, onclick, ic, direita) => h("li", {}, h("button", { class: "linha", onclick },
       h("span", { class: "icone-linha", "aria-hidden": "true" }, icone(ic || "ajustes")), h("span", {}, h("span", { class: "titulo" }, titulo), h("br"), h("span", { class: "sub" }, sub)), direita || icone("dir")));
     const grupo = (titulo, acao, ...conteudo) => h("section", { class: "grupo-ajustes" },
-      h("div", { class: "cabecalho", style: "padding:0 4px;align-items:center;min-height:34px" }, h("h2", { style: "font-size:var(--t-md)" }, titulo), acao || null), ...conteudo);
+      h("div", { class: "cabecalho", style: "padding:0 var(--e-1);align-items:center;min-height:34px" }, h("h2", { class: "texto-md" }, titulo), acao || null), ...conteudo);
     const tagsTexto = (ts) => (ts || []).map((t) => E.nomeTag(state, t)).join(", ") || "livre";
     const tema = temaSalvo();
     const opcaoTema = (id, nome, ic) => h("button", { "aria-pressed": String(tema === id), onclick: () => { try { localStorage.setItem(CHAVE_TEMA, id); } catch (e) { /* sem armazenamento */ } aplicarTema(id); render(); } }, icone(ic), nome);
@@ -2480,7 +2597,7 @@
     return h("div", { class: "tela" },
       h("div", { class: "cabecalho" }, h("div", {}, h("h1", {}, "Ajustes"), h("p", { class: "muted" }, "Cultos, regras de escolha das músicas, equipe e preferências do app."))),
       h("div", { class: "ajustes-grade" },
-        h("div", { style: "display:grid;gap:var(--e-6)" },
+        h("div", { class: "pilha pilha-6" },
           grupo("Cultos da semana", h("button", { class: "btn texto mini", onclick: () => editarCulto(null) }, icone("mais"), "Culto"),
             h("ul", { class: "lista cartao" }, cultos.map((c) => {
               const lider = porId(state.cultos, c.acompanha);
@@ -2497,7 +2614,7 @@
               linha("Orientação pastoral", `Culto solene · Salmos e Hinos: ${tagsTexto(r.soleneTagsHinario)} · Louvores: ${tagsTexto(r.soleneTagsLouvor)}`, editarRegras, "livro"),
               linha("Repetição", `Uma música só volta depois de ${r.intervaloMusicaSemanas || 0} semana${r.intervaloMusicaSemanas === 1 ? "" : "s"}`, editarRegras, "atualizar"),
               linha("Etiquetas", `${state.tags.length} etiquetas para marcar as músicas`, () => editarLista("Etiquetas das músicas", state.tags, "Nova etiqueta", (id) => state.musicas.some((m) => (m.tags || []).includes(id)) || (r.soleneTagsHinario || []).includes(id) || (r.soleneTagsLouvor || []).includes(id)), "filtro")))),
-        h("div", { style: "display:grid;gap:var(--e-6)" },
+        h("div", { class: "pilha pilha-6" },
           grupo("Igreja e equipe", null,
             h("ul", { class: "lista cartao" },
               linha("Igreja e link da escala", `${state.igreja.nome || "—"}${state.igreja.link ? " · link cadastrado" : " · sem link"}`, editarIgreja, "igreja"),
@@ -2505,8 +2622,9 @@
               linha("Duas funções no mesmo culto", r.permitirAcumular ? "Permitido" : "Não permitido", editarRegras, "pessoa"))),
           grupo("Aparência", null,
             h("div", { class: "cartao secao" },
-              h("div", { class: "segmentado", role: "group", "aria-label": "Tema", style: "display:grid" }, opcaoTema("auto", "Automático", "auto"), opcaoTema("light", "Claro", "sol"), opcaoTema("dark", "Escuro", "lua")),
-              h("p", { class: "small muted" }, "Automático segue o tema do aparelho. Vale só neste aparelho."))),
+              h("div", { class: "segmentado pilha", role: "group", "aria-label": "Tema" }, opcaoTema("auto", "Automático", "auto"), opcaoTema("light", "Claro", "sol"), opcaoTema("dark", "Escuro", "lua")),
+              h("p", { class: "small muted" }, "Automático segue o tema do aparelho. Vale só neste aparelho."),
+              h("button", { class: "btn texto a-esquerda", onclick: () => irPara("guia") }, icone("lista"), "Guia visual: cores, textos e componentes"))),
           grupo("Dados e aplicativo", null,
             h("ul", { class: "lista cartao" },
               linha("Backup", armazem.db ? "Salvo no servidor. Baixe uma cópia de vez em quando." : "Salvo neste aparelho. Baixe uma cópia de vez em quando.", telaBackup, "baixar"),
@@ -2520,13 +2638,13 @@
     c.musicas = Object.assign({ hino: 0, louvor: 0 }, c.musicas);
     c.equipe = c.equipe || [];
     const SEMANAS = [[1, "1ª"], [2, "2ª"], [3, "3ª"], [4, "4ª"], [5, "5ª"], ["ultima", "Última"]];
-    const equipe = h("div", { style: "display:grid;gap:8px" });
+    const equipe = h("div", { class: "pilha pilha-2" });
     const desenharEquipe = () => equipe.replaceChildren(
-      ...c.equipe.map((q, i) => h("div", { style: "display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center" },
+      ...c.equipe.map((q, i) => h("div", { style: "display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:var(--e-2);align-items:center" },
         h("select", { "aria-label": "Função", onchange: (e) => { q.funcao = e.target.value; } }, state.funcoes.map((f) => h("option", { value: f.id, selected: f.id === q.funcao || null }, f.nome))),
         passo(Number(q.qtd) || 1, 1, 8, (v) => { q.qtd = v; }, `Quantidade de ${E.nomeFuncao(state, q.funcao)}`),
         h("button", { class: "btn icone", "aria-label": "Tirar função", onclick: () => { c.equipe.splice(i, 1); desenharEquipe(); } }, icone("fechar")))),
-      h("button", { class: "btn texto", style: "justify-self:start", onclick: () => { c.equipe.push({ funcao: (state.funcoes.find((f) => !c.equipe.some((q) => q.funcao === f.id)) || state.funcoes[0] || {}).id, qtd: 1 }); desenharEquipe(); } }, icone("mais"), "Função"));
+      h("button", { class: "btn texto a-esquerda", onclick: () => { c.equipe.push({ funcao: (state.funcoes.find((f) => !c.equipe.some((q) => q.funcao === f.id)) || state.funcoes[0] || {}).id, qtd: 1 }); desenharEquipe(); } }, icone("mais"), "Função"));
     desenharEquipe();
     const semanas = h("div", { class: "chips" });
     const desenharSemanas = () => semanas.replaceChildren(...SEMANAS.map(([v, n]) => h("button", {
@@ -2535,7 +2653,7 @@
     }, n)));
     desenharSemanas();
     const lideres = state.cultos.filter((x) => x.id !== c.id && !x.acompanha);
-    const proprio = h("div", { style: "display:grid;gap:16px", hidden: c.acompanha || null },
+    const proprio = h("div", { class: "pilha pilha-4", hidden: c.acompanha || null },
       h("div", { class: "campo" }, "Equipe", equipe),
       h("div", { class: "campo" }, "Músicas",
         h("div", { class: "interruptor" }, h("span", {}, "Salmos e Hinos"), passo(c.musicas.hino, 0, 6, (v) => { c.musicas.hino = v; }, "Salmos e Hinos")),
@@ -2545,7 +2663,7 @@
       sub: "Mudanças valem para as próximas escalas geradas.",
       corpo: [
         h("label", { class: "campo" }, "Nome", h("input", { type: "text", id: "cul-nome", value: c.nome, placeholder: "Ex.: Culto solene", oninput: (e) => { c.nome = e.target.value; } })),
-        h("div", { style: "display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px" },
+        h("div", { class: "grade-campos" },
           h("label", { class: "campo" }, "Dia", h("select", { id: "cul-dia", onchange: (e) => { c.diaSemana = Number(e.target.value); } }, E.DIAS.map((d, i) => h("option", { value: i, selected: Number(c.diaSemana) === i || null }, d)))),
           h("label", { class: "campo" }, "Hora", h("input", { type: "time", id: "cul-hora", value: c.hora || "", onchange: (e) => { c.hora = e.target.value; } }))),
         h("label", { class: "interruptor" }, h("span", {}, "Culto solene", h("small", {}, "Músicas seguem a orientação do pastor")), h("input", { type: "checkbox", role: "switch", checked: !!c.solene, onchange: (e) => { c.solene = e.target.checked; } })),
@@ -2559,7 +2677,7 @@
         h("label", { class: "interruptor" }, h("span", {}, "Culto ativo", h("small", {}, "Desligue para não entrar nas escalas")), h("input", { type: "checkbox", role: "switch", checked: c.ativo !== false, onchange: (e) => { c.ativo = e.target.checked; } })),
       ],
       rodape: (fechar) => [
-        original ? h("button", { class: "btn perigo", style: "margin-right:auto", onclick: () => {
+        original ? h("button", { class: "btn perigo empurra", onclick: () => {
           fechar(true);
           comDesfazer("Culto excluído. As escalas já feitas não mudam.", () => {
             state.cultos = state.cultos.filter((x) => x.id !== original.id);
@@ -2568,10 +2686,10 @@
         } }, icone("lixo"), "Excluir") : null,
         h("button", {
           class: "btn primario", onclick: () => {
-            if (!c.nome.trim()) return avisar("Escreva o nome do culto.");
+            if (!c.nome.trim()) return erroNoCampo("#cul-nome", "Escreva o nome do culto.");
             c.nome = c.nome.trim();
             const lider = porId(state.cultos, c.acompanha);
-            if (lider && Number(lider.diaSemana) !== Number(c.diaSemana)) return avisar("Para repetir outro culto, os dois precisam ser no mesmo dia da semana.");
+            if (lider && Number(lider.diaSemana) !== Number(c.diaSemana)) return erroNoCampo("#cul-acomp", "Para repetir outro culto, os dois precisam ser no mesmo dia da semana.");
             fechar(true);
             mudou(() => { if (original) Object.assign(original, c); else state.cultos.push(c); });
             avisar("Culto salvo. Vale para as próximas escalas.");
@@ -2603,16 +2721,16 @@
 
   function editarLista(titulo, lista, novoNome, emUso) {
     const copia = clone(lista);
-    const caixa = h("div", { style: "display:grid;gap:8px" });
+    const caixa = h("div", { class: "pilha pilha-2" });
     const desenhar = () => caixa.replaceChildren(
-      ...copia.map((x, i) => h("div", { style: "display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px" },
+      ...copia.map((x, i) => h("div", { style: "display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--e-2)" },
         h("input", { type: "text", value: x.nome, "aria-label": titulo, oninput: (e) => { x.nome = e.target.value; } }),
         h("button", { class: "btn icone", "aria-label": `Tirar ${x.nome}`, onclick: () => {
           if (lista.some((y) => y.id === x.id) && emUso(x.id)) return avisar(`"${x.nome}" está em uso e não pode sair.`);
           copia.splice(i, 1);
           desenhar();
         } }, icone("fechar")))),
-      h("button", { class: "btn texto", style: "justify-self:start", onclick: () => {
+      h("button", { class: "btn texto a-esquerda", onclick: () => {
         const base = E.normalizar(novoNome).replace(/\s+/g, "-");
         let id = base;
         let n = 2;
@@ -2688,13 +2806,13 @@
       sub: armazem.db ? "Os dados ficam no servidor da igreja, iguais no celular e no computador." : "Os dados ficam neste aparelho. Se limpar o navegador, eles somem: guarde uma cópia.",
       corpo: [
         h("p", { class: "small muted num" }, `${n("pessoas")} pessoas · ${n("musicas")} músicas · ${n("cultos")} cultos · ${n("escalas")} escalas`),
-        h("div", { style: "display:grid;grid-template-columns:1fr 1fr;gap:8px" },
+        h("div", { style: "display:grid;grid-template-columns:1fr 1fr;gap:var(--e-2)" },
           h("button", { class: "btn tonal", onclick: baixarBackup }, icone("baixar"), "Baixar"),
           h("button", { class: "btn", onclick: () => copiar(JSON.stringify(state)) }, icone("copiar"), "Copiar dados")),
         h("div", { class: "campo" }, "Restaurar um backup", h("span", { class: "ajuda" }, "Substitui tudo; dá para desfazer logo em seguida."), arquivo, area,
-          h("button", { class: "btn", style: "justify-self:start", onclick: () => (area.value.trim() ? restaurar(area.value) : avisar("Cole o backup no campo.")) }, "Restaurar do texto")),
+          h("button", { class: "btn a-esquerda", onclick: () => (area.value.trim() ? restaurar(area.value) : avisar("Cole o backup no campo.")) }, "Restaurar do texto")),
         h("div", { class: "campo" }, "Recomeçar",
-          h("button", { class: "btn perigo", style: "justify-self:start", onclick: () => { fecharAtual(true); comDesfazer("Dados voltaram ao início.", () => { state = estadoInicial(); ui.escalaId = null; garantirEscalaAtual(); }); } }, "Voltar aos dados iniciais")),
+          h("button", { class: "btn perigo a-esquerda", onclick: () => { fecharAtual(true); comDesfazer("Dados voltaram ao início.", () => { state = estadoInicial(); ui.escalaId = null; garantirEscalaAtual(); }); } }, "Voltar aos dados iniciais")),
       ],
       foco: ".btn.tonal",
     });

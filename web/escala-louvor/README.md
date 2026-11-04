@@ -64,12 +64,46 @@ não tem dados. A publicação monta a pasta `escalas/` do site com `scripts/mon
 - O que foi escolhido à mão fica fixado e não muda ao sortear de novo. Excluir e sortear de novo podem ser desfeitos
   pelo aviso que aparece no rodapé.
 
+## Design system
+
+Tudo o que é visual sai dos **tokens** no começo de `index.html` (`:root`, com a versão escura logo abaixo). O
+**Guia visual** do app (`#guia`) mostra os tokens e os componentes desenhados com o CSS de verdade, nos dois temas.
+
+| Família | Tokens | Regra |
+|---|---|---|
+| Cores da marca | `--navy`, `--navy-2`, `--azul`, `--azul-forte`, `--azul-suave`, `--azul-linha`, `--dourado`, `--dourado-suave`, `--dourado-tinta` | Dourado é assinatura: item ativo, culto solene, marca. |
+| Superfícies e texto | `--bg`, `--surface(-2/-3)`, `--line(-2)`, `--ink(-2)`, `--muted` | — |
+| Estados | `--ok`, `--alerta`, `--erro`, `--espera` (cada um com `-suave`) | Vermelho/âmbar só para o que precisa de alguém; vaga aguardando é `--espera` (cinza). |
+| Sobre cor | `--sobre-cor`, `--sobre-cor-suave`, `--ativo`, `--branco`, `--sobre-navy`, `--zap(-forte)`, `--lateral-*` | Texto em cima de fundo colorido; o tema escuro troca sozinho. |
+| Paletas | `--funcao-<instrumento>(-tinta)`, `--avatar-1…6(-tinta)` | Instrumentos usam `data-funcao`; avatares, `data-cor`. |
+| Tipografia | `--t-3xs` 10 · `--t-2xs` 11 · `--t-xs` 12 · `--t-sm` 13 · `--t-md` 15 · `--t-lg` 17 · `--t-xl` 20 · `--t-2xl` 24 · `--t-3xl` 28 · `--t-campo` 16 | Campos sempre `--t-campo` (o iPhone não dá zoom). |
+| Espaçamento | `--e-1` 4 · `--e-2` 8 · `--e-3` 12 · `--e-4` 16 · `--e-5` 20 · `--e-6` 24 · `--e-8` 32; meios-passos `--e-05` 2 · `--e-15` 6 · `--e-25` 10 · `--e-35` 14 | Meios-passos só dentro de componentes pequenos. |
+| Cantos | `--r-xs` 2 · `--r-sm` 8 · `--r-md` 12 · `--r-lg` 16 · `--r-xl` 20 · `--r-full` | Círculos com `50%`. |
+| Sombras | `--sombra-1` cartão · `--sombra-2` destaque · `--sombra-3` painel e aviso | — |
+| Toque | `--toque-sm` 40 · `--toque` 44 · `--toque-lg` 52 | 44 é o padrão; 40 só em listas densas e dentro de cartões. |
+| Camadas | `--z-fixo` 30 · `--z-painel` 50 · `--z-aviso` 60 | — |
+| Movimento | `--rapido`, `--curva` | Tudo respeita "reduzir movimento". |
+
+**Componentes** (nomes em português, variante como segunda classe): `.btn` (`.primario`, `.tonal`, `.texto`,
+`.perigo`, `.zap`; modificadores `.mini`, `.icone`, `.largo`), `.selo` (`.ok`, `.alerta`, `.erro`, `.neutro`, `.info`,
+`.solene`, `.funcao-selo`), `.chip`, `.segmentado`, `.pessoa` (vaga: `data-nivel` = `erro`, `alerta` ou `espera`;
+`.vazia`; `.leitura`), `.musica`, `.cartao`, `.culto` (`.resumido`), `.faixa` (`.alerta`, `.erro`, `.info`), `.campo`
+(erro com `aria-invalid` + `.erro-campo`, via `erroNoCampo()` em `app.js`), `.interruptor`, `.estado-vazio`,
+`.avatar`, `.instr`, painel (`painel()`) e aviso de rodapé (`avisar()`).
+
+**Utilitários** para o layout que se repete, no lugar de `style` no código: `.pilha` (+ `.pilha-1/2/3/4/6`),
+`.grade-campos`, `.linha-icone` (`.em-linha`), `.junto`, `.a-esquerda`, `.empurra`, `.cresce`, `.centro`,
+`.encolhe`, `.recorte`, `.medida`, `.sem-recuo`, `.sem-recuo-topo`, `.sem-borda`, `.recuo-*`, `.selo-grande`,
+`.texto-md/lg/xl`, `.texto-ok`, `.forte`. `style` no código fica só para valores calculados (por exemplo a largura
+de uma barra de progresso) e casos únicos.
+
 ## Visual e usabilidade
 
 - **Identidade**: a logomarca da Escala do Louvor (`marca/`), azul-marinho `#0B2345`, azul de ação `#1E5A96` e o dourado
   `#F5BE22` como assinatura (item ativo, culto solene, indicadores). Títulos em Plus Jakarta Sans e texto em Inter,
   as duas variáveis e servidas pelo próprio app (`fontes/`, licença OFL). Ícones Lucide. As cores, a tipografia, os
   espaçamentos, os raios e as sombras são tokens no começo de `index.html`, com versão escura.
+- **Design system**: veja a seção abaixo e o **Guia visual** do app (`#guia`, link em Ajustes › Aparência).
 - **Celular**: barra superior compacta com a marca e o estado do salvamento; barra inferior com Início, Escala,
   Agenda, Músicas e Equipe; edição em painéis que sobem da base; respeito às áreas seguras.
 - **Computador** (a partir de 960 px): menu lateral azul-marinho, conteúdo em grade (painel inicial em três colunas,

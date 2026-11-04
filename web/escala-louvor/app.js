@@ -691,6 +691,13 @@
     return [...ids].map((id) => porId(state.pessoas, id)).filter(Boolean);
   }
 
+  /** Pendências da escala; na que está em andamento, só as dos dias que ainda vão acontecer. */
+  function avisosQueVem(escala) {
+    const todos = E.validarEscala(state, escala);
+    if (E.escalaCumprida(escala, hoje())) return todos;
+    return todos.filter((a) => escala.cultos[a.ci] && escala.cultos[a.ci].data >= hoje());
+  }
+
   function vigencia(escala) {
     if (escala.inicio <= hoje() && escala.fim >= hoje()) return "Em vigor";
     return escala.inicio > hoje() ? "Próxima escala" : "Cumprida";
@@ -725,7 +732,7 @@
           h("p", {}, "Escolha o período e o app distribui a equipe e as músicas de cada culto, seguindo a orientação do pastor para os cultos solenes."),
           h("button", { class: "btn primario", onclick: novaEscala }, icone("mais"), "Criar a primeira escala")));
     }
-    const avisos = E.validarEscala(state, escala).sort((a, b) => (a.nivel === "erro" ? 0 : 1) - (b.nivel === "erro" ? 0 : 1));
+    const avisos = avisosQueVem(escala).sort((a, b) => (a.nivel === "erro" ? 0 : 1) - (b.nivel === "erro" ? 0 : 1));
     const erros = avisos.filter((a) => a.nivel === "erro").length;
     const integrantes = integrantesDe(escala);
     const cards = [cartaoProximo(), cartaoVigente(escala, erros, integrantes), cartaoPendencias(escala, avisos), cartaoDisponibilidade(), cartaoRepertorio()];
@@ -859,7 +866,7 @@
           h("p", {}, "Escolha o período e a ferramenta distribui a equipe e as músicas de cada culto, seguindo a orientação do pastor para os cultos solenes."),
           h("button", { class: "btn primario", onclick: novaEscala }, icone("mais"), "Criar escala")));
     }
-    const avisos = E.validarEscala(state, escala);
+    const avisos = avisosQueVem(escala);
     const porCampo = {};
     for (const a of avisos) {
       const k = `${a.ci}|${a.campo}`;
@@ -891,6 +898,9 @@
       if (!d) dias.push((d = { data: c.data, cultos: [] }));
       d.cultos.push(ci);
     });
+    // Na escala em andamento, os dias já cumpridos ficam guardados (dá para ver tocando no botão).
+    const passados = cumprida ? [] : dias.filter((d) => d.data < hoje());
+    const visiveis = ui.verPassados ? dias : dias.filter((d) => !passados.includes(d));
 
     return h("div", { class: "tela" },
       h("div", { class: "cabecalho" }, h("div", {}, h("h1", {}, "Escala"), h("p", { class: "muted" }, "Toque numa pessoa ou música para trocar; use + Pessoa e + Música para acrescentar.")),
@@ -911,10 +921,14 @@
         h("div", { class: "resumo" },
           h("button", { class: "btn zap", onclick: () => enviarWhatsApp(escala) }, icone("whatsapp"), "Enviar no WhatsApp"),
           cumprida ? null : estado)),
-      h("div", { class: "dias" }, dias.map((d) => {
+      passados.length ? h("button", { class: "btn texto dias-passados", "aria-expanded": String(!!ui.verPassados), onclick: () => { ui.verPassados = !ui.verPassados; render(); } },
+        icone("arquivo"), ui.verPassados ? "Ocultar os dias que já passaram" : `${passados.length} ${passados.length === 1 ? "dia já cumprido" : "dias já cumpridos"} · ver`) : null,
+      visiveis.length ? null : h("div", { class: "vazio" }, h("p", {}, "Todos os dias desta escala já passaram.")),
+      h("div", { class: "dias" }, visiveis.map((d) => {
         const [semana, resto] = E.formatarData(d.data, "longa").split(", ");
-        return h("section", { class: "dia", "aria-label": E.formatarData(d.data, "longa") },
-          h("h2", {}, h("span", {}, h("b", {}, semana), resto ? `, ${resto}` : ""), d.data === hoje() ? h("span", { class: "selo azul" }, "Hoje") : null),
+        const jaFoi = passados.includes(d);
+        return h("section", { class: `dia${jaFoi ? " passado" : ""}`, "aria-label": E.formatarData(d.data, "longa") },
+          h("h2", {}, h("span", {}, h("b", {}, semana), resto ? `, ${resto}` : ""), d.data === hoje() ? h("span", { class: "selo azul" }, "Hoje") : jaFoi ? h("span", { class: "selo neutro" }, "Cumprido") : null),
           h("div", { class: `cultos-do-dia${d.cultos.length > 1 ? " dois" : ""}` }, d.cultos.map((ci) => cartaoCulto(escala, ci, porCampo))));
       })));
   }

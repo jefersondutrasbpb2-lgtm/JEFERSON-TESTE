@@ -661,7 +661,18 @@
       fecharAtual = null;
       if (!semFoco && anterior && anterior.isConnected) anterior.focus();
     };
-    const tecla = (e) => { if (e.key === "Escape") fechar(); };
+    // Esc fecha; Tab e Shift+Tab ficam dentro do painel enquanto ele está aberto.
+    const tecla = (e) => {
+      if (e.key === "Escape") return fechar();
+      if (e.key !== "Tab") return;
+      const focaveis = [...caixa.querySelectorAll("button, a[href], input, select, textarea, [tabindex]:not([tabindex='-1'])")].filter((x) => !x.disabled && x.offsetParent !== null);
+      if (!focaveis.length) return;
+      const primeiro = focaveis[0];
+      const ultimo = focaveis[focaveis.length - 1];
+      if (!caixa.contains(document.activeElement)) { e.preventDefault(); primeiro.focus(); }
+      else if (e.shiftKey && document.activeElement === primeiro) { e.preventDefault(); ultimo.focus(); }
+      else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primeiro.focus(); }
+    };
     document.addEventListener("keydown", tecla);
     const caixa = h("section", { class: "painel", role: "dialog", "aria-modal": "true", "aria-labelledby": "painel-titulo" },
       h("div", {},
@@ -829,7 +840,7 @@
         h("span", { class: `selo ${escala.status === "confirmada" ? "ok" : "neutro"}` }, escala.status === "confirmada" ? "Confirmada" : "Rascunho")),
       h("div", { class: "secao junto" },
         h("b", { style: "font-family:var(--f-titulo);font-size:var(--t-xl);letter-spacing:-0.02em" }, E.formatarPeriodo(escala.inicio, escala.fim)),
-        integrantes.length ? h("div", { class: "avatares", "aria-label": `${integrantes.length} integrantes` }, integrantes.slice(0, 8).map((p) => avatar(p)),
+        integrantes.length ? h("div", { class: "avatares", role: "img", "aria-label": `${integrantes.length} integrantes: ${integrantes.map((p) => p.nome).join(", ")}` }, integrantes.slice(0, 8).map((p) => avatar(p)),
           integrantes.length > 8 ? h("span", { class: "small muted", style: "margin-left:var(--e-2)" }, `+${integrantes.length - 8}`) : null) : null),
       h("div", { class: "dados", style: "border-radius:0" },
         h("div", {}, h("b", {}, String(escala.cultos.length)), h("span", {}, escala.cultos.length === 1 ? "culto" : "cultos")),

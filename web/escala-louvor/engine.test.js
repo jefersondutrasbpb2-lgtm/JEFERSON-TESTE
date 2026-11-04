@@ -306,7 +306,9 @@ test("disponibilidade: o sorteio só põe quem marcou que pode no dia (regra pad
   assert.deepEqual(ter.equipe.map((x) => x.pessoaId), ["germano", null, null]);
   // Em nenhum culto entra alguém que não marcou "posso" naquele dia.
   for (const c of esc.cultos) for (const v of c.equipe) if (v.pessoaId) assert.equal(E.disponivelEm(s, v.pessoaId, c.data), "sim", `${v.pessoaId} em ${c.data}`);
-  assert.ok(E.validarEscala(s, esc).some((a) => a.nivel === "erro" && /ninguém escalado/.test(a.msg)));
+  // Vaga vazia à espera de quem marque "posso" não conta como erro.
+  assert.ok(E.validarEscala(s, esc).some((a) => a.nivel === "espera" && /aguardando/.test(a.msg)));
+  assert.ok(!E.validarEscala(s, esc).some((a) => /ninguém escalado/.test(a.msg)));
   // Na lista para escolher à mão, quem não marcou aparece com o motivo.
   const cand = E.candidatosPessoa(s, esc, esc.cultos.indexOf(ter), 1);
   assert.equal(cand.find((c) => c.pessoa.id === "alexandre").bloqueio, "não marcou que pode");

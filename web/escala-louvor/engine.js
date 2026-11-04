@@ -911,7 +911,8 @@
       culto.equipe.forEach((s, si) => {
         const campo = `e:${si}`;
         const funcao = nomeFuncao(state, s.funcao);
-        if (!s.pessoaId) return push("erro", campo, `${funcao}: ninguém escalado`);
+        // Com a regra "só quem pode", a vaga vazia está esperando alguém marcar "posso": não é um erro.
+        if (!s.pessoaId) return soQuemPode(state) ? push("espera", campo, `${funcao}: aguardando quem marque "posso"`) : push("erro", campo, `${funcao}: ninguém escalado`);
         const p = porId(state.pessoas, s.pessoaId);
         if (!p) return push("erro", campo, `${funcao}: pessoa removida da equipe`);
         const disp = disponivelEm(state, p.id, culto.data);

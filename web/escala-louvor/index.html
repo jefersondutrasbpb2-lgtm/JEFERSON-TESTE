@@ -192,6 +192,7 @@
     .lateral .logo small { display: block; font-size: 0.6875rem; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 600; color: #8fa6c6; }
     .lateral .logo .traco { display: block; width: 22px; height: 3px; border-radius: 2px; background: var(--dourado); margin: 5px 0 4px; }
     .lateral nav { display: grid; gap: 2px; }
+    body.so-lista .lateral nav { display: none; } /* lista de louvores aberta pelo link: só a marca */
     .lateral nav button {
       display: flex; align-items: center; gap: 12px; min-height: 42px; padding: 0 12px; border: 0; border-radius: var(--r-md); background: none;
       color: #b7c6dc; font-size: 0.9rem; font-weight: 500; text-align: left; position: relative; transition: background var(--rapido), color var(--rapido);
@@ -340,6 +341,7 @@
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .avatar[data-cor] { background: var(--surface-3); color: var(--ink); } }
   .marcador { min-width: 48px; height: 40px; padding: 0 6px; border-radius: var(--r-md); display: grid; place-items: center; background: var(--surface-2); color: var(--ink-2); font-weight: 700; font-size: var(--t-xs); font-variant-numeric: tabular-nums; box-shadow: inset 0 0 0 1px var(--line); }
   .marcador.louvor { background: var(--azul-suave); color: var(--azul); box-shadow: none; }
+  .marcador.tocado { background: var(--ok-suave); color: var(--ok); }
   .marcador.hino { background: var(--dourado-suave); color: var(--dourado-tinta); box-shadow: none; }
 
   .vazio { border: 1px dashed var(--line-2); border-radius: var(--r-lg); padding: 36px 20px; display: grid; gap: var(--e-3); justify-items: center; text-align: center; color: var(--muted); background: var(--surface); }

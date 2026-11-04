@@ -22,6 +22,7 @@
     { id: "musicas", nome: "Músicas", icone: "musica" },
     { id: "equipe", nome: "Equipe", icone: "pessoas" },
     { id: "ajustes", nome: "Ajustes", icone: "ajustes" },
+    { id: "louvores", nome: "Louvores", icone: "musica" }, // lista para compartilhar (link sem os menus)
   ];
   const NAV_LATERAL = ["inicio", "escala", "agenda", "disponibilidade", "musicas", "equipe"];
   const NAV_CELULAR = ["inicio", "escala", "agenda", "musicas", "equipe"]; // disponibilidade: botões no Início e na Agenda
@@ -31,7 +32,15 @@
   const ui = {
     tela: "inicio", ultimaTela: null, escalaId: null, ordemDe: {}, busca: "", filtro: "todas", coordena: true, resposta: null,
     agendaMes: null, agendaDia: null, agendaModo: "mes", somenteLeitura: false, instalar: null, tema: "",
+    louvoresDias: 30, louvoresFiltro: "todos", louvoresBusca: "",
   };
+
+  /** Tela e opções do endereço: "#louvores?dias=60" → { tela: "louvores", dias: 60 }. */
+  function lerHash() {
+    const [tela, consulta] = location.hash.slice(1).split("?");
+    const dias = Number(new URLSearchParams(consulta || "").get("dias"));
+    return { tela, dias: PERIODOS_LOUVORES.some((p) => p.dias === dias) ? dias : 0 };
+  }
 
   /* ------------------------------------------------------------ util */
 
@@ -437,9 +446,10 @@
     if (armazem.db && armazem.user) {
       try { ui.coordena = await armazem.user.canEdit(); } catch (e) { ui.coordena = false; }
     }
-    const hash = location.hash.slice(1);
+    const { tela: hash, dias } = lerHash();
     if (TELAS.some((t) => t.id === hash)) ui.tela = hash;
-    if (!ui.coordena || hash === "disponibilidade") ui.tela = "disponibilidade";
+    if (dias) ui.louvoresDias = dias;
+    if ((!ui.coordena && hash !== "louvores") || hash === "disponibilidade") ui.tela = "disponibilidade";
     garantirEscalaAtual();
     if (ui.somenteLeitura) mostrarSalvo("offline", "Sem conexão");
     else if (ui.coordena) salvar(); // grava a migração (ou os dados iniciais) e leva para o servidor o que estava só no aparelho
@@ -456,10 +466,12 @@
     addEventListener("scroll", () => topo.classList.toggle("rolou", window.scrollY > 4), { passive: true });
     // Links internos (#escala, logo → #inicio) e voltar do navegador trocam de tela.
     addEventListener("hashchange", () => {
-      const alvo = location.hash.slice(1);
-      if (alvo !== ui.tela && (TELAS.some((t) => t.id === alvo) || alvo === "disponibilidade")) {
+      const { tela: alvo, dias } = lerHash();
+      const mudouDias = alvo === "louvores" && dias && dias !== ui.louvoresDias;
+      if ((alvo !== ui.tela || mudouDias) && TELAS.some((t) => t.id === alvo)) {
         if (fecharAtual) fecharAtual(true);
         ui.tela = alvo;
+        if (dias) ui.louvoresDias = dias;
         render();
       }
     });
@@ -528,13 +540,14 @@
 
   function irPara(tela) {
     ui.tela = tela;
-    try { history.replaceState(null, "", `#${tela}`); } catch (e) { /* sem histórico */ }
+    try { history.replaceState(null, "", tela === "louvores" ? `#louvores?dias=${ui.louvoresDias}` : `#${tela}`); } catch (e) { /* sem histórico */ }
     render();
   }
 
   function render() {
-    const semNav = ui.tela === "disponibilidade";
+    const semNav = ui.tela === "disponibilidade" || ui.tela === "louvores";
     document.body.classList.toggle("sem-nav", semNav);
+    document.body.classList.toggle("so-lista", ui.tela === "louvores");
     const inferior = document.getElementById("nav-inferior");
     inferior.hidden = semNav;
     const atual = (id) => (ui.tela === id ? "page" : null);
@@ -547,7 +560,7 @@
     document.getElementById("hoje-lateral").textContent = E.formatarData(hoje(), "longa");
     document.getElementById("topo-titulo").replaceChildren(h("b", {}, nomeTela(ui.tela)), igreja ? ` · ${igreja}` : "");
     document.title = `${nomeTela(ui.tela)} · Escala do Louvor`;
-    const telas = { inicio: telaInicio, escala: telaEscala, agenda: telaAgenda, disponibilidade: telaDisponibilidade, musicas: telaMusicas, equipe: telaEquipe, ajustes: telaAjustes };
+    const telas = { inicio: telaInicio, escala: telaEscala, agenda: telaAgenda, disponibilidade: telaDisponibilidade, musicas: telaMusicas, equipe: telaEquipe, ajustes: telaAjustes, louvores: telaLouvores };
     lembrarAberta();
     const novaTela = ui.ultimaTela !== ui.tela;
     ui.ultimaTela = ui.tela;
@@ -1843,6 +1856,7 @@
       h("div", { class: "cabecalho" },
         h("div", {}, h("h1", {}, "Músicas"), h("p", { class: "muted", style: "max-width:70ch" }, `No culto solene entram Salmos e Hinos marcados como ${nomes(r.soleneTagsHinario)} e louvores marcados como ${nomes(r.soleneTagsLouvor)}.`)),
         h("div", { class: "acoes" },
+          h("button", { class: "btn", onclick: compartilharLouvores }, icone("compartilhar"), "Compartilhar louvores"),
           h("button", { class: "btn", onclick: importarMusicas }, icone("importar"), "Importar"),
           h("button", { class: "btn primario", onclick: () => editarMusica(null) }, icone("mais"), "Música"))),
       h("div", { class: "busca" }, icone("busca"), h("input", { type: "search", id: "busca-musicas", placeholder: "Buscar por título ou número", "aria-label": "Buscar músicas", value: ui.busca, oninput: (e) => { ui.busca = e.target.value; desenhar(); } })),
@@ -1861,6 +1875,114 @@
                 t.subtemas.map((st) => { const k = conta(st.id); return k ? opcao(st.id, st.nome, k) : null; }));
             })))),
       lista);
+  }
+
+  /* ------------------------------------------------- lista de louvores */
+
+  const PERIODOS_LOUVORES = [{ dias: 30, nome: "Último mês" }, { dias: 60, nome: "2 meses" }, { dias: 90, nome: "3 meses" }];
+  const nomePeriodo = (dias) => ({ 30: "no último mês", 60: "nos últimos 2 meses", 90: "nos últimos 3 meses" }[dias] || `nos últimos ${dias} dias`);
+
+  function linkLouvores(dias) {
+    const base = (state.igreja && state.igreja.link) || `${location.origin}${location.pathname}`;
+    return `${base.replace(/\/?$/, "/").replace(/\/index\.html\/$/, "/")}#louvores?dias=${dias}`;
+  }
+
+  /** Abre o compartilhamento do celular ou o WhatsApp; sem nenhum dos dois, copia. */
+  async function compartilharTexto(texto, alvo) {
+    if (navigator.share && celular()) {
+      try { await navigator.share({ text: texto }); } catch (e) { if (e && e.name !== "AbortError") copiar(texto, alvo); }
+      return;
+    }
+    const janela = window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, "_blank", "noopener");
+    if (!janela) copiar(texto, alvo);
+  }
+
+  /** Lista dos louvores (sem os Salmos e Hinos) para quem não usa o app: aberta pelo link, sem os menus. */
+  function telaLouvores() {
+    const dias = ui.louvoresDias;
+    const lista = E.listaLouvores(state, hoje(), dias);
+    const tocados = lista.filter((x) => x.tocadas.length);
+    const igreja = (state.igreja && state.igreja.nome) || "";
+    const FILTROS = [
+      { id: "todos", nome: "Todos", fn: () => true },
+      { id: "tocados", nome: "Tocados", fn: (x) => x.tocadas.length > 0 },
+      { id: "nao", nome: "Não tocados", fn: (x) => !x.tocadas.length },
+    ];
+    const caixa = h("div", { class: "cartao", style: "overflow:hidden" });
+    const contagem = h("p", { class: "small muted", "aria-live": "polite" });
+    const desenhar = () => {
+      const f = FILTROS.find((x) => x.id === ui.louvoresFiltro) || FILTROS[0];
+      const q = E.normalizar(ui.louvoresBusca);
+      const itens = lista.filter(f.fn).filter((x) => !q || E.normalizar(`${x.musica.titulo} ${x.musica.autor}`).includes(q));
+      contagem.textContent = `${itens.length} de ${lista.length} louvores`;
+      caixa.replaceChildren(itens.length ? h("ul", { class: "lista" }, itens.map((x) => {
+        const m = x.musica;
+        const n = x.tocadas.length;
+        const quando = n
+          ? `tocado ${n > 1 ? `${n} vezes · ` : "em "}${n > 1 ? `última em ${E.formatarData(x.tocadas[n - 1], "curta")}` : E.formatarData(x.tocadas[0], "curta")}`
+          : x.ultima ? `última vez em ${E.formatarData(x.ultima, "curta")}` : "sem registro de quando foi tocado";
+        return h("li", {}, h("div", { class: "linha" },
+          h("span", { class: `marcador louvor${n ? " tocado" : ""}`, "aria-hidden": "true" }, icone(n ? "ok" : "musica")),
+          h("span", {},
+            h("span", { class: "titulo" }, m.titulo), h("br"),
+            h("span", { class: "sub" }, [m.autor, m.tom ? `tom ${m.tom}` : "", quando, x.proxima ? `programado para ${E.formatarData(x.proxima, "curta")}` : ""].filter(Boolean).join(" · "))),
+          h("span", { style: "display:flex;gap:6px;align-items:center" },
+            n ? h("span", { class: "selo ok" }, "Tocado") : null,
+            m.link ? h("a", { class: "btn icone", href: m.link, target: "_blank", rel: "noopener", "aria-label": `Ouvir ${m.titulo} no YouTube` }, icone("play")) : null)));
+      })) : h("div", { class: "vazio", style: "border:0" }, h("p", {}, lista.length ? "Nenhum louvor com essa busca ou filtro." : "Nenhum louvor no repertório ainda.")));
+    };
+    desenhar();
+    const mudarPeriodo = (d) => {
+      ui.louvoresDias = d;
+      try { history.replaceState(null, "", `#louvores?dias=${d}`); } catch (e) { /* sem histórico */ }
+      render();
+    };
+    const voltar = ui.coordena ? h("button", { class: "btn texto", onclick: () => irPara("musicas") }, "Voltar ao app") : null;
+    return h("div", { class: "tela" },
+      h("div", { class: "cabecalho" },
+        h("div", {}, h("h1", {}, "Louvores"), h("p", { class: "muted" }, `${igreja ? `${igreja} · ` : ""}${lista.length} louvores · ${tocados.length} tocados ${nomePeriodo(dias)}`)),
+        h("div", { class: "acoes" }, h("button", { class: "btn", onclick: () => compartilharLouvores() }, icone("compartilhar"), "Compartilhar"), voltar)),
+      h("div", { class: "segmentado", role: "group", "aria-label": "Período das marcações", style: "display:grid" },
+        PERIODOS_LOUVORES.map((p) => h("button", { "aria-pressed": String(p.dias === dias), onclick: () => mudarPeriodo(p.dias) }, p.nome))),
+      h("div", { class: "busca" }, icone("busca"), h("input", { type: "search", id: "busca-louvores", placeholder: "Buscar louvor ou autor", "aria-label": "Buscar louvores", value: ui.louvoresBusca, oninput: (e) => { ui.louvoresBusca = e.target.value; desenhar(); } })),
+      h("div", { class: "rolagem-x", role: "group", "aria-label": "Filtrar" }, FILTROS.map((f) => h("button", { class: "chip", "aria-pressed": String(ui.louvoresFiltro === f.id), onclick: () => { ui.louvoresFiltro = f.id; render(); } }, f.nome, h("span", { class: "conta" }, String(lista.filter(f.fn).length))))),
+      h("div", { class: "contador" }, contagem),
+      caixa,
+      h("p", { class: "small muted" }, `✓ Tocado = entrou em algum culto ${nomePeriodo(dias)} (${E.formatarData(E.somarDias(hoje(), -dias + 1), "curta")} a ${E.formatarData(hoje(), "curta")}). Os Salmos e Hinos não entram nesta lista.`));
+  }
+
+  /** Link (ou texto) da lista de louvores para mandar a quem não usa o app. */
+  function compartilharLouvores() {
+    let dias = ui.louvoresDias;
+    const campo = h("input", { type: "text", id: "link-louvores", readonly: true, "aria-label": "Link da lista de louvores", onfocus: (e) => e.target.select() });
+    const grupo = h("div", { class: "segmentado", role: "group", "aria-label": "Marcar os tocados", style: "display:grid" });
+    const desenhar = () => {
+      campo.value = linkLouvores(dias);
+      grupo.replaceChildren(...PERIODOS_LOUVORES.map((p) => h("button", { "aria-pressed": String(p.dias === dias), onclick: () => { dias = p.dias; desenhar(); } }, p.nome)));
+    };
+    desenhar();
+    const mensagem = () => [
+      `*Louvores do ministério${state.igreja && state.igreja.nome ? ` · ${state.igreja.nome}` : ""}*`,
+      `A lista dos nossos louvores, com os tocados ${nomePeriodo(dias)} marcados:`,
+      linkLouvores(dias),
+    ].join("\n");
+    painel({
+      titulo: "Compartilhar louvores",
+      sub: "Só os louvores (sem os Salmos e Hinos). Quem abrir o link vê a lista, sem os menus do app.",
+      corpo: [
+        h("div", { class: "campo" }, "Marcar os tocados", grupo),
+        h("label", { class: "campo" }, "Link da lista", campo),
+        h("div", { class: "acoes" },
+          h("button", { class: "btn", onclick: () => copiar(linkLouvores(dias), campo) }, icone("copiar"), "Copiar link"),
+          h("button", { class: "btn", onclick: () => { fecharAtual(true); ui.louvoresDias = dias; irPara("louvores"); } }, icone("lista"), "Abrir a lista")),
+        h("p", { class: "small muted" }, "Prefere mandar a lista escrita? \"Enviar a lista em texto\" manda todos os louvores, com ✅ nos tocados."),
+      ],
+      rodape: () => [
+        h("button", { class: "btn", onclick: () => compartilharTexto(E.textoListaLouvores(state, hoje(), dias, { link: linkLouvores(dias) }), campo) }, icone("lista"), "Enviar a lista em texto"),
+        h("button", { class: "btn zap", onclick: () => compartilharTexto(mensagem(), campo) }, icone("whatsapp"), "Enviar o link"),
+      ],
+      foco: "footer .btn.zap",
+    });
   }
 
   /* ------------------------------------------------------------ letras */

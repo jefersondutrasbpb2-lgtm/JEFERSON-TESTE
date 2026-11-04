@@ -31,7 +31,7 @@
   let state = null;
   const ui = {
     tela: "inicio", ultimaTela: null, escalaId: null, ordemDe: {}, busca: "", filtro: "todas", coordena: true, resposta: null,
-    agendaMes: null, agendaDia: null, agendaModo: "mes", somenteLeitura: false, instalar: null, tema: "",
+    agendaMes: null, agendaDia: null, agendaModo: "mes", abertos: new Set(), fechados: new Set(), somenteLeitura: false, instalar: null, tema: "",
     louvoresDias: 30, louvoresFiltro: "todos", louvoresBusca: "",
   };
 
@@ -691,6 +691,18 @@
     return [...ids].map((id) => porId(state.pessoas, id)).filter(Boolean);
   }
 
+  /**
+   * Um número só para "a resolver" (erros e avisos) em todas as telas; as vagas que esperam alguém
+   * marcar "posso" contam à parte, em tom neutro.
+   */
+  function contarAvisos(avisos) {
+    const resolver = avisos.filter((a) => a.nivel === "erro" || a.nivel === "alerta");
+    return { resolver, temErro: resolver.some((a) => a.nivel === "erro"), espera: avisos.filter((a) => a.nivel === "espera") };
+  }
+  const ORDEM_NIVEL = { erro: 0, alerta: 1, espera: 2 };
+  const porNivel = (a, b) => (ORDEM_NIVEL[a.nivel] ?? 3) - (ORDEM_NIVEL[b.nivel] ?? 3);
+  const vagasTexto = (n) => `${n} ${n === 1 ? "vaga aguardando" : "vagas aguardando"} disponibilidade`;
+
   /** Pendências da escala; na que está em andamento, só as dos dias que ainda vão acontecer. */
   function avisosQueVem(escala) {
     const todos = E.validarEscala(state, escala);
@@ -732,10 +744,10 @@
           h("p", {}, "Escolha o período e o app distribui a equipe e as músicas de cada culto, seguindo a orientação do pastor para os cultos solenes."),
           h("button", { class: "btn primario", onclick: novaEscala }, icone("mais"), "Criar a primeira escala")));
     }
-    const avisos = avisosQueVem(escala).sort((a, b) => (a.nivel === "erro" ? 0 : 1) - (b.nivel === "erro" ? 0 : 1));
-    const erros = avisos.filter((a) => a.nivel === "erro").length;
+    const avisos = avisosQueVem(escala).sort(porNivel);
+    const conta = contarAvisos(avisos);
     const integrantes = integrantesDe(escala);
-    const cards = [cartaoProximo(), cartaoVigente(escala, erros, integrantes), cartaoPendencias(escala, avisos), cartaoDisponibilidade(), cartaoRepertorio()];
+    const cards = [cartaoProximo(), cartaoVigente(escala, conta, integrantes), cartaoPendencias(escala, avisos, conta), cartaoDisponibilidade(), cartaoRepertorio()];
     return h("div", { class: "tela" }, cab, h("div", { class: "painel-inicio" }, cards));
   }
 
@@ -779,7 +791,8 @@
         h("button", { class: "btn primario", onclick: () => abrirCulto(escala, base.id) }, "Abrir na escala", icone("seta"))));
   }
 
-  function cartaoVigente(escala, erros, integrantes) {
+  function cartaoVigente(escala, conta, integrantes) {
+    const n = conta.resolver.length;
     return h("section", { class: "cartao" },
       h("div", { class: "cartao-cab" }, h("h2", {}, icone("escala"), vigencia(escala)),
         h("span", { class: `selo ${escala.status === "confirmada" ? "ok" : "neutro"}` }, escala.status === "confirmada" ? "Confirmada" : "Rascunho")),
@@ -790,14 +803,16 @@
       h("div", { class: "dados", style: "border-radius:0" },
         h("div", {}, h("b", {}, String(escala.cultos.length)), h("span", {}, escala.cultos.length === 1 ? "culto" : "cultos")),
         h("div", {}, h("b", {}, String(integrantes.length)), h("span", {}, "integrantes")),
-        h("div", { class: erros ? "erro" : "ok" }, h("b", {}, String(erros)), h("span", {}, erros === 1 ? "pendência" : "pendências"))),
+        h("div", { class: n ? (conta.temErro ? "erro" : "alerta") : "ok" }, h("b", {}, String(n)), h("span", {}, "a resolver"))),
+      conta.espera.length ? h("p", { class: "linha-espera" }, icone("relogio"), vagasTexto(conta.espera.length)) : null,
       h("div", { class: "rodape-cartao" },
         h("button", { class: "btn zap", style: "flex:1 1 auto", onclick: () => enviarWhatsApp(escala) }, icone("whatsapp"), "Enviar no WhatsApp"),
         h("button", { class: "btn", onclick: () => irPara("escala") }, "Ver escala")));
   }
 
-  function cartaoPendencias(escala, avisos) {
-    const itens = avisos.slice(0, 5).map((a) => {
+  function cartaoPendencias(escala, avisos, conta) {
+    const lista = conta.resolver;
+    const itens = lista.slice(0, 5).map((a) => {
       const c = escala.cultos[a.ci];
       return h("li", {}, h("button", { onclick: () => abrirCulto(escala, (E.liderDe(escala, c) || c).id) },
         h("span", { class: `ponto ${a.nivel}`, "aria-hidden": "true" }),
@@ -805,10 +820,13 @@
         icone("dir")));
     });
     return h("section", { class: "cartao" },
-      h("div", { class: "cartao-cab" }, h("h2", {}, icone("alerta"), "Pendências"), avisos.length ? h("span", { class: `selo ${avisos.some((a) => a.nivel === "erro") ? "erro" : "alerta"}` }, String(avisos.length)) : null),
-      avisos.length
-        ? [h("ul", { class: "lista-compacta", style: "padding-top:8px" }, itens), avisos.length > 5 ? h("div", { class: "rodape-cartao" }, h("button", { class: "btn texto", onclick: () => verAvisos(escala, avisos) }, `Ver todas (${avisos.length})`)) : null]
-        : h("div", { class: "secao" }, h("p", { style: "display:flex;gap:8px;align-items:center;color:var(--ok);font-weight:600" }, icone("certo"), "Tudo certo nesta escala."), h("p", { class: "small muted" }, "Todas as funções e músicas estão definidas e seguem as regras.")));
+      h("div", { class: "cartao-cab" }, h("h2", {}, icone("alerta"), "A resolver"), lista.length ? h("span", { class: `selo ${conta.temErro ? "erro" : "alerta"}` }, String(lista.length)) : null),
+      lista.length
+        ? [h("ul", { class: "lista-compacta", style: "padding-top:8px" }, itens), lista.length > 5 ? h("div", { class: "rodape-cartao" }, h("button", { class: "btn texto", onclick: () => verAvisos(escala, avisos) }, `Ver todas (${lista.length})`)) : null]
+        : h("div", { class: "secao" }, h("p", { style: "display:flex;gap:8px;align-items:center;color:var(--ok);font-weight:600" }, icone("certo"), "Nada a resolver."), h("p", { class: "small muted" }, conta.espera.length ? "As vagas vazias só esperam a equipe marcar a disponibilidade." : "Todas as funções e músicas estão definidas e seguem as regras.")),
+      conta.espera.length ? h("div", { class: "rodape-cartao" },
+        h("span", { class: "linha-espera", style: "padding:0;flex:1;border:0" }, icone("relogio"), vagasTexto(conta.espera.length)),
+        h("button", { class: "btn texto", onclick: () => irPara("agenda") }, "Ver agenda")) : null);
   }
 
   function cartaoDisponibilidade() {
@@ -872,13 +890,13 @@
       const k = `${a.ci}|${a.campo}`;
       if (!porCampo[k] || a.nivel === "erro") porCampo[k] = a;
     }
-    const erros = avisos.filter((a) => a.nivel === "erro").length;
-    const alertas = avisos.length - erros;
-    const estado = erros
-      ? h("button", { class: "btn", onclick: () => verAvisos(escala, avisos) }, h("span", { class: "selo erro" }, String(erros)), erros > 1 ? "pendências" : "pendência")
-      : alertas
-        ? h("button", { class: "btn", onclick: () => verAvisos(escala, avisos) }, h("span", { class: "selo alerta" }, String(alertas)), alertas > 1 ? "alertas" : "alerta")
-        : h("span", { class: "selo ok", style: "min-height:32px;padding:0 12px" }, icone("certo"), "Tudo certo");
+    const conta = contarAvisos(avisos);
+    const ver = () => verAvisos(escala, avisos.slice().sort(porNivel));
+    const estado = [
+      conta.resolver.length ? h("button", { class: "btn", onclick: ver }, h("span", { class: `selo ${conta.temErro ? "erro" : "alerta"}` }, String(conta.resolver.length)), "a resolver") : null,
+      conta.espera.length ? h("button", { class: "btn", onclick: ver, "aria-label": vagasTexto(conta.espera.length) }, h("span", { class: "selo neutro" }, String(conta.espera.length)), "aguardando") : null,
+      !conta.resolver.length && !conta.espera.length ? h("span", { class: "selo ok", style: "min-height:32px;padding:0 12px" }, icone("certo"), "Tudo certo") : null,
+    ];
     // As setas andam entre as escalas atuais; numa escala do arquivo, entre as cumpridas.
     const cumprida = E.escalaCumprida(escala, hoje());
     const ordem = cumprida ? E.escalasArquivadas(state, hoje()).reverse() : E.escalasAtivas(state, hoje());
@@ -901,6 +919,19 @@
     // Na escala em andamento, os dias já cumpridos ficam guardados (dá para ver tocando no botão).
     const passados = cumprida ? [] : dias.filter((d) => d.data < hoje());
     const visiveis = ui.verPassados ? dias : dias.filter((d) => !passados.includes(d));
+    // No celular, só o próximo culto vem aberto; os outros mostram o resumo e abrem ao tocar.
+    const idsVisiveis = visiveis.flatMap((d) => d.cultos.map((ci) => escala.cultos[ci].id));
+    const proximo = visiveis.flatMap((d) => d.cultos).find((ci) => escala.cultos[ci].data >= hoje());
+    const padraoAberto = (id) => !celular() || (proximo !== undefined && escala.cultos[proximo].id === id);
+    const estaAberto = (id) => ui.abertos.has(id) || (!ui.fechados.has(id) && padraoAberto(id));
+    const todosAbertos = idsVisiveis.every(estaAberto);
+    const abrirTodos = (abrir) => {
+      for (const id of idsVisiveis) {
+        (abrir ? ui.abertos : ui.fechados).add(id);
+        (abrir ? ui.fechados : ui.abertos).delete(id);
+      }
+      render();
+    };
 
     return h("div", { class: "tela" },
       h("div", { class: "cabecalho" }, h("div", {}, h("h1", {}, "Escala"), h("p", { class: "muted" }, "Toque numa pessoa ou música para trocar; use + Pessoa e + Música para acrescentar.")),
@@ -921,24 +952,68 @@
         h("div", { class: "resumo" },
           h("button", { class: "btn zap", onclick: () => enviarWhatsApp(escala) }, icone("whatsapp"), "Enviar no WhatsApp"),
           cumprida ? null : estado)),
-      passados.length ? h("button", { class: "btn texto dias-passados", "aria-expanded": String(!!ui.verPassados), onclick: () => { ui.verPassados = !ui.verPassados; render(); } },
-        icone("arquivo"), ui.verPassados ? "Ocultar os dias que já passaram" : `${passados.length} ${passados.length === 1 ? "dia já cumprido" : "dias já cumpridos"} · ver`) : null,
+      h("div", { class: "barra-dias" },
+        passados.length ? h("button", { class: "btn texto", "aria-expanded": String(!!ui.verPassados), onclick: () => { ui.verPassados = !ui.verPassados; render(); } },
+          icone("arquivo"), ui.verPassados ? "Ocultar os dias que já passaram" : `${passados.length} ${passados.length === 1 ? "dia já cumprido" : "dias já cumpridos"} · ver`) : h("span"),
+        idsVisiveis.length > 1 ? h("button", { class: "btn texto", onclick: () => abrirTodos(!todosAbertos) }, icone(todosAbertos ? "cima" : "baixo"), todosAbertos ? "Resumir todos" : "Abrir todos") : null),
       visiveis.length ? null : h("div", { class: "vazio" }, h("p", {}, "Todos os dias desta escala já passaram.")),
       h("div", { class: "dias" }, visiveis.map((d) => {
         const [semana, resto] = E.formatarData(d.data, "longa").split(", ");
         const jaFoi = passados.includes(d);
         return h("section", { class: `dia${jaFoi ? " passado" : ""}`, "aria-label": E.formatarData(d.data, "longa") },
           h("h2", {}, h("span", {}, h("b", {}, semana), resto ? `, ${resto}` : ""), d.data === hoje() ? h("span", { class: "selo azul" }, "Hoje") : jaFoi ? h("span", { class: "selo neutro" }, "Cumprido") : null),
-          h("div", { class: `cultos-do-dia${d.cultos.length > 1 ? " dois" : ""}` }, d.cultos.map((ci) => cartaoCulto(escala, ci, porCampo))));
+          h("div", { class: `cultos-do-dia${d.cultos.length > 1 ? " dois" : ""}` }, d.cultos.map((ci) => cartaoCulto(escala, ci, porCampo, estaAberto(escala.cultos[ci].id)))));
       })));
   }
 
-  function cartaoCulto(escala, ci, porCampo) {
+  /** Abre ou resume o cartão do culto. */
+  function alternarCulto(id, abrir) {
+    (abrir ? ui.abertos : ui.fechados).add(id);
+    (abrir ? ui.fechados : ui.abertos).delete(id);
+    render();
+  }
+
+  /** "vocal ×2, violão, teclado": as funções que ainda não têm ninguém. */
+  function faltamNoCulto(culto) {
+    const conta = {};
+    for (const v of culto.equipe) if (!v.pessoaId) conta[v.funcao] = (conta[v.funcao] || 0) + 1;
+    return Object.entries(conta).map(([f, n]) => `${E.nomeFuncao(state, f).toLowerCase()}${n > 1 ? ` ×${n}` : ""}`).join(", ");
+  }
+
+  function cartaoCulto(escala, ci, porCampo, aberto) {
     const culto = escala.cultos[ci];
     const seguidores = escala.cultos.filter((c) => E.liderDe(escala, c) === culto);
     const grupo = [culto, ...seguidores];
     const aviso = (campo) => porCampo[`${ci}|${campo}`];
     const fixo = new Set(culto.travados || []);
+    const cabecalho = h("header", { class: "culto-cab" },
+      h("div", { class: "horarios" },
+        grupo.map((x) => h("div", { class: "horario" }, x.hora ? h("span", { class: "hora" }, x.hora) : null, h("h3", {}, x.nome))),
+        culto.solene || culto.avulso ? h("div", { class: "selos" },
+          culto.solene ? h("span", { class: "selo solene" }, "Culto solene") : null,
+          culto.avulso ? h("span", { class: "selo neutro" }, "Extra") : null) : null),
+      h("div", { class: "acoes-cab" },
+        h("button", { class: "btn icone", "aria-expanded": String(aberto), "aria-label": `${aberto ? "Resumir" : "Abrir"} ${culto.nome}`, onclick: () => alternarCulto(culto.id, !aberto) }, icone(aberto ? "cima" : "baixo")),
+        h("button", { class: "btn icone", "aria-label": `Opções do culto ${culto.nome}`, onclick: () => opcoesCulto(escala, ci) }, icone("opcoes"))));
+
+    if (!aberto) {
+      const vagas = culto.equipe.length;
+      const cheias = culto.equipe.filter((v) => v.pessoaId).length;
+      const nomes = [...new Set(culto.equipe.map((v) => v.pessoaId).filter(Boolean))].map((id) => porId(state.pessoas, id)).filter(Boolean);
+      const musicasOk = culto.musicas.filter((m) => m.id).length;
+      const faltam = faltamNoCulto(culto);
+      const problemas = Object.entries(porCampo).filter(([k, a]) => k.startsWith(`${ci}|`) && a.nivel !== "espera").length;
+      return h("article", { class: "cartao culto resumido", id: `culto-${culto.id}`, "aria-label": `${grupo.map((x) => `${x.nome} às ${x.hora}`).join(" e ")}, resumido` },
+        cabecalho,
+        h("button", { class: "resumo-culto", onclick: () => alternarCulto(culto.id, true), "aria-label": `Abrir ${culto.nome} para editar` },
+          h("span", { class: "linha-resumo" }, h("b", {}, "Equipe"), h("span", { class: "num" }, `${cheias}/${vagas}`),
+            h("span", { class: "nomes-resumo" }, nomes.length ? nomes.map((p) => p.nome.split(" ")[0]).join(", ") : "ninguém ainda")),
+          faltam ? h("span", { class: "linha-resumo falta" }, h("b", {}, "Faltam"), h("span", {}, faltam)) : null,
+          h("span", { class: "linha-resumo" }, h("b", {}, "Músicas"), h("span", { class: "num" }, `${musicasOk}/${culto.musicas.length}`),
+            h("span", { class: "nomes-resumo" }, culto.musicas.map((v) => porId(state.musicas, v.id)).filter(Boolean).map((m) => m.titulo || `SH ${m.numero}`).join(" · ") || "a definir")),
+          problemas ? h("span", { class: "selo erro", style: "justify-self:start" }, `${problemas} a resolver`) : null,
+          h("span", { class: "abrir" }, "Toque para abrir e editar", icone("baixo"))));
+    }
 
     // Qual lista de músicas está à mostra (num cartão com dois horários).
     const mostrado = porId(grupo, ui.ordemDe[culto.id]) || culto;
@@ -954,7 +1029,9 @@
           class: `pessoa${p ? "" : " vazia"}`, "data-nivel": a ? a.nivel : null, title: a ? a.msg : null,
           "aria-label": `${E.nomeFuncao(state, g.funcao)}: ${p ? p.nome : "a definir"}${a ? `. ${a.msg}` : ""}`,
           onclick: () => escolherPessoa(escala, ci, v.si),
-        }, p ? avatar(p) : null, p ? p.nome : "a definir", fixo.has(`e:${v.si}`) ? icone("pino") : null);
+        }, p ? avatar(p) : null, p ? p.nome : a && a.nivel === "espera" ? "aguardando" : "a definir",
+          p && a && a.nivel !== "espera" ? h("span", { class: "aviso-i", "aria-hidden": "true" }, icone("alerta")) : null,
+          fixo.has(`e:${v.si}`) ? icone("pino") : null);
       }))));
 
     const musicas = mostrado.musicas.map((vaga, k) => {
@@ -977,13 +1054,7 @@
 
     const notas = grupo.filter((x) => x.obs);
     return h("article", { class: "cartao culto", id: `culto-${culto.id}`, "aria-label": `${grupo.map((x) => `${x.nome} às ${x.hora}`).join(" e ")}` },
-      h("header", { class: "culto-cab" },
-        h("div", { class: "horarios" },
-          grupo.map((x) => h("div", { class: "horario" }, x.hora ? h("span", { class: "hora" }, x.hora) : null, h("h3", {}, x.nome))),
-          culto.solene || culto.avulso ? h("div", { class: "selos" },
-            culto.solene ? h("span", { class: "selo solene" }, "Culto solene") : null,
-            culto.avulso ? h("span", { class: "selo neutro" }, "Extra") : null) : null),
-        h("button", { class: "btn icone", "aria-label": `Opções do culto ${culto.nome}`, onclick: () => opcoesCulto(escala, ci) }, icone("opcoes"))),
+      cabecalho,
       h("div", { class: "bloco" },
         h("div", { class: "bloco-cab" }, h("span", { class: "rotulo" }, "Equipe"),
           h("button", { class: "btn texto mini", "aria-label": `Acrescentar pessoa em ${culto.nome}`, onclick: () => novaVagaPessoa(escala, ci) }, icone("mais"), "Pessoa")),
@@ -1002,6 +1073,7 @@
   }
 
   function irParaCulto(id) {
+    if (!ui.abertos.has(id)) { ui.abertos.add(id); ui.fechados.delete(id); render(); }
     const el = document.getElementById(`culto-${id}`);
     if (!el) return;
     el.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
@@ -1013,12 +1085,15 @@
     painel({
       titulo: "O que precisa de atenção",
       sub: "Toque num item para ir até o culto.",
-      corpo: h("ul", { class: "avisos" }, avisos.map((a) => {
-        const c = escala.cultos[a.ci];
-        return h("li", { class: a.nivel }, h("button", { onclick: () => { fecharAtual(true); setTimeout(() => irParaCulto(c.id), 60); } },
-          h("span", { class: "ponto", "aria-hidden": "true" }),
-          h("span", {}, h("b", {}, `${E.formatarData(c.data, "dia")} · ${c.nome}`), h("br"), h("span", { class: "small muted" }, a.msg))));
-      })),
+      corpo: [["A resolver", avisos.filter((a) => a.nivel !== "espera")], ["Aguardando disponibilidade", avisos.filter((a) => a.nivel === "espera")]].filter(([, l]) => l.length).map(([titulo, l]) => [
+        h("p", { class: "rotulo", style: "margin:8px 0 2px" }, `${titulo} · ${l.length}`),
+        h("ul", { class: "avisos" }, l.map((a) => {
+          const c = escala.cultos[a.ci];
+          const alvo = (E.liderDe(escala, c) || c).id;
+          return h("li", { class: a.nivel }, h("button", { onclick: () => { fecharAtual(true); setTimeout(() => irParaCulto(alvo), 60); } },
+            h("span", { class: "ponto", "aria-hidden": "true" }),
+            h("span", {}, h("b", {}, `${E.formatarData(c.data, "dia")} · ${c.nome}`), h("br"), h("span", { class: "small muted" }, a.msg))));
+        }))]),
       foco: ".avisos button",
     });
   }
@@ -1215,10 +1290,10 @@
 
   function linhaEscala(e) {
     const cumprida = E.escalaCumprida(e, hoje());
-    const erros = cumprida ? 0 : E.validarEscala(state, e).filter((a) => a.nivel === "erro").length;
+    const erros = cumprida ? 0 : contarAvisos(avisosQueVem(e)).resolver.length;
     const sub = cumprida
       ? `Cumprida · ${e.cultos.length} ${e.cultos.length === 1 ? "culto" : "cultos"}`
-      : `${vigencia(e)} · ${e.status === "confirmada" ? "Confirmada" : "Rascunho"}${erros ? ` · ${erros} pendência${erros > 1 ? "s" : ""}` : ""}`;
+      : `${vigencia(e)} · ${e.status === "confirmada" ? "Confirmada" : "Rascunho"}${erros ? ` · ${erros} a resolver` : ""}`;
     return h("li", {}, h("button", { class: "linha", "aria-current": String(e.id === ui.escalaId), onclick: () => { fecharAtual(true); ui.escalaId = e.id; irPara("escala"); window.scrollTo({ top: 0 }); } },
       h("span", { class: "avatar", "aria-hidden": "true" }, icone(cumprida ? "arquivo" : "calendario")),
       h("span", {}, h("span", { class: "titulo" }, E.formatarPeriodo(e.inicio, e.fim)), h("br"), h("span", { class: "sub" }, sub)),
@@ -1355,7 +1430,7 @@
   function enviarWhatsApp(escala) {
     let links = false;
     let editado = false;
-    const erros = E.validarEscala(state, escala).filter((a) => a.nivel === "erro").length;
+    const erros = E.validarEscala(state, escala).filter((a) => a.nivel !== "alerta").length; // o que vai como "a definir"
     const area = h("textarea", { class: "texto", id: "texto-whatsapp", "aria-label": "Texto da escala para enviar", spellcheck: "false", oninput: () => { editado = true; } });
     const atualizar = () => { area.value = E.textoWhatsApp(state, escala, { links }); editado = false; };
     atualizar();

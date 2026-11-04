@@ -315,9 +315,47 @@
       for (const chave of Object.keys(armazem.ultimo)) if (chave.startsWith("resp:") && !snap.docs.some((d) => `resp:${d.id}` === chave)) delete armazem.ultimo[chave];
       if (JSON.stringify(vindas) === JSON.stringify(state.respostas)) return;
       state.respostas = vindas;
-      gravarLocal();
-      if (!fecharAtual && (ui.tela === "agenda" || ui.tela === "escala")) render();
+      // Quem respondeu por um aparelho com o app antigo: a escala se ajusta aqui.
+      const ajuste = !ui.somenteLeitura && ui.coordena ? ajustarEscalas() : "";
+      if (ajuste) { mudou(null, false); avisar(ajuste); } else gravarLocal();
+      if (!fecharAtual && ["agenda", "escala", "inicio"].includes(ui.tela)) render();
     }, () => { /* sem atualização ao vivo: as respostas aparecem ao recarregar */ });
+  }
+
+  /**
+   * Escalas alteradas em outro aparelho (por exemplo, ajustadas com uma resposta nova) chegam aqui sem
+   * recarregar. Uma escala com alteração deste aparelho ainda não enviada não é trocada.
+   */
+  function acompanharEscalas() {
+    armazem.db.collection("escalas").onSnapshot((snap) => {
+      let trocou = false;
+      const ids = new Set();
+      for (const d of snap.docs) {
+        ids.add(d.id);
+        const json = JSON.stringify(d.data());
+        const chave = `escala:${d.id}`;
+        if (armazem.ultimo[chave] === json) continue;
+        const i = state.escalas.findIndex((e) => e.id === d.id);
+        const intacta = i < 0 ? !(chave in armazem.ultimo) : JSON.stringify(state.escalas[i]) === armazem.ultimo[chave];
+        if (!intacta) continue;
+        if (i < 0) state.escalas.push(clone(d.data()));
+        else state.escalas[i] = clone(d.data());
+        armazem.ultimo[chave] = json;
+        trocou = true;
+      }
+      for (const chave of Object.keys(armazem.ultimo)) {
+        if (!chave.startsWith("escala:") || ids.has(chave.slice(7))) continue;
+        const i = state.escalas.findIndex((e) => e.id === chave.slice(7));
+        if (i >= 0 && JSON.stringify(state.escalas[i]) !== armazem.ultimo[chave]) continue;
+        if (i >= 0) state.escalas.splice(i, 1);
+        delete armazem.ultimo[chave];
+        trocou = true;
+      }
+      if (!trocou) return;
+      garantirEscalaAtual();
+      gravarLocal();
+      if (!fecharAtual) render();
+    }, () => { /* sem atualização ao vivo: as escalas aparecem ao recarregar */ });
   }
 
   /** Indicador de salvamento: salvando, salvo, sem conexão ou falha. "Salvo" só depois da confirmação do servidor. */
@@ -451,12 +489,15 @@
     if (dias) ui.louvoresDias = dias;
     if ((!ui.coordena && hash !== "louvores") || hash === "disponibilidade") ui.tela = "disponibilidade";
     garantirEscalaAtual();
+    // Respostas que chegaram enquanto o app estava fechado entram na escala agora.
+    const ajusteInicial = !ui.somenteLeitura && ui.coordena ? ajustarEscalas() : "";
     if (ui.somenteLeitura) mostrarSalvo("offline", "Sem conexão");
     else if (ui.coordena) salvar(); // grava a migração (ou os dados iniciais) e leva para o servidor o que estava só no aparelho
     else mostrarSalvo("ok", armazem.db ? "Conectado" : "Neste aparelho");
-    if (armazem.db) acompanharRespostas();
+    if (armazem.db) { acompanharRespostas(); acompanharEscalas(); }
     vigiarConexao();
     render();
+    if (ajusteInicial && ui.tela !== "disponibilidade" && ui.tela !== "louvores") avisar(ajusteInicial);
     registrarApp();
   }
 
@@ -974,12 +1015,23 @@
     return h("label", { class: "interruptor" },
       h("span", {}, "Manter esta escolha", h("small", {}, "Não muda ao sortear de novo")),
       h("input", { type: "checkbox", role: "switch", checked: fixo, onchange: (e) => {
-        mudou(() => { culto.travados = e.target.checked ? [...(culto.travados || []), campo] : (culto.travados || []).filter((t) => t !== campo); });
+        mudou(() => {
+          culto.travados = e.target.checked ? [...(culto.travados || []), campo] : (culto.travados || []).filter((t) => t !== campo);
+          if (e.target.checked) marcarFixadoEm(culto, campo);
+        });
       } }));
   }
 
   function fixar(culto, campo) {
     if (!(culto.travados || []).includes(campo)) culto.travados = [...(culto.travados || []), campo];
+    marcarFixadoEm(culto, campo);
+  }
+
+  /** Quando a pessoa foi fixada: um "não posso" dela depois disso ainda a tira da vaga. */
+  function marcarFixadoEm(culto, campo) {
+    const [tipo, n] = campo.split(":");
+    const vaga = tipo === "e" ? culto.equipe[Number(n)] : null;
+    if (vaga && vaga.pessoaId) vaga.fixadoEm = new Date().toISOString();
   }
 
   function escolherPessoa(escala, ci, si) {
@@ -1455,6 +1507,34 @@
 
   function guardarResposta(r) {
     state.respostas = (state.respostas || []).filter((x) => x.id !== r.id).concat(r);
+    ui.ajuste = ajustarEscalas();
+  }
+
+  /**
+   * Leva as respostas de disponibilidade para as escalas em aberto: sai quem não pode e as vagas vazias
+   * recebem quem marcou "posso". O sorteio usa a semente da escala, para dar o mesmo resultado em
+   * qualquer aparelho. Devolve o resumo para o aviso ("" quando nada mudou).
+   */
+  function ajustarEscalas() {
+    const linhas = [];
+    for (const esc of state.escalas) {
+      const rand = E.criarAleatorio((Number(esc.seed) || 1) + (state.respostas || []).length);
+      for (const m of E.ajustarEscalaComRespostas(state, esc, hoje(), rand)) {
+        const c = esc.cultos[m.ci];
+        const nome = (id) => (porId(state.pessoas, id) || { nome: "?" }).nome;
+        const onde = `${E.formatarData(c.data, "dia")} (${E.nomeFuncao(state, m.funcao).toLowerCase()})`;
+        linhas.push(m.saiu && m.entrou ? `${nome(m.entrou)} entrou no lugar de ${nome(m.saiu)} em ${onde}` : m.entrou ? `${nome(m.entrou)} entrou em ${onde}` : `${nome(m.saiu)} saiu de ${onde}`);
+      }
+    }
+    if (!linhas.length) return "";
+    return `Escala ajustada com a disponibilidade: ${linhas.slice(0, 3).join("; ")}${linhas.length > 3 ? ` e mais ${linhas.length - 3} ${linhas.length - 3 === 1 ? "mudança" : "mudanças"}` : ""}.`;
+  }
+
+  /** Mostra o aviso do último ajuste, se houve. */
+  function avisarAjuste(texto) {
+    const aj = ui.ajuste;
+    ui.ajuste = "";
+    if (aj || texto) avisar([texto, aj].filter(Boolean).join(" "));
   }
 
   /** Tela de quem responde a disponibilidade (a equipe, pelo link compartilhado). */
@@ -1511,7 +1591,7 @@
     const r = montarResposta(pessoa.id, periodo, rascunho.marcas, rascunho.obs);
     if (ui.coordena) {
       mudou(() => guardarResposta(r));
-      return avisar("Disponibilidade salva.");
+      return avisarAjuste("Disponibilidade salva.");
     }
     try {
       if (!armazem.db) throw new Error("sem servidor");
@@ -1735,7 +1815,8 @@
         if (!lidas.length) return avisar("Nenhuma resposta para salvar.");
         fechar(true);
         const lote = lidas;
-        comDesfazer(`${lote.length} ${lote.length === 1 ? "resposta salva" : "respostas salvas"}.`, () => lote.forEach(guardarResposta));
+        comDesfazer(`${lote.length} ${lote.length === 1 ? "resposta salva" : "respostas salvas"}. A escala se ajusta com elas.`, () => lote.forEach(guardarResposta));
+        ui.ajuste = "";
       } }, "Salvar respostas")],
       foco: "#colar-respostas",
     });
@@ -1758,11 +1839,11 @@
         h("label", { class: "campo" }, "Recado", h("textarea", { rows: 2, value: obs, oninput: (e) => { obs = e.target.value; } })),
       ],
       rodape: (fechar) => [
-        existente ? h("button", { class: "btn perigo", style: "margin-right:auto", onclick: () => { fechar(true); comDesfazer("Resposta apagada.", () => { state.respostas = state.respostas.filter((r) => r.id !== id); }); } }, icone("lixo"), "Apagar") : null,
+        existente ? h("button", { class: "btn perigo", style: "margin-right:auto", onclick: () => { fechar(true); comDesfazer("Resposta apagada.", () => { state.respostas = state.respostas.filter((r) => r.id !== id); ajustarEscalas(); }); } }, icone("lixo"), "Apagar") : null,
         h("button", { class: "btn primario", onclick: () => {
           fechar(true);
           mudou(() => guardarResposta(montarResposta(pessoa.id, periodo, marcas, obs)));
-          avisar(`Disponibilidade de ${pessoa.nome} salva.`);
+          avisarAjuste(`Disponibilidade de ${pessoa.nome} salva.`);
         } }, "Salvar"),
       ],
       foco: ".dia-culto",

@@ -453,6 +453,65 @@ test("da lista de louvores: pôr um louvor no culto do fim de semana", () => {
   assert.ok(dom.musicas.some((v) => v.id === louvor.id) && dom.musicas.some((v) => v.id === outro.id));
 });
 
+test("quem muda a disponibilidade depois da escala montada: a escala se ajusta sozinha", () => {
+  const s = D.estadoInicial(); // regra padrão: só quem marcou "posso"
+  const inicio = "2026-11-08";
+  const fim = "2026-11-14";
+  const hoje = "2026-11-04";
+  const resp = (id, dias, nao) => ({ id: E.idResposta(id, inicio), pessoaId: id, inicio, fim, dias, nao, obs: "", em: `2026-11-0${resp.n++}T10:00:00Z` });
+  resp.n = 1;
+  s.respostas = [resp("germano", ["2026-11-10"], []), resp("kaio", ["2026-11-10"], [])];
+  const esc = E.gerarEscala(s, { inicio, fim, seed: 2 });
+  s.escalas = [esc];
+  const ter = cultoDe(esc, "ter-oracao", "2026-11-10");
+  const ci = esc.cultos.indexOf(ter);
+  const vozes = () => ter.equipe.filter((v) => v.funcao === "vocal").map((v) => v.pessoaId);
+  assert.ok(vozes().includes("germano"));
+  assert.ok(!vozes().includes("alexandre"));
+
+  // Alexandre marca depois que pode na terça: entra na vaga vazia.
+  s.respostas.push(resp("alexandre", ["2026-11-10"], []));
+  let m = E.ajustarEscalaComRespostas(s, esc, hoje, () => 0);
+  assert.ok(vozes().includes("alexandre"), `vozes: ${vozes()}`);
+  assert.ok(m.some((x) => x.ci === ci && x.entrou === "alexandre" && !x.saiu));
+
+  // Germano muda de ideia: sai, e ninguém mais pode no lugar dele.
+  s.respostas.push(resp("germano", [], ["2026-11-10"]));
+  m = E.ajustarEscalaComRespostas(s, esc, hoje, () => 0);
+  assert.ok(!vozes().includes("germano"));
+  assert.ok(m.some((x) => x.saiu === "germano"));
+
+  // Fixado à mão depois do "não posso": continua (a escala avisa).
+  const si = ter.equipe.findIndex((v) => v.funcao === "vocal" && !v.pessoaId);
+  ter.equipe[si].pessoaId = "germano";
+  ter.equipe[si].fixadoEm = "2026-11-09T00:00:00Z";
+  ter.travados = [...(ter.travados || []), `e:${si}`];
+  E.ajustarEscalaComRespostas(s, esc, hoje, () => 0);
+  assert.equal(ter.equipe[si].pessoaId, "germano");
+  // Fixado à mão e, depois, a própria pessoa diz "não posso": sai e a vaga deixa de ser fixa.
+  const sa = ter.equipe.findIndex((v) => v.pessoaId === "alexandre");
+  ter.equipe[sa].fixadoEm = "2026-11-01T00:00:00Z";
+  ter.travados.push(`e:${sa}`);
+  s.respostas.push(resp("alexandre", [], ["2026-11-10"]));
+  m = E.ajustarEscalaComRespostas(s, esc, hoje, () => 0);
+  assert.ok(!vozes().includes("alexandre"));
+  assert.ok(!ter.travados.includes(`e:${sa}`));
+  assert.ok(m.some((x) => x.saiu === "alexandre"));
+
+  // Sem nada novo, nada muda; culto que já passou não muda.
+  assert.deepEqual(E.ajustarEscalaComRespostas(s, esc, hoje, () => 0), []);
+  s.respostas.push(resp("leonar", [], ["2026-11-08"]));
+  const antes = JSON.stringify(esc.cultos.filter((c) => c.data === "2026-11-08"));
+  E.ajustarEscalaComRespostas(s, esc, "2026-11-09", () => 0);
+  assert.equal(JSON.stringify(esc.cultos.filter((c) => c.data === "2026-11-08")), antes);
+
+  // Escala montada à mão: as respostas novas não preenchem sozinhas.
+  E.esvaziarEscala(esc);
+  s.respostas.push(resp("natan", ["2026-11-12"], []));
+  E.ajustarEscalaComRespostas(s, esc, hoje, () => 0);
+  assert.ok(esc.cultos.every((c) => c.equipe.every((v) => !v.pessoaId)));
+});
+
 test("dias de culto do período agrupam os cultos de cada dia", () => {
   const s = novoEstado();
   const dias = E.diasDeCulto(s, "2026-10-25", "2026-10-31");

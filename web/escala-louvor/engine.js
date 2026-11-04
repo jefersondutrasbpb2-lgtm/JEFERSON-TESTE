@@ -875,6 +875,53 @@
   }
 
   /** Texto pronto para colar no WhatsApp (negrito com *, itálico com _). */
+  /* ------------------------------------------------- lista de louvores */
+
+  /**
+   * Louvores (cânticos, sem os Salmos e Hinos) do rodízio, em ordem alfabética, com os dias em que foram
+   * tocados nos últimos `dias` dias (escalas e "última vez") e o próximo dia programado.
+   */
+  function listaLouvores(state, hoje, dias) {
+    const desde = somarDias(hoje, -Math.max(1, Number(dias) || 30) + 1);
+    const usos = {};
+    const marcar = (id, data) => {
+      const u = (usos[id] = usos[id] || { tocadas: [], ultima: null, proxima: null });
+      if (data > hoje) { if (!u.proxima || data < u.proxima) u.proxima = data; return; }
+      if (!u.ultima || data > u.ultima) u.ultima = data;
+      if (data >= desde && !u.tocadas.includes(data)) u.tocadas.push(data);
+    };
+    for (const m of state.musicas || []) if (m.ultimaVez) marcar(m.id, m.ultimaVez);
+    for (const e of state.escalas || []) for (const c of e.cultos || []) for (const v of c.musicas || []) if (v.id) marcar(v.id, c.data);
+    return (state.musicas || [])
+      .filter((m) => m.tipo === "louvor" && m.ativo !== false)
+      .sort((a, b) => normalizar(a.titulo).localeCompare(normalizar(b.titulo), "pt-BR"))
+      .map((m) => {
+        const u = usos[m.id] || { tocadas: [], ultima: null, proxima: null };
+        return { musica: m, tocadas: u.tocadas.sort(), ultima: u.ultima, proxima: u.proxima };
+      });
+  }
+
+  /** A mesma lista em texto para o WhatsApp: ✅ nos louvores tocados no período. */
+  function textoListaLouvores(state, hoje, dias, opcoes) {
+    const o = opcoes || {};
+    const lista = listaLouvores(state, hoje, dias);
+    const tocados = lista.filter((x) => x.tocadas.length).length;
+    const igreja = (state.igreja && state.igreja.nome) || "";
+    const linhas = [
+      `*Louvores do ministério${igreja ? ` · ${igreja}` : ""}*`,
+      `_✅ = tocado nos últimos ${dias} dias (${formatarData(somarDias(hoje, -dias + 1), "curta")} a ${formatarData(hoje, "curta")}) · ${tocados} de ${lista.length}_`,
+      "",
+    ];
+    for (const x of lista) {
+      const m = x.musica;
+      const vezes = x.tocadas.length > 1 ? ` (${x.tocadas.length}×)` : "";
+      linhas.push(`${x.tocadas.length ? "✅" : "▫️"} ${m.titulo}${m.autor ? ` — ${m.autor}` : ""}${vezes}`);
+      if (o.links && m.link) linhas.push(`   ${m.link}`);
+    }
+    if (o.link) linhas.push("", `Lista completa, com links para ouvir: ${o.link}`);
+    return linhas.join("\n").trim();
+  }
+
   function textoWhatsApp(state, escala, opcoes) {
     opcoes = opcoes || {};
     const musica = (vaga, i) => {
@@ -1068,6 +1115,7 @@
     validarEscala, resumoPessoas, equipePorFuncao, textoWhatsApp,
     lerListaMusicas, lerTags, migrar,
     respostaDe, disponivelEm, estadoNoDia, diasDeCulto, soQuemPode,
+    listaLouvores, textoListaLouvores,
     escalaCumprida, escalasAtivas, escalasArquivadas, periodoDeDisponibilidade, idResposta, codigoResposta, textoResposta, lerRespostas,
   };
 });

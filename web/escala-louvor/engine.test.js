@@ -391,6 +391,34 @@ test("escalas cumpridas vão para o arquivo e a disponibilidade segue a escala n
   assert.equal(E.periodoDeDisponibilidade(s, "2026-12-10"), null);
 });
 
+test("lista de louvores para compartilhar: só cânticos, com os tocados no período", () => {
+  const s = novoEstado();
+  const louvores = s.musicas.filter((m) => m.tipo === "louvor" && m.ativo !== false);
+  const [a, b, c] = louvores;
+  const hino = s.musicas.find((m) => m.tipo === "hino");
+  s.escalas = [{ id: "e", inicio: "2026-10-01", fim: "2026-11-30", cultos: [
+    { data: "2026-09-20", musicas: [{ tipo: "louvor", id: c.id }], equipe: [] },
+    { data: "2026-10-11", musicas: [{ tipo: "louvor", id: a.id }, { tipo: "hino", id: hino.id }], equipe: [] },
+    { data: "2026-11-01", musicas: [{ tipo: "louvor", id: a.id }], equipe: [] },
+    { data: "2026-11-01", musicas: [{ tipo: "louvor", id: a.id }], equipe: [] }, // culto da noite, mesmo dia
+    { data: "2026-11-08", musicas: [{ tipo: "louvor", id: b.id }], equipe: [] },
+  ] }];
+  const hoje = "2026-11-04";
+  const lista = E.listaLouvores(s, hoje, 30);
+  assert.equal(lista.length, louvores.length);
+  assert.ok(lista.every((x) => x.musica.tipo === "louvor"), "sem Salmos e Hinos");
+  const de = (m) => lista.find((x) => x.musica.id === m.id);
+  assert.deepEqual(de(a).tocadas, ["2026-10-11", "2026-11-01"]);
+  assert.deepEqual([de(b).tocadas, de(b).proxima], [[], "2026-11-08"]);
+  assert.deepEqual([de(c).tocadas, de(c).ultima], [[], "2026-09-20"], "fora dos 30 dias");
+  assert.equal(E.listaLouvores(s, hoje, 60).find((x) => x.musica.id === c.id).tocadas.length, 1);
+  const texto = E.textoListaLouvores(s, hoje, 30, { link: "https://exemplo/#louvores?dias=30" });
+  assert.match(texto, new RegExp(`✅ ${a.titulo.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}.*\\(2×\\)`));
+  assert.match(texto, /1 de \d+_/);
+  assert.match(texto, /Lista completa, com links para ouvir: https:\/\/exemplo/);
+  assert.doesNotMatch(texto, new RegExp(hino.titulo || "SH-sem-titulo"));
+});
+
 test("dias de culto do período agrupam os cultos de cada dia", () => {
   const s = novoEstado();
   const dias = E.diasDeCulto(s, "2026-10-25", "2026-10-31");

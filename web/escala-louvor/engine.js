@@ -550,6 +550,7 @@
       const v = velho.equipe[si];
       s.pessoaId = fixo.has(`e:${si}`) && v && v.funcao === s.funcao ? v.pessoaId : null;
       if (s.pessoaId) travados.add(`e:${si}`);
+      if (s.pessoaId && v.fixadoEm) s.fixadoEm = v.fixadoEm;
     });
     novo.musicas.forEach((m, k) => {
       const v = velho.musicas[k];
@@ -560,7 +561,7 @@
     if (!velho.avulso) {
       velho.equipe.forEach((v, si) => {
         if (si < novo.equipe.length || !fixo.has(`e:${si}`) || !v.pessoaId) return;
-        novo.equipe.push({ funcao: v.funcao, pessoaId: v.pessoaId });
+        novo.equipe.push(v.fixadoEm ? { funcao: v.funcao, pessoaId: v.pessoaId, fixadoEm: v.fixadoEm } : { funcao: v.funcao, pessoaId: v.pessoaId });
         travados.add(`e:${novo.equipe.length - 1}`);
       });
       velho.musicas.forEach((v, k) => {
@@ -589,6 +590,7 @@
       status: (anterior && anterior.status) || "rascunho",
       criadaEm: (anterior && anterior.criadaEm) || new Date().toISOString(),
       seed,
+      aMao: !!opcoes.vazia, // montada à mão: as respostas novas não preenchem as vagas sozinhas
       cultos: [],
     };
     for (const oc of listarOcorrencias(state.cultos, opcoes.inicio, opcoes.fim)) {
@@ -606,6 +608,56 @@
     // Com `vazia`, a escala sai só com as vagas: quem monta escolhe pessoas e músicas à mão.
     if (!opcoes.vazia) ordem.filter((ci) => !escala.cultos[ci].acompanha).forEach((ci) => preencherCulto(state, escala, ci, rand));
     return sincronizarEscala(escala);
+  }
+
+  /**
+   * Mantém a escala em dia quando alguém muda a disponibilidade depois de ela montada, só nos cultos que
+   * ainda vão acontecer: sai quem agora não pode (ou, com a regra "só quem pode", quem não marcou "posso")
+   * e as vagas vazias recebem quem marcou que pode. O que foi fixado à mão só muda quando a própria
+   * pessoa marca "não posso" depois de ser fixada (`fixadoEm`); na escala montada à mão, as vagas não
+   * são preenchidas sozinhas. Devolve as mudanças: { ci, funcao, saiu, entrou }.
+   */
+  function ajustarEscalaComRespostas(state, escala, hoje, rand) {
+    rand = rand || Math.random;
+    const mudancas = [];
+    if (escalaCumprida(escala, hoje)) return mudancas;
+    const titulares = (f) => (state.pessoas || []).filter((p) => p.ativo !== false && nivelFuncao(p, f) === "principal").length;
+    escala.cultos.forEach((culto, ci) => {
+      if (culto.data < hoje || liderDe(escala, culto)) return;
+      const fixo = new Set(culto.travados || []);
+      culto.equipe.forEach((v, si) => {
+        if (!v.pessoaId) return;
+        const p = porId(state.pessoas, v.pessoaId);
+        const disp = disponivelEm(state, v.pessoaId, culto.data);
+        if (fixo.has(`e:${si}`)) {
+          // Fixado à mão: sai só se a pessoa disse "não posso" depois de ser fixada.
+          const r = respostaDe(state, v.pessoaId, culto.data);
+          if (disp !== "nao" || !r || String(r.em || "") <= String(v.fixadoEm || "")) return;
+          fixo.delete(`e:${si}`);
+          culto.travados = (culto.travados || []).filter((t) => t !== `e:${si}`);
+        } else {
+          const naoPode = !p || p.ativo === false || indisponivelEm(p.indisponivel, culto.data) || disp === "nao" || (disp !== "sim" && soQuemPode(state));
+          if (!naoPode) return;
+        }
+        mudancas.push({ ci, funcao: v.funcao, saiu: v.pessoaId, entrou: null });
+        v.pessoaId = null;
+        delete v.fixadoEm;
+      });
+      if (escala.aMao) return;
+      const ordem = culto.equipe.map((x, si) => si).sort((a, b) => titulares(culto.equipe[a].funcao) - titulares(culto.equipe[b].funcao));
+      for (const si of ordem) {
+        const v = culto.equipe[si];
+        if (v.pessoaId || fixo.has(`e:${si}`)) continue;
+        const c = escolher(candidatosPessoa(state, escala, ci, si), (x) => x.score, rand, 0.5);
+        if (!c) continue;
+        v.pessoaId = c.pessoa.id;
+        const saida = mudancas.find((m) => m.ci === ci && m.funcao === v.funcao && !m.entrou);
+        if (saida) saida.entrou = c.pessoa.id;
+        else mudancas.push({ ci, funcao: v.funcao, saiu: null, entrou: c.pessoa.id });
+      }
+    });
+    sincronizarEscala(escala);
+    return mudancas;
   }
 
   /** Acrescenta um culto extra (Natal, aniversário da igreja…) com a equipe de um culto da semana. */
@@ -846,6 +898,7 @@
       c.musicas.forEach((m) => { m.id = null; });
       c.travados = [];
     }
+    escala.aMao = true;
     return sincronizarEscala(escala);
   }
 
@@ -1153,7 +1206,7 @@
     lerListaMusicas, lerTags, migrar,
     respostaDe, disponivelEm, estadoNoDia, diasDeCulto, soQuemPode,
     listaLouvores, textoListaLouvores,
-    cultosParaAdicionar, adicionarMusicaAoCulto,
+    cultosParaAdicionar, adicionarMusicaAoCulto, ajustarEscalaComRespostas,
     escalaCumprida, escalasAtivas, escalasArquivadas, periodoDeDisponibilidade, idResposta, codigoResposta, textoResposta, lerRespostas,
   };
 });

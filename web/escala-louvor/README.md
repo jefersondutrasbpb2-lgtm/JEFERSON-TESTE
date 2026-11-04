@@ -30,6 +30,10 @@ dias em que **pode** servir e envia.
 - A resposta vai direto para o servidor e aparece na Agenda de quem estiver com o app aberto em até 20 segundos.
 - Se o envio falhar (sem internet, por exemplo), a ferramenta mostra um texto com o código `#disp` para mandar pelo
   WhatsApp, e quem monta a escala usa **Colar respostas**.
+- **A escala acompanha as respostas**: quando alguém marca ou muda a disponibilidade depois da escala montada, os
+  cultos que ainda vão acontecer se ajustam sozinhos: sai quem agora não pode e as vagas vazias recebem quem marcou
+  "posso". O que foi fixado à mão só muda se a própria pessoa marcar "não posso" depois; numa escala montada do zero,
+  as vagas não se preenchem sozinhas. Quem estiver com o app aberto vê a mudança em até 20 segundos, sem recarregar.
 - No sorteio só entra quem marcou **posso** naquele dia; quem marcou que não pode, deixou o dia sem marcar ou não
   respondeu fica de fora, e a vaga fica vazia se ninguém marcou. À mão dá para pôr qualquer pessoa, e a escala avisa
   quando ela não marcou que pode. A regra pode ser desligada em Ajustes › Escolha das músicas.

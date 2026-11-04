@@ -40,7 +40,7 @@
     --surface-3: #e6ebf2;
     --ink: #14243b;
     --ink-2: #334155;
-    --muted: #64748b;
+    --muted: #586880;  /* ≥ 4,5:1 sobre todas as superfícies claras (WCAG AA) */
     --line: #e3e8ef;
     --line-2: #d3dbe6;
 
@@ -62,7 +62,7 @@
     --lateral-texto: #b7c6dc; --lateral-suave: #8fa6c6; --lateral-destaque: #dbe4f0;
     --lateral-hover: rgba(255, 255, 255, 0.06); --lateral-ativo: rgba(255, 255, 255, 0.1); --lateral-linha: rgba(255, 255, 255, 0.08);
     /* WhatsApp */
-    --zap: #1f8f4e; --zap-forte: #197a42;
+    --zap: #187a40; --zap-forte: #146636;  /* texto branco a 5,4:1 */
     /* vaga aguardando alguém marcar "posso" (nem erro, nem aviso) */
     --espera: var(--muted); --espera-suave: var(--surface-2); --espera-linha: var(--line-2);
     /* avatares: 6 cores, escolhidas pelo nome */
@@ -168,6 +168,9 @@
   .small { font-size: var(--t-sm); }
   .num { font-variant-numeric: tabular-nums; }
   .rotulo { font-size: var(--t-xs); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; color: var(--muted); }
+  .pular { position: fixed; left: var(--e-2); top: var(--e-2); z-index: var(--z-aviso); padding: var(--e-2) var(--e-4); border-radius: var(--r-sm); background: var(--navy); color: var(--branco); transform: translateY(-200%); }
+  .pular:focus { transform: none; }
+  #app:focus { outline: none; }
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   svg.i { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
 
@@ -210,7 +213,7 @@
   .nav-inferior {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--z-fixo); background: color-mix(in srgb, var(--surface) 94%, transparent);
     backdrop-filter: saturate(1.4) blur(12px); -webkit-backdrop-filter: saturate(1.4) blur(12px);
-    border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(5, 1fr);
+    border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
     padding: 0 env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
   }
   .nav-inferior button {
@@ -590,7 +593,7 @@
   .semana, .grade-dias { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--e-15); }
   .semana span { text-align: center; font-size: var(--t-xs); font-weight: 600; color: var(--muted); padding-bottom: var(--e-05); }
   .grade-dias > span, .dia-culto { aspect-ratio: 1 / 1.05; max-width: 100%; border-radius: var(--r-md); display: grid; place-items: center; align-content: center; gap: 0; font-variant-numeric: tabular-nums; }
-  .dia-fora { color: var(--muted); opacity: 0.5; font-size: var(--t-sm); }
+  .dia-fora { color: var(--muted); font-size: var(--t-sm); } /* dia sem culto: só referência, sem borda (o dia com culto é um botão com borda) */
   .dia-culto { border: 1.5px solid var(--azul-linha); background: var(--surface); color: var(--ink); padding: var(--e-05); position: relative; transition: background var(--rapido), border-color var(--rapido); }
   .dia-culto:hover { border-color: var(--azul); }
   .dia-culto b { font-size: var(--t-lg); line-height: 1.1; font-weight: 700; }
@@ -626,7 +629,8 @@
   .musica-linha .etiquetas { display: flex; flex-wrap: wrap; gap: var(--e-1); margin-top: var(--e-1); }
   .musica-linha .etiquetas .selo { font-weight: 600; }
   .contador { display: flex; align-items: center; justify-content: space-between; gap: var(--e-2); flex-wrap: wrap; }
-  .filtro-tema select { width: auto; min-height: var(--toque-sm); padding: var(--e-15) 34px var(--e-15) var(--e-3); font-size: var(--t-sm); font-weight: 600; }
+  .filtro-tema { max-width: 100%; }
+  .filtro-tema select { width: auto; max-width: 100%; min-height: var(--toque-sm); padding: var(--e-15) 34px var(--e-15) var(--e-3); font-size: var(--t-sm); font-weight: 600; }
   pre.texto.letra { font-size: var(--t-lg); line-height: 1.7; max-height: none; background: none; border: 0; padding: 0; }
   .equipe-grade { display: grid; gap: var(--e-3); }
   @media (min-width: 700px) { .equipe-grade { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -771,7 +775,7 @@
   .recuo-topo-2 { padding-top: var(--e-2) !important; }
   .recuo-topo-4 { padding-top: var(--e-4) !important; }
   .recuo-baixo-3 { padding-bottom: var(--e-3) !important; }
-  .selo-grande { min-height: 32px; padding: 0 var(--e-3) !important; }
+  .selo-grande { min-height: 32px; padding: 0 var(--e-3) !important; white-space: normal; max-width: 100%; }
   .selo-texto { padding-block: var(--e-1) !important; }
   .texto-md { font-size: var(--t-md) !important; }
   .texto-lg { font-size: var(--t-lg) !important; }
@@ -792,6 +796,7 @@
 </style>
 </head>
 <body>
+<a class="pular" href="#app" onclick="event.preventDefault(); document.getElementById('app').focus();">Pular para o conteúdo</a>
 <div class="moldura">
   <aside class="lateral" aria-label="Menu principal">
     <a class="logo" href="#inicio">
@@ -812,7 +817,7 @@
         <div class="salvo" id="salvo" role="status" data-estado="salvando"><i></i><span>Carregando…</span></div>
       </div>
     </header>
-    <main class="conteudo" id="app">
+    <main class="conteudo" id="app" tabindex="-1">
       <div class="esqueleto" aria-label="Carregando a escala do louvor">
         <i style="height:28px;width:180px;border-radius:8px"></i>
         <i style="height:132px"></i>

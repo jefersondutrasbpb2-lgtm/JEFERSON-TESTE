@@ -104,6 +104,12 @@ de uma barra de progresso) e casos únicos.
   as duas variáveis e servidas pelo próprio app (`fontes/`, licença OFL). Ícones Lucide. As cores, a tipografia, os
   espaçamentos, os raios e as sombras são tokens no começo de `index.html`, com versão escura.
 - **Design system**: veja a seção abaixo e o **Guia visual** do app (`#guia`, link em Ajustes › Aparência).
+- **Acessibilidade (WCAG 2.1 AA)**: contraste de pelo menos 4,5:1 em todo texto, nos dois temas (inclusive o
+  cinza `--muted` e o verde do WhatsApp); link "Pular para o conteúdo"; foco visível em tudo; painéis com
+  `role="dialog"`, foco preso dentro enquanto abertos, Esc fecha e o foco volta para onde estava; o calendário e as
+  vagas dizem o estado em texto (não só pela cor); erros de formulário no próprio campo; avisos em região ao vivo;
+  sem rolagem lateral até 320 px de largura, com texto a 200% ou com mais espaçamento entre letras e linhas; respeita
+  "reduzir movimento". Verificado com o axe-core em todas as telas e painéis, nos temas claro e escuro.
 - **Celular**: barra superior compacta com a marca e o estado do salvamento; barra inferior com Início, Escala,
   Agenda, Músicas e Equipe; edição em painéis que sobem da base; respeito às áreas seguras.
 - **Computador** (a partir de 960 px): menu lateral azul-marinho, conteúdo em grade (painel inicial em três colunas,

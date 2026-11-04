@@ -1928,7 +1928,8 @@
             h("span", { class: "sub" }, [m.autor, m.tom ? `tom ${m.tom}` : "", quando, x.proxima ? `programado para ${E.formatarData(x.proxima, "curta")}` : ""].filter(Boolean).join(" · "))),
           h("span", { style: "display:flex;gap:6px;align-items:center" },
             n ? h("span", { class: "selo ok" }, "Tocado") : null,
-            m.link ? h("a", { class: "btn icone", href: m.link, target: "_blank", rel: "noopener", "aria-label": `Ouvir ${m.titulo} no YouTube` }, icone("play")) : null)));
+            m.link ? h("a", { class: "btn icone", href: m.link, target: "_blank", rel: "noopener", "aria-label": `Ouvir ${m.titulo} no YouTube` }, icone("play")) : null,
+            h("button", { class: "btn icone tonal", "aria-label": `Pôr ${m.titulo} na escala`, title: "Pôr na escala", onclick: () => porNaEscala(m) }, icone("mais")))));
       })) : h("div", { class: "vazio", style: "border:0" }, h("p", {}, lista.length ? "Nenhum louvor com essa busca ou filtro." : "Nenhum louvor no repertório ainda.")));
     };
     desenhar();
@@ -1946,9 +1947,47 @@
         PERIODOS_LOUVORES.map((p) => h("button", { "aria-pressed": String(p.dias === dias), onclick: () => mudarPeriodo(p.dias) }, p.nome))),
       h("div", { class: "busca" }, icone("busca"), h("input", { type: "search", id: "busca-louvores", placeholder: "Buscar louvor ou autor", "aria-label": "Buscar louvores", value: ui.louvoresBusca, oninput: (e) => { ui.louvoresBusca = e.target.value; desenhar(); } })),
       h("div", { class: "rolagem-x", role: "group", "aria-label": "Filtrar" }, FILTROS.map((f) => h("button", { class: "chip", "aria-pressed": String(ui.louvoresFiltro === f.id), onclick: () => { ui.louvoresFiltro = f.id; render(); } }, f.nome, h("span", { class: "conta" }, String(lista.filter(f.fn).length))))),
-      h("div", { class: "contador" }, contagem),
+      h("div", { class: "contador" }, contagem, h("span", { class: "small muted", style: "display:inline-flex;gap:6px;align-items:center" }, icone("mais"), "põe o louvor na escala (o fim de semana aparece primeiro)")),
       caixa,
       h("p", { class: "small muted" }, `✓ Tocado = entrou em algum culto ${nomePeriodo(dias)} (${E.formatarData(E.somarDias(hoje(), -dias + 1), "curta")} a ${E.formatarData(hoje(), "curta")}). Os Salmos e Hinos não entram nesta lista.`));
+  }
+
+  /** Escolhe o culto (o do fim de semana primeiro) e põe a música na escala. */
+  function porNaEscala(m) {
+    const cultos = E.cultosParaAdicionar(state, hoje()).filter((x) => x.culto.data <= E.somarDias(hoje(), 35));
+    if (!cultos.length) return avisar("Não há escala com cultos pela frente. Crie a escala do próximo período primeiro.");
+    const proximoFds = cultos.find((x) => x.fimDeSemana);
+    // O "fim de semana" é o sábado e o domingo do primeiro fim de semana que vem.
+    const doFds = (x) => proximoFds && x.fimDeSemana && Math.abs(E.diasEntre(x.culto.data, proximoFds.culto.data)) <= 1;
+    const op = (x) => {
+      const ja = [x.culto, ...x.junto].some((c) => c.musicas.some((v) => v.id === m.id));
+      const fora = x.solene && !E.aptaSolene(state, m);
+      const livre = x.culto.musicas.some((v) => v.tipo === m.tipo && !v.id);
+      return {
+        id: `${x.escala.id}|${x.ci}`,
+        rotulo: `${E.formatarData(x.culto.data, "dia")} · ${[x.culto, ...x.junto].map((c) => c.nome).filter((n, i, a) => a.indexOf(n) === i).join(" e ")}`,
+        direita: [x.culto, ...x.junto].map((c) => horaCurta(c.hora)).join(" e "),
+        meta: ja ? h("span", { class: "ruim" }, "já está neste culto")
+          : fora ? h("span", { class: "ruim" }, "fora da orientação do culto solene")
+          : livre ? "vai na vaga de louvor livre" : `entra como mais um ${E.nomeTipo(m.tipo).toLowerCase()}`,
+      };
+    };
+    escolher({
+      titulo: "Pôr na escala",
+      sub: `${E.rotuloMusica(m)} · escolha o culto`,
+      grupos: [
+        { titulo: "Próximo fim de semana", itens: cultos.filter(doFds).map(op) },
+        { titulo: "Outros cultos", itens: cultos.filter((x) => !doFds(x)).map(op) },
+      ],
+      aoEscolher: (id) => {
+        const x = cultos.find((c) => `${c.escala.id}|${c.ci}` === id);
+        if (!x) return;
+        if ([x.culto, ...x.junto].some((c) => c.musicas.some((v) => v.id === m.id))) return avisar(`${m.titulo} já está nesse culto.`);
+        const onde = `${E.formatarData(x.culto.data, "dia")} · ${x.culto.nome}${x.junto.length ? " (e à noite)" : ""}`;
+        const aviso = x.solene && !E.aptaSolene(state, m) ? " Atenção: não segue a orientação do culto solene." : "";
+        comDesfazer(`${m.titulo} entrou na escala: ${onde}.${aviso}`, () => E.adicionarMusicaAoCulto(state, x.escala, x.ci, m.id));
+      },
+    });
   }
 
   /** Link (ou texto) da lista de louvores para mandar a quem não usa o app. */

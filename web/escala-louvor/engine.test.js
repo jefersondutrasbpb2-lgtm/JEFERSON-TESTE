@@ -419,6 +419,40 @@ test("lista de louvores para compartilhar: só cânticos, com os tocados no per�
   assert.doesNotMatch(texto, new RegExp(hino.titulo || "SH-sem-titulo"));
 });
 
+test("da lista de louvores: pôr um louvor no culto do fim de semana", () => {
+  const s = novoEstado();
+  const esc = E.gerarEscala(s, { inicio: "2026-11-08", fim: "2026-11-21", seed: 3 });
+  s.escalas = [esc];
+  const cultos = E.cultosParaAdicionar(s, "2026-11-04");
+  assert.ok(cultos.length > 0);
+  assert.ok(cultos.every((x) => !E.liderDe(esc, x.culto)), "a noite de domingo vem junto com a manhã");
+  const domingo = cultos.find((x) => x.fimDeSemana);
+  assert.equal(domingo.culto.data, "2026-11-08");
+  assert.ok(domingo.junto.length >= 1, "culto da noite junto");
+  const louvor = s.musicas.find((m) => m.tipo === "louvor" && m.ativo !== false && !domingo.culto.musicas.some((v) => v.id === m.id));
+  const antes = domingo.culto.musicas.length;
+
+  // Sem vaga livre de louvor: entra uma vaga nova, fixada, e o culto da noite recebe também.
+  const r = E.adicionarMusicaAoCulto(s, esc, domingo.ci, louvor.id);
+  assert.equal(r.ok, true);
+  assert.equal(r.novaVaga, true);
+  assert.equal(domingo.culto.musicas.length, antes + 1);
+  assert.ok(domingo.culto.travados.includes(`m:${r.k}`));
+  assert.ok(domingo.junto[0].musicas.some((v) => v.id === louvor.id));
+  // De novo: já está, nada muda.
+  assert.deepEqual(E.adicionarMusicaAoCulto(s, esc, domingo.ci, louvor.id), { ok: false, motivo: "já está neste culto" });
+  // Com vaga livre de louvor, usa a vaga.
+  const k = domingo.culto.musicas.findIndex((v) => v.tipo === "louvor" && v.id !== louvor.id);
+  domingo.culto.musicas[k].id = null;
+  const outro = s.musicas.find((m) => m.tipo === "louvor" && !domingo.culto.musicas.some((v) => v.id === m.id));
+  const r2 = E.adicionarMusicaAoCulto(s, esc, domingo.ci, outro.id);
+  assert.deepEqual([r2.ok, r2.novaVaga, r2.k], [true, false, k]);
+  // Sorteando de novo, o que foi posto à mão fica.
+  const nova = E.gerarEscala(s, { inicio: esc.inicio, fim: esc.fim, seed: 9 }, esc);
+  const dom = nova.cultos.find((c) => c.id === domingo.culto.id);
+  assert.ok(dom.musicas.some((v) => v.id === louvor.id) && dom.musicas.some((v) => v.id === outro.id));
+});
+
 test("dias de culto do período agrupam os cultos de cada dia", () => {
   const s = novoEstado();
   const dias = E.diasDeCulto(s, "2026-10-25", "2026-10-31");

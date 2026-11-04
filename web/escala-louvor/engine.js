@@ -660,6 +660,43 @@
     return culto;
   }
 
+  /**
+   * Cultos que ainda vão acontecer, nas escalas em aberto, para pôr uma música. O culto que repete outro
+   * do mesmo dia (ex.: domingo à noite) vem junto com o principal, em `junto`.
+   */
+  function cultosParaAdicionar(state, hoje) {
+    const lista = [];
+    for (const e of state.escalas || []) {
+      if (escalaCumprida(e, hoje)) continue;
+      e.cultos.forEach((c, ci) => {
+        if (c.data < hoje || liderDe(e, c)) return;
+        const junto = e.cultos.filter((x) => liderDe(e, x) === c);
+        const dow = diaSemana(c.data);
+        lista.push({ escala: e, ci, culto: c, junto, fimDeSemana: dow === 0 || dow === 6, solene: !!c.solene || junto.some((x) => x.solene) });
+      });
+    }
+    return lista.sort((a, b) => `${a.culto.data}${a.culto.hora || ""}`.localeCompare(`${b.culto.data}${b.culto.hora || ""}`));
+  }
+
+  /**
+   * Põe a música no culto (e nos que o repetem): na primeira vaga livre do mesmo tipo ou numa vaga nova
+   * no fim. Fica fixada, para não sair quando sortearem de novo. Já estando no culto, não muda nada.
+   */
+  function adicionarMusicaAoCulto(state, escala, ci, musicaId) {
+    const m = porId(state.musicas, musicaId);
+    let culto = escala.cultos[ci];
+    culto = liderDe(escala, culto) || culto;
+    if (!m) return { ok: false, motivo: "música não encontrada" };
+    if (culto.musicas.some((v) => v.id === musicaId)) return { ok: false, motivo: "já está neste culto" };
+    let k = culto.musicas.findIndex((v) => v.tipo === m.tipo && !v.id);
+    const novaVaga = k < 0;
+    if (novaVaga) k = adicionarMusica(culto, m.tipo);
+    culto.musicas[k].id = musicaId;
+    if (!(culto.travados || []).includes(`m:${k}`)) culto.travados = [...(culto.travados || []), `m:${k}`];
+    sincronizarEscala(escala);
+    return { ok: true, k, novaVaga, culto };
+  }
+
   /** Move a música da posição k para k + delta (muda a ordem do culto). */
   function moverMusica(culto, k, delta) {
     const j = k + delta;
@@ -1116,6 +1153,7 @@
     lerListaMusicas, lerTags, migrar,
     respostaDe, disponivelEm, estadoNoDia, diasDeCulto, soQuemPode,
     listaLouvores, textoListaLouvores,
+    cultosParaAdicionar, adicionarMusicaAoCulto,
     escalaCumprida, escalasAtivas, escalasArquivadas, periodoDeDisponibilidade, idResposta, codigoResposta, textoResposta, lerRespostas,
   };
 });

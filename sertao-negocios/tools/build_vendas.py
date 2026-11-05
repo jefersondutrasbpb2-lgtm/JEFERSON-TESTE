@@ -109,6 +109,11 @@ REVELADOS = [
             "60 anos de história. Formada pela UFPB, com MBA pela PUCRS, cresceu no balcão da família e, na pandemia, "
             "modernizou o negócio com novos canais de venda e presença digital. Hoje leva para a consultoria a experiência "
             "de quem conhece o negócio do balcão à gestão."},
+    {"slug": "roberto", "nome": "Roberto Moraes", "nome_html": "Roberto<br>Moraes", "papel": "Palestrante",
+     "tema": "Gestão financeira, lucro e caixa",
+     "bio": "Consultor financeiro e especialista em gestão financeira empresarial, passou 12 anos na Eletrobras Chesf "
+            "gerindo um orçamento superior a R$ 5 bilhões e atua como consultor parceiro do Sebrae e do Grupo Primo. "
+            "É criador do Ciclo do Sucesso Financeiro, método que ajuda pequenas e médias empresas a gerar mais lucro e mais caixa."},
 ]
 A_REVELAR = 10 - len(REVELADOS)
 cards = "".join(f'''

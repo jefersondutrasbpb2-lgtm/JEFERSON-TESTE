@@ -98,6 +98,11 @@ REVELADOS = [
      "bio": "Fundador da franquia Love Gifts, com mais de 100 unidades no Brasil, é formado em Marketing e tem MBA em Gestão "
             "Empresarial. Especialista em expansão de negócios, aceleração de vendas, importação, comportamento de consumo e "
             "experiência do cliente, também criou o projeto social Criança Empreendedora."},
+    {"slug": "anna", "nome": "Anna Stefania", "nome_html": "Anna<br>Stefania", "papel": "Palestrante",
+     "tema": "Empreendedorismo regional e conexão entre negócios",
+     "bio": "Gerente da Agência Sebrae de Patos e representante da Expo Business e da FENEMP, iniciativas que fortalecem o "
+            "empreendedorismo e conectam negócios. Atua para aproximar os empreendedores da região de conhecimento, "
+            "oportunidades e iniciativas que fazem as empresas crescerem."},
 ]
 A_REVELAR = 10 - len(REVELADOS)
 cards = "".join(f'''
@@ -120,6 +125,10 @@ html = must_replace(html, '''        </article>
 lista = [r["nome"] for r in REVELADOS]
 nomes = ", ".join(lista)
 nomes_e = " e ".join([", ".join(lista[:-1]), lista[-1]]) if len(lista) > 1 else lista[0]
+# Até três nomes, a frase cita cada um; depois, só a quantidade (a lista completa já está nos cards)
+POR_EXTENSO = {4: "Quatro", 5: "Cinco", 6: "Seis", 7: "Sete", 8: "Oito", 9: "Nove", 10: "Os dez"}
+abertura = (f"{nomes_e} {'abrem' if len(lista) > 1 else 'abre'} a lista" if len(lista) <= 3
+            else f"{POR_EXTENSO[len(lista)]} deles já estão aqui no palco")
 html = must_replace(html, "Padre Fabrício Timóteo e mais 10 palestrantes. 03 e 04 de dezembro",
                     f"Padre Fabrício Timóteo, {nomes} e mais {A_REVELAR} palestrantes. 03 e 04 de dezembro")
 html = must_replace(html, '<span class="stat__n" data-count="4">04</span><span class="stat__l">nomes confirmados</span>',
@@ -127,7 +136,7 @@ html = must_replace(html, '<span class="stat__n" data-count="4">04</span><span c
 html = must_replace(html, '<span class="stat__n" data-count="10">10</span><span class="stat__l">palestrantes a revelar</span>',
                     f'<span class="stat__n" data-count="{A_REVELAR}">{A_REVELAR:02d}</span><span class="stat__l">palestrantes a revelar</span>')
 html = must_replace(html, "<p>Outros 10 palestrantes, escolhidos a dedo, completam a programação. Cada nome é revelado no Instagram,",
-                    f"<p>Outros 10 palestrantes, escolhidos a dedo, completam a programação. {nomes_e} {"abrem" if len(lista) > 1 else "abre"} a lista, e cada novo nome é revelado no Instagram,")
+                    f"<p>Outros 10 palestrantes, escolhidos a dedo, completam a programação. {abertura}, e cada novo nome é revelado no Instagram,")
 html = must_replace(html, '<span class="speaker-cases__n">+10</span>', f'<span class="speaker-cases__n">+{A_REVELAR}</span>')
 html = must_replace(html, "<p><strong>palestrantes</strong> escolhidos a dedo completam este palco.",
                     "<p><strong>palestrantes</strong> escolhidos a dedo ainda completam este palco.")

@@ -103,6 +103,12 @@ REVELADOS = [
      "bio": "Gerente da Agência Sebrae de Patos e representante da Expo Business e da FENEMP, iniciativas que fortalecem o "
             "empreendedorismo e conectam negócios. Atua para aproximar os empreendedores da região de conhecimento, "
             "oportunidades e iniciativas que fazem as empresas crescerem."},
+    {"slug": "catarina", "nome": "Catarina Medeiros", "nome_html": "Catarina<br>Medeiros", "papel": "Palestrante",
+     "tema": "Gestão, liderança e empresa familiar",
+     "bio": "Administradora, empresária e consultora, está à frente da Panificadora Vitória, empresa familiar com mais de "
+            "60 anos de história. Formada pela UFPB, com MBA pela PUCRS, cresceu no balcão da família e, na pandemia, "
+            "modernizou o negócio com novos canais de venda e presença digital. Hoje leva para a consultoria a experiência "
+            "de quem conhece o negócio do balcão à gestão."},
 ]
 A_REVELAR = 10 - len(REVELADOS)
 cards = "".join(f'''

@@ -15,6 +15,7 @@ Saída: vendas.html (depois: python3 tools/build_gp_html.py vendas)
 import re
 import sys
 from html import escape
+from urllib.parse import quote
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -221,6 +222,32 @@ def ticket_price(key):
             f'<span class="ticket__old">{LOTE_ANTERIOR} <s>{brl(t["anterior"])}</s> <em>encerrado</em></span></div>')
 
 
+# Hotel parceiro: card depois dos ingressos. whatsapp: só dígitos, com 55 e DDD (ex.: "5583999999999")
+HOTEL = {
+    "nome": "Nord Easy Patos",
+    "rede": "Nord Hotéis",
+    "endereco": "Rua Darcílio Vanderlei da Nóbrega, 399, Patos-PB",
+    "whatsapp": "",
+    "mensagem": "Olá! Vou ao Sertão Negócios 2026 e quero a condição especial de hospedagem para participantes do evento.",
+}
+if HOTEL["whatsapp"]:
+    hotel_link = (f'<a class="btn btn--sol btn--lg" href="https://wa.me/{HOTEL["whatsapp"]}?text={quote(HOTEL["mensagem"])}" '
+                  f'target="_blank" rel="noopener" data-wa-direct="hotel-parceiro"><span>Reservar com a condição especial</span>'
+                  f'<svg class="btn__icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>')
+else:
+    hotel_link = '<p class="hotel__pending">Contato para reserva em breve.</p>'
+hotel_html = f'''
+      <article class="hotel" data-reveal>
+        <div class="hotel__media"><img src="assets/img/hotel-nord-easy.webp" alt="Fachada do hotel {HOTEL["nome"]}" width="560" height="845" loading="lazy" decoding="async"></div>
+        <div class="hotel__body">
+          <p class="hotel__tag">Hotel parceiro</p>
+          <h3 class="hotel__title">Vem de fora de Patos? Fique no {HOTEL["nome"]}.</h3>
+          <p>O hotel da rede {HOTEL["rede"]} tem condição especial de hospedagem para quem vai ao Sertão Negócios. Informe que vai ao evento na hora da reserva.</p>
+          <p class="hotel__address">{HOTEL["endereco"]}</p>
+          {hotel_link}
+        </div>
+      </article>'''
+
 # Ingressos no lugar do lote 0
 tickets = f'''<!-- ====== 06 INGRESSOS ====== -->
   <section class="tickets" id="ingressos" data-theme="dark" aria-labelledby="tickets-title" data-dock-hide>
@@ -284,6 +311,7 @@ tickets = f'''<!-- ====== 06 INGRESSOS ====== -->
           <svg class="btn__icon" aria-hidden="true"><use href="#i-arrow"/></svg>
         </a>
       </div>
+{hotel_html}
     </div>
   </section>
 
@@ -306,6 +334,10 @@ faq_new = '''<details class="qa" data-reveal>
         <details class="qa" data-reveal>
           <summary><span>Posso parcelar?</span><span class="qa__icon" aria-hidden="true"></span></summary>
           <div class="qa__a"><p>Pode. O Smart sai em ''' + parcelado(INGRESSOS["smart"]) + ''' e o VIP em ''' + parcelado(INGRESSOS["vip"]) + ''', ou ''' + brl(INGRESSOS["smart"]["price"]) + ''' e ''' + brl(INGRESSOS["vip"]["price"]) + ''' à vista.</p></div>
+        </details>
+        <details class="qa" data-reveal>
+          <summary><span>Onde posso me hospedar?</span><span class="qa__icon" aria-hidden="true"></span></summary>
+          <div class="qa__a"><p>O ''' + HOTEL["nome"] + ''', hotel parceiro do evento, tem condição especial para quem vai ao Sertão Negócios. Ele fica na ''' + HOTEL["endereco"] + '''. Na reserva, informe que vai ao evento.</p></div>
         </details>
         <details class="qa" data-reveal>
           <summary><span>Quem conduz o conteúdo de gestão?</span>'''

@@ -7,7 +7,8 @@
 //                                  Se outra pessoa gravou no meio tempo, responde 409 com a versão atual.
 //   POST api.php?acao=apagar       {id}       a cifra vai para a lixeira (30 dias)
 //   POST api.php?acao=restaurar    {id}       tira da lixeira
-//   POST api.php?acao=gravar_repertorio  {repertorio: {id?, nome, data, itens: [{id, semis}]}}
+//   POST api.php?acao=gravar_repertorio  {repertorio: {id?, nome, data, itens: [{id, semis}]}, antes}
+//                                  Como nas cifras: se outra pessoa gravou no meio tempo, responde 409.
 //   POST api.php?acao=apagar_repertorio  {id}
 //
 // Os dados ficam num arquivo fora da pasta pública quando dá (domains/<domínio>/cifras-dados/);
@@ -222,8 +223,13 @@ if ($acao === 'gravar_repertorio') {
         'data' => $data,
         'itens' => $limpos,
     ];
-    [, $resposta] = banco(function (array $banco) use ($id, $repertorio) {
+    $verificar = array_key_exists('antes', $pedido);
+    $antes = $pedido['antes'] ?? null;
+    [, $resposta] = banco(function (array $banco) use ($id, $repertorio, $verificar, $antes) {
         $atual = $id !== null ? ($banco['repertorios'][$id] ?? null) : null;
+        if ($atual && $verificar && ($atual['updated'] ?? null) !== $antes) {
+            responder(409, ['erro' => 'conflito', 'mensagem' => 'Outra pessoa alterou este repertório.', 'atual' => $atual]);
+        }
         if (!$atual && count($banco['repertorios']) >= MAXIMO_REPERTORIOS) falhar(507, 'cheio', 'Limite de repertórios atingido.');
         $id = $id ?? ('r' . bin2hex(random_bytes(6)));
         $repertorio = ['id' => $id] + $repertorio + ['created' => $atual['created'] ?? agora(), 'updated' => agora()];

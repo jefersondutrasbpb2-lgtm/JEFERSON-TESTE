@@ -89,13 +89,27 @@ Contraste verificado com axe (WCAG 2.1 AA): **sem violações** nas 4 abas, clar
 | Dicas e status | 13–14px, `--muted` |
 | Folha da cifra | `--sheet-size`, `line-height 1.35` (1.25 no modo ajustado) |
 
-### Espaçamento e raios (ainda não são tokens)
+### Espaçamento e raios
 
-Escala usada na prática: **4 · 6 · 8 · 10 · 12 · 14 · 16 · 18 · 22 · 24px**.
-Raios: **8px** (botões, selects), **10px** (inputs, cards pequenos, abas), **12px** (cards, folha,
-itens de repertório), **99px** (pílulas).
+| Token | Valor | Token | Valor |
+|---|---|---|---|
+| `--space-1` | 4px | `--space-6` | 14px |
+| `--space-2` | 6px | `--space-7` | 16px (margem lateral) |
+| `--space-3` | 8px | `--space-8` | 18px |
+| `--space-4` | 10px | `--space-9` | 22px |
+| `--space-5` | 12px | `--space-10` | 24px |
 
-> **Pendência:** transformar em `--space-1…--space-6` e `--radius-sm/md/lg` antes de crescer o CSS.
+| Token | Valor | Uso |
+|---|---|---|
+| `--radius-2xs` | 4px | `code`, detalhes pequenos |
+| `--radius-xs` | 6px | Botões das abas, selo de tom, ‹ › dos desenhos |
+| `--radius-sm` | 8px | Botões, selects |
+| `--radius-md` | 10px | Inputs, abas, cards pequenos |
+| `--radius-lg` | 12px | Cards, folha da cifra, itens de repertório |
+| `--radius-pill` | 999px | Pílulas, dica do modo culto |
+
+Use sempre os tokens em `gap`, `padding`, `margin` e `border-radius`. Valores fora da escala
+(1–3px, 20px, 40px, 80px) continuam como número quando são ajustes finos de um elemento só.
 
 ## 5. Componentes
 
@@ -164,7 +178,10 @@ Atualiza ao abrir a aba e ao voltar para o app (`visibilitychange`).
 | − / + | Muda o tom só neste aparelho; não altera o repertório |
 | A− / A+ | Desliga o ajuste à tela e usa o tamanho escolhido |
 | **⤢ Ajustar à tela** | Liga/desliga; a escolha fica guardada separada para tela em pé e deitada |
-| Parado 2,5 s (computador) | Barra desce e some; cursor some. Mexer o mouse ou tecla traz de volta |
+| Entrar (computador, ajuste ligado) | A barra **já começa escondida**, para não cobrir o fim da música. Aparece por 3,5 s a dica "Mexa o mouse para ver os controles" no canto de cima |
+| Mexer o mouse / tocar na tela | A barra aparece; some de novo 2,5 s depois de parar. **Teclado e pedal não trazem a barra** |
+| Foco por Tab dentro da barra | A barra fica visível enquanto o foco estiver nela |
+| iPhone fora da Tela de Início | Nas 3 primeiras vezes, dica "Tela cheia no iPhone: Compartilhar → Adicionar à Tela de Início" (6 s) |
 | Esc / ✕ Sair | Sai do modo culto e da tela cheia |
 
 **Teclado e pedal de virar página** (ignorado quando o foco está num campo):
@@ -194,7 +211,8 @@ Botões da barra perdem o foco depois do clique, para o espaço do pedal não re
 | Adicionar | Busca na biblioteca (até 8 sugestões com artista e tom); tocar adiciona no fim |
 | Itens | Tom − + (de −11 a +11 semitons), ↑ ↓ para reordenar, ✕ para tirar |
 | Salvar | Automático, 700 ms depois da última mudança, em fila; "Salvando…" → "Salvo ✓ · a equipe já vê" |
-| Sem internet | "Sem internet: não foi salvo…" (repertório não fica pendente no aparelho) |
+| Conflito | Se outra pessoa salvou o mesmo repertório no meio tempo, o seu vira "Nome (cópia)" e o campo Nome mostra isso |
+| Sem internet | "Sem internet: guardado neste aparelho…". Fica em `repertoriosPendentes` (repertório novo ganha id temporário `t…`) e aparece na lista. É enviado quando a internet volta ou quando a lista atualiza, **uma vez só** mesmo que os dois aconteçam juntos |
 | Música excluída da biblioteca | Item mostra "Música excluída da biblioteca"; no culto, tela avisando |
 | Excluir | Confirmação em 2 toques; sem lixeira (há o backup diário) |
 
@@ -210,7 +228,7 @@ servidor de análise fica recolhido em **Avançado**.
 | `lista` | GET | — | `{cifras: {id: Cifra}, repertorios: {id: Repertorio}}` |
 | `gravar` | POST | `{cifra: {id?, title, artist, text}, antes}` | `{cifra}` ou **409** `{atual}` se `updated ≠ antes` |
 | `apagar` / `restaurar` | POST | `{id}` | Lixeira de 30 dias |
-| `gravar_repertorio` | POST | `{repertorio: {id?, nome, data, itens: [{id, semis}]}}` | `{repertorio}`; vale o último que salvou |
+| `gravar_repertorio` | POST | `{repertorio: {id?, nome, data, itens: [{id, semis}]}, antes}` | `{repertorio}` ou **409** `{atual}` se `updated ≠ antes` |
 | `apagar_repertorio` | POST | `{id}` | — |
 
 - `Cifra = {id, title, artist, text, created, updated}`. Limites: nome/artista com 200 caracteres,
@@ -220,7 +238,12 @@ servidor de análise fica recolhido em **Avançado**.
 
 **`localStorage` (prefixo `cifrador.`), só neste aparelho:** `draft`, `size`, `inst`, `tab`, `diag`,
 `ajuste.empe`, `ajuste.deitado`, `capos` (`{idDaCifra: casa}`), `biblioteca` e `repertorios`
-(cópias para usar sem internet), `songs` (pendentes de envio), `api`.
+(cópias para usar sem internet), `songs` (cifras pendentes de envio), `repertoriosPendentes`,
+`dicaIOS` (quantas vezes a dica apareceu), `api`.
+
+**Instalar como app:** `manifest.webmanifest` com ícones `icon.svg`, `icon-192.png` e `icon-512.png`;
+`icon-180.png` para a Tela de Início do iPhone; `apple-mobile-web-app-capable` para abrir sem a barra
+do Safari.
 
 ## 8. Casos extremos
 
@@ -229,9 +252,9 @@ servidor de análise fica recolhido em **Avançado**.
 | Título muito longo | Quebra a linha (`overflow-wrap: anywhere`); no card e no repertório não corta |
 | Música longa no celular em pé | Ajuste desligado por padrão; ligado e sem caber, volta a rolar |
 | Música curta no computador | Letra pode chegar a 56px (máximo) |
-| Sem internet | Biblioteca e repertórios mostram a última cópia; cifras salvas ficam pendentes; repertório não salva |
+| Sem internet | Biblioteca e repertórios mostram a última cópia; cifras e repertórios salvos ficam pendentes e sobem quando a internet volta |
 | Servidor fora do ar (500) | Mensagem do servidor no status; nada é perdido no aparelho |
-| Duas pessoas na mesma cifra | A segunda vira "(cópia)" |
+| Duas pessoas na mesma cifra ou no mesmo repertório | A segunda vira "(cópia)" |
 | Cifra sem acordes reconhecidos | Mostra só a letra; tom "–" |
 | Acorde desconhecido (ex.: `X7`) | A linha é tratada como letra |
 | Tablatura larga | Rolagem horizontal só na linha da tablatura |
@@ -241,7 +264,7 @@ servidor de análise fica recolhido em **Avançado**.
 
 | Elemento | Gatilho | Animação | Duração | Curva |
 |---|---|---|---|---|
-| Barra do modo culto | 2,5 s parado (computador, ajuste ligado) | Some e desce 100% | 250 ms | padrão (`ease`) |
+| Barra do modo culto | 2,5 s sem mexer o mouse (computador, ajuste ligado) | Some e desce 100% | 250 ms | padrão (`ease`) |
 | Barra de progresso do áudio | Progresso | Largura | 150 ms | padrão |
 | Card do desenho | Tocar no acorde | Borda e sombra `--hot` | 900 ms (troca de classe) | — |
 | Rolagem automática | ▶ Rolar | `scrollBy` a cada quadro, velocidade 1–10 × 9 px/s | contínua | linear |
@@ -261,11 +284,17 @@ Com `prefers-reduced-motion: reduce`, as transições de barra e progresso são 
 - **Toque:** 44px de altura no celular; ‹ › dos desenhos com 36×32px (mínimo de 24px do WCAG 2.2 atendido).
 - **Verificação:** axe-core, regras `wcag2a` + `wcag2aa`: 0 violações.
 
-## 11. Pendências conhecidas
+## 11. Código
 
-1. Espaçamento e raios como tokens (seção 4).
-2. Nos primeiros 2,5 s do modo culto no computador, a barra cobre as últimas linhas da música ajustada.
-3. Repertório não guarda alterações sem internet.
-4. Se dois aparelhos editarem o mesmo repertório ao mesmo tempo, vale o último que salvou.
-5. Nomes de variáveis internas em `assets/app.js` ainda são curtos (vieram do protótipo compilado).
-6. Tela cheia não existe no iPhone (limite do Safari); usar "Adicionar à Tela de Início".
+- `assets/app.js`: os nomes do arquivo inteiro são legíveis (`renderizar`, `abrirCifra`,
+  `mostrarAba`, `estado`, `elemento`, `lerCifra`, `transporTom`, `posicoesViolao`…). Foram
+  renomeados com o Babel, respeitando o escopo de cada variável. Parâmetros e variáveis locais
+  dentro de funções antigas ainda são curtos (`e`, `t`, `n`): renomeie ao mexer na função.
+- `assets/worker.js` (análise de áudio) continua com os nomes do protótipo.
+
+## 12. Limites conhecidos
+
+1. **Tela cheia no iPhone:** o Safari não deixa uma página entrar em tela cheia. Adicionado à Tela de
+   Início, o app abre sem a barra do Safari; o app avisa como fazer.
+2. **Barra no celular e tablet:** sem mouse, a barra fica sempre visível. Por isso a música ajustada
+   termina acima dela.

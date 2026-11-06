@@ -243,7 +243,7 @@ hotel_html = f'''
         <div class="hotel__body">
           <p class="hotel__tag">Hotel parceiro</p>
           <h3 class="hotel__title">Vem de fora de Patos? Fique no {HOTEL["nome"]}.</h3>
-          <p>O hotel da rede {HOTEL["rede"]} tem condição especial de hospedagem para quem vai ao Sertão Negócios. Informe que vai ao evento na hora da reserva.</p>
+          <p>O hotel da rede {HOTEL["rede"]} é o parceiro do Sertão Negócios para quem vem de outras cidades.</p>
           <p class="hotel__address">{HOTEL["endereco"]}</p>
           <p class="hotel__details">{HOTEL["detalhes"]}</p>
           {hotel_link}
@@ -339,7 +339,7 @@ faq_new = '''<details class="qa" data-reveal>
         </details>
         <details class="qa" data-reveal>
           <summary><span>Onde posso me hospedar?</span><span class="qa__icon" aria-hidden="true"></span></summary>
-          <div class="qa__a"><p>O ''' + HOTEL["nome"] + ''', hotel parceiro do evento, tem condição especial para quem vai ao Sertão Negócios. Ele fica na ''' + HOTEL["endereco"] + '''. Para reservar, ligue para ''' + HOTEL["telefone"] + ''' e informe que vai ao evento.</p></div>
+          <div class="qa__a"><p>O ''' + HOTEL["nome"] + ''' é o hotel parceiro do evento. Ele fica na ''' + HOTEL["endereco"] + '''. Para reservar, ligue para ''' + HOTEL["telefone"] + '''.</p></div>
         </details>
         <details class="qa" data-reveal>
           <summary><span>Quem conduz o conteúdo de gestão?</span>'''

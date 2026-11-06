@@ -222,20 +222,21 @@ def ticket_price(key):
             f'<span class="ticket__old">{LOTE_ANTERIOR} <s>{brl(t["anterior"])}</s> <em>encerrado</em></span></div>')
 
 
-# Hotel parceiro: card depois dos ingressos. whatsapp: só dígitos, com 55 e DDD (ex.: "5583999999999")
+# Hotel parceiro: card depois dos ingressos. Reserva por telefone fixo e e-mail da recepção (o hotel não tem WhatsApp)
 HOTEL = {
     "nome": "Nord Easy Patos",
     "rede": "Nord Hotéis",
-    "endereco": "Rua Darcílio Vanderlei da Nóbrega, 399, Patos-PB",
-    "whatsapp": "",
-    "mensagem": "Olá! Vou ao Sertão Negócios 2026 e quero a condição especial de hospedagem para participantes do evento.",
+    "endereco": "R. Darcílio Vanderlei da Nóbrega, 399, Brasília, Patos-PB",
+    "telefone": "(83) 3421-2829",
+    "tel": "+558334212829",
+    "email": "recepcao.easypatos@nordhoteis.com.br",
+    "detalhes": "Hotel 3 estrelas · check-in a partir das 15h · check-out até as 12h · recepção 24 horas",
 }
-if HOTEL["whatsapp"]:
-    hotel_link = (f'<a class="btn btn--sol btn--lg" href="https://wa.me/{HOTEL["whatsapp"]}?text={quote(HOTEL["mensagem"])}" '
-                  f'target="_blank" rel="noopener" data-wa-direct="hotel-parceiro"><span>Reservar com a condição especial</span>'
-                  f'<svg class="btn__icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>')
-else:
-    hotel_link = '<p class="hotel__pending">Contato para reserva em breve.</p>'
+hotel_assunto = quote("Hospedagem para o Sertão Negócios 2026")
+hotel_link = (f'''<div class="hotel__actions">
+            <a class="btn btn--sol btn--lg" href="tel:{HOTEL["tel"]}"><span class="hotel__call">Ligar para reservar <small>{HOTEL["telefone"]}</small></span></a>
+            <a class="hotel__mail" href="mailto:{HOTEL["email"]}?subject={hotel_assunto}">ou escreva para {HOTEL["email"]}</a>
+          </div>''')
 hotel_html = f'''
       <article class="hotel" data-reveal>
         <div class="hotel__media"><img src="assets/img/hotel-nord-easy.webp" alt="Fachada do hotel {HOTEL["nome"]}" width="560" height="845" loading="lazy" decoding="async"></div>
@@ -244,6 +245,7 @@ hotel_html = f'''
           <h3 class="hotel__title">Vem de fora de Patos? Fique no {HOTEL["nome"]}.</h3>
           <p>O hotel da rede {HOTEL["rede"]} tem condição especial de hospedagem para quem vai ao Sertão Negócios. Informe que vai ao evento na hora da reserva.</p>
           <p class="hotel__address">{HOTEL["endereco"]}</p>
+          <p class="hotel__details">{HOTEL["detalhes"]}</p>
           {hotel_link}
         </div>
       </article>'''
@@ -337,7 +339,7 @@ faq_new = '''<details class="qa" data-reveal>
         </details>
         <details class="qa" data-reveal>
           <summary><span>Onde posso me hospedar?</span><span class="qa__icon" aria-hidden="true"></span></summary>
-          <div class="qa__a"><p>O ''' + HOTEL["nome"] + ''', hotel parceiro do evento, tem condição especial para quem vai ao Sertão Negócios. Ele fica na ''' + HOTEL["endereco"] + '''. Na reserva, informe que vai ao evento.</p></div>
+          <div class="qa__a"><p>O ''' + HOTEL["nome"] + ''', hotel parceiro do evento, tem condição especial para quem vai ao Sertão Negócios. Ele fica na ''' + HOTEL["endereco"] + '''. Para reservar, ligue para ''' + HOTEL["telefone"] + ''' e informe que vai ao evento.</p></div>
         </details>
         <details class="qa" data-reveal>
           <summary><span>Quem conduz o conteúdo de gestão?</span>'''

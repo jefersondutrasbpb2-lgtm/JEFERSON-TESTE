@@ -697,8 +697,13 @@ button { font: inherit; color: inherit; }
 .hotel__tag { font-size: .75rem; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: var(--sol-ink) !important; }
 .hotel__title { font-family: var(--font-display); font-weight: 800; font-size: clamp(1.5rem, 1.1rem + 1.4vw, 2.3rem); line-height: 1.05; letter-spacing: -.03em; }
 .hotel__address { font-weight: 700; color: var(--tinta) !important; }
-.hotel__pending { font-weight: 700; }
-.hotel .btn { justify-self: start; margin-top: 6px; }
+.hotel__details { font-size: .9rem; }
+.hotel__actions { display: grid; gap: 10px; justify-items: start; margin-top: 6px; }
+.hotel__actions .btn { justify-self: stretch; height: auto; padding-block: .8em; }
+.hotel__call { display: grid; justify-items: center; line-height: 1.15; }
+.hotel__call small { font-size: .85em; font-weight: 700; opacity: .9; }
+@media (min-width: 640px) { .hotel__actions .btn { justify-self: start; } }
+.hotel__mail { font-size: .9rem; font-weight: 700; color: var(--tinta); text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
 @media (min-width: 900px) {
   .hotel { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); }
   .hotel__media { position: relative; aspect-ratio: auto; min-height: 340px; }

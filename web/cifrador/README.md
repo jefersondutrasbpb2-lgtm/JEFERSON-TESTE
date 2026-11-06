@@ -3,8 +3,11 @@
 App de cifras do ministério de louvor da Igreja Evangélica Congregacional de Pombal, publicado em
 `cifras.igrejacongregacionalpombal.com.br` (pasta `public_html/cifras` na Hostinger).
 
-- **Biblioteca** (tela inicial): todas as cifras da igreja em ordem alfabética, com o tom de cada uma,
-  busca por nome, artista ou trecho da letra, e os botões Tocar e Abrir e editar.
+- **Busca** (tela inicial): campo grande, favoritas e abertas recentemente. Menu lateral no
+  computador e barra embaixo no celular: Busca · Repertórios · Cifras · Áudio.
+- **Cifras**: todas as cifras da igreja em ordem alfabética, com o tom de cada uma.
+- **Cifra aberta**: ★ favoritar, + adicionar ao repertório no tom da tela, imprimir/PDF; seções da
+  música em faixa colorida.
 - **Cifra**: cola uma cifra (acordes em cima da letra ou ChordPro), transpõe, capotraste,
   desenhos dos acordes para violão e teclado, rolagem automática. A cifra quebra a linha no fim da
   tela mantendo cada acorde em cima da sua sílaba (dá para ler no celular sem arrastar para o lado).

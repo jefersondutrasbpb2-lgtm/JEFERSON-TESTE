@@ -1301,3 +1301,607 @@ body.culto.ajuste.ocioso {
   font-weight: 700;
   box-shadow: 0 2px 10px #0003;
 }
+
+/* ===================================================================== */
+/* Layout com menu lateral (computador) e barra embaixo (celular)          */
+/* ===================================================================== */
+#impressao {
+  display: none;
+}
+.ico {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex: none;
+}
+.nav {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 232px;
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+  padding: max(var(--space-9), env(safe-area-inset-top, 0px)) var(--space-5) var(--space-7);
+}
+.nav .brand {
+  padding: 0 var(--space-3) var(--space-7);
+  border-bottom: 1px solid var(--line);
+}
+.nav .tabs {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  background: none;
+  padding: 0;
+  gap: var(--space-1);
+}
+.nav .tabs button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius-md);
+  color: var(--ink);
+  font-size: 16px;
+  text-align: left;
+}
+.nav .tabs button:hover {
+  background: var(--surface-2);
+}
+.nav .tabs button[aria-selected="true"] {
+  background: var(--chord-soft);
+  color: var(--chord);
+  box-shadow: none;
+}
+.nav-pe {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  font-size: 12px;
+  color: var(--muted);
+  padding: 0 var(--space-3);
+}
+.nav-pe .temaBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  justify-content: flex-start;
+  padding-inline: var(--space-3);
+}
+.temaBtn .ico {
+  width: 18px;
+  height: 18px;
+}
+.temaBtn[aria-pressed="true"] {
+  background: var(--chord-soft);
+  color: var(--chord);
+  border-color: var(--chord);
+}
+body {
+  margin: 0;
+}
+.principal {
+  margin-left: 232px;
+}
+.so-celular {
+  display: none;
+}
+body.culto .nav,
+body.culto .songbar {
+  display: none !important;
+}
+body.culto .principal {
+  margin-left: 0;
+}
+
+/* ----- Busca (tela inicial) ----- */
+.busca {
+  max-width: 780px;
+  padding-block: clamp(32px, 12vh, 120px) 80px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+  position: relative;
+}
+.busca-marca {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-5);
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(30px, 5vw, 44px);
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-5);
+}
+.busca-marca svg {
+  width: 1.2em;
+  height: 1.2em;
+}
+.busca-marca small {
+  font-family: var(--body);
+  font-size: 0.42em;
+  color: var(--muted);
+  letter-spacing: 0;
+}
+.busca-campo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 0 var(--space-8);
+  box-shadow: 0 2px 10px #0000000f;
+  color: var(--muted);
+}
+.busca-campo:focus-within {
+  border-color: var(--chord);
+}
+.busca-campo input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  font-size: 18px;
+  padding: var(--space-7) 0;
+  outline: none;
+  color: var(--ink);
+}
+.busca-dica {
+  text-align: center;
+}
+.secao-tit {
+  font-family: var(--display);
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: var(--space-5) 0 var(--space-3);
+}
+.secao-tit .linkbtn {
+  text-transform: none;
+  letter-spacing: 0;
+  font-family: var(--body);
+  color: var(--chord);
+  margin-left: var(--space-3);
+}
+
+/* ----- Linhas de lista (busca, repertórios) ----- */
+.lista,
+#repGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.linha {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-6);
+}
+.linha.fav {
+  background: var(--chord-soft);
+  border-color: var(--chord);
+}
+.linha.passado {
+  opacity: 0.75;
+}
+.l-nome {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-1) 0;
+}
+.l-nome strong {
+  font-size: 17px;
+  overflow-wrap: anywhere;
+}
+.l-nome span {
+  font-size: 14px;
+  color: var(--muted);
+}
+.tom {
+  font-family: var(--mono);
+  font-weight: 700;
+  color: var(--chord);
+  background: var(--chord-soft);
+  border-radius: var(--radius-xs);
+  padding: 2px var(--space-3);
+  flex: none;
+}
+.pasta {
+  width: 46px;
+  height: 46px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-md);
+  background: var(--chord-soft);
+  color: var(--chord);
+  font-size: 22px;
+}
+.pasta svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+}
+.campo {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-5);
+  font-size: 16px;
+}
+
+/* ----- Cabeçalho da cifra aberta ----- */
+.songbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.songbar .sp {
+  flex: 1;
+}
+#favBtn {
+  font-size: 20px;
+}
+#favBtn[aria-pressed="true"] {
+  color: var(--hot);
+  border-color: var(--hot);
+  background: var(--hot-soft);
+}
+.menuwrap {
+  position: relative;
+}
+.menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 30;
+  min-width: 260px;
+  max-height: 60vh;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px #00000026;
+  padding: var(--space-2);
+}
+.menu-tit {
+  margin: var(--space-2) var(--space-3);
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 700;
+}
+.menu button {
+  text-align: left;
+  border: 0;
+  background: none;
+  padding: var(--space-4) var(--space-3);
+  border-radius: var(--radius-xs);
+  font-weight: 700;
+}
+.menu button:hover:not(:disabled) {
+  background: var(--chord-soft);
+  color: var(--chord);
+}
+.menu button:disabled {
+  color: var(--muted);
+  font-weight: 400;
+  cursor: default;
+}
+
+/* ----- Seções da música em faixa colorida (leitura de longe) ----- */
+.sheet .ln.sec {
+  display: block;
+  text-align: center;
+  background: var(--chord);
+  color: #fff;
+  border-radius: var(--radius-md);
+  padding: 0.3em var(--space-5);
+  margin: 0.9em 0 0.45em;
+  font-size: 0.78em;
+  letter-spacing: 0.08em;
+}
+.sheet .secao:first-child .ln.sec {
+  margin-top: 0;
+}
+:root[data-theme="dark"] .sheet .ln.sec {
+  background: var(--chord-soft);
+  color: var(--chord);
+}
+body.culto.ajuste .sheet .ln.sec {
+  margin-top: 0.4em;
+}
+
+/* ----- Repertório: arrastar ----- */
+.replist li {
+  grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+}
+.alca {
+  order: -1;
+  cursor: grab;
+  touch-action: none;
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1;
+  padding: var(--space-2) var(--space-1);
+  user-select: none;
+}
+.replist li.arrastando {
+  opacity: 0.7;
+  box-shadow: 0 6px 18px #00000026;
+  border-color: var(--chord);
+}
+
+/* ----- Palco: setas e bolinhas ----- */
+.palco-seta {
+  position: fixed;
+  top: 50%;
+  z-index: 21;
+  width: 56px;
+  height: 56px;
+  margin-top: -28px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
+  color: var(--ink);
+  font-size: 30px;
+  line-height: 1;
+  box-shadow: 0 2px 10px #0000002e;
+  transition: opacity 0.25s;
+}
+.palco-seta.esq {
+  left: max(8px, env(safe-area-inset-left, 0px));
+}
+.palco-seta.dir {
+  right: max(8px, env(safe-area-inset-right, 0px));
+}
+.palco-seta:disabled {
+  opacity: 0.25;
+}
+.palco-pos {
+  position: fixed;
+  top: max(6px, env(safe-area-inset-top, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 21;
+  display: flex;
+  gap: 2px;
+  transition: opacity 0.25s;
+}
+.palco-pos button {
+  width: 22px;
+  height: 22px;
+  border: 0;
+  background: none;
+  padding: 0;
+  display: grid;
+  place-items: center;
+}
+.palco-pos button::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+  opacity: 0.5;
+}
+.palco-pos button[aria-current="true"]::before {
+  background: var(--chord);
+  opacity: 1;
+  width: 18px;
+  border-radius: var(--radius-pill);
+}
+body.culto.ajuste.ocioso .palco-seta,
+body.culto.ajuste.ocioso .palco-pos {
+  opacity: 0;
+  pointer-events: none;
+}
+/* Espaço para as setas só quando elas existem (tocando um repertório) */
+body.culto.com-setas .cifra-grid {
+  padding-inline: max(72px, env(safe-area-inset-left, 0px));
+}
+#cbTema {
+  font-size: 18px;
+}
+
+/* ===================== Celular ===================== */
+@media (max-width: 860px) {
+  .nav {
+    inset: auto 0 0 0;
+    width: auto;
+    flex-direction: row;
+    padding: var(--space-1) var(--space-2) max(var(--space-1), env(safe-area-inset-bottom, 0px));
+    border-right: 0;
+    border-top: 1px solid var(--line);
+    box-shadow: 0 -2px 10px #0000000f;
+  }
+  .nav .brand,
+  .nav-pe {
+    display: none;
+  }
+  .nav .tabs {
+    flex-direction: row;
+    width: 100%;
+    gap: 0;
+  }
+  .nav .tabs button {
+    flex: 1 1 0;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--space-2) var(--space-1);
+    min-height: 56px;
+    font-size: 12px;
+    text-align: center;
+    justify-content: center;
+  }
+  .nav .tabs button[aria-selected="true"] {
+    background: none;
+  }
+  .nav .tabs button[aria-selected="true"] .ico {
+    stroke-width: 2.3;
+  }
+  .principal {
+    margin-left: 0;
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  }
+  body.culto .principal {
+    padding-bottom: 0;
+  }
+  .so-celular {
+    display: inline-grid;
+    place-items: center;
+    position: absolute;
+    top: var(--space-7);
+    right: var(--space-7);
+  }
+  .busca {
+    padding-top: var(--space-10);
+  }
+  .busca-marca {
+    margin-top: var(--space-10);
+  }
+  .songbar #printBtn {
+    display: none;
+  }
+  .replist li {
+    grid-template-columns: auto auto minmax(0, 1fr);
+  }
+  .alca,
+  .replist li::before {
+    grid-row: span 2;
+  }
+  .ri-nome {
+    grid-column: 3;
+  }
+  .ri-tom {
+    grid-row: 2;
+    grid-column: 3;
+    justify-self: start;
+  }
+  .ri-ord {
+    grid-row: 2;
+    grid-column: 3;
+    justify-self: end;
+  }
+  body.culto.com-setas .cifra-grid {
+    padding-inline: max(var(--space-7), env(safe-area-inset-left, 0px));
+  }
+  .palco-seta {
+    width: 48px;
+    height: 48px;
+    margin-top: -24px;
+    opacity: 0.85;
+  }
+}
+
+/* ===================== Impressão / PDF ===================== */
+@media print {
+  @page {
+    margin: 14mm 12mm;
+  }
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  body > *:not(#impressao) {
+    display: none !important;
+  }
+  #impressao {
+    display: block !important;
+    font-family: var(--body);
+    --sheet-size: 12pt;
+  }
+  #impressao .imp-musica + .imp-musica,
+  #impressao .imp-capa + .imp-musica {
+    break-before: page;
+  }
+  #impressao h1 {
+    font-family: var(--display);
+    font-size: 20pt;
+    margin: 0;
+  }
+  #impressao .imp-sub {
+    margin: 2pt 0 10pt;
+    color: #444;
+  }
+  #impressao .imp-capa ol {
+    font-size: 13pt;
+    line-height: 1.8;
+  }
+  #impressao .sheet {
+    border: 0;
+    padding: 0;
+    background: none;
+    font-size: 12pt;
+    columns: 2;
+    column-gap: 10mm;
+  }
+  #impressao .sheet .ch,
+  #impressao .sheet .ln.chords,
+  #impressao .sheet .cr {
+    color: #1d3ab4 !important;
+  }
+  #impressao .sheet .ln.sec {
+    background: #e3e8fb !important;
+    color: #1d3ab4 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+/* Ajustes finos do celular e da impressão */
+#cbExit {
+  white-space: nowrap;
+}
+@media (max-width: 860px) {
+  .busca-campo input {
+    font-size: 16px;
+  }
+  /* No celular a ordem muda arrastando a alça ⠿; ↑ ↓ ficam só no computador (teclado) */
+  .ri-ord [data-a="sobe"],
+  .ri-ord [data-a="desce"] {
+    display: none;
+  }
+}
+/* Celular em pé: as setas cobririam a letra; ‹ › continuam na barra de baixo */
+@media (max-width: 600px) and (orientation: portrait) {
+  .palco-seta {
+    display: none !important;
+  }
+}
+@media print {
+  #impressao .secao {
+    break-inside: auto;
+  }
+  #impressao .ln.par,
+  #impressao .ln.sec {
+    break-inside: avoid;
+    break-after: avoid-column;
+  }
+  #impressao .ln.sec {
+    break-after: avoid;
+  }
+}

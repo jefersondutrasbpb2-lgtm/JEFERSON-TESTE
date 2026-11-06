@@ -25,23 +25,30 @@ Sem etapa de build: HTML, CSS e JS (módulo ES) vão como estão. Back-end em PH
 ## 2. Estrutura das telas
 
 ```
-Topo: marca "Cifras IEC Pombal" + abas  [Biblioteca] [Cifra] [Culto] [Áudio]
+Menu lateral (computador) / barra embaixo (celular):  Busca · Repertórios · Cifras · Áudio
 
-Biblioteca (tela inicial)   Cifra                         Culto                    Áudio
-├ + Nova cifra              ├ Barra de ferramentas        ├ Lista de repertórios   ├ Arquivo / exemplo
-├ Busca                     ├ Editor (esq.)  │ Folha (dir.)├ Montar repertório     ├ Resultado + linha do tempo
-├ Aviso de pendentes        │  nome, artista │ título, tom ├ ▶ Tocar               └ Avançado: servidor
-└ Cards (A–Z)               │  texto, salvar │ desenhos    └ Excluir
-                            │  dicas         │ cifra
-                            └ Modo culto (tela cheia + barra de baixo)
+Busca (início)            Repertórios                 Cifras             Áudio
+├ Campo grande            ├ ★ Favoritas (fixa no topo)├ + Nova cifra     ├ Arquivo / exemplo
+├ ★ Favoritas             ├ Pastas: nome, nº, data    ├ Busca            └ Avançado: servidor
+├ Abertas recentemente    └ Pasta aberta:             └ Cards A–Z
+└ Resultados                 ⠿ arrastar, tom − +, ✕, Imprimir, ▶ Tocar
+
+Cifra aberta (a partir de qualquer lista):  ‹ Voltar · ★ · + Repertório · Imprimir
+├ Barra: Tom, Instrumento, Capo, Ajustes, Editar, Modo culto
+├ Editor (esq.) │ Folha (dir.): seções em faixa colorida
+└ Modo culto (palco): fundo escuro, setas ‹ › nas laterais, bolinhas de posição, barra embaixo
 ```
+
+**Só no aparelho de cada pessoa (além do que já era):** favoritas (`favoritos`), abertas recentemente
+(`recentes`, 12), tema (`tema`: claro/escuro/sem escolha) e fundo escuro no palco (`palcoEscuro`,
+ligado por padrão).
 
 ## 3. Layout e pontos de quebra
 
 | Faixa | O que muda | Por quê |
 |---|---|---|
-| **> 860px** (computador) | Cifra em 2 colunas (editor 5fr, folha 8fr). Barra de ferramentas completa, fixa no topo ao rolar. Modo culto começa com **Ajustar à tela** ligado | Jefferson e Natan usam computador |
-| **≤ 860px** (celular em pé) | Uma coluna; editor escondido até tocar em **Editar**. Barra mostra Tom, Instrumento, Capo; o resto em **Ajustes**. Abas ocupam a largura toda. Botões com 44px de altura | Toque com o dedo; espaço vertical |
+| **> 860px** (computador) | Menu lateral de 232px. Cifra em 2 colunas (editor 5fr, folha 8fr). Barra de ferramentas completa, fixa no topo ao rolar. Modo culto começa com **Ajustar à tela** ligado | Jefferson e Natan usam computador |
+| **≤ 860px** (celular em pé) | Menu vira barra de 4 ícones embaixo (56px). Uma coluna; editor escondido até tocar em **Editar**. Barra mostra Tom, Instrumento, Capo; o resto em **Ajustes**. Botões com 44px. No repertório, a ordem muda arrastando ⠿ (↑ ↓ só no computador). Setas laterais do palco escondidas (‹ › ficam na barra) | Toque com o dedo; espaço vertical |
 | **Paisagem e altura ≤ 520px** (celular deitado) | Barra do modo culto numa linha só. Ajustar à tela liga sozinho | Celular do Juninho em cima do teclado |
 
 - Largura máxima do conteúdo: `.wrap` com 1320px; no modo culto ajustado, sem limite.
@@ -283,6 +290,20 @@ Com `prefers-reduced-motion: reduce`, as transições de barra e progresso são 
   e o tom atual.
 - **Toque:** 44px de altura no celular; ‹ › dos desenhos com 36×32px (mínimo de 24px do WCAG 2.2 atendido).
 - **Verificação:** axe-core, regras `wcag2a` + `wcag2aa`: 0 violações.
+
+## 10b. Recursos da reformulação (inspirada na organização de apps de cifra pagos)
+
+| Recurso | Comportamento |
+|---|---|
+| Busca (tela inicial) | Filtra nome, artista e letra sem acento; títulos que batem vêm primeiro; Enter abre o primeiro. Sem texto: Favoritas e Abertas recentemente |
+| ★ Favoritar | Na cifra aberta; só neste aparelho. "▶ tocar todas" toca as favoritas como um repertório |
+| + Repertório | Menu com os repertórios; adiciona a música **no tom que está na tela**. "Novo repertório com esta música" cria um com o nome da música. Já presente: desabilitado |
+| Repertórios como pastas | Data opcional; novos começam sem data. Busca por nome do repertório ou das músicas. Pendentes (sem internet) marcados "só neste aparelho" |
+| Arrastar | Alça ⠿ com mouse ou dedo (Pointer Events na página inteira, porque mover a linha solta a captura do ponteiro); salva sozinho |
+| Seções em faixa | `.ln.sec` com fundo `--chord` e texto branco (escuro: fundo `--chord-soft`, texto `--chord`) |
+| Palco | Fundo escuro por padrão (☾/☀ na barra muda, guardado no aparelho). Tocando repertório com 2+ músicas: setas ‹ › de 56px nas laterais e bolinhas no topo (tocar numa bolinha pula para a música). No computador somem junto com a barra |
+| Imprimir / PDF | Cifra: a folha no tom da tela. Repertório: capa com a lista e o tom de cada música, depois uma música por página. Duas colunas, faixas das seções em azul claro. Usa `window.print()` (o navegador oferece "Salvar como PDF") |
+| Modo escuro | Botão no menu (computador) e no canto da Busca (celular) |
 
 ## 11. Código
 

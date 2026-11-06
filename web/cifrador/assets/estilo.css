@@ -1241,3 +1241,29 @@ body.culto.ajuste.ocioso {
     transition: none;
   }
 }
+
+/* Tablatura: largura fixa para as colunas alinharem */
+.sheet .ln.tab {
+  font-family: var(--mono);
+  white-space: pre;
+  overflow-x: auto;
+  font-size: 0.85em;
+  line-height: 1.3;
+}
+
+/* Celular deitado (em cima do teclado): barra do modo culto numa linha só, para sobrar altura para a música */
+@media (orientation: landscape) and (max-height: 520px) {
+  .cultobar {
+    flex-direction: row;
+    align-items: center;
+    padding-block: 4px max(4px, env(safe-area-inset-bottom, 0px));
+  }
+  .cb-nav {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .cultobar .btn,
+  .cultobar .btn.sq {
+    min-height: 40px;
+  }
+}

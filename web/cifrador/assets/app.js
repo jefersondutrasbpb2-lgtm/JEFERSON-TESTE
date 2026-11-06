@@ -661,6 +661,8 @@ function He(e, t, n = 0) {
  * Assim a linha quebra no fim da tela sem perder o acorde de cada sílaba. Pedaços da mesma
  * palavra ficam juntos (não quebram no meio da palavra).
  */
+/** Linha de tablatura (e|--3--5--|, E|-----, |--0--2--|): vai em fonte de largura fixa para alinhar. */
+const ehTab = (t) => /^\s*([A-Ga-g][#b]?\s*)?\|.*-{2,}/.test(t) || /-{3,}\d|\d-{3,}/.test(t);
 function linhaCifrada(partes, letra, acorde) {
   const ancoras = [];
   let col = 0;
@@ -738,7 +740,7 @@ function T() {
   const f = document.getElementById("applyCapo");
   f &&
     (f.onclick = () => {
-      (d.capo = Number(f.dataset.c)), (o("capoSel").value = String(d.capo)), T();
+      (d.capo = Number(f.dataset.c)), (o("capoSel").value = String(d.capo)), guardarCapo(), T();
     });
   const c = [];
   let p = "";
@@ -756,7 +758,7 @@ function T() {
       continue;
     }
     if (h.kind === "lyr") {
-      p += `<div class="ln lyr">${y(h.text)}</div>`;
+      p += `<div class="ln ${ehTab(h.text) ? "tab" : "lyr"}">${y(h.text)}</div>`;
       continue;
     }
     const g = Ie(h.toks, a, r),
@@ -824,8 +826,14 @@ o("tDown").onclick = () => {
 o("tReset").onclick = () => {
   (d.semis = 0), T();
 };
+/** Capo que esta pessoa usa em cada música. Fica só neste aparelho. */
+function guardarCapo() {
+  if (!d.songId) return;
+  const capos = E.get("capos", {});
+  d.capo ? (capos[d.songId] = d.capo) : delete capos[d.songId], E.set("capos", capos);
+}
 ie.onchange = () => {
-  (d.capo = Number(ie.value)), T();
+  (d.capo = Number(ie.value)), guardarCapo(), T();
 };
 o("accSel").onchange = (e) => {
   (d.acc = e.target.value), T();
@@ -957,8 +965,8 @@ function J(e) {
     (d.songId = e.id),
     (d.songBase = e.updated ?? null),
     (d.semis = 0),
-    (d.capo = 0),
-    (ie.value = "0"),
+    (d.capo = (e.id && E.get("capos", {})[e.id]) || 0),
+    (ie.value = String(d.capo)),
     (d.voice = {}),
     (d.salvo = e.id ? instantaneo() : null),
     T();
@@ -1500,6 +1508,14 @@ function ajustarTela() {
     (sh.style.columnCount = String(melhor.cols)),
     (sh.style.fontSize = Math.floor(melhor.tam * 2) / 2 + "px");
 }
+// A escolha de ajustar fica guardada separada para tela em pé e deitada: no celular em pé a música
+// costuma não caber; deitado (em cima do teclado) cabe em colunas. Computador conta como deitado.
+const deitado = () => window.matchMedia("(orientation: landscape)").matches,
+  ajusteChave = () => (deitado() ? "ajuste.deitado" : "ajuste.empe"),
+  ajustePadrao = () => E.get(ajusteChave(), deitado() || window.matchMedia("(min-width: 861px)").matches);
+window.matchMedia("(orientation: landscape)").addEventListener("change", () => {
+  (d.ajuste = ajustePadrao()), culto && reajustar();
+});
 let ajusteQuadro = 0;
 const reajustar = () => {
   cancelAnimationFrame(ajusteQuadro), (ajusteQuadro = requestAnimationFrame(ajustarTela));
@@ -1507,7 +1523,7 @@ const reajustar = () => {
 window.addEventListener("resize", reajustar);
 document.fonts && document.fonts.ready.then(reajustar);
 o("cbFit").onclick = () => {
-  (d.ajuste = !d.ajuste), E.set("ajuste", d.ajuste), le && we(!1), scrollTo(0, 0), ajustarTela();
+  (d.ajuste = !d.ajuste), E.set(ajusteChave(), d.ajuste), le && we(!1), scrollTo(0, 0), ajustarTela();
 };
 // No computador, com a música ajustada, a barra some sozinha e volta ao mexer o mouse.
 let ociosoTimer = 0;
@@ -1542,18 +1558,23 @@ o("cbNext").onclick = () => andar(1);
 o("cbUp").onclick = () => (o("tUp").click(), reajustar());
 o("cbDown").onclick = () => (o("tDown").click(), reajustar());
 const letraManual = (passo) => {
-  d.ajuste && ((d.ajuste = !1), E.set("ajuste", !1), ajustarTela()), ye(d.size + passo);
+  d.ajuste && ((d.ajuste = !1), E.set(ajusteChave(), !1), ajustarTela()), ye(d.size + passo);
 };
+// Botão da barra não fica com o foco: assim espaço/Enter do pedal trocam de música, não repetem o botão.
+o("cultoBar").addEventListener("click", () =>
+  setTimeout(() => document.activeElement && document.activeElement.blur && document.activeElement.blur()),
+);
 o("cbFUp").onclick = () => letraManual(1);
 o("cbFDown").onclick = () => letraManual(-1);
 o("cbScroll").onclick = () => we(!le);
 document.addEventListener("keydown", (e) => {
   if (!culto || e.target.closest("input, textarea, select")) return;
-  e.key === "Escape"
-    ? sairCulto()
-    : e.key === "ArrowRight" || e.key === "PageDown"
-      ? andar(1)
-      : (e.key === "ArrowLeft" || e.key === "PageUp") && andar(-1);
+  const proxima = ["ArrowRight", "PageDown"].concat(d.ajuste ? ["ArrowDown", " ", "Enter"] : []),
+    anterior = ["ArrowLeft", "PageUp"].concat(d.ajuste ? ["ArrowUp"] : []);
+  if (e.key === "Escape") return sairCulto();
+  proxima.includes(e.key)
+    ? (e.preventDefault(), andar(1))
+    : anterior.includes(e.key) && (e.preventDefault(), andar(-1));
 });
 
 /* ===================== Repertórios do culto ===================== */
@@ -1748,7 +1769,7 @@ o("repApagar").onclick = async () => {
     xe(!window.matchMedia("(max-width: 860px)").matches),
     T(),
     $e(),
-    (d.ajuste = E.get("ajuste", window.matchMedia("(min-width: 861px)").matches)),
+    (d.ajuste = ajustePadrao()),
     (d.diag = E.get("diag", !0)),
     mostrarDesenhos(d.diag),
     Y(E.get("tab", L.value.trim() ? "cifra" : "lib")),

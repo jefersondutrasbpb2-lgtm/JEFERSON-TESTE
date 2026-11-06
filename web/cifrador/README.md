@@ -14,6 +14,14 @@ App de cifras do ministério de louvor da Igreja Evangélica Congregacional de P
   testa de 1 a 4 colunas e escolhe o maior tamanho de letra que cabe, preferindo não quebrar linhas.
   No computador a barra some depois de 2,5 s parado e volta ao mexer o mouse. Se não couber nem
   com letra de 12px (música longa no celular), volta a rolar.
+  Celular deitado (ex.: em cima do teclado) também liga o ajuste sozinho, com a barra numa linha só.
+- **Cada um usa do seu jeito:** tom, letra, instrumento, ajuste à tela, capo e a música aberta no
+  modo culto ficam só no aparelho de cada pessoa. O que é compartilhado é a biblioteca e os
+  repertórios (o tom do repertório é o ponto de partida). O capo que cada um usa em cada música fica
+  guardado no aparelho dele.
+- **Pedal de virar página:** no modo culto, ← → e Page Up/Down trocam de música; com o ajuste à
+  tela ligado, ↑ ↓, espaço e Enter também.
+- **Tablatura:** linhas como `e|--3--5--|` aparecem em fonte de largura fixa, alinhadas.
 - **Culto (repertórios)**: a ordem das músicas de cada culto, com o tom de cada uma, compartilhada
   com a equipe.
 - **Áudio**: tira os acordes de um arquivo, no próprio navegador (`assets/worker.js`).

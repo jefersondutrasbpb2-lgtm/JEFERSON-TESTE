@@ -173,6 +173,38 @@ html = must_sub(html, r'<div class="hero__form" id="cadastro".*?\n        </div>
 
 
 
+# Patrocínio e apoio: faixa de logos no fim da seção "Quem faz" (na ordem em que devem aparecer)
+PATROCINIO = [
+    {"slug": "mr3", "nome": "MR3 Gestão de Marketing e Consultoria"},
+    {"slug": "masterdigna", "nome": "MasterDigna Cuidado Familiar"},
+    {"slug": "ancorax", "nome": "Âncora X"},
+]
+logos = "".join(f'''
+            <li class="sponsor"><img src="assets/img/patrocinio-{p["slug"]}.webp" alt="{p["nome"]}" loading="lazy" decoding="async"></li>'''
+                for p in PATROCINIO)
+html = must_replace(html, '''          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== 08 PERGUNTAS FREQUENTES ====== -->''', f'''          </ul>
+        </article>
+      </div>
+
+      <div class="sponsors" data-reveal>
+        <div class="sponsors__head">
+          <p class="sponsors__title">Patrocínio e apoio</p>
+          <p class="sponsors__lead">Empresas que acreditam no Sertão Negócios.</p>
+        </div>
+        <ul class="sponsors__grid" aria-label="Patrocinadores e apoiadores">{logos}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== 08 PERGUNTAS FREQUENTES ====== -->''')
+
 # Kit com materiais e brindes é do VIP: credenciamento sem o moleskine para todos e com a fila do VIP
 html = must_replace(html, "<p>Retirada de credencial, pulseira e moleskine.</p>", "<p>Retirada de credencial e pulseira.</p>")
 html = must_replace(html, "<p>Credenciais, pulseiras e moleskine para cada participante, com balcões dimensionados para a abertura.</p>",

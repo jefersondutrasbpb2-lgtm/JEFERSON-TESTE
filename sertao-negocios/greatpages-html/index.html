@@ -752,6 +752,17 @@ button { font: inherit; color: inherit; }
 .method .is-now strong { color: var(--sol-ink); }
 @media (min-width: 900px) { .trust__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 
+/* Patrocínio e apoio: logos em cartões brancos, todos com o mesmo peso visual */
+.sponsors { margin-top: clamp(56px, 7vw, 96px); }
+.sponsors__head { display: grid; gap: 8px; margin-bottom: 24px; }
+.sponsors__title { font-size: .78rem; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: var(--sol-ink); }
+.sponsors__lead { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.4rem, 1.1rem + 1.2vw, 2.1rem); line-height: 1.1; letter-spacing: -.02em; }
+.sponsors__grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.sponsor { flex: 0 1 calc(50% - 6px); display: grid; place-items: center; aspect-ratio: 3 / 2; padding: clamp(16px, 2.4vw, 28px); border-radius: var(--radius); background: var(--branco); box-shadow: 0 20px 40px -30px rgb(9 12 58 / .35); }
+.sponsor img { max-width: 82%; max-height: 72%; width: auto; height: auto; object-fit: contain; }
+@media (min-width: 640px) { .sponsor { flex-basis: calc((100% - 24px) / 3); } }
+@media (min-width: 1024px) { .sponsor { flex-basis: calc((100% - 36px) / 4); } }
+
 /* =========================================================
    08 PERGUNTAS FREQUENTES
    ========================================================= */

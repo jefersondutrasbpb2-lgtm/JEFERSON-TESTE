@@ -1174,3 +1174,70 @@ body.culto .sheet {
     width: 42px;
   }
 }
+
+
+/* ===================== Ajustar à tela ===================== */
+.sheet .secao {
+  break-inside: avoid;
+}
+body.culto.ajuste .diagrams,
+body.culto.ajuste #cbScroll,
+body.culto.ajuste .songhead .sub {
+  display: none !important;
+}
+body.culto.ajuste .cifra-grid {
+  max-width: none;
+  padding-block: 8px 0;
+}
+body.culto.ajuste .sheet-col {
+  gap: 6px;
+}
+body.culto.ajuste .songhead h1 {
+  font-size: clamp(20px, 2.6vw, 30px);
+}
+body.culto.ajuste .sheet {
+  overflow: hidden;
+}
+body.culto.ajuste.naocabe .sheet {
+  overflow: visible;
+  padding-bottom: 220px;
+}
+body.culto.ajuste .sheet {
+  column-gap: 2.2em;
+  column-rule: 1px solid var(--line);
+  padding: 0;
+  line-height: 1.25;
+}
+body.culto.ajuste .sheet .ln.sec {
+  margin-top: 0.5em;
+}
+body.culto.ajuste .sheet .gap {
+  height: 0.35em;
+}
+body.culto.ajuste .cultobar {
+  transition: opacity 0.25s, transform 0.25s;
+}
+body.culto.ajuste.ocioso .cultobar {
+  opacity: 0;
+  transform: translateY(100%);
+  pointer-events: none;
+}
+body.culto.ajuste.ocioso {
+  cursor: none;
+}
+@media (max-width: 860px) {
+  #cbFit {
+    font-size: 0;
+    width: 44px;
+    padding: 0;
+  }
+  #cbFit::before {
+    content: "⤢";
+    font-size: 18px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.culto.ajuste .cultobar {
+    transition: none;
+  }
+}

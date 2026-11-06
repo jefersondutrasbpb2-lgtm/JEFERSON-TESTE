@@ -10,6 +10,10 @@ App de cifras do ministério de louvor da Igreja Evangélica Congregacional de P
   tela mantendo cada acorde em cima da sua sílaba (dá para ler no celular sem arrastar para o lado).
 - **Modo culto**: tela só com a música e uma barra embaixo (tom, tamanho da letra, rolagem, sair).
   Tocando um repertório, a barra passa para a próxima música já no tom combinado. Mantém a tela acesa.
+  **Ajustar à tela** (ligado por padrão no computador): a música inteira na tela, sem rolar. O app
+  testa de 1 a 4 colunas e escolhe o maior tamanho de letra que cabe, preferindo não quebrar linhas.
+  No computador a barra some depois de 2,5 s parado e volta ao mexer o mouse. Se não couber nem
+  com letra de 12px (música longa no celular), volta a rolar.
 - **Culto (repertórios)**: a ordem das músicas de cada culto, com o tom de cada uma, compartilhada
   com a equipe.
 - **Áudio**: tira os acordes de um arquivo, no próprio navegador (`assets/worker.js`).

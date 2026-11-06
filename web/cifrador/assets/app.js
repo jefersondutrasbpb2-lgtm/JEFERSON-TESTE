@@ -752,7 +752,7 @@ function T() {
       continue;
     }
     if (h.kind === "sec") {
-      p += `<div class="ln sec">${y(h.text)}</div>`;
+      p += `</div><div class="secao"><div class="ln sec">${y(h.text)}</div>`;
       continue;
     }
     if (h.kind === "lyr") {
@@ -767,8 +767,12 @@ function T() {
     }
     p += '<div class="ln chords">' + g.map((b) => (b.chord ? acorde(b) : y(b.text))).join("") + "</div>";
   }
-  (o("sheet").innerHTML =
-    p || '<p class="empty">Cole ou escreva uma cifra no editor para ela aparecer aqui.</p>'),
+  (o("sheet").innerHTML = p
+    ? ('<div class="secao">' + p + "</div>").replace(
+        /<div class="secao">(<div class="gap"><\/div>)*<\/div>/g,
+        "",
+      )
+    : '<p class="empty">Cole ou escreva uma cifra no editor para ela aparecer aqui.</p>'),
     (o("diagrams").innerHTML = c
       .map((h) => {
         const g = C(h),
@@ -1423,6 +1427,8 @@ function entrarCulto(rep = null, pos = 0) {
 }
 function sairCulto() {
   (culto = null),
+    ajustarTela(),
+    document.body.classList.remove("ocioso"),
     document.body.classList.remove("culto"),
     (o("cultoBar").hidden = !0),
     le && we(!1),
@@ -1439,7 +1445,84 @@ function abrirDoRepertorio() {
     scrollTo(0, 0),
     barraCulto();
 }
+/* ---------- Ajustar à tela: a música inteira na tela, sem rolar ---------- */
+// Testa de 1 até N colunas e, para cada uma, o maior tamanho de letra em que tudo cabe; fica com o maior.
+function ajustarTela() {
+  const sh = o("sheet"),
+    ligado = !!culto && d.ajuste;
+  document.body.classList.toggle("ajuste", ligado), o("cbFit").setAttribute("aria-pressed", String(ligado));
+  if (!ligado) {
+    document.body.classList.remove("naocabe"),
+      sh.style.removeProperty("height"),
+      sh.style.removeProperty("font-size"),
+      sh.style.removeProperty("column-count");
+    return;
+  }
+  sh.style.height = "auto";
+  // No computador a barra some sozinha; em celular e tablet ela fica, então a música termina acima dela.
+  const barra = matchMedia("(hover: hover)").matches ? 0 : o("cultoBar").offsetHeight,
+    alto = Math.floor(window.innerHeight - sh.getBoundingClientRect().top - barra - 10);
+  sh.style.height = Math.max(120, alto) + "px";
+  const largura = sh.clientWidth,
+    maxCols = Math.max(1, Math.min(4, Math.floor(largura / 260))),
+    cabe = () => sh.scrollWidth <= sh.clientWidth + 1 && sh.scrollHeight <= sh.clientHeight + 1,
+    // Parte das linhas que quebraram (linha quebrada é mais difícil de ler que letra um pouco menor).
+    quebradas = (tam) => {
+      const ls = sh.querySelectorAll(".ln.par, .ln.lyr, .ln.chords");
+      let n = 0;
+      for (const l of ls) l.offsetHeight > tam * (l.classList.contains("par") ? 3.3 : 1.9) && n++;
+      return ls.length ? n / ls.length : 0;
+    },
+    MINIMO = 12;
+  let melhor = null;
+  for (let cols = 1; cols <= maxCols; cols++) {
+    sh.style.columnCount = String(cols);
+    let lo = MINIMO,
+      hi = 56;
+    if (((sh.style.fontSize = lo + "px"), !cabe())) continue;
+    for (; hi - lo > 0.5; ) {
+      const meio = (lo + hi) / 2;
+      (sh.style.fontSize = meio + "px"), cabe() ? (lo = meio) : (hi = meio);
+    }
+    sh.style.fontSize = lo + "px";
+    const nota = lo * (1 - 0.7 * quebradas(lo));
+    (!melhor || nota > melhor.nota + 0.3) && (melhor = { cols, tam: lo, nota });
+  }
+  if (!melhor) {
+    // Não cabe nem com a letra mínima: mostra numa coluna e deixa rolar.
+    document.body.classList.add("naocabe"),
+      sh.style.removeProperty("height"),
+      (sh.style.columnCount = "1"),
+      (sh.style.fontSize = "15px");
+    return;
+  }
+  document.body.classList.remove("naocabe"),
+    (sh.style.columnCount = String(melhor.cols)),
+    (sh.style.fontSize = Math.floor(melhor.tam * 2) / 2 + "px");
+}
+let ajusteQuadro = 0;
+const reajustar = () => {
+  cancelAnimationFrame(ajusteQuadro), (ajusteQuadro = requestAnimationFrame(ajustarTela));
+};
+window.addEventListener("resize", reajustar);
+document.fonts && document.fonts.ready.then(reajustar);
+o("cbFit").onclick = () => {
+  (d.ajuste = !d.ajuste), E.set("ajuste", d.ajuste), le && we(!1), scrollTo(0, 0), ajustarTela();
+};
+// No computador, com a música ajustada, a barra some sozinha e volta ao mexer o mouse.
+let ociosoTimer = 0;
+function acordar() {
+  document.body.classList.remove("ocioso"), clearTimeout(ociosoTimer);
+  culto &&
+    d.ajuste &&
+    matchMedia("(hover: hover)").matches &&
+    (ociosoTimer = setTimeout(() => document.body.classList.add("ocioso"), 2500));
+}
+for (const ev of ["mousemove", "keydown", "touchstart"])
+  document.addEventListener(ev, acordar, { passive: !0 });
+
 function barraCulto() {
+  reajustar(), acordar();
   const r = culto && culto.rep;
   (o("cbPrev").hidden = o("cbNext").hidden = !r),
     (o("cbPos").textContent = r
@@ -1456,10 +1539,13 @@ o("cultoBtn").onclick = () => entrarCulto();
 o("cbExit").onclick = sairCulto;
 o("cbPrev").onclick = () => andar(-1);
 o("cbNext").onclick = () => andar(1);
-o("cbUp").onclick = () => o("tUp").click();
-o("cbDown").onclick = () => o("tDown").click();
-o("cbFUp").onclick = () => ye(d.size + 1);
-o("cbFDown").onclick = () => ye(d.size - 1);
+o("cbUp").onclick = () => (o("tUp").click(), reajustar());
+o("cbDown").onclick = () => (o("tDown").click(), reajustar());
+const letraManual = (passo) => {
+  d.ajuste && ((d.ajuste = !1), E.set("ajuste", !1), ajustarTela()), ye(d.size + passo);
+};
+o("cbFUp").onclick = () => letraManual(1);
+o("cbFDown").onclick = () => letraManual(-1);
 o("cbScroll").onclick = () => we(!le);
 document.addEventListener("keydown", (e) => {
   if (!culto || e.target.closest("input, textarea, select")) return;
@@ -1662,6 +1748,7 @@ o("repApagar").onclick = async () => {
     xe(!window.matchMedia("(max-width: 860px)").matches),
     T(),
     $e(),
+    (d.ajuste = E.get("ajuste", window.matchMedia("(min-width: 861px)").matches)),
     (d.diag = E.get("diag", !0)),
     mostrarDesenhos(d.diag),
     Y(E.get("tab", L.value.trim() ? "cifra" : "lib")),

@@ -158,9 +158,15 @@
 <section id="tab-lib" class="view" hidden>
   <div class="wrap lib">
     <div class="row" style="justify-content:space-between">
-      <h2 style="font-family:var(--display);font-weight:800;margin:0;font-size:24px">Suas cifras</h2>
-      <span class="hint">Ficam salvas só neste navegador. Use “Copiar texto” para guardar fora.</span>
+      <h2 style="font-family:var(--display);font-weight:800;margin:0;font-size:24px">Biblioteca de cifras</h2>
+      <input type="search" id="libBusca" placeholder="Buscar por nome, artista ou trecho" aria-label="Buscar cifras">
     </div>
+    <p class="hint" id="libStatus" aria-live="polite"></p>
+    <div class="pendbox" id="libPend" hidden>
+      <span id="libPendTxt"></span>
+      <button class="btn primary" id="libEnviar">Enviar para a biblioteca</button>
+    </div>
+    <p class="status" id="libMsg" aria-live="polite"></p>
     <div class="libgrid" id="libGrid"></div>
   </div>
 </section>

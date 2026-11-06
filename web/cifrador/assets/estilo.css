@@ -747,3 +747,39 @@ textarea {
   color: var(--chord);
   font-weight: 700;
 }
+
+/* Biblioteca compartilhada */
+#libBusca {
+  flex: 0 1 320px;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 9px 12px;
+  background: var(--surface);
+}
+#libStatus,
+#libMsg {
+  margin: 0;
+}
+#libMsg:empty {
+  display: none;
+}
+.pendbox {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  background: var(--hot-soft);
+  border: 1px solid var(--hot);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+.pendbox[hidden] {
+  display: none;
+}
+.song .pend {
+  color: var(--ink);
+  background: var(--hot-soft);
+  border-radius: 6px;
+  padding: 0 5px;
+}

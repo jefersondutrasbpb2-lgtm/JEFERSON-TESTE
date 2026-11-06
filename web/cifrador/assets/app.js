@@ -1,3 +1,4 @@
+import { biblioteca } from "./biblioteca.js";
 (function () {
   const t = document.createElement("link").relList;
   if (t && t.supports && t.supports("modulepreload")) return;
@@ -590,8 +591,6 @@ const E = {
       } catch {}
     },
   },
-  be = () => E.get("songs", []),
-  Re = (e) => E.set("songs", e),
   ve = (e) => e.trim().replace(/\/+$/, "");
 async function $t(e) {
   const t = await fetch(ve(e) + "/api/health");
@@ -626,7 +625,17 @@ const o = (e) => document.getElementById(e),
   y = (e) => e.replace(/[&<>"]/g, (t) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[t]),
   ce = (e) => ((e = Math.max(0, e)), Math.floor(e / 60) + ":" + String(Math.floor(e % 60)).padStart(2, "0")),
   L = o("src"),
-  d = { semis: 0, inst: "guitar", capo: 0, acc: "auto", size: 17, voice: {}, editor: !0, songId: null };
+  d = {
+    semis: 0,
+    inst: "guitar",
+    capo: 0,
+    acc: "auto",
+    size: 17,
+    voice: {},
+    editor: !0,
+    songId: null,
+    songBase: null,
+  };
 let P = null;
 const se = () => d.semis - (d.inst === "guitar" ? d.capo : 0),
   pe = (e, t) => (e ? { tonic: w(e.tonic + t), minor: e.minor } : null),
@@ -719,7 +728,13 @@ function T() {
         return `<div class="dcard" data-c="${y(h)}"><div class="nm">${y(h)}</div>${He(h, r, x)}${k}</div>`;
       })
       .join("")),
-    E.set("draft", { text: e, title: o("songTitle").value, artist: o("songArtist").value, id: d.songId });
+    E.set("draft", {
+      text: e,
+      title: o("songTitle").value,
+      artist: o("songArtist").value,
+      id: d.songId,
+      base: d.songBase,
+    });
 }
 o("diagrams").addEventListener("click", (e) => {
   const t = e.target.closest("button[data-d]");
@@ -828,18 +843,34 @@ async function Ve(e, t) {
     L.focus(), L.select(), ae("Texto selecionado. Use Ctrl+C para copiar.");
   }
 }
-o("saveBtn").onclick = () => {
-  const e = be(),
-    t = ge(L.value),
-    n = {
-      id: d.songId || "s" + Date.now(),
-      title: o("songTitle").value || t.meta.title || "Sem título",
-      artist: o("songArtist").value || t.meta.artist || "",
-      text: L.value,
-      updated: Date.now(),
-    },
-    s = e.findIndex((i) => i.id === n.id);
-  s >= 0 ? (e[s] = n) : e.unshift(n), (d.songId = n.id), Re(e), $e(), ae(`“${n.title}” salva na biblioteca.`);
+o("saveBtn").onclick = async () => {
+  const botao = o("saveBtn"),
+    t = ge(L.value);
+  if (!L.value.trim()) return ae("Escreva ou cole a cifra antes de salvar.");
+  botao.disabled = !0;
+  try {
+    const { cifra, como } = await biblioteca.salvar(
+      {
+        id: d.songId,
+        title: o("songTitle").value || t.meta.title || "Sem título",
+        artist: o("songArtist").value || t.meta.artist || "",
+        text: L.value,
+      },
+      d.songBase,
+    );
+    (d.songId = cifra.id), (d.songBase = como === "pendente" ? d.songBase : cifra.updated), T(), $e();
+    ae(
+      como === "copia"
+        ? `Outra pessoa tinha alterado essa cifra. A sua versão foi salva como “${cifra.title}”.`
+        : como === "pendente"
+          ? `Sem internet: “${cifra.title}” ficou guardada neste aparelho e vai para a biblioteca quando a conexão voltar.`
+          : `“${cifra.title}” salva na biblioteca compartilhada.`,
+    );
+  } catch (erro) {
+    ae(erro.message || "Não consegui salvar.");
+  } finally {
+    botao.disabled = !1;
+  }
 };
 o("importFile").onchange = async (e) => {
   var s;
@@ -863,38 +894,112 @@ function J(e) {
     (o("songArtist").value = e.artist || ""),
     (L.value = e.text || ""),
     (d.songId = e.id),
+    (d.songBase = e.updated ?? null),
     (d.semis = 0),
     (d.capo = 0),
     (ie.value = "0"),
     (d.voice = {}),
     T();
 }
+const semAcento = (e) => (e || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+let libDesfazer = null;
+function libAviso(texto, desfazerId = null) {
+  libDesfazer = desfazerId;
+  o("libMsg").innerHTML = texto
+    ? y(texto) + (desfazerId ? ' <button class="btn ghost" data-a="undo">Desfazer</button>' : "")
+    : "";
+}
 function $e() {
-  const e = be();
-  if (!e.length) {
-    o("libGrid").innerHTML =
-      '<p class="empty">Nenhuma cifra salva ainda. No editor, toque em “Salvar na biblioteca”.</p>';
+  const pend = biblioteca.pendentes(),
+    total = biblioteca.cifras.length;
+  o("libStatus").textContent =
+    biblioteca.conectado === !1
+      ? `Sem conexão com o servidor. Mostrando a última cópia que este aparelho recebeu (${total} cifra${total === 1 ? "" : "s"}).`
+      : biblioteca.conectado
+        ? `${total} cifra${total === 1 ? "" : "s"} · todo mundo que abre o Cifrador vê e edita esta biblioteca.`
+        : "Carregando a biblioteca…";
+  o("libPend").hidden = !pend.length;
+  pend.length &&
+    (o("libPendTxt").textContent =
+      pend.length === 1
+        ? "1 cifra está só neste aparelho e ainda não foi para a biblioteca compartilhada."
+        : `${pend.length} cifras estão só neste aparelho e ainda não foram para a biblioteca compartilhada.`);
+  const busca = semAcento(o("libBusca").value.trim()),
+    lista = [...pend.map((t) => ({ ...t, pendente: !0 })), ...biblioteca.cifras].filter(
+      (t) => !busca || semAcento(t.title + " " + t.artist + " " + t.text).includes(busca),
+    );
+  if (!lista.length) {
+    o("libGrid").innerHTML = busca
+      ? '<p class="empty">Nenhuma cifra encontrada com essa busca.</p>'
+      : '<p class="empty">Nenhuma cifra salva ainda. No editor, toque em “Salvar na biblioteca”.</p>';
     return;
   }
-  o("libGrid").innerHTML = e
+  o("libGrid").innerHTML = lista
     .map((t) => {
       const n = [...new Set(qe(ge(t.text)).map((s) => ne(s)))].slice(0, 10).join("  ");
-      return `<article class="song" data-id="${t.id}"><h4>${y(t.title)}</h4><div class="meta">${y(t.artist || "Artista não informado")} · ${new Date(t.updated).toLocaleDateString("pt-BR")}</div><div class="chs">${y(n)}</div><div class="row"><button class="btn primary" data-a="open">Abrir</button><button class="btn ghost" data-a="del">Excluir</button></div></article>`;
+      return `<article class="song" data-id="${y(t.id)}"><h4>${y(t.title)}</h4><div class="meta">${y(t.artist || "Artista não informado")} · ${new Date(t.updated).toLocaleDateString("pt-BR")}${t.pendente ? ' · <span class="pend">só neste aparelho</span>' : ""}</div><div class="chs">${y(n)}</div><div class="row"><button class="btn primary" data-a="open">Abrir</button><button class="btn ghost" data-a="del">Excluir</button></div></article>`;
     })
     .join("");
 }
-o("libGrid").addEventListener("click", (e) => {
+async function libAtualizar() {
+  try {
+    await biblioteca.carregar();
+  } catch (erro) {
+    libAviso(erro.message);
+  }
+  $e();
+}
+o("libBusca").addEventListener("input", () => $e());
+o("libEnviar").onclick = async () => {
+  const botao = o("libEnviar");
+  botao.disabled = !0;
+  try {
+    const n = await biblioteca.enviarPendentes();
+    libAviso(n === 1 ? "1 cifra enviada para a biblioteca." : `${n} cifras enviadas para a biblioteca.`);
+    await biblioteca.carregar().catch(() => {});
+  } catch (erro) {
+    libAviso(
+      erro.codigo === "offline" ? "Sem conexão com o servidor. Tente de novo mais tarde." : erro.message,
+    );
+  } finally {
+    (botao.disabled = !1), $e();
+  }
+};
+o("libMsg").addEventListener("click", async (e) => {
+  if (!e.target.closest('button[data-a="undo"]') || !libDesfazer) return;
+  try {
+    const c = await biblioteca.restaurar(libDesfazer);
+    libAviso(`“${c.title}” voltou para a biblioteca.`);
+  } catch (erro) {
+    libAviso(erro.message);
+  }
+  $e();
+});
+o("libGrid").addEventListener("click", async (e) => {
   const t = e.target.closest("button");
   if (!t) return;
   const n = t.closest(".song").dataset.id,
-    s = be(),
-    i = s.find((r) => r.id === n);
-  t.dataset.a === "open" && i
-    ? (J(i), Y("cifra"))
-    : t.dataset.a === "del"
-      ? ((t.textContent = "Confirmar exclusão"), (t.dataset.a = "del2"), (t.style.color = "var(--danger)"))
-      : t.dataset.a === "del2" &&
-        (Re(s.filter((r) => r.id !== n)), d.songId === n && (d.songId = null), $e());
+    i = biblioteca.achar(n);
+  if (t.dataset.a === "open" && i) return J(i), Y("cifra");
+  if (t.dataset.a === "del")
+    return (
+      (t.textContent = "Confirmar exclusão"), (t.dataset.a = "del2"), void (t.style.color = "var(--danger)")
+    );
+  if (t.dataset.a !== "del2" || !i) return;
+  t.disabled = !0;
+  try {
+    const pend = biblioteca.pendentes().some((r) => r.id === n) && !biblioteca.cifras.some((r) => r.id === n);
+    await biblioteca.apagar(n), d.songId === n && ((d.songId = null), (d.songBase = null));
+    libAviso(`“${i.title}” foi excluída.`, pend ? null : n);
+  } catch (erro) {
+    libAviso(
+      erro.codigo === "offline" ? "Sem conexão com o servidor: não deu para excluir agora." : erro.message,
+    );
+  }
+  $e();
+});
+document.addEventListener("visibilitychange", () => {
+  !document.hidden && !o("tab-lib").hidden && libAtualizar();
 });
 function Y(e) {
   document.querySelectorAll(".view").forEach((t) => (t.hidden = t.id !== "tab-" + e)),
@@ -902,6 +1007,7 @@ function Y(e) {
       .querySelectorAll(".tabs button")
       .forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === e))),
     e !== "cifra" && le && we(!1),
+    e === "lib" && libAtualizar(),
     E.set("tab", e);
 }
 document.querySelectorAll(".tabs button").forEach((e) => (e.onclick = () => Y(e.dataset.tab)));
@@ -1188,7 +1294,8 @@ o("ytGo").onclick = async () => {
     ? ((L.value = t.text),
       (o("songTitle").value = t.title || ""),
       (o("songArtist").value = t.artist || ""),
-      (d.songId = t.id || null))
+      (d.songId = t.id || null),
+      (d.songBase = t.base ?? null))
     : (L.value = tt),
     ye(E.get("size", 17)),
     (d.inst = E.get("inst", "guitar")),
@@ -1198,7 +1305,8 @@ o("ytGo").onclick = async () => {
     xe(!window.matchMedia("(max-width: 860px)").matches),
     T(),
     $e(),
-    Y(E.get("tab", "cifra"));
+    Y(E.get("tab", "cifra")),
+    o("tab-lib").hidden && libAtualizar();
   const n = E.get("api", "") || void 0 || "";
   n && ((o("apiUrl").value = n), Xe()),
     "serviceWorker" in navigator && navigator.serviceWorker.register("./sw.js").catch(() => {});

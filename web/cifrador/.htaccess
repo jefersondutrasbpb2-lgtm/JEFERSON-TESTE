@@ -1,0 +1,12 @@
+# Cifrador (cifras.igrejacongregacionalpombal.com.br)
+DirectoryIndex index.html
+Options -Indexes
+AddType application/manifest+json .webmanifest
+<FilesMatch "\.(lock|tmp|json|md)$">
+  Require all denied
+</FilesMatch>
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html|js|php|webmanifest)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>

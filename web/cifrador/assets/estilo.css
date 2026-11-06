@@ -1905,3 +1905,39 @@ body.culto.com-setas .cifra-grid {
     break-after: avoid;
   }
 }
+
+/* ===================== Editar acorde direto na cifra ===================== */
+.acedit {
+  position: absolute;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--surface);
+  border: 1px solid var(--chord);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px #00000033;
+  padding: var(--space-2);
+}
+.acedit input {
+  width: 96px;
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--chord);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  background: var(--paper);
+}
+.sheet .ch.editando {
+  background: var(--hot-soft);
+  outline: 2px solid var(--hot);
+  border-radius: 3px;
+}
+/* Com o editor aberto, os acordes mostram que dá para tocar neles */
+.cifra-grid:not(.no-editor) .sheet .ch[data-l] {
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}

@@ -305,6 +305,15 @@ Com `prefers-reduced-motion: reduce`, as transições de barra e progresso são 
 | Imprimir / PDF | Cifra: a folha no tom da tela. Repertório: capa com a lista e o tom de cada música, depois uma música por página. Duas colunas, faixas das seções em azul claro. Usa `window.print()` (o navegador oferece "Salvar como PDF") |
 | Modo escuro | Botão no menu (computador) e no canto da Busca (celular) |
 
+## 10c. Trazer e acertar cifras
+
+| Recurso | Comportamento |
+|---|---|
+| Colar de site | Ao colar com o nome vazio, se houver uma linha "Tom:" entre as 6 primeiras linhas com texto, as linhas antes dela viram nome e artista (`separarCabecalho` em `assets/importar.js`). Sem "Tom:", nada é separado (para não confundir a 1ª linha da letra com o nome) |
+| Link do Cifra Club | **Não existe:** o site bloqueia acesso automático (Akamai "Access Denied"). O caminho é colar o texto ou usar o PDF de impressão deles |
+| PDF | `textoDoPdf` carrega o pdf.js 3.11.174 do cdnjs só quando preciso. Linhas agrupadas pela altura (tolerância de meia letra); coluna = x ÷ largura de uma letra. Acordes medidos pela largura média das letras da linha de letra embaixo (fonte de largura variável fica no lugar visual). Espaço vertical > 1,9 linha vira linha em branco. Rodapés com endereço de site de cifra e "1/2" são descartados. PDF sem texto (imagem): mensagem explicando |
+| Editar acorde na cifra | Só com o editor aberto. Cada `.ch` tem `data-l` (linha do texto), `data-p` (coluna) e `data-n` (tamanho), vindos de `lerCifra` (`src`) e de `posicionarAcordes` (`tok`). ‹ › move uma letra (só anda para a esquerda sobre espaço); nome novo é digitado no tom da tela e gravado no tom original; acorde maior ocupa os espaços seguintes deixando ao menos um antes do próximo; Apagar troca por espaços. Antes da 1ª edição o texto é normalizado (sem invisíveis, tab = 4 espaços), como `lerCifra` já lê. Acordes vindos de `[C]letra` (ChordPro) não são editáveis por aqui |
+
 ## 11. Código
 
 - `assets/app.js`: os nomes do arquivo inteiro são legíveis (`renderizar`, `abrirCifra`,

@@ -1,3 +1,4 @@
+import { textoDoPdf, separarCabecalho } from "./importar.js?v=0f527f0755";
 import { biblioteca } from "./biblioteca.js?v=f63588bc71";
 (function () {
   const t = document.createElement("link").relList;
@@ -438,7 +439,7 @@ function lerCifra(e) {
       key: "",
     },
     n = [],
-    s = (i) => {
+    s = (i, src = null) => {
       if (!i.trim()) {
         n.push({
           kind: "blank",
@@ -458,6 +459,7 @@ function lerCifra(e) {
         n.push({
           kind: "chords",
           toks: a,
+          src, // linha do texto de onde veio (null: veio de [C]letra no formato ChordPro)
         });
         return;
       }
@@ -466,6 +468,7 @@ function lerCifra(e) {
         text: i,
       });
     };
+  let linhaSrc = -1;
   // Sites de cifra às vezes colam caracteres invisíveis (espaço de largura zero, BOM) e espaços
   // não separáveis: sem limpar, "​C   F7M" não é reconhecido como linha de acordes.
   for (let i of e
@@ -473,6 +476,7 @@ function lerCifra(e) {
     .replace(/[\u200B-\u200D\u2060\uFEFF]/g, "")
     .replace(/\u00A0/g, " ").split(`
 `)) {
+    linhaSrc++;
     i = i.replace(/\t/g, "    ").replace(/\s+$/, "");
     // "Tom: C" (como vem do Cifra Club e outros sites) marca o tom, como {key: C}.
     const tom = i.match(/^\s*Tom\s*:\s*([A-G][#b]?m?)\s*(\(.*\))?\s*$/i);
@@ -503,7 +507,7 @@ function lerCifra(e) {
       continue;
     }
     const a = chordProParaLinhas(i);
-    a ? a.forEach(s) : s(i);
+    a ? a.forEach((x) => s(x)) : s(i, linhaSrc);
   }
   return {
     meta: t,
@@ -537,6 +541,7 @@ function posicionarAcordes(e, t, n) {
             s.push({
               text: u,
               chord: u,
+              tok: a,
             }),
             a.post &&
               s.push({
@@ -1036,9 +1041,10 @@ function linhaCifrada(partes, letra, acorde) {
 function montarFolha(cifra, desloc, bemol) {
   const acordes = [];
   let p = "";
+  let src = null;
   const acorde = (b) => (
     acordes.includes(b.chord) || acordes.push(b.chord),
-    `<b class="ch" data-c="${esc(b.chord)}">${esc(b.chord)}</b>`
+    `<b class="ch" data-c="${esc(b.chord)}"${src != null && b.tok ? ` data-l="${src}" data-p="${b.tok.pos + b.tok.pre.length}" data-n="${b.tok.core.length}"` : ""}>${esc(b.chord)}</b>`
   );
   const t = cifra,
     a = desloc,
@@ -1057,6 +1063,7 @@ function montarFolha(cifra, desloc, bemol) {
       p += `<div class="ln ${ehTab(h.text) ? "tab" : "lyr"}">${esc(h.text)}</div>`;
       continue;
     }
+    src = h.src;
     const g = posicionarAcordes(h.toks, a, r),
       prox = t.lines[idx + 1];
     if (prox && prox.kind === "lyr") {
@@ -1146,6 +1153,7 @@ elemento("diagrams").addEventListener("click", (e) => {
 elemento("sheet").addEventListener("click", (e) => {
   const t = e.target.closest(".ch");
   if (!t) return;
+  if (estado.editor && !culto && t.dataset.l != null) return abrirEdicaoAcorde(t);
   const n = [...document.querySelectorAll(".dcard")].find((s) => s.dataset.c === t.dataset.c);
   n &&
     (n.scrollIntoView({
@@ -1292,20 +1300,147 @@ elemento("saveBtn").onclick = async () => {
     botao.disabled = !1;
   }
 };
+const ehLinhaDeAcordes = (t) => !!lerLinhaDeAcordes(t.replace(/\t/g, "    "));
 elemento("importFile").onchange = async (e) => {
-  var s;
-  const t = e.target,
-    n = (s = t.files) == null ? void 0 : s[0];
-  n &&
-    (abrirCifra({
-      title: "",
-      artist: "",
-      text: await n.text(),
-      id: null,
-    }),
-    avisoEditor(`Arquivo “${n.name}” aberto.`),
-    (t.value = ""));
+  const entrada = e.target,
+    arquivo = entrada.files && entrada.files[0];
+  if (!arquivo) return;
+  entrada.value = "";
+  const nome = arquivo.name.replace(/\.[^.]+$/, "");
+  try {
+    const pdf = /\.pdf$/i.test(arquivo.name) || arquivo.type === "application/pdf";
+    pdf && avisoEditor("Lendo o PDF…");
+    const texto = pdf ? await textoDoPdf(arquivo, ehLinhaDeAcordes) : await arquivo.text(),
+      cab = separarCabecalho(texto, ehLinhaDeAcordes);
+    abrirCifra({ title: cab.title || nome, artist: cab.artist, text: cab.texto, id: null }),
+      mostrarEditor(!0);
+    avisoEditor(
+      pdf
+        ? `PDF “${arquivo.name}” lido. Confira os acordes (toque num acorde para acertar a posição) e salve.`
+        : `Arquivo “${arquivo.name}” aberto.`,
+    );
+  } catch (erro) {
+    avisoEditor(erro.message || "Não consegui ler esse arquivo.");
+  }
 };
+// Colou uma cifra de site (com nome, artista e "Tom:" no começo): separa o nome e o artista.
+editorTexto.addEventListener("paste", () =>
+  setTimeout(() => {
+    if (elemento("songTitle").value.trim()) return;
+    const cab = separarCabecalho(editorTexto.value, ehLinhaDeAcordes);
+    cab.title &&
+      ((elemento("songTitle").value = cab.title),
+      (elemento("songArtist").value = cab.artist),
+      (editorTexto.value = cab.texto),
+      renderizar(),
+      avisoEditor(`Reconheci “${cab.title}”${cab.artist ? ` de ${cab.artist}` : ""}. Confira e salve.`));
+  }),
+);
+
+/* ===================== Editar acorde direto na cifra ===================== */
+// Com o editor aberto, tocar num acorde abre ‹ › (mover uma letra), o nome e Apagar. As mudanças
+// vão para o texto do editor, no tom original da cifra (o que está na tela pode estar transposto).
+let acAlvo = null; // {l: linha do texto, p: coluna do acorde, n: tamanho}
+function textoNormalizado() {
+  // As colunas da folha são as do texto já limpo (sem invisíveis, tab = 4 espaços): o editor passa a usar o mesmo.
+  const limpo = editorTexto.value
+    .replace(/\r/g, "")
+    .replace(/[\u200B-\u200D\u2060\uFEFF]/g, "")
+    .replace(/\u00A0/g, " ")
+    .replace(/\t/g, "    ");
+  limpo !== editorTexto.value && (editorTexto.value = limpo);
+  return limpo.split("\n");
+}
+function posicionarEdicao() {
+  const el = acAlvo && elemento("sheet").querySelector(`.ch[data-l="${acAlvo.l}"][data-p="${acAlvo.p}"]`),
+    caixa = elemento("acEdit");
+  if (!el) return fecharEdicaoAcorde();
+  document.querySelectorAll(".ch.editando").forEach((x) => x.classList.remove("editando")),
+    el.classList.add("editando");
+  // Acima do acorde, para não cobrir a letra que fica embaixo dele (é por ela que se acerta a posição).
+  const r = el.getBoundingClientRect(),
+    larg = caixa.offsetWidth || 300,
+    alto = caixa.offsetHeight || 52,
+    acima = r.top - alto - 8 > 0;
+  (caixa.style.top = (acima ? r.top - alto - 8 : r.bottom + r.height * 1.6 + 8) + scrollY + "px"),
+    (caixa.style.left = Math.max(8, Math.min(r.left + scrollX, innerWidth - larg - 8)) + "px");
+}
+function abrirEdicaoAcorde(el) {
+  (acAlvo = { l: Number(el.dataset.l), p: Number(el.dataset.p), n: Number(el.dataset.n) }),
+    (elemento("acNome").value = el.dataset.c),
+    (elemento("acEdit").hidden = !1),
+    posicionarEdicao(),
+    elemento("acNome").focus(),
+    elemento("acNome").select();
+}
+function fecharEdicaoAcorde() {
+  (acAlvo = null), (elemento("acEdit").hidden = !0);
+  document.querySelectorAll(".ch.editando").forEach((x) => x.classList.remove("editando"));
+}
+function mudarLinha(fn) {
+  const linhas = textoNormalizado(),
+    { l, p, n } = acAlvo,
+    linha = (linhas[l] || "").padEnd(p + n),
+    nova = fn(linha, p, n);
+  if (!nova) return;
+  (linhas[l] = nova.linha.replace(/\s+$/, "")), (editorTexto.value = linhas.join("\n"));
+  (acAlvo = nova.alvo), renderizar(), acAlvo ? posicionarEdicao() : fecharEdicaoAcorde();
+}
+elemento("acEdit").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-m]");
+  if (!b || !acAlvo) return;
+  const m = Number(b.dataset.m);
+  mudarLinha((linha, p, n) => {
+    const acorde = linha.slice(p, p + n);
+    if (m < 0) {
+      if (p === 0 || linha[p - 1] !== " ") return null; // já encostado no começo ou em outro acorde
+      return {
+        linha: linha.slice(0, p - 1) + acorde + " " + linha.slice(p + n),
+        alvo: { l: acAlvo.l, p: p - 1, n },
+      };
+    }
+    const depois = linha.slice(p + n);
+    return {
+      linha: linha.slice(0, p) + " " + acorde + (depois.startsWith(" ") ? depois.slice(1) : depois),
+      alvo: { l: acAlvo.l, p: p + 1, n },
+    };
+  });
+});
+function trocarNomeAcorde() {
+  if (!acAlvo) return;
+  const novo = elemento("acNome").value.trim(),
+    lido = lerAcorde(novo);
+  if (!lido) return avisoEditor(`“${novo}” não é um acorde que eu reconheça.`);
+  // O nome digitado está no tom da tela; no texto vai no tom original.
+  const original = nomeAcorde(lido, -deslocamentoDasFormas(), tomOriginal ? tomUsaBemol(tomOriginal) : !1);
+  mudarLinha((linha, p, n) => {
+    const depois = linha.slice(p + n),
+      diferenca = original.length - n,
+      espacos = depois.match(/^ */)[0].length,
+      // Acorde maior: ocupa os espaços que vêm depois, deixando pelo menos um antes do próximo
+      // acorde, para não empurrar os outros. Acorde menor: completa com espaços.
+      consome = diferenca > 0 ? Math.min(diferenca, depois.trim() ? Math.max(0, espacos - 1) : espacos) : 0,
+      resto = diferenca < 0 ? " ".repeat(-diferenca) + depois : depois.slice(consome);
+    return { linha: linha.slice(0, p) + original + resto, alvo: { l: acAlvo.l, p, n: original.length } };
+  });
+}
+elemento("acOk").onclick = () => {
+  const el = acAlvo && elemento("sheet").querySelector(`.ch[data-l="${acAlvo.l}"][data-p="${acAlvo.p}"]`);
+  el && elemento("acNome").value.trim() !== el.dataset.c && trocarNomeAcorde(), fecharEdicaoAcorde();
+};
+elemento("acNome").addEventListener("keydown", (e) => {
+  e.key === "Enter" && (e.preventDefault(), elemento("acOk").click()),
+    e.key === "Escape" && fecharEdicaoAcorde();
+});
+elemento("acApagar").onclick = () =>
+  mudarLinha((linha, p, n) => ({
+    linha: linha.slice(0, p) + " ".repeat(n) + linha.slice(p + n),
+    alvo: null,
+  }));
+document.addEventListener("click", (e) => {
+  acAlvo && !e.target.closest("#acEdit, .ch") && fecharEdicaoAcorde();
+});
+window.addEventListener("resize", () => acAlvo && posicionarEdicao());
 elemento("copyBtn").onclick = () => copiar(editorTexto.value, "Texto copiado.");
 elemento("copyTrBtn").onclick = () => {
   const e = transporTom(tomOriginal, deslocamentoDasFormas());

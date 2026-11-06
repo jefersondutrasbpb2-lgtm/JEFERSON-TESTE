@@ -17,8 +17,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap">
-  <script type="module" crossorigin src="./assets/app.js?v=dce46da0b5"></script>
-  <link rel="stylesheet" crossorigin href="./assets/estilo.css?v=70d5600c94">
+  <script type="module" crossorigin src="./assets/app.js?v=795355ee9d"></script>
+  <link rel="stylesheet" crossorigin href="./assets/estilo.css?v=5f92a57cbc">
 </head>
 <body>
 
@@ -111,12 +111,20 @@ Em             C
       <div class="row">
         <button class="btn primary" id="saveBtn">Salvar na biblioteca</button>
         <button class="btn ghost" id="newBtn">Nova cifra</button>
-        <label class="btn" for="importFile">Abrir arquivo</label>
-        <input type="file" id="importFile" accept=".txt,.cho,.chopro,.chordpro,.pro,.crd,text/plain" hidden>
+        <label class="btn" for="importFile">Abrir PDF ou arquivo</label>
+        <input type="file" id="importFile" accept=".pdf,application/pdf,.txt,.cho,.chopro,.chordpro,.pro,.crd,text/plain" hidden>
         <button class="btn" id="copyBtn">Copiar texto</button>
         <button class="btn" id="copyTrBtn" title="Copia o texto já no tom escolhido">Copiar no tom atual</button>
       </div>
       <p class="status" id="edStatus" aria-live="polite"></p>
+      <details class="dica" open>
+        <summary>Como trazer uma cifra</summary>
+        <ul>
+          <li><strong>De um site (Cifra Club e outros):</strong> copie a cifra na página e cole aqui. Nome, artista e tom são reconhecidos sozinhos.</li>
+          <li><strong>De um PDF:</strong> toque em “Abrir PDF ou arquivo”. No Cifra Club dá para gerar o PDF em Imprimir → Salvar como PDF.</li>
+          <li><strong>Acertar um acorde:</strong> com o editor aberto, toque no acorde na cifra ao lado: dá para mover ‹ ›, trocar o nome ou apagar.</li>
+        </ul>
+      </details>
       <details class="dica">
         <summary>Como escrever a cifra</summary>
         <ul>
@@ -287,5 +295,12 @@ Em             C
 </section>
 </main>
 <div id="impressao" aria-hidden="true"></div>
+<div class="acedit" id="acEdit" role="dialog" aria-label="Editar acorde" hidden>
+  <button class="btn sq" data-m="-1" aria-label="Mover uma letra para a esquerda">‹</button>
+  <input type="text" id="acNome" aria-label="Nome do acorde" autocomplete="off" spellcheck="false">
+  <button class="btn sq" data-m="1" aria-label="Mover uma letra para a direita">›</button>
+  <button class="btn ghost perigo" id="acApagar">Apagar</button>
+  <button class="btn primary" id="acOk">OK</button>
+</div>
 </body>
 </html>

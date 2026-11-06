@@ -6,6 +6,9 @@ App de cifras do ministério de louvor da Igreja Evangélica Congregacional de P
 - **Busca** (tela inicial): campo grande, favoritas e abertas recentemente. Menu lateral no
   computador e barra embaixo no celular: Busca · Repertórios · Cifras · Áudio.
 - **Cifras**: todas as cifras da igreja em ordem alfabética, com o tom de cada uma.
+- **Trazer cifras**: colar de qualquer site (nome, artista e tom reconhecidos), abrir PDF (lido no
+  navegador, acordes no lugar) ou arquivo de texto. Com o editor aberto, tocar num acorde da cifra
+  permite mover ‹ ›, trocar o nome ou apagar.
 - **Cifra aberta**: ★ favoritar, + adicionar ao repertório no tom da tela, imprimir/PDF; seções da
   música em faixa colorida.
 - **Cifra**: cola uma cifra (acordes em cima da letra ou ChordPro), transpõe, capotraste,
@@ -78,7 +81,7 @@ biblioteca fica no modo sem conexão.
 ## Publicar
 
 1. Rode `node web/cifrador/versionar.mjs`. Ele põe a versão (hash do conteúdo) nos endereços de
-   `estilo.css`, `app.js` e `biblioteca.js`. **Não pule:** o CDN da Hostinger guarda CSS por até
+   `estilo.css`, `app.js`, `biblioteca.js` e `importar.js`. **Não pule:** o CDN da Hostinger guarda CSS por até
    7 dias, e sem a versão no endereço o navegador pode receber o CSS antigo com o JS novo.
 2. Envie para `public_html/cifras`: `api.php`, `.htaccess`, `sw.js`, `manifest.webmanifest`,
    `icon.svg`, `icon-*.png`, a pasta `assets/` e por último o `index.html`.

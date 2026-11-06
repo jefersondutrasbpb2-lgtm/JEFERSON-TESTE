@@ -1,12 +1,14 @@
 <?php
 // API da biblioteca compartilhada do Cifrador. É aberta: quem tem o link vê e edita tudo.
 //
-//   GET  api.php?acao=lista        todas as cifras: {cifras: {id: cifra}}
+//   GET  api.php?acao=lista        tudo: {cifras: {id: cifra}, repertorios: {id: repertorio}}
 //   POST api.php?acao=gravar       {cifra: {id?, title, artist, text}, antes}
 //                                  "antes" é o "updated" da cifra quando foi aberta (null se nova).
 //                                  Se outra pessoa gravou no meio tempo, responde 409 com a versão atual.
 //   POST api.php?acao=apagar       {id}       a cifra vai para a lixeira (30 dias)
 //   POST api.php?acao=restaurar    {id}       tira da lixeira
+//   POST api.php?acao=gravar_repertorio  {repertorio: {id?, nome, data, itens: [{id, semis}]}}
+//   POST api.php?acao=apagar_repertorio  {id}
 //
 // Os dados ficam num arquivo fora da pasta pública quando dá (domains/<domínio>/cifras-dados/);
 // se não der, em _dados/ ao lado, protegido. O arquivo começa com um trecho PHP que encerra a
@@ -22,6 +24,8 @@ const LIMITE_NOME = 200;
 const MAXIMO_CIFRAS = 5000;
 const DIAS_DE_BACKUP = 60;
 const DIAS_NA_LIXEIRA = 30;
+const MAXIMO_REPERTORIOS = 1000;
+const MAXIMO_ITENS = 60;
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
@@ -83,6 +87,7 @@ function banco(?callable $mudar = null): array
         $banco = lerArquivo($arquivo) ?? [];
         $banco['cifras'] = $banco['cifras'] ?? [];
         $banco['lixeira'] = $banco['lixeira'] ?? [];
+        $banco['repertorios'] = $banco['repertorios'] ?? [];
         if (!$mudar) return [$banco, null];
         backupDoDia($pasta, $arquivo);
         [$banco, $resposta] = $mudar($banco);
@@ -131,7 +136,10 @@ $metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 if ($metodo === 'GET' && $acao === 'lista') {
     [$banco] = banco();
-    responder(200, ['cifras' => $banco['cifras'] ?: new stdClass()]);
+    responder(200, [
+        'cifras' => $banco['cifras'] ?: new stdClass(),
+        'repertorios' => $banco['repertorios'] ?: new stdClass(),
+    ]);
 }
 if ($metodo !== 'POST') falhar(405, 'metodo', 'Use POST.');
 
@@ -191,6 +199,48 @@ if ($acao === 'apagar' || $acao === 'restaurar') {
         return [$banco, $cifra];
     });
     responder(200, ['ok' => true, 'cifra' => $resposta]);
+}
+
+if ($acao === 'gravar_repertorio') {
+    $entrada = $pedido['repertorio'] ?? null;
+    if (!is_array($entrada)) falhar(400, 'invalido', 'Repertório inválido.');
+    $id = $entrada['id'] ?? null;
+    if ($id !== null && !idValido($id)) falhar(400, 'invalido', 'Identificador inválido.');
+    $data = $entrada['data'] ?? '';
+    if (!is_string($data) || ($data !== '' && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $data))) falhar(400, 'invalido', 'Data inválida.');
+    $itens = $entrada['itens'] ?? [];
+    if (!is_array($itens) || count($itens) > MAXIMO_ITENS) falhar(400, 'invalido', 'Músicas demais no repertório.');
+    $limpos = [];
+    foreach ($itens as $item) {
+        if (!is_array($item) || !idValido($item['id'] ?? null)) falhar(400, 'invalido', 'Música inválida no repertório.');
+        $semis = $item['semis'] ?? 0;
+        if (!is_int($semis) || $semis < -11 || $semis > 11) falhar(400, 'invalido', 'Tom inválido no repertório.');
+        $limpos[] = ['id' => $item['id'], 'semis' => $semis];
+    }
+    $repertorio = [
+        'nome' => trim(textoLimpo($entrada['nome'] ?? '', LIMITE_NOME, 'nome')) ?: 'Culto',
+        'data' => $data,
+        'itens' => $limpos,
+    ];
+    [, $resposta] = banco(function (array $banco) use ($id, $repertorio) {
+        $atual = $id !== null ? ($banco['repertorios'][$id] ?? null) : null;
+        if (!$atual && count($banco['repertorios']) >= MAXIMO_REPERTORIOS) falhar(507, 'cheio', 'Limite de repertórios atingido.');
+        $id = $id ?? ('r' . bin2hex(random_bytes(6)));
+        $repertorio = ['id' => $id] + $repertorio + ['created' => $atual['created'] ?? agora(), 'updated' => agora()];
+        $banco['repertorios'][$id] = $repertorio;
+        return [$banco, $repertorio];
+    });
+    responder(200, ['ok' => true, 'repertorio' => $resposta]);
+}
+
+if ($acao === 'apagar_repertorio') {
+    $id = $pedido['id'] ?? null;
+    if (!idValido($id)) falhar(400, 'invalido', 'Identificador inválido.');
+    banco(function (array $banco) use ($id) {
+        unset($banco['repertorios'][$id]);
+        return [$banco, null];
+    });
+    responder(200, ['ok' => true]);
 }
 
 falhar(400, 'acao', 'Ação desconhecida.');

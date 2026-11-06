@@ -436,18 +436,60 @@ textarea {
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 22px 22px 40px;
-  overflow-x: auto;
-  font-family: var(--mono);
+  overflow-wrap: anywhere;
+  font-family: var(--body);
   font-size: var(--sheet-size);
   line-height: 1.35;
 }
 .sheet .ln {
-  white-space: pre;
+  white-space: pre-wrap;
   min-height: 1.35em;
 }
-.sheet .ln.chords {
+.sheet .ln.chords,
+.sheet .cr {
+  font-family: var(--mono);
   color: var(--chord);
   font-weight: 700;
+}
+/* Acorde em cima, pedaço da letra embaixo: a linha quebra sem desalinhar */
+.sheet .ln.par {
+  white-space: normal;
+  margin-top: 0.15em;
+}
+.sheet .pw {
+  display: inline-block;
+  white-space: nowrap;
+}
+.sheet .bl {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: bottom;
+}
+.sheet .cr {
+  min-height: 1.3em;
+  padding-right: 0.3em;
+  white-space: nowrap;
+}
+.sheet .cr .mk {
+  color: var(--muted);
+  font-weight: 400;
+}
+.sheet .ly {
+  white-space: pre;
+}
+/* Acorde no meio da palavra mais largo que a sílaba: um tracinho liga as sílabas */
+.sheet .pw .bl:not(:last-child) .ly {
+  display: flex;
+}
+.sheet .pw .bl:not(:last-child) .cr {
+  padding-right: 0.1em;
+}
+.sheet .pw .bl:not(:last-child) .ly::after {
+  content: "";
+  flex: 1;
+  min-width: 0;
+  border-bottom: 2px solid var(--line);
+  margin-bottom: 0.42em;
 }
 .sheet .ln.sec {
   font-family: var(--display);
@@ -750,7 +792,9 @@ textarea {
 
 /* Biblioteca compartilhada */
 #libBusca {
-  flex: 0 1 320px;
+  flex: none;
+  max-width: 520px;
+  font-size: 16px;
   min-width: 0;
   border: 1px solid var(--line);
   border-radius: 10px;
@@ -782,4 +826,351 @@ textarea {
   background: var(--hot-soft);
   border-radius: 6px;
   padding: 0 5px;
+}
+
+
+/* ===================== Ajustes gerais ===================== */
+[hidden] {
+  display: none !important;
+}
+.brand small {
+  font-family: var(--body);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--muted);
+  letter-spacing: 0;
+  margin-left: 2px;
+}
+.lbl {
+  font-size: 12px;
+}
+.keybox {
+  background: transparent;
+  font-size: 1.15em;
+  min-width: 52px;
+}
+.toolbar .acoes {
+  margin-left: auto;
+}
+#maisBtn {
+  display: none;
+}
+#saveBtn.ok {
+  background: var(--chord-soft);
+  color: var(--chord);
+}
+.libhead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.libhead h2 {
+  font-family: var(--display);
+  font-weight: 800;
+  margin: 0;
+  font-size: 24px;
+}
+.songtop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.song .tom {
+  font-family: var(--mono);
+  font-weight: 700;
+  color: var(--chord);
+  background: var(--chord-soft);
+  border-radius: 6px;
+  padding: 1px 7px;
+  flex: none;
+}
+.song .row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.song.passado {
+  opacity: 0.75;
+}
+.linkbtn {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.linkbtn:hover {
+  color: var(--chord);
+}
+.replist-mini {
+  font-size: 13px;
+  color: var(--muted);
+}
+details.dica,
+details.server {
+  font-size: 14px;
+  color: var(--muted);
+}
+details.dica summary,
+details.server summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--ink);
+  padding: 6px 0;
+}
+details.dica ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+details.dica code {
+  font-family: var(--mono);
+  font-size: 12px;
+  background: var(--surface-2);
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+details.server[open] {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ===================== Repertórios ===================== */
+.repform {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 14px 0 6px;
+}
+.repform label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--muted);
+  flex: 1 1 200px;
+}
+.repform input,
+#repBusca {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-weight: 400;
+  color: var(--ink);
+  font-size: 16px;
+}
+.replist {
+  list-style: none;
+  counter-reset: rep;
+  padding: 0;
+  margin: 14px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.replist li {
+  counter-increment: rep;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.replist li::before {
+  content: counter(rep);
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--chord);
+  min-width: 1.2em;
+  text-align: center;
+}
+.ri-nome {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.ri-nome strong {
+  overflow-wrap: anywhere;
+}
+.ri-nome span {
+  font-size: 13px;
+  color: var(--muted);
+}
+.ri-tom,
+.ri-ord {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.repadd {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 24px;
+}
+.repsug {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.repsug .sug {
+  text-align: left;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+.repsug .sug:hover {
+  border-color: var(--chord);
+}
+.repsug .sug span {
+  color: var(--muted);
+  font-size: 13px;
+}
+.perigo {
+  color: var(--danger);
+}
+
+/* ===================== Modo culto ===================== */
+body.culto .top,
+body.culto .toolbar,
+body.culto .keyline,
+body.culto .editor {
+  display: none !important;
+}
+body.culto .cifra-grid {
+  grid-template-columns: minmax(0, 1fr);
+  padding-block: 12px 220px;
+  max-width: 1000px;
+}
+body.culto .sheet {
+  border: 0;
+  background: transparent;
+  padding: 4px 0 0;
+}
+.cultobar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -4px 16px #0000001a;
+  padding: 8px max(12px, env(safe-area-inset-left, 0px)) max(8px, env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cb-nav,
+.cb-tools {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.cb-nav {
+  flex-wrap: nowrap;
+}
+.cb-pos {
+  flex: 1 1 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--muted);
+  min-width: 0;
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* ===================== Celular ===================== */
+@media (max-width: 860px) {
+  .tabs {
+    width: 100%;
+  }
+  .tabs button {
+    flex: 1 1 0;
+    min-height: 44px;
+    padding-inline: 6px;
+  }
+  .btn,
+  .seg button,
+  select {
+    min-height: 44px;
+  }
+  .btn.sq {
+    width: 44px;
+  }
+  .toolbar-in {
+    gap: 8px 12px;
+  }
+  #maisBtn {
+    display: inline-block;
+  }
+  .toolbar .mais {
+    display: none;
+  }
+  .toolbar.aberta .mais {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    width: 100%;
+  }
+  .toolbar .acoes {
+    margin-left: 0;
+    width: 100%;
+  }
+  .toolbar .acoes .btn {
+    flex: 1 1 0;
+  }
+  .dcard .cyc button {
+    width: 36px;
+    height: 32px;
+  }
+  .sheet {
+    padding: 16px 14px 32px;
+  }
+  .replist li {
+    grid-template-columns: auto auto minmax(0, 1fr);
+    row-gap: 6px;
+  }
+  .replist li::before {
+    grid-row: span 2;
+  }
+  .ri-nome {
+    grid-column: 2 / 4;
+  }
+  .ri-ord {
+    justify-self: end;
+  }
+  .replist .btn.sq {
+    width: 40px;
+  }
+  .replist .keybox {
+    min-width: 40px;
+  }
+  .cultobar .btn.sq {
+    width: 42px;
+  }
 }

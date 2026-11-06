@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Cifrador</title>
-<meta name="description" content="Monte cifras para violão e teclado: cole uma cifra, transponha, use capotraste ou tire os acordes de um áudio ou vídeo.">
+<title>Cifras IEC Pombal</title>
+<meta name="description" content="Biblioteca de cifras e repertórios do louvor da Igreja Evangélica Congregacional de Pombal.">
+<meta name="robots" content="noindex">
 <meta name="theme-color" content="#2343CF">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./icon.svg" type="image/svg+xml">
@@ -20,12 +21,13 @@
   <div class="wrap top-in">
     <div class="brand">
       <svg viewBox="0 0 28 28" aria-hidden="true"><rect x="3" y="3" width="22" height="22" rx="5" fill="var(--chord)"/><g stroke="var(--surface)" stroke-width="1.4"><line x1="9" y1="8" x2="9" y2="21"/><line x1="14" y1="8" x2="14" y2="21"/><line x1="19" y1="8" x2="19" y2="21"/><line x1="8" y1="12.5" x2="20" y2="12.5"/><line x1="8" y1="17" x2="20" y2="17"/></g><circle cx="14" cy="14.8" r="2.2" fill="var(--hot)"/></svg>
-      <span>Cifrador</span>
+      <span>Cifras <small>IEC Pombal</small></span>
     </div>
     <nav class="tabs" role="tablist" aria-label="Seções">
-      <button role="tab" data-tab="cifra" aria-selected="true" id="tabbtn-cifra">Cifra</button>
-      <button role="tab" data-tab="audio" aria-selected="false" id="tabbtn-audio">Do áudio ou vídeo</button>
       <button role="tab" data-tab="lib" aria-selected="false" id="tabbtn-lib">Biblioteca</button>
+      <button role="tab" data-tab="cifra" aria-selected="true" id="tabbtn-cifra">Cifra</button>
+      <button role="tab" data-tab="culto" aria-selected="false" id="tabbtn-culto">Culto</button>
+      <button role="tab" data-tab="audio" aria-selected="false" id="tabbtn-audio">Áudio</button>
     </nav>
   </div>
 </header>
@@ -35,7 +37,7 @@
   <div class="toolbar"><div class="wrap toolbar-in">
     <div class="grp"><span class="lbl">Tom</span>
       <button class="btn sq" id="tDown" aria-label="Meio tom abaixo">−</button>
-      <span class="keybox" id="keyBox">G</span>
+      <span class="keybox" id="keyBox" aria-live="polite">G</span>
       <button class="btn sq" id="tUp" aria-label="Meio tom acima">+</button>
       <button class="btn ghost" id="tReset">Original</button>
     </div>
@@ -48,37 +50,59 @@
     <div class="grp" id="capoGrp"><label class="lbl" for="capoSel">Capo</label>
       <select id="capoSel"></select>
     </div>
-    <div class="grp"><label class="lbl" for="accSel">Acidentes</label>
-      <select id="accSel"><option value="auto">Automático</option><option value="s">Sustenidos ♯</option><option value="b">Bemóis ♭</option></select>
+    <div class="grp mais">
+      <div class="grp"><label class="lbl" for="accSel">Acidentes</label>
+        <select id="accSel"><option value="auto">Automático</option><option value="s">Sustenidos ♯</option><option value="b">Bemóis ♭</option></select>
+      </div>
+      <div class="grp"><span class="lbl">Letra</span>
+        <button class="btn sq" id="fDown" aria-label="Diminuir letra">A−</button>
+        <button class="btn sq" id="fUp" aria-label="Aumentar letra">A+</button>
+      </div>
+      <div class="grp"><span class="lbl">Rolagem</span>
+        <button class="btn" id="scrollBtn" aria-pressed="false">▶ Rolar</button>
+        <input type="range" id="scrollSpeed" min="1" max="10" value="3" aria-label="Velocidade da rolagem">
+      </div>
+      <button class="btn" id="diagBtn" aria-pressed="true">Desenhos dos acordes</button>
     </div>
-    <div class="grp"><span class="lbl">Letra</span>
-      <button class="btn sq" id="fDown" aria-label="Diminuir letra">A−</button>
-      <button class="btn sq" id="fUp" aria-label="Aumentar letra">A+</button>
+    <div class="grp acoes">
+      <button class="btn" id="maisBtn" aria-expanded="false" aria-controls="tab-cifra">Ajustes</button>
+      <button class="btn" id="editorBtn" aria-pressed="true">Editar</button>
+      <button class="btn primary" id="cultoBtn">Modo culto</button>
     </div>
-    <div class="grp"><span class="lbl">Rolagem</span>
-      <button class="btn" id="scrollBtn" aria-pressed="false">▶ Rolar</button>
-      <input type="range" id="scrollSpeed" min="1" max="10" value="3" aria-label="Velocidade da rolagem">
-    </div>
-    <button class="btn" id="editorBtn" aria-pressed="true">Editor</button>
   </div></div>
 
   <div class="wrap cifra-grid" id="cifraGrid">
     <aside class="editor" aria-label="Editor de cifra">
       <div class="row">
         <input type="text" id="songTitle" placeholder="Nome da música" aria-label="Nome da música">
-        <input type="text" id="songArtist" placeholder="Artista" aria-label="Artista">
+        <input type="text" id="songArtist" placeholder="Artista ou hinário" aria-label="Artista ou hinário">
       </div>
-      <textarea id="src" spellcheck="false" aria-label="Texto da cifra"></textarea>
+      <textarea id="src" spellcheck="false" aria-label="Texto da cifra" placeholder="Cole aqui a cifra (acordes na linha de cima, letra embaixo).
+
+[Refrão]
+G              D/F#
+  Grande é o Senhor
+Em             C
+  e mui digno de louvor"></textarea>
       <div class="row">
         <button class="btn primary" id="saveBtn">Salvar na biblioteca</button>
+        <button class="btn ghost" id="newBtn">Nova cifra</button>
         <label class="btn" for="importFile">Abrir arquivo</label>
         <input type="file" id="importFile" accept=".txt,.cho,.chopro,.chordpro,.pro,.crd,text/plain" hidden>
         <button class="btn" id="copyBtn">Copiar texto</button>
         <button class="btn" id="copyTrBtn" title="Copia o texto já no tom escolhido">Copiar no tom atual</button>
-        <button class="btn ghost" id="newBtn">Nova cifra</button>
       </div>
       <p class="status" id="edStatus" aria-live="polite"></p>
-      <p class="hint">Cole a cifra de qualquer site (acordes na linha de cima, letra embaixo) ou use ChordPro: <code>[G]O café na [D]mesa</code>. Seções como <code>[Refrão]</code> viram títulos. Funcionam notações como <code>G7M</code>, <code>Am7(b5)</code>, <code>C7(9)</code>, <code>D/F#</code>, <code>B°</code>.</p>
+      <details class="dica">
+        <summary>Como escrever a cifra</summary>
+        <ul>
+          <li>Acordes na linha de cima e a letra embaixo, como nos sites de cifra. É só colar.</li>
+          <li>Ou o acorde dentro da letra: <code>[G]Grande é o [D]Senhor</code>.</li>
+          <li>Partes da música entre colchetes, numa linha sozinha: <code>[Intro]</code>, <code>[Refrão]</code>, <code>[Ponte]</code>.</li>
+          <li>Para marcar o tom: <code>{key: G}</code>. Sem isso, o tom é descoberto pelos acordes.</li>
+          <li>Funcionam <code>G7M</code>, <code>Am7(b5)</code>, <code>C7(9)</code>, <code>D/F#</code>, <code>B°</code>, <code>Dsus4</code>.</li>
+        </ul>
+      </details>
     </aside>
 
     <div class="sheet-col">
@@ -86,6 +110,57 @@
       <div class="keyline" id="keyLine"></div>
       <div class="diagrams" id="diagrams" aria-label="Desenhos dos acordes"></div>
       <div class="sheet" id="sheet"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MODO CULTO (barra de baixo) ============ -->
+<div class="cultobar" id="cultoBar" hidden>
+  <div class="cb-nav">
+    <button class="btn" id="cbExit">✕ Sair</button>
+    <button class="btn sq" id="cbPrev" aria-label="Música anterior">‹</button>
+    <span class="cb-pos" id="cbPos"></span>
+    <button class="btn sq" id="cbNext" aria-label="Próxima música">›</button>
+  </div>
+  <div class="cb-tools">
+    <button class="btn sq" id="cbDown" aria-label="Meio tom abaixo">−</button>
+    <span class="keybox" id="cbKey" aria-live="polite">G</span>
+    <button class="btn sq" id="cbUp" aria-label="Meio tom acima">+</button>
+    <button class="btn sq" id="cbFDown" aria-label="Diminuir letra">A−</button>
+    <button class="btn sq" id="cbFUp" aria-label="Aumentar letra">A+</button>
+    <button class="btn" id="cbScroll" aria-pressed="false">▶ Rolar</button>
+  </div>
+</div>
+
+<!-- ============ CULTO (repertórios) ============ -->
+<section id="tab-culto" class="view" hidden>
+  <div class="wrap lib">
+    <div id="repLista">
+      <div class="libhead">
+        <h2>Repertórios</h2>
+        <button class="btn primary" id="repNovo">+ Novo repertório</button>
+      </div>
+      <p class="hint">Monte a ordem das músicas do culto, com o tom de cada uma. Todo mundo da equipe vê o mesmo repertório e toca no modo culto, passando de uma música para a outra.</p>
+      <p class="status" id="repMsg" aria-live="polite"></p>
+      <div class="libgrid" id="repGrid"></div>
+    </div>
+    <div id="repEdit" hidden>
+      <button class="btn ghost" id="repVoltar">‹ Todos os repertórios</button>
+      <div class="repform">
+        <label>Nome<input type="text" id="repNome" placeholder="Culto de domingo à noite"></label>
+        <label>Data<input type="date" id="repData"></label>
+      </div>
+      <div class="row">
+        <button class="btn primary" id="repTocar">▶ Tocar no modo culto</button>
+        <span class="status" id="repSalvo" aria-live="polite"></span>
+      </div>
+      <ol class="replist" id="repItens"></ol>
+      <div class="repadd">
+        <label class="lbl" for="repBusca">Adicionar música</label>
+        <input type="search" id="repBusca" placeholder="Buscar na biblioteca" autocomplete="off">
+        <div class="repsug" id="repSug"></div>
+      </div>
+      <button class="btn ghost perigo" id="repApagar">Excluir repertório</button>
     </div>
   </div>
 </section>
@@ -110,16 +185,10 @@
       </div>
       <div class="progress" aria-hidden="true"><i id="prog"></i></div>
       <div class="status" id="auStatus" aria-live="polite">Nenhum arquivo analisado ainda.</div>
-      <h3>Como funciona</h3>
-      <ol class="steps">
-        <li>O áudio é lido aqui no seu navegador. Nada é enviado para servidor.</li>
-        <li>O espectro é convertido em 12 notas (cromagrama) a cada 0,19 s.</li>
-        <li>Cada trecho é comparado com os 24 acordes maiores e menores, com peso para o baixo e para o tom estimado.</li>
-        <li>Revise e corrija os acordes ouvindo junto. Depois envie para a cifra e escreva a letra.</li>
-      </ol>
+      <p class="hint">O áudio é analisado aqui no aparelho, nada é enviado para a internet. O resultado é um rascunho: ouça junto, corrija os acordes que soarem errados e depois envie para a cifra para escrever a letra.</p>
 
-      <div class="server">
-        <h3>Servidor de análise (opcional)</h3>
+      <details class="server">
+        <summary>Avançado: servidor de análise</summary>
         <p class="hint">Com o servidor da pasta <code>api/</code> rodando, dá para colar link do YouTube, separar os instrumentos e transcrever a letra já com os acordes em cima.</p>
         <div class="row"><input type="url" id="apiUrl" placeholder="http://localhost:8000" aria-label="Endereço do servidor"><button class="btn" id="apiConnect">Conectar</button></div>
         <div class="feat" id="apiFeat"></div>
@@ -131,8 +200,8 @@
           </div>
           <div class="row" style="margin-top:10px"><input type="text" id="ytUrl" placeholder="Link do YouTube" aria-label="Link do YouTube"><button class="btn primary" id="ytGo">Analisar link</button></div>
         </div>
-      </div>
-      <p class="hint">Sem servidor, links do YouTube não funcionam: o navegador não consegue baixar o áudio. Use um arquivo do aparelho.</p>
+        <p class="hint">Sem servidor, links do YouTube não funcionam: use um arquivo do aparelho.</p>
+      </details>
     </div>
 
     <div class="panel" id="resultPanel">
@@ -157,10 +226,11 @@
 <!-- ============ BIBLIOTECA ============ -->
 <section id="tab-lib" class="view" hidden>
   <div class="wrap lib">
-    <div class="row" style="justify-content:space-between">
-      <h2 style="font-family:var(--display);font-weight:800;margin:0;font-size:24px">Biblioteca de cifras</h2>
-      <input type="search" id="libBusca" placeholder="Buscar por nome, artista ou trecho" aria-label="Buscar cifras">
+    <div class="libhead">
+      <h2>Biblioteca de cifras</h2>
+      <button class="btn primary" id="libNova">+ Nova cifra</button>
     </div>
+    <input type="search" id="libBusca" placeholder="Buscar por nome, artista ou trecho da letra" aria-label="Buscar cifras">
     <p class="hint" id="libStatus" aria-live="polite"></p>
     <div class="pendbox" id="libPend" hidden>
       <span id="libPendTxt"></span>

@@ -1,11 +1,18 @@
-# Cifrador
+# Cifras IEC Pombal (Cifrador)
 
-App de cifras do ministério de louvor, publicado em
+App de cifras do ministério de louvor da Igreja Evangélica Congregacional de Pombal, publicado em
 `cifras.igrejacongregacionalpombal.com.br` (pasta `public_html/cifras` na Hostinger).
 
+- **Biblioteca** (tela inicial): todas as cifras da igreja em ordem alfabética, com o tom de cada uma,
+  busca por nome, artista ou trecho da letra, e os botões Tocar e Abrir e editar.
 - **Cifra**: cola uma cifra (acordes em cima da letra ou ChordPro), transpõe, capotraste,
-  desenhos dos acordes para violão e teclado, rolagem automática.
-- **Do áudio ou vídeo**: tira os acordes de um arquivo, no próprio navegador (`assets/worker.js`).
+  desenhos dos acordes para violão e teclado, rolagem automática. A cifra quebra a linha no fim da
+  tela mantendo cada acorde em cima da sua sílaba (dá para ler no celular sem arrastar para o lado).
+- **Modo culto**: tela só com a música e uma barra embaixo (tom, tamanho da letra, rolagem, sair).
+  Tocando um repertório, a barra passa para a próxima música já no tom combinado. Mantém a tela acesa.
+- **Culto (repertórios)**: a ordem das músicas de cada culto, com o tom de cada uma, compartilhada
+  com a equipe.
+- **Áudio**: tira os acordes de um arquivo, no próprio navegador (`assets/worker.js`).
 - **Biblioteca compartilhada**: as cifras ficam no servidor (`api.php`) e todo mundo que abre o
   Cifrador vê e edita as mesmas. É aberta, sem login, como a Escala do Louvor.
 

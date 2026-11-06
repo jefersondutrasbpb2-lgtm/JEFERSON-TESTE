@@ -656,6 +656,59 @@ function He(e, t, n = 0) {
   const i = oe(s.root, s.iv, s.bass);
   return i.length ? ht(i[Math.min(n, i.length - 1)], s.root) : '<div class="notes">sem posição</div>';
 }
+/**
+ * Linha de acordes + linha de letra viram blocos "acorde em cima, pedaço da letra embaixo".
+ * Assim a linha quebra no fim da tela sem perder o acorde de cada sílaba. Pedaços da mesma
+ * palavra ficam juntos (não quebram no meio da palavra).
+ */
+function linhaCifrada(partes, letra, acorde) {
+  const ancoras = [];
+  let col = 0;
+  for (const b of partes) {
+    if (b.text.trim()) {
+      const html = b.chord ? acorde(b) : `<span class="mk">${y(b.text)}</span>`,
+        ult = ancoras[ancoras.length - 1];
+      ult && ult.fim === col
+        ? ((ult.html += html), (ult.fim += b.text.length))
+        : ancoras.push({ col, fim: col + b.text.length, html });
+    }
+    col += b.text.length;
+  }
+  const blocos = [],
+    pedacos = (txt, html) => {
+      const ps = txt.match(/^\s*\S*\s*|\S+\s*/g) || [""];
+      ps.forEach((t, i) => (t || (i === 0 && html)) && blocos.push({ html: i === 0 ? html : "", txt: t }));
+    };
+  ancoras.length && ancoras[0].col > 0 && pedacos(letra.slice(0, ancoras[0].col), "");
+  ancoras.length || pedacos(letra, "");
+  ancoras.forEach((an, i) => {
+    const fim = i + 1 < ancoras.length ? ancoras[i + 1].col : letra.length;
+    pedacos(an.col < letra.length ? letra.slice(an.col, Math.max(fim, an.col)) : "", an.html);
+  });
+  const palavras = [];
+  blocos.forEach((bl, i) => {
+    const ant = blocos[i - 1],
+      junta = ant && /\S$/.test(ant.txt) && /^\S/.test(bl.txt);
+    junta ? palavras[palavras.length - 1].push(bl) : palavras.push([bl]);
+  });
+  return (
+    '<div class="ln par">' +
+    palavras
+      .map(
+        (w) =>
+          '<span class="pw">' +
+          w
+            .map(
+              (bl) =>
+                `<span class="bl"><span class="cr">${bl.html}</span><span class="ly">${y(bl.txt) || " "}</span></span>`,
+            )
+            .join("") +
+          "</span>",
+      )
+      .join("") +
+    "</div>"
+  );
+}
 function T() {
   const e = L.value,
     t = ge(e),
@@ -667,7 +720,8 @@ function T() {
     a = se();
   (o("shTitle").textContent = o("songTitle").value || t.meta.title || "Sem título"),
     (o("shSub").textContent = o("songArtist").value || t.meta.artist || ""),
-    (o("keyBox").textContent = q(s, ee(s)));
+    (o("keyBox").textContent = q(s, ee(s))),
+    (o("cbKey").textContent = q(s, ee(s)));
   let l = "";
   P &&
     ((l += `<span class="pill">Tom original ${y(q(P))}</span>`),
@@ -688,7 +742,11 @@ function T() {
     });
   const c = [];
   let p = "";
-  for (const h of t.lines) {
+  const acorde = (b) => (
+    c.includes(b.chord) || c.push(b.chord), `<b class="ch" data-c="${y(b.chord)}">${y(b.chord)}</b>`
+  );
+  for (let idx = 0; idx < t.lines.length; idx++) {
+    const h = t.lines[idx];
     if (h.kind === "blank") {
       p && (p += '<div class="gap"></div>');
       continue;
@@ -701,18 +759,13 @@ function T() {
       p += `<div class="ln lyr">${y(h.text)}</div>`;
       continue;
     }
-    const g = Ie(h.toks, a, r);
-    p +=
-      '<div class="ln chords">' +
-      g
-        .map((b) =>
-          b.chord
-            ? (c.includes(b.chord) || c.push(b.chord),
-              `<b class="ch" data-c="${y(b.chord)}">${y(b.chord)}</b>`)
-            : y(b.text),
-        )
-        .join("") +
-      "</div>";
+    const g = Ie(h.toks, a, r),
+      prox = t.lines[idx + 1];
+    if (prox && prox.kind === "lyr") {
+      (p += linhaCifrada(g, prox.text, acorde)), idx++;
+      continue;
+    }
+    p += '<div class="ln chords">' + g.map((b) => (b.chord ? acorde(b) : y(b.text))).join("") + "</div>";
   }
   (o("sheet").innerHTML =
     p || '<p class="empty">Cole ou escreva uma cifra no editor para ela aparecer aqui.</p>'),
@@ -728,12 +781,14 @@ function T() {
         return `<div class="dcard" data-c="${y(h)}"><div class="nm">${y(h)}</div>${He(h, r, x)}${k}</div>`;
       })
       .join("")),
+    marcarSalvo(),
     E.set("draft", {
       text: e,
       title: o("songTitle").value,
       artist: o("songArtist").value,
       id: d.songId,
       base: d.songBase,
+      salvo: d.salvo,
     });
 }
 o("diagrams").addEventListener("click", (e) => {
@@ -783,7 +838,7 @@ function ze(e) {
 o("instGuitar").onclick = () => ze("guitar");
 o("instKeys").onclick = () => ze("keys");
 function ye(e) {
-  (d.size = Math.max(12, Math.min(30, e))),
+  (d.size = Math.max(12, Math.min(40, e))),
     document.documentElement.style.setProperty("--sheet-size", d.size + "px"),
     E.set("size", d.size);
 }
@@ -821,8 +876,9 @@ function Ke(e) {
 async function we(e) {
   var n;
   le = e;
-  const t = o("scrollBtn");
-  if ((t.setAttribute("aria-pressed", String(e)), (t.textContent = e ? "❚❚ Pausar" : "▶ Rolar"), e)) {
+  for (const b of [o("scrollBtn"), o("cbScroll")])
+    b.setAttribute("aria-pressed", String(e)), (b.textContent = e ? "❚❚ Pausar" : "▶ Rolar");
+  if (e) {
     (te = 0), requestAnimationFrame(Ke);
     try {
       z = (await ((n = navigator.wakeLock) == null ? void 0 : n.request("screen"))) ?? null;
@@ -858,7 +914,11 @@ o("saveBtn").onclick = async () => {
       },
       d.songBase,
     );
-    (d.songId = cifra.id), (d.songBase = como === "pendente" ? d.songBase : cifra.updated), T(), $e();
+    (d.songId = cifra.id),
+      (d.songBase = como === "pendente" ? d.songBase : cifra.updated),
+      (d.salvo = instantaneo()),
+      T(),
+      $e();
     ae(
       como === "copia"
         ? `Outra pessoa tinha alterado essa cifra. A sua versão foi salva como “${cifra.title}”.`
@@ -886,9 +946,6 @@ o("copyTrBtn").onclick = () => {
   const e = pe(P, se());
   Ve(pt(L.value, se(), ee(e)), "Texto copiado no tom atual.");
 };
-o("newBtn").onclick = () => {
-  J({ title: "", artist: "", text: "", id: null }), L.focus();
-};
 function J(e) {
   (o("songTitle").value = e.title || ""),
     (o("songArtist").value = e.artist || ""),
@@ -899,6 +956,7 @@ function J(e) {
     (d.capo = 0),
     (ie.value = "0"),
     (d.voice = {}),
+    (d.salvo = e.id ? instantaneo() : null),
     T();
 }
 const semAcento = (e) => (e || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
@@ -925,9 +983,12 @@ function $e() {
         ? "1 cifra está só neste aparelho e ainda não foi para a biblioteca compartilhada."
         : `${pend.length} cifras estão só neste aparelho e ainda não foram para a biblioteca compartilhada.`);
   const busca = semAcento(o("libBusca").value.trim()),
-    lista = [...pend.map((t) => ({ ...t, pendente: !0 })), ...biblioteca.cifras].filter(
-      (t) => !busca || semAcento(t.title + " " + t.artist + " " + t.text).includes(busca),
-    );
+    lista = [
+      ...pend.map((t) => ({ ...t, pendente: !0 })),
+      ...[...biblioteca.cifras].sort((a, b) =>
+        a.title.localeCompare(b.title, "pt-BR", { sensitivity: "base" }),
+      ),
+    ].filter((t) => !busca || semAcento(t.title + " " + t.artist + " " + t.text).includes(busca));
   if (!lista.length) {
     o("libGrid").innerHTML = busca
       ? '<p class="empty">Nenhuma cifra encontrada com essa busca.</p>'
@@ -936,8 +997,9 @@ function $e() {
   }
   o("libGrid").innerHTML = lista
     .map((t) => {
-      const n = [...new Set(qe(ge(t.text)).map((s) => ne(s)))].slice(0, 10).join("  ");
-      return `<article class="song" data-id="${y(t.id)}"><h4>${y(t.title)}</h4><div class="meta">${y(t.artist || "Artista não informado")} · ${new Date(t.updated).toLocaleDateString("pt-BR")}${t.pendente ? ' · <span class="pend">só neste aparelho</span>' : ""}</div><div class="chs">${y(n)}</div><div class="row"><button class="btn primary" data-a="open">Abrir</button><button class="btn ghost" data-a="del">Excluir</button></div></article>`;
+      const g = ge(t.text),
+        n = [...new Set(qe(g).map((s) => ne(s)))].slice(0, 8).join("  ");
+      return `<article class="song" data-id="${y(t.id)}"><div class="songtop"><h4><button class="linkbtn" data-a="open">${y(t.title)}</button></h4><span class="tom" title="Tom">${y(tomDe(t))}</span></div><div class="meta">${y(t.artist || "Artista não informado")}${t.pendente ? ' · <span class="pend">só neste aparelho</span>' : ""}</div><div class="chs">${y(n)}</div><div class="row"><button class="btn primary" data-a="play">▶ Tocar</button><button class="btn" data-a="open">Abrir e editar</button><button class="btn ghost" data-a="del">Excluir</button></div></article>`;
     })
     .join("");
 }
@@ -980,7 +1042,9 @@ o("libGrid").addEventListener("click", async (e) => {
   if (!t) return;
   const n = t.closest(".song").dataset.id,
     i = biblioteca.achar(n);
-  if (t.dataset.a === "open" && i) return J(i), Y("cifra");
+  if (t.dataset.a === "open" && i)
+    return J(i), xe(!window.matchMedia("(max-width: 860px)").matches), Y("cifra"), scrollTo(0, 0);
+  if (t.dataset.a === "play" && i) return J(i), entrarCulto();
   if (t.dataset.a === "del")
     return (
       (t.textContent = "Confirmar exclusão"), (t.dataset.a = "del2"), void (t.style.color = "var(--danger)")
@@ -1008,6 +1072,8 @@ function Y(e) {
       .forEach((t) => t.setAttribute("aria-selected", String(t.dataset.tab === e))),
     e !== "cifra" && le && we(!1),
     e === "lib" && libAtualizar(),
+    e === "culto" && repAtualizar(),
+    e !== "cifra" && culto && sairCulto(),
     E.set("tab", e);
 }
 document.querySelectorAll(".tabs button").forEach((e) => (e.onclick = () => Y(e.dataset.tab)));
@@ -1287,6 +1353,296 @@ o("ytGo").onclick = async () => {
     }
   }
 };
+/* ===================== Salvo / não salvo ===================== */
+function instantaneo() {
+  return JSON.stringify([o("songTitle").value, o("songArtist").value, L.value]);
+}
+function marcarSalvo() {
+  const b = o("saveBtn"),
+    igual = d.salvo != null && d.salvo === instantaneo();
+  (b.textContent = igual ? "Salvo na biblioteca ✓" : d.songId ? "Salvar alterações" : "Salvar na biblioteca"),
+    b.classList.toggle("ok", igual);
+}
+
+/** Tom de uma cifra da biblioteca (com semis de transposição), por exemplo "G" ou "Em". */
+function tomDe(c, semis = 0) {
+  const g = ge(c.text || ""),
+    k = Ne(g.meta.key) || ut(qe(g));
+  if (!k) return "–";
+  const t = pe(k, semis);
+  return q(t, he(t));
+}
+
+/* ===================== Desenhos e ajustes ===================== */
+function mostrarDesenhos(v) {
+  (d.diag = v),
+    E.set("diag", v),
+    o("diagBtn").setAttribute("aria-pressed", String(v)),
+    (o("diagrams").hidden = !v);
+}
+o("diagBtn").onclick = () => mostrarDesenhos(!d.diag);
+o("maisBtn").onclick = () => {
+  const aberto = o("maisBtn").getAttribute("aria-expanded") !== "true";
+  o("maisBtn").setAttribute("aria-expanded", String(aberto)),
+    document.querySelector(".toolbar").classList.toggle("aberta", aberto);
+};
+o("libNova").onclick = () => {
+  J({ title: "", artist: "", text: "", id: null }),
+    xe(!0),
+    Y("cifra"),
+    scrollTo(0, 0),
+    o("songTitle").focus();
+};
+o("newBtn").onclick = () => {
+  J({ title: "", artist: "", text: "", id: null }), xe(!0), o("songTitle").focus();
+};
+
+/* ===================== Modo culto ===================== */
+// culto = null fora do modo; {rep, pos} tocando um repertório; {rep: null} tocando uma música só.
+let culto = null,
+  travaTela = null;
+async function manterTelaAcesa(v) {
+  try {
+    v && !travaTela
+      ? (travaTela = (await navigator.wakeLock?.request("screen")) ?? null)
+      : !v && travaTela && (await travaTela.release(), (travaTela = null));
+  } catch {}
+}
+document.addEventListener("visibilitychange", () => {
+  !document.hidden && culto && ((travaTela = null), manterTelaAcesa(!0));
+});
+function entrarCulto(rep = null, pos = 0) {
+  (culto = { rep, pos }), rep && abrirDoRepertorio(), Y("cifra"), xe(!1);
+  document.body.classList.add("culto"), (o("cultoBar").hidden = !1), manterTelaAcesa(!0);
+  try {
+    document.fullscreenEnabled &&
+      !document.fullscreenElement &&
+      document.documentElement.requestFullscreen().catch(() => {});
+  } catch {}
+  scrollTo(0, 0), barraCulto();
+}
+function sairCulto() {
+  (culto = null),
+    document.body.classList.remove("culto"),
+    (o("cultoBar").hidden = !0),
+    le && we(!1),
+    manterTelaAcesa(!1);
+  document.fullscreenElement && document.exitFullscreen().catch(() => {});
+}
+function abrirDoRepertorio() {
+  const it = culto.rep.itens[culto.pos],
+    c = it && biblioteca.achar(it.id);
+  J(c || { title: "Música não encontrada", artist: "Ela foi excluída da biblioteca.", text: "", id: null }),
+    (d.semis = (it && it.semis) || 0),
+    T(),
+    le && we(!1),
+    scrollTo(0, 0),
+    barraCulto();
+}
+function barraCulto() {
+  const r = culto && culto.rep;
+  (o("cbPrev").hidden = o("cbNext").hidden = !r),
+    (o("cbPos").textContent = r
+      ? `${culto.pos + 1} de ${r.itens.length} · ${r.nome}`
+      : o("shTitle").textContent);
+  r && ((o("cbPrev").disabled = culto.pos <= 0), (o("cbNext").disabled = culto.pos >= r.itens.length - 1));
+}
+const andar = (passo) => {
+  if (!culto || !culto.rep) return;
+  const novo = culto.pos + passo;
+  novo >= 0 && novo < culto.rep.itens.length && ((culto.pos = novo), abrirDoRepertorio());
+};
+o("cultoBtn").onclick = () => entrarCulto();
+o("cbExit").onclick = sairCulto;
+o("cbPrev").onclick = () => andar(-1);
+o("cbNext").onclick = () => andar(1);
+o("cbUp").onclick = () => o("tUp").click();
+o("cbDown").onclick = () => o("tDown").click();
+o("cbFUp").onclick = () => ye(d.size + 1);
+o("cbFDown").onclick = () => ye(d.size - 1);
+o("cbScroll").onclick = () => we(!le);
+document.addEventListener("keydown", (e) => {
+  if (!culto || e.target.closest("input, textarea, select")) return;
+  e.key === "Escape"
+    ? sairCulto()
+    : e.key === "ArrowRight" || e.key === "PageDown"
+      ? andar(1)
+      : (e.key === "ArrowLeft" || e.key === "PageUp") && andar(-1);
+});
+
+/* ===================== Repertórios do culto ===================== */
+let repAtual = null,
+  repFila = Promise.resolve(),
+  repTimer = 0;
+const dataLocal = (dt) =>
+    `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`,
+  proxDomingo = () => {
+    const dt = new Date();
+    return dt.setDate(dt.getDate() + ((7 - dt.getDay()) % 7)), dataLocal(dt);
+  },
+  dataBR = (s) =>
+    s
+      ? new Date(s + "T12:00").toLocaleDateString("pt-BR", {
+          weekday: "long",
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        })
+      : "Sem data";
+function repAviso(t) {
+  o("repMsg").textContent = t;
+}
+async function repAtualizar() {
+  try {
+    await biblioteca.carregar();
+  } catch (erro) {
+    repAviso(erro.message);
+  }
+  repAtual ? repItens() : repLista();
+}
+function repLista() {
+  (o("repLista").hidden = !1), (o("repEdit").hidden = !0);
+  const hoje = dataLocal(new Date()),
+    lista = [...biblioteca.repertorios].sort((a, b) => {
+      const fa = a.data && a.data >= hoje,
+        fb = b.data && b.data >= hoje;
+      return fa !== fb
+        ? fa
+          ? -1
+          : 1
+        : fa
+          ? a.data.localeCompare(b.data)
+          : (b.data || "").localeCompare(a.data || "");
+    });
+  biblioteca.conectado === !1 &&
+    repAviso("Sem conexão com o servidor. Mostrando a última cópia deste aparelho.");
+  o("repGrid").innerHTML = lista.length
+    ? lista
+        .map((r) => {
+          const nomes = r.itens.map((it) => (biblioteca.achar(it.id) || { title: "?" }).title);
+          return `<article class="song${r.data && r.data < hoje ? " passado" : ""}" data-id="${y(r.id)}"><h4><button class="linkbtn" data-a="abrir">${y(r.nome)}</button></h4><div class="meta">${y(dataBR(r.data))} · ${nomes.length} música${nomes.length === 1 ? "" : "s"}</div><div class="replist-mini">${y(nomes.slice(0, 4).join(" · ") + (nomes.length > 4 ? " …" : ""))}</div><div class="row"><button class="btn primary" data-a="tocar"${nomes.length ? "" : " disabled"}>▶ Tocar</button><button class="btn" data-a="abrir">Montar</button></div></article>`;
+        })
+        .join("")
+    : '<p class="empty">Nenhum repertório ainda. Toque em “+ Novo repertório” para montar o do próximo culto.</p>';
+}
+o("repGrid").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-a]");
+  if (!b) return;
+  const r = biblioteca.repertorios.find((x) => x.id === b.closest(".song").dataset.id);
+  r && (b.dataset.a === "tocar" ? r.itens.length && entrarCulto(structuredClone(r), 0) : repAbrir(r));
+});
+function repAbrir(r) {
+  (repAtual = structuredClone(r)),
+    (o("repLista").hidden = !0),
+    (o("repEdit").hidden = !1),
+    (o("repNome").value = r.nome),
+    (o("repData").value = r.data || "");
+  (o("repSalvo").textContent = ""),
+    (o("repBusca").value = ""),
+    (o("repSug").innerHTML = ""),
+    (o("repApagar").textContent = "Excluir repertório"),
+    repItens(),
+    scrollTo(0, 0);
+}
+o("repNovo").onclick = () => {
+  repAbrir({ id: null, nome: "Culto de domingo", data: proxDomingo(), itens: [] }),
+    o("repNome").select(),
+    repMudou();
+};
+o("repVoltar").onclick = () => {
+  (repAtual = null), repLista();
+};
+function repItens() {
+  const r = repAtual;
+  o("repTocar").disabled = !r.itens.length;
+  o("repItens").innerHTML = r.itens.length
+    ? r.itens
+        .map((it, i) => {
+          const c = biblioteca.achar(it.id);
+          return `<li data-i="${i}"><div class="ri-nome"><strong>${y(c ? c.title : "Música excluída da biblioteca")}</strong><span>${y(c ? c.artist || "" : "")}</span></div><div class="ri-tom" role="group" aria-label="Tom de ${y(c ? c.title : "")}"><button class="btn sq" data-a="tom" data-d="-1" aria-label="Meio tom abaixo">−</button><span class="keybox">${y(c ? tomDe(c, it.semis) : "–")}</span><button class="btn sq" data-a="tom" data-d="1" aria-label="Meio tom acima">+</button></div><div class="ri-ord"><button class="btn sq" data-a="sobe" aria-label="Subir"${i ? "" : " disabled"}>↑</button><button class="btn sq" data-a="desce" aria-label="Descer"${i < r.itens.length - 1 ? "" : " disabled"}>↓</button><button class="btn sq ghost" data-a="tira" aria-label="Tirar do repertório">✕</button></div></li>`;
+        })
+        .join("")
+    : '<p class="empty">Nenhuma música ainda. Busque abaixo e toque no nome para adicionar.</p>';
+}
+o("repItens").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-a]");
+  if (!b) return;
+  const i = Number(b.closest("li").dataset.i),
+    its = repAtual.itens;
+  if (b.dataset.a === "tom") {
+    let v = (its[i].semis || 0) + Number(b.dataset.d);
+    its[i].semis = v > 11 ? v - 12 : v < -11 ? v + 12 : v;
+  } else
+    b.dataset.a === "sobe"
+      ? ([its[i - 1], its[i]] = [its[i], its[i - 1]])
+      : b.dataset.a === "desce"
+        ? ([its[i + 1], its[i]] = [its[i], its[i + 1]])
+        : its.splice(i, 1);
+  repItens(), repMudou();
+});
+o("repBusca").addEventListener("input", () => {
+  const busca = semAcento(o("repBusca").value.trim());
+  o("repSug").innerHTML = busca
+    ? biblioteca.cifras
+        .filter((c) => semAcento(c.title + " " + c.artist + " " + c.text).includes(busca))
+        .slice(0, 8)
+        .map(
+          (c) =>
+            `<button class="sug" data-id="${y(c.id)}"><strong>${y(c.title)}</strong> <span>${y(c.artist || "")} · ${y(tomDe(c))}</span></button>`,
+        )
+        .join("") || '<p class="hint">Nada encontrado na biblioteca.</p>'
+    : "";
+});
+o("repSug").addEventListener("click", (e) => {
+  const b = e.target.closest("button.sug");
+  b &&
+    (repAtual.itens.push({ id: b.dataset.id, semis: 0 }),
+    (o("repBusca").value = ""),
+    (o("repSug").innerHTML = ""),
+    repItens(),
+    repMudou(),
+    o("repBusca").focus());
+});
+for (const id of ["repNome", "repData"])
+  o(id).addEventListener("input", () => {
+    (repAtual.nome = o("repNome").value), (repAtual.data = o("repData").value), repMudou();
+  });
+function repMudou() {
+  clearTimeout(repTimer), (o("repSalvo").textContent = "Salvando…");
+  repTimer = setTimeout(() => {
+    const atual = repAtual;
+    repFila = repFila.then(async () => {
+      try {
+        const salvo = await biblioteca.salvarRepertorio(atual);
+        (atual.id = salvo.id), repAtual === atual && (o("repSalvo").textContent = "Salvo ✓ · a equipe já vê");
+      } catch (erro) {
+        repAtual === atual &&
+          (o("repSalvo").textContent =
+            erro.codigo === "offline"
+              ? "Sem internet: não foi salvo. Tente de novo quando a conexão voltar."
+              : erro.message);
+      }
+    });
+  }, 700);
+}
+o("repTocar").onclick = () => repAtual.itens.length && entrarCulto(structuredClone(repAtual), 0);
+o("repApagar").onclick = async () => {
+  const b = o("repApagar");
+  if (b.dataset.conf !== "1")
+    return (b.dataset.conf = "1"), (b.textContent = "Confirmar exclusão do repertório");
+  b.dataset.conf = "";
+  try {
+    clearTimeout(repTimer),
+      await repFila,
+      repAtual.id && (await biblioteca.apagarRepertorio(repAtual.id)),
+      (repAtual = null),
+      repAviso("Repertório excluído."),
+      repLista();
+  } catch (erro) {
+    o("repSalvo").textContent = erro.message;
+  }
+};
+
 (function () {
   var s;
   const t = E.get("draft", null);
@@ -1295,8 +1651,9 @@ o("ytGo").onclick = async () => {
       (o("songTitle").value = t.title || ""),
       (o("songArtist").value = t.artist || ""),
       (d.songId = t.id || null),
-      (d.songBase = t.base ?? null))
-    : (L.value = tt),
+      (d.songBase = t.base ?? null),
+      (d.salvo = t.salvo ?? null))
+    : (L.value = ""),
     ye(E.get("size", 17)),
     (d.inst = E.get("inst", "guitar")),
     o("instGuitar").setAttribute("aria-pressed", String(d.inst === "guitar")),
@@ -1305,7 +1662,9 @@ o("ytGo").onclick = async () => {
     xe(!window.matchMedia("(max-width: 860px)").matches),
     T(),
     $e(),
-    Y(E.get("tab", "cifra")),
+    (d.diag = E.get("diag", !0)),
+    mostrarDesenhos(d.diag),
+    Y(E.get("tab", L.value.trim() ? "cifra" : "lib")),
     o("tab-lib").hidden && libAtualizar();
   const n = E.get("api", "") || void 0 || "";
   n && ((o("apiUrl").value = n), Xe()),

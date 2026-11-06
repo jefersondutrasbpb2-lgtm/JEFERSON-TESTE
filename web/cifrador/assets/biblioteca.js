@@ -6,6 +6,7 @@
 
 const API = "./api.php";
 const CHAVE_COPIA = "cifrador.biblioteca";
+const CHAVE_REPERTORIOS = "cifrador.repertorios";
 const CHAVE_PENDENTES = "cifrador.songs"; // mesma chave da versão antiga: as cifras dela viram pendentes
 
 function ler(chave, padrao) {
@@ -60,6 +61,7 @@ const porData = (a, b) => (b.updated || 0) - (a.updated || 0);
 
 export const biblioteca = {
   cifras: ler(CHAVE_COPIA, []),
+  repertorios: ler(CHAVE_REPERTORIOS, []),
   conectado: null, // null: ainda não tentou; true/false: última tentativa
   atualizada: 0,
 
@@ -73,8 +75,10 @@ export const biblioteca = {
 
   async carregar() {
     try {
-      const { cifras } = await chamar("lista");
+      const { cifras, repertorios } = await chamar("lista");
       this.cifras = Object.values(cifras).sort(porData);
+      this.repertorios = Object.values(repertorios || {});
+      guardar(CHAVE_REPERTORIOS, this.repertorios);
       this.conectado = true;
       this.atualizada = Date.now();
       guardar(CHAVE_COPIA, this.cifras);
@@ -172,6 +176,22 @@ export const biblioteca = {
     await chamar("apagar", { id });
     this.cifras = this.cifras.filter((c) => c.id !== id);
     guardar(CHAVE_COPIA, this.cifras);
+  },
+
+  /** Repertório do culto: {id?, nome, data, itens: [{id, semis}]}. Precisa de internet. */
+  async salvarRepertorio(rep) {
+    const r = await chamar("gravar_repertorio", {
+      repertorio: { id: rep.id || null, nome: rep.nome, data: rep.data, itens: rep.itens },
+    });
+    this.repertorios = [r.repertorio, ...this.repertorios.filter((x) => x.id !== r.repertorio.id)];
+    guardar(CHAVE_REPERTORIOS, this.repertorios);
+    return r.repertorio;
+  },
+
+  async apagarRepertorio(id) {
+    await chamar("apagar_repertorio", { id });
+    this.repertorios = this.repertorios.filter((x) => x.id !== id);
+    guardar(CHAVE_REPERTORIOS, this.repertorios);
   },
 
   async restaurar(id) {

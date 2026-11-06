@@ -6,7 +6,7 @@ AddType application/manifest+json .webmanifest
   Require all denied
 </FilesMatch>
 <IfModule mod_headers.c>
-  <FilesMatch "\.(html|js|php|webmanifest)$">
+  <FilesMatch "\.(html|js|css|php|webmanifest)$">
     Header set Cache-Control "no-cache"
   </FilesMatch>
 </IfModule>

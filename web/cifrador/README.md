@@ -74,5 +74,9 @@ biblioteca fica no modo sem conexão.
 
 ## Publicar
 
-Enviar para `public_html/cifras` na Hostinger: `index.html`, `api.php`, `.htaccess`, `sw.js`,
-`manifest.webmanifest`, `icon.svg` e a pasta `assets/`.
+1. Rode `node web/cifrador/versionar.mjs`. Ele põe a versão (hash do conteúdo) nos endereços de
+   `estilo.css`, `app.js` e `biblioteca.js`. **Não pule:** o CDN da Hostinger guarda CSS por até
+   7 dias, e sem a versão no endereço o navegador pode receber o CSS antigo com o JS novo.
+2. Envie para `public_html/cifras`: `api.php`, `.htaccess`, `sw.js`, `manifest.webmanifest`,
+   `icon.svg`, `icon-*.png`, a pasta `assets/` e por último o `index.html`.
+3. Limpe o cache do site na Hostinger (hPanel › Cache, ou a ferramenta de limpar cache).

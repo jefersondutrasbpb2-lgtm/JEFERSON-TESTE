@@ -1,4 +1,4 @@
-import { biblioteca } from "./biblioteca.js";
+import { biblioteca } from "./biblioteca.js?v=f63588bc71";
 (function () {
   const t = document.createElement("link").relList;
   if (t && t.supports && t.supports("modulepreload")) return;
@@ -466,9 +466,21 @@ function lerCifra(e) {
         text: i,
       });
     };
-  for (let i of e.replace(/\r/g, "").split(`
+  // Sites de cifra às vezes colam caracteres invisíveis (espaço de largura zero, BOM) e espaços
+  // não separáveis: sem limpar, "​C   F7M" não é reconhecido como linha de acordes.
+  for (let i of e
+    .replace(/\r/g, "")
+    .replace(/[\u200B-\u200D\u2060\uFEFF]/g, "")
+    .replace(/\u00A0/g, " ")
+    .split(`
 `)) {
     i = i.replace(/\t/g, "    ").replace(/\s+$/, "");
+    // "Tom: C" (como vem do Cifra Club e outros sites) marca o tom, como {key: C}.
+    const tom = i.match(/^\s*Tom\s*:\s*([A-G][#b]?m?)\s*(\(.*\))?\s*$/i);
+    if (tom && lerAcorde(tom[1])) {
+      t.key || (t.key = tom[1]);
+      continue;
+    }
     const r = i.match(/^\s*\{\s*([\w_]+)\s*(?::\s*(.*?))?\s*\}\s*$/);
     if (r) {
       const l = r[1].toLowerCase(),

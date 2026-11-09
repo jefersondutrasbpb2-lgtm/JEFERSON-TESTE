@@ -19,6 +19,12 @@ A pasta `greatpages/` traz a mesma página dividida em blocos para colar em elem
 | sertao-negocios-vendas (3659562) | www.sertaonegocios.com.br/ingressos | `vendas.html`, gerado por `tools/build_vendas.py` a partir do `index.html`; `python3 tools/build_gp_html.py vendas` monta o arquivo do GreatPages |
 | sertao-negocios-html (3658757) | www.sertaonegocios.com.br (raiz, desde 30/10) | Página da comunidade do lançamento. Fica como está no GreatPages: as mudanças de copy agora são só da página de ingressos. O `index.html` daqui serve de base para a de vendas e já não é igual à /comunidade no ar. A cópia do que está salvo no GreatPages fica em `greatpages-html/comunidade-no-greatpages.html` (03/11: Lote 1 aberto com os links na comunidade). |
 
+### Script de UTM para a Eduzz (09/11)
+
+`greatpages/utm-checkout-eduzz.html` está instalado nas duas páginas pelo painel do GreatPages
+(Javascript e CSS, tipo "Funcionamento"), fora do HTML da página. Os envios de HTML pela MCP não
+o apagam, e ele não deve ser colado no HTML gerado aqui, para não rodar duas vezes.
+
 ## Antes de publicar
 
 1. **Formulário:** em `assets/js/config.js`, preencha `leadEndpoint` com a URL do seu webhook ou CRM. Com o campo vazio, a página roda em modo de demonstração: o envio é simulado e um aviso aparece no console.

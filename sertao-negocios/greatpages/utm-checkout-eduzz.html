@@ -1,0 +1,108 @@
+<!--
+  Sertão Negócios 2026 · Repassa as UTMs para o checkout da Eduzz
+
+  O que faz
+  1. Quando alguém chega em qualquer página do sertaonegocios.com.br com UTM no link
+     (utm_source, utm_medium, utm_campaign, utm_content, utm_term), guarda essas UTMs
+     no navegador por 30 dias. Vale a última origem com UTM.
+  2. Em toda página onde estiver instalado, qualquer link ou botão que leve para a Eduzz
+     (chk.eduzz.com, sun.eduzz.com ou qualquer endereço eduzz.com) ganha as UTMs no final.
+     Funciona para links que já estão na página, para os que aparecem depois (pop-up,
+     seção carregada mais tarde) e para botões que abrem o checkout por script.
+  3. Se o link da Eduzz já tiver UTM escrita à mão, ele não mexe.
+  4. Se a pessoa chegar sem UTM nenhuma e sem nada guardado, ele marca
+     utm_source=direto, para separar no painel "veio sem rastreio" de "link sem UTM".
+
+  Onde instalar
+  - Página de vendas (sertaonegocios.com.br, raiz) e página da comunidade (/comunidade).
+  - Na GreatPages, no campo de scripts da página (o mesmo lugar do pixel do Meta),
+    colando tudo isto no final do corpo da página (antes de </body>).
+  - Instalar nas duas páginas faz a UTM do anúncio de captação acompanhar a pessoa
+    até a compra, mesmo que ela volte dias depois pelo link do grupo.
+-->
+<script>
+(function () {
+  var CHAVES = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
+  var ARMAZEM = 'sn26_utms';
+  var VALIDADE = 30 * 24 * 60 * 60 * 1000;
+
+  function ler() {
+    try {
+      var s = JSON.parse(localStorage.getItem(ARMAZEM) || 'null');
+      if (s && s.t && Date.now() - s.t < VALIDADE) return s.u;
+    } catch (e) {}
+    return null;
+  }
+
+  function guardar(u) {
+    try { localStorage.setItem(ARMAZEM, JSON.stringify({ t: Date.now(), u: u })); } catch (e) {}
+  }
+
+  // 1. Captura as UTMs do endereço atual
+  var atual = {};
+  var temUtm = false;
+  try {
+    var q = new URLSearchParams(window.location.search);
+    CHAVES.forEach(function (k) {
+      var v = q.get(k);
+      if (v) { atual[k] = v; temUtm = true; }
+    });
+  } catch (e) {}
+  if (temUtm) guardar(atual);
+  var utms = temUtm ? atual : (ler() || { utm_source: 'direto' });
+
+  // 2. Acrescenta as UTMs a um endereço da Eduzz
+  function ehEduzz(url) {
+    return /(^|\.)eduzz\.com$/i.test(url.hostname);
+  }
+
+  function comUtm(href) {
+    try {
+      var url = new URL(href, window.location.href);
+      if (!ehEduzz(url)) return href;
+      var jaTem = CHAVES.some(function (k) { return url.searchParams.get(k); });
+      if (jaTem) return href;
+      CHAVES.forEach(function (k) { if (utms[k]) url.searchParams.set(k, utms[k]); });
+      return url.toString();
+    } catch (e) {
+      return href;
+    }
+  }
+
+  function ajustarLinks(raiz) {
+    var links = (raiz || document).querySelectorAll('a[href*="eduzz.com"]');
+    for (var i = 0; i < links.length; i++) {
+      var a = links[i];
+      var novo = comUtm(a.getAttribute('href'));
+      if (novo !== a.getAttribute('href')) a.setAttribute('href', novo);
+    }
+  }
+
+  // Links que já estão na página
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { ajustarLinks(); });
+  } else {
+    ajustarLinks();
+  }
+
+  // Links que aparecem depois (pop-up, seção carregada mais tarde)
+  try {
+    new MutationObserver(function () { ajustarLinks(); })
+      .observe(document.documentElement, { childList: true, subtree: true });
+  } catch (e) {}
+
+  // Garantia no clique: corrige o link na hora, antes de abrir
+  document.addEventListener('click', function (ev) {
+    var a = ev.target && ev.target.closest ? ev.target.closest('a[href]') : null;
+    if (a && a.href.indexOf('eduzz.com') !== -1) a.setAttribute('href', comUtm(a.getAttribute('href')));
+  }, true);
+
+  // Botões que abrem o checkout por script
+  var abrirOriginal = window.open;
+  window.open = function (url) {
+    var args = Array.prototype.slice.call(arguments);
+    if (typeof url === 'string') args[0] = comUtm(url);
+    return abrirOriginal.apply(window, args);
+  };
+})();
+</script>

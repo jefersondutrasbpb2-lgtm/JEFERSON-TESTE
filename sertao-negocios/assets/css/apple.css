@@ -1,0 +1,117 @@
+/* =========================================================
+   Camada "Apple design" (cópia de teste da página de vendas)
+   Só CSS, por cima do main.css. Princípios do WWDC "Designing Fluid Interfaces":
+   resposta no toque, molas no lugar de durações fixas, materiais translúcidos,
+   tipografia por tamanho e respeito a menos movimento, transparência e contraste.
+   ========================================================= */
+
+:root {
+  /* Molas do Apple em CSS (linear()): amortecimento 1,0 / resposta 0,4 s, sem rebote */
+  --spring: linear(0, 0.06, 0.186, 0.329, 0.466, 0.584, 0.682, 0.76, 0.821, 0.868, 0.903, 0.929, 0.949, 0.963, 0.973, 0.981, 0.986, 0.99, 0.993, 0.995, 0.997, 0.998, 0.998, 0.999, 1);
+  --spring-t: .6s;
+  /* Amortecimento 0,8: um leve rebote, só onde há impulso (abrir menu, carta levantando) */
+  --spring-bounce: linear(0, 0.049, 0.163, 0.304, 0.448, 0.581, 0.695, 0.788, 0.861, 0.916, 0.955, 0.982, 0.999, 1.008, 1.013, 1.015, 1.015, 1.013, 1.011, 1.009, 1.007, 1.005, 1.004, 1.002, 1.001, 1.001, 1, 1, 1, 1, 1, 1, 1);
+  --spring-bounce-t: .7s;
+  --press: 100ms;
+}
+
+/* ---------- 1. Resposta: o retorno vem no toque, não no soltar ---------- */
+html { -webkit-tap-highlight-color: transparent; }
+.btn, .buy__opt, .wa__btn, .wa__opt, .qa summary, .nav__cta, .link-arrow, .sponsor {
+  touch-action: manipulation;
+}
+.btn {
+  transition: transform var(--spring-t) var(--spring), box-shadow var(--spring-t) var(--spring), background-color .3s;
+}
+.btn:active { transform: scale(.97); transition-duration: var(--press); transition-timing-function: ease-out; }
+.buy__opt { transition: transform var(--spring-t) var(--spring), box-shadow .25s ease; }
+.buy__opt:active { transform: scale(.97); transition-duration: var(--press); transition-timing-function: ease-out; }
+.wa__btn { transition: transform var(--spring-t) var(--spring), box-shadow var(--spring-t) var(--spring); }
+.wa__btn:active { transform: scale(.94); transition-duration: var(--press); }
+.wa__opt:active { transform: scale(.98); transition: transform var(--press) ease-out; }
+.qa summary { transition: color .2s ease; }
+.qa summary:active { opacity: .7; }
+.qa__icon { transition: transform var(--spring-bounce-t) var(--spring-bounce), background-color .25s, box-shadow .25s; }
+
+/* Profundidade no passar do mouse (só em telas com mouse): os cartões sobem como objetos */
+@media (hover: hover) and (pointer: fine) {
+  .ticket, .hotel, .sponsor, .exp-card, .trust-card {
+    transition: transform var(--spring-t) var(--spring), box-shadow var(--spring-t) var(--spring);
+  }
+  .ticket:hover, .hotel:hover, .exp-card:hover, .trust-card:hover { transform: translateY(-4px); }
+  .sponsor:hover { transform: translateY(-3px); box-shadow: 0 28px 50px -30px rgb(9 12 58 / .45); }
+  .buy__opt:hover { transform: translateY(-1px); }
+}
+
+/* ---------- 2. Materiais: camadas translúcidas e bordas que pegam luz ---------- */
+.nav.is-scrolled {
+  -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: none;
+}
+/* Borda de rolagem em vez de linha: um esmaecimento suave onde o conteúdo passa sob o menu */
+.nav::after {
+  content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 14px; pointer-events: none;
+  background: linear-gradient(rgb(9 12 58 / .18), transparent); opacity: 0; transition: opacity .4s ease;
+}
+.nav.is-scrolled::after { opacity: 1; }
+.nav.is-light::after { background: linear-gradient(rgb(13 15 46 / .08), transparent); }
+
+.dock {
+  -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .12);   /* luz batendo na borda de cima do material */
+  transition: transform var(--spring-t) var(--spring);
+}
+
+/* O menu do WhatsApp materializa a partir do botão: escala e desfoque juntos, com um leve rebote */
+@keyframes apple-materialize {
+  from { opacity: 0; transform: scale(.9) translateY(8px); filter: blur(8px); }
+  to { opacity: 1; transform: none; filter: blur(0); }
+}
+.wa__menu { animation: apple-materialize var(--spring-bounce-t) var(--spring-bounce); }
+
+/* Janela de privacidade: fundo escurece e recua, a janela chega como material */
+.privacy::backdrop { background: rgb(9 12 58 / .55); -webkit-backdrop-filter: blur(12px) saturate(140%); backdrop-filter: blur(12px) saturate(140%); }
+.privacy[open] { animation: apple-materialize var(--spring-t) var(--spring); }
+
+/* Destaque "+N" dos palestrantes: vidro escuro com borda de luz */
+.speaker-cases { -webkit-backdrop-filter: blur(20px) saturate(160%); backdrop-filter: blur(20px) saturate(160%); box-shadow: inset 0 1px 0 rgb(255 255 255 / .16), inset 0 0 0 1px rgb(255 255 255 / .1); }
+
+/* ---------- 3. Perguntas: abrem e fecham com mola, sem salto ---------- */
+@supports (interpolate-size: allow-keywords) {
+  :root { interpolate-size: allow-keywords; }
+  .qa::details-content {
+    block-size: 0; overflow: clip;
+    transition: block-size var(--spring-t) var(--spring), content-visibility var(--spring-t) allow-discrete;
+  }
+  .qa[open]::details-content { block-size: auto; }
+}
+
+/* ---------- 4. Tipografia: espaçamento por tamanho, quebras equilibradas ---------- */
+body { font-optical-sizing: auto; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
+h1, h2, h3, .h-display, .hotel__title, .presale__title, .sponsors__lead { text-wrap: balance; }
+p, li, .qa__a { text-wrap: pretty; }
+.speaker__bio, .qa__a p, .hotel__body p { letter-spacing: .005em; }   /* texto pequeno: um respiro a mais */
+.ticket__lot, .hotel__tag, .sponsors__title, .kicker { letter-spacing: .16em; }
+
+/* Foco visível e com mola, para quem navega pelo teclado */
+:focus-visible { outline-offset: 4px; transition: outline-offset .2s ease; }
+
+/* ---------- 5. Acessibilidade: menos movimento, menos transparência, mais contraste ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .btn, .buy__opt, .wa__btn, .ticket, .hotel, .sponsor, .exp-card, .trust-card, .dock { transition: opacity .2s ease, background-color .2s ease !important; }
+  .btn:active, .buy__opt:active, .wa__btn:active, .ticket:hover, .hotel:hover, .sponsor:hover, .exp-card:hover, .trust-card:hover { transform: none !important; }
+  .wa__menu, .privacy[open] { animation: none !important; }
+  .qa::details-content { transition: none !important; }
+  .lot__dot { animation: none !important; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .nav.is-scrolled { background: var(--noite); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .nav.is-light.is-scrolled { background: var(--areia); }
+  .dock { background: var(--noite); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .speaker-cases { background: var(--noite); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .privacy::backdrop { background: rgb(9 12 58 / .9); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+@media (prefers-contrast: more) {
+  .nav.is-scrolled, .dock, .speaker-cases { background: var(--noite); -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: inset 0 0 0 1px rgb(255 255 255 / .6); }
+  .sponsor, .buy__opt, .hotel, .ticket { box-shadow: inset 0 0 0 2px var(--tinta); }
+}

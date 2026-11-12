@@ -1287,6 +1287,7 @@
       titulo: culto.nome,
       sub: `${E.formatarData(culto.data, "longa")}${culto.hora ? ` · ${culto.hora}` : ""}`,
       corpo: [
+        h("button", { class: "btn zap largo", onclick: () => { fecharAtual(true); enviarWhatsApp(escala, culto.data); } }, icone("whatsapp"), `Copiar ou enviar só ${[0, 6].includes(E.diaSemana(culto.data)) ? "o" : "a"} ${E.DIAS[E.diaSemana(culto.data)].toLowerCase()} (${E.formatarData(culto.data, "curta")})`),
         h("button", { class: "btn tonal largo", onclick: () => { fecharAtual(); mudou(() => E.sortearCulto(state, escala, ci)); avisar("Culto sorteado de novo. O que estava fixado foi mantido."); } }, icone("sortear"), "Sortear este culto de novo"),
         obs.map(({ x, campo }) => h("label", { class: "campo" }, obs.length > 1 ? `Observação · ${x.hora}` : "Observação para a equipe", campo)),
         culto.avulso ? h("button", { class: "btn perigo largo", onclick: () => { fecharAtual(); comDesfazer("Culto extra removido.", () => { escala.cultos.splice(ci, 1); }); } }, icone("lixo"), "Remover este culto extra") : null,
@@ -1469,12 +1470,14 @@
   }
 
   /** Prévia editável do texto da escala; nada é enviado sem o toque em Copiar ou Abrir no WhatsApp. */
-  function enviarWhatsApp(escala) {
+  /** Texto da escala para o WhatsApp; com `data`, só os cultos daquele dia. */
+  function enviarWhatsApp(escala, data) {
     let links = false;
     let editado = false;
-    const erros = E.validarEscala(state, escala).filter((a) => a.nivel !== "alerta").length; // o que vai como "a definir"
+    const doDia = (a) => !data || (escala.cultos[a.ci] && escala.cultos[a.ci].data === data);
+    const erros = E.validarEscala(state, escala).filter((a) => a.nivel !== "alerta" && doDia(a)).length; // o que vai como "a definir"
     const area = h("textarea", { class: "texto", id: "texto-whatsapp", "aria-label": "Texto da escala para enviar", spellcheck: "false", oninput: () => { editado = true; } });
-    const atualizar = () => { area.value = E.textoWhatsApp(state, escala, { links }); editado = false; };
+    const atualizar = () => { area.value = E.textoWhatsApp(state, escala, { links, data }); editado = false; };
     atualizar();
     const abrir = async () => {
       const texto = area.value.trim();
@@ -1487,11 +1490,11 @@
       if (!janela) copiar(texto, area);
     };
     painel({
-      titulo: "Compartilhar a escala",
-      sub: `${E.formatarPeriodo(escala.inicio, escala.fim)} · confira e, se quiser, edite antes de enviar.`,
+      titulo: data ? "Compartilhar este dia" : "Compartilhar a escala",
+      sub: `${data ? E.formatarData(data, "longa") : E.formatarPeriodo(escala.inicio, escala.fim)} · confira e, se quiser, edite antes de enviar.`,
       corpo: [
         erros ? h("div", { class: "faixa alerta" }, icone("alerta"), h("span", {}, `${erros} ${erros === 1 ? "item ainda está" : "itens ainda estão"} a definir e ${erros === 1 ? "vai" : "vão"} assim no texto.`),
-          h("button", { class: "btn mini", onclick: () => { fecharAtual(true); verAvisos(escala, E.validarEscala(state, escala)); } }, "Ver")) : null,
+          h("button", { class: "btn mini", onclick: () => { fecharAtual(true); verAvisos(escala, E.validarEscala(state, escala).filter(doDia)); } }, "Ver")) : null,
         h("label", { class: "interruptor" }, h("span", {}, "Incluir links do YouTube", h("small", {}, "Para a equipe ensaiar")),
           h("input", { type: "checkbox", role: "switch", id: "com-links", onchange: (e) => {
             links = e.target.checked;

@@ -1020,9 +1020,12 @@
       return `${i + 1}. ${m ? rotuloMusica(m) : "a definir"}${opcoes.links && m && m.link ? ` ${m.link}` : ""}`;
     };
     const igreja = (state.igreja && state.igreja.nome) || "";
-    const linhas = [`*${escala.titulo}*${igreja ? ` · ${igreja}` : ""}`, `_${formatarPeriodo(escala.inicio, escala.fim)}_`];
+    // Com `opcoes.data`, só os cultos daquele dia (ex.: só a quinta ou só o domingo).
+    const linhas = [`*${escala.titulo}*${igreja ? ` · ${igreja}` : ""}`];
+    if (!opcoes.data) linhas.push(`_${formatarPeriodo(escala.inicio, escala.fim)}_`);
     for (const c of escala.cultos) {
       if (liderDe(escala, c)) continue; // sai junto com o culto líder
+      if (opcoes.data && c.data !== opcoes.data) continue;
       const seguidores = escala.cultos.filter((x) => liderDe(escala, x) === c);
       const todos = [c, ...seguidores];
       linhas.push("", `*${formatarData(c.data, "dia")}*`, `_${todos.map((x) => (x.hora ? `${x.nome} · ${x.hora}` : x.nome)).join("  |  ")}_`);

@@ -368,7 +368,8 @@ function tomDeTexto(e) {
     : null;
 }
 const nomeDoTom = (e, t = tomUsaBemol(e)) => (e ? nomeNota(e.tonic, t) + (e.minor ? "m" : "") : "?"),
-  TOKEN_NEUTRO = /^(\|+:?|:?\|+|\(|\)|\[|\]|x\d+|\d+x|[-–—]+|\/+|%|\.+|\d+:\d{2}|\d+\.|\*+|~+)$/i,
+  // "_" liga acordes que mudam sobre a mesma sílaba ("G__D", "A4___A"), como nos Salmos e Hinos cifrados.
+  TOKEN_NEUTRO = /^(\|+:?|:?\|+|\(|\)|\[|\]|x\d+|\d+x|[-–—]+|\/+|%|\.+|\d+:\d{2}|\d+\.|\*+|~+|_+)$/i,
   ROTULO_DE_LINHA = /^([A-Za-zÀ-ÿ0-9ºª]+:|\[[^\]]+\]:?)$/;
 function separarPontuacao(e) {
   const t = e.match(/^([(\[|]*)(.*?)([)\]|,.;]*)$/);
@@ -384,7 +385,7 @@ function separarPontuacao(e) {
 }
 function lerLinhaDeAcordes(e) {
   const t = [],
-    n = /\S+/g;
+    n = /[^\s_]+|_+/g; // "_" separa acordes ligados ("G__D"); numa letra ("ali___an__ça") a linha continua sendo letra
   let s,
     i = 0,
     r = 0;

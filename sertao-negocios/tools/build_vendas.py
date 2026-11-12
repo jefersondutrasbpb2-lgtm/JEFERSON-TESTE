@@ -181,6 +181,7 @@ PATROCINIO = [
     {"slug": "ancorax", "nome": "Âncora X"},
     {"slug": "bumax", "nome": "BUMAX Contabilidade", "escuro": True},   # letra branca: cartão escuro
     {"slug": "fera", "nome": "FERA Colégio e Curso"},
+    {"slug": "skyler", "nome": "Skyler Lifewear"},
 ]
 logos = "".join(f'''
             <li class="sponsor{' sponsor--dark' if p.get('escuro') else ''}"><img src="assets/img/patrocinio-{p["slug"]}.webp" alt="{p["nome"]}" loading="lazy" decoding="async"></li>'''

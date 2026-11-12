@@ -772,7 +772,7 @@ button { font: inherit; color: inherit; }
 .sponsor img { max-width: 82%; max-height: 72%; width: auto; height: auto; object-fit: contain; }
 .sponsor--dark { background: #1e1d1e; }
 @media (min-width: 640px) { .sponsor { flex-basis: calc((100% - 24px) / 3); } }
-@media (min-width: 1024px) { .sponsor { flex-basis: calc((100% - 48px) / 5); } }
+@media (min-width: 1200px) { .sponsor { flex-basis: calc((100% - 60px) / 6); } }
 
 /* =========================================================
    08 PERGUNTAS FREQUENTES

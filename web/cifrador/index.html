@@ -17,8 +17,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap">
-  <script type="module" crossorigin src="./assets/app.js?v=c3c8e22059"></script>
-  <link rel="stylesheet" crossorigin href="./assets/estilo.css?v=5f92a57cbc">
+  <script type="module" crossorigin src="./assets/app.js?v=77db9a9fbe"></script>
+  <link rel="stylesheet" crossorigin href="./assets/estilo.css?v=7e7dea61b7">
 </head>
 <body>
 
@@ -51,6 +51,11 @@
     <label class="busca-campo"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
       <input type="search" id="buscaTexto" placeholder="Qual música vamos tocar hoje?" aria-label="Buscar música" autocomplete="off">
     </label>
+    <div class="filtros" role="group" aria-label="Mostrar">
+      <button data-f="todas" aria-pressed="true">Todas <span></span></button>
+      <button data-f="louvores" aria-pressed="false">Louvores <span></span></button>
+      <button data-f="hinos" aria-pressed="false">Salmos e Hinos <span></span></button>
+    </div>
     <p class="hint busca-dica">Busque pelo nome, artista ou um trecho da letra. <button class="linkbtn" id="buscaNova">+ Cadastrar cifra nova</button></p>
     <div id="buscaRes"></div>
   </div>
@@ -284,6 +289,11 @@ Em             C
       <button class="btn primary" id="libNova">+ Nova cifra</button>
     </div>
     <input type="search" id="libBusca" placeholder="Buscar por nome, artista ou trecho da letra" aria-label="Buscar cifras">
+    <div class="filtros" role="group" aria-label="Mostrar">
+      <button data-f="todas" aria-pressed="true">Todas <span></span></button>
+      <button data-f="louvores" aria-pressed="false">Louvores <span></span></button>
+      <button data-f="hinos" aria-pressed="false">Salmos e Hinos <span></span></button>
+    </div>
     <p class="hint" id="libStatus" aria-live="polite"></p>
     <div class="pendbox" id="libPend" hidden>
       <span id="libPendTxt"></span>

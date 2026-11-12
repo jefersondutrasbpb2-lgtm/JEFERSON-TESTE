@@ -26,7 +26,7 @@ const MAXIMO_CIFRAS = 5000;
 const DIAS_DE_BACKUP = 60;
 const DIAS_NA_LIXEIRA = 30;
 const MAXIMO_REPERTORIOS = 1000;
-const MAXIMO_ITENS = 60;
+const MAXIMO_ITENS = 300; // pastas como "Salmos e Hinos" passam de 60
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');

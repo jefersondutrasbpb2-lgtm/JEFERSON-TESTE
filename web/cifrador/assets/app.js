@@ -1495,16 +1495,16 @@ function renderizarBiblioteca() {
         ...t,
         pendente: !0,
       })),
-      ...[...biblioteca.cifras].sort((a, b) =>
-        a.title.localeCompare(b.title, "pt-BR", {
-          sensitivity: "base",
-        }),
-      ),
-    ].filter((t) => !busca || semAcento(t.title + " " + t.artist + " " + t.text).includes(busca));
+      ...[...biblioteca.cifras].sort(ordemDaLista),
+    ]
+      .filter(passaFiltro)
+      .filter((t) => !busca || semAcento(t.title + " " + t.artist + " " + t.text).includes(busca));
+  marcarFiltros();
   if (!lista.length) {
-    elemento("libGrid").innerHTML = busca
-      ? '<p class="empty">Nenhuma cifra encontrada com essa busca.</p>'
-      : '<p class="empty">Nenhuma cifra salva ainda. No editor, toque em “Salvar na biblioteca”.</p>';
+    elemento("libGrid").innerHTML =
+      busca || filtroTipo !== "todas"
+        ? '<p class="empty">Nenhuma cifra encontrada com essa busca.</p>'
+        : '<p class="empty">Nenhuma cifra salva ainda. No editor, toque em “Salvar na biblioteca”.</p>';
     return;
   }
   elemento("libGrid").innerHTML = lista
@@ -2436,6 +2436,40 @@ window.addEventListener("online", async () => {
   await biblioteca.enviarPendentes().catch(() => {});
   renderizarBiblioteca(), elemento("tab-culto").hidden || (repAtual ? repItens() : repLista());
 });
+/* ===================== Filtro: Louvores · Salmos e Hinos ===================== */
+// Hino = cifra com artista começando por "Salmos e Hinos" (ex.: "Salmos e Hinos nº 001"). Assim um hino
+// cadastrado depois entra no filtro só de escrever o artista desse jeito. A escolha fica neste aparelho.
+const ehHino = (c) => /^\s*salmos?\s+e\s+hinos/i.test((c && c.artist) || ""),
+  numeroHino = (c) => {
+    const m = ((c && c.artist) || "").match(/(\d+)/);
+    return m ? Number(m[1]) : 1e9;
+  };
+let filtroTipo = guardado.get("filtroTipo", "todas");
+const passaFiltro = (c) => !!c && (filtroTipo === "todas" || (filtroTipo === "hinos") === ehHino(c));
+// Hinos pela numeração do hinário; o resto em ordem alfabética.
+function ordemDaLista(a, b) {
+  if (filtroTipo === "hinos" && ehHino(a) && ehHino(b)) return numeroHino(a) - numeroHino(b);
+  return a.title.localeCompare(b.title, "pt-BR", { sensitivity: "base" });
+}
+function marcarFiltros() {
+  const todas = [
+      ...biblioteca.cifras,
+      ...biblioteca.pendentes().filter((p) => !biblioteca.cifras.some((c) => c.id === p.id)),
+    ],
+    hinos = todas.filter(ehHino).length,
+    n = { todas: todas.length, hinos, louvores: todas.length - hinos };
+  for (const b of document.querySelectorAll(".filtros button")) {
+    b.setAttribute("aria-pressed", String(b.dataset.f === filtroTipo));
+    b.querySelector("span").textContent = n[b.dataset.f];
+  }
+}
+for (const g of document.querySelectorAll(".filtros"))
+  g.addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-f]");
+    if (!b) return;
+    (filtroTipo = b.dataset.f), guardado.set("filtroTipo", filtroTipo), renderizarBiblioteca(), buscaRender();
+  });
+
 /* ===================== Tema (claro / escuro) ===================== */
 // Escolha da pessoa ("claro", "escuro" ou sem escolha = segue o aparelho). No modo culto, o
 // palco usa fundo escuro por padrão (estado.palcoEscuro), sem mudar a escolha da pessoa.
@@ -2483,29 +2517,33 @@ function linhaCifra(c) {
   return `<article class="linha" data-id="${esc(c.id)}"><button class="l-nome linkbtn" data-a="abrir"><strong>${esc(c.title)}</strong><span>${esc(c.artist || "Artista não informado")}</span></button><span class="tom" title="Tom">${esc(tomDe(c))}</span><button class="btn sq" data-a="tocar" aria-label="Tocar ${esc(c.title)}">▶</button></article>`;
 }
 function buscaRender() {
+  marcarFiltros();
   const q = semAcento(elemento("buscaTexto").value.trim()),
     todas = [
       ...biblioteca.pendentes(),
       ...biblioteca.cifras.filter((c) => !biblioteca.pendentes().some((p) => p.id === c.id)),
-    ];
+    ].filter(passaFiltro);
   if (q) {
     const achadas = todas
       .filter((c) => semAcento(c.title + " " + c.artist + " " + c.text).includes(q))
       .sort((a, b) => {
         const ta = semAcento(a.title).includes(q),
           tb = semAcento(b.title).includes(q);
-        return ta !== tb ? (ta ? -1 : 1) : a.title.localeCompare(b.title, "pt-BR", { sensitivity: "base" });
+        return ta !== tb ? (ta ? -1 : 1) : ordemDaLista(a, b);
       });
     elemento("buscaRes").innerHTML = achadas.length
       ? `<h3 class="secao-tit">${achadas.length} resultado${achadas.length === 1 ? "" : "s"}</h3><div class="lista">${achadas.slice(0, 40).map(linhaCifra).join("")}</div>`
       : '<p class="empty">Nenhuma cifra encontrada. <button class="linkbtn" data-a="nova">Cadastrar uma nova</button></p>';
     return;
   }
-  const favs = favoritas().map((id) => biblioteca.achar(id)),
+  const favs = favoritas()
+      .map((id) => biblioteca.achar(id))
+      .filter(passaFiltro),
     recentes = guardado
       .get("recentes", [])
       .map((id) => biblioteca.achar(id))
       .filter(Boolean)
+      .filter(passaFiltro)
       .slice(0, 8),
     bloco = (tit, lista, extra = "") =>
       lista.length
@@ -2642,6 +2680,12 @@ function palcoNavegacao() {
   if (!r || r.itens.length < 2) return;
   (elemento("palcoPrev").disabled = culto.pos <= 0),
     (elemento("palcoNext").disabled = culto.pos >= r.itens.length - 1);
+  // Até 15 músicas: uma bolinha por música (tocar pula para ela). Mais que isso (ex.: a pasta
+  // Salmos e Hinos) não caberia: mostra só "12 / 72".
+  if (r.itens.length > 15) {
+    elemento("palcoPos").innerHTML = `<span class="palco-cont">${culto.pos + 1} / ${r.itens.length}</span>`;
+    return;
+  }
   elemento("palcoPos").innerHTML = r.itens
     .map((it, i) => {
       const c = biblioteca.achar(it.id);

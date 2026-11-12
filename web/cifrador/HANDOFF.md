@@ -314,6 +314,20 @@ Com `prefers-reduced-motion: reduce`, as transições de barra e progresso são 
 | PDF | `textoDoPdf` carrega o pdf.js 3.11.174 do cdnjs só quando preciso. Linhas agrupadas pela altura (tolerância de meia letra); coluna = x ÷ largura de uma letra. Acordes medidos pela largura média das letras da linha de letra embaixo (fonte de largura variável fica no lugar visual). Espaço vertical > 1,9 linha vira linha em branco. Rodapés com endereço de site de cifra e "1/2" são descartados. PDF sem texto (imagem): mensagem explicando |
 | Editar acorde na cifra | Só com o editor aberto. Cada `.ch` tem `data-l` (linha do texto), `data-p` (coluna) e `data-n` (tamanho), vindos de `lerCifra` (`src`) e de `posicionarAcordes` (`tok`). ‹ › move uma letra (só anda para a esquerda sobre espaço); nome novo é digitado no tom da tela e gravado no tom original; acorde maior ocupa os espaços seguintes deixando ao menos um antes do próximo; Apagar troca por espaços. Antes da 1ª edição o texto é normalizado (sem invisíveis, tab = 4 espaços), como `lerCifra` já lê. Acordes vindos de `[C]letra` (ChordPro) não são editáveis por aqui |
 
+## 10d. Salmos e Hinos
+
+- **Importação:** os 72 hinos do compilado "Salmos e Hinos Cifrados" (Pr. Gilson Soares) foram
+  extraídos com a posição de cada letra no PDF (acordes em vermelho), conferidos caractere por
+  caractere e gravados com artista "Salmos e Hinos nº NNN".
+- **Filtro Todas · Louvores · Salmos e Hinos:** na Busca e em Cifras, com a quantidade de cada um.
+  Hino = artista começando por "Salmos e Hinos" (`ehHino`). Em "Salmos e Hinos" a ordem é a
+  numeração do hinário. A escolha fica no aparelho (`filtroTipo`).
+- **Pasta "Salmos e Hinos":** repertório com os 72 em ordem de número. Repertório agora aceita até
+  300 músicas (`MAXIMO_ITENS`). No palco, repertório com mais de 15 músicas mostra "12 / 72" no lugar
+  das bolinhas.
+- **Acordes ligados por "_"** ("G__D", "A4___A"): `lerLinhaDeAcordes` separa nos "_" e o "_" é token
+  neutro; numa letra ("ali___an__ça") a linha continua sendo letra.
+
 ## 11. Código
 
 - `assets/app.js`: os nomes do arquivo inteiro são legíveis (`renderizar`, `abrirCifra`,

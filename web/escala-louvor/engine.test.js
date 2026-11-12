@@ -514,6 +514,23 @@ test("quem muda a disponibilidade depois da escala montada: a escala se ajusta s
   assert.ok(esc.cultos.every((c) => c.equipe.every((v) => !v.pessoaId)));
 });
 
+test("texto do WhatsApp de um dia só", () => {
+  const s = novoEstado();
+  const esc = E.gerarEscala(s, { inicio: "2026-10-25", fim: "2026-10-31", seed: 1 });
+  const tudo = E.textoWhatsApp(s, esc);
+  const domingo = E.textoWhatsApp(s, esc, { data: "2026-10-25" });
+  const quinta = E.textoWhatsApp(s, esc, { data: "2026-10-29" });
+  assert.match(tudo, /Ter, 27\/10/);
+  // Domingo: manhã e noite juntas, sem os outros dias nem o período.
+  assert.match(domingo, /\*Dom, 25\/10\*/);
+  assert.match(domingo, /Culto solene/);
+  assert.doesNotMatch(domingo, /27\/10|29\/10|25\/10 a /);
+  // Quinta: só a quinta.
+  assert.match(quinta, /\*Qui, 29\/10\*/);
+  assert.doesNotMatch(quinta, /25\/10|27\/10/);
+  assert.equal(quinta.split("\n")[0], tudo.split("\n")[0], "mesmo título");
+});
+
 test("dias de culto do período agrupam os cultos de cada dia", () => {
   const s = novoEstado();
   const dias = E.diasDeCulto(s, "2026-10-25", "2026-10-31");

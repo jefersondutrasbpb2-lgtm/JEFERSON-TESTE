@@ -163,6 +163,11 @@ REVELADOS = [
      "bio": "Publicitária e especialista em branding, soma 24 anos de experiência e mais de 650 marcas posicionadas no mundo. "
             "Pós-graduada em Gestão Empresarial pela FGV, Master Coach e analista comportamental pela Febracis, já trabalhou "
             "com marcas de nomes como Rick Chesther, Roberto Justus, Walter Longo, Paulo Vieira, Bráulio Bessa e João Kepler."},
+    {"slug": "irauna", "nome": "Iraúna Rocha", "nome_html": "Iraúna<br>Rocha", "papel": "Palestrante",
+     "tema": "Gestão e planejamento tributário",
+     "bio": "Contador e CEO da Exate Soluções Contábeis, é especialista em reduzir a carga tributária dentro da legalidade, "
+            "ajudando empresas a encontrar oportunidades para otimizar os custos com tributos. No Sertão Negócios, fala sobre "
+            "gestão tributária e a importância do planejamento para quem busca mais eficiência financeira e crescimento sustentável."},
 ]
 # O palco começou com 10 vagas anunciadas; se entrarem mais nomes, o total acompanha
 A_REVELAR = max(0, 10 - len(REVELADOS))

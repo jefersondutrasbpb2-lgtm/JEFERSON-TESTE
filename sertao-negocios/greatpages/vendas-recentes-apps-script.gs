@@ -14,8 +14,8 @@
  *
  * O que sai para a internet (e só isso)
  *   Vendas PAGAS de ingressos do Sertão Negócios, as 30 mais recentes, com:
- *   primeiro nome, cidade, UF, tipo de ingresso (VIP ou Smart) e data do pagamento.
- *   Nunca sai sobrenome, e-mail, telefone, valor ou id da venda.
+ *   primeiro nome, UF (PB, RN, PE...), tipo de ingresso (VIP ou Smart) e data do pagamento.
+ *   Nunca sai sobrenome, cidade, e-mail, telefone, valor ou id da venda.
  *   Compras feitas no nome de empresa ficam de fora.
  *
  * Se já existir uma função doGet nesse projeto, avise antes de colar.
@@ -42,7 +42,7 @@ function sn26VendasRecentes_() {
   var cab = dados.shift().map(function (c) { return String(c).trim(); });
   var col = function (nome) { return cab.indexOf(nome); };
   var iStatus = col('status'), iProduto = col('produto'), iPaga = col('paga_em'),
-      iNome = col('comprador_nome'), iCidade = col('cidade'), iUF = col('estado');
+      iNome = col('comprador_nome'), iUF = col('estado');
 
   var vistos = {};
   var lista = [];
@@ -59,8 +59,7 @@ function sn26VendasRecentes_() {
     if (isNaN(paga)) return;
     lista.push({
       nome: sn26PrimeiroNome_(nome),
-      cidade: String(l[iCidade] || '').trim(),
-      uf: String(l[iUF] || '').trim().toUpperCase(),
+      uf: /^[A-Za-z]{2}$/.test(String(l[iUF]).trim()) ? String(l[iUF]).trim().toUpperCase() : '',
       ingresso: /vip/i.test(produto) ? 'VIP' : 'Smart',
       quando: paga.toISOString()
     });

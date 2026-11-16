@@ -3,9 +3,10 @@
 
   O que faz
   - Mostra no canto da tela um cartão discreto com compras REAIS de ingresso:
-    "Claudia, de Patos-PB · garantiu o ingresso VIP · Compra confirmada · há 2 h".
+    "Claudia (PB) · garantiu o ingresso VIP · Compra confirmada · há 2 h".
+    Quando a compra não tem estado, sai só o nome.
   - Os dados vêm da planilha "SN26 · Vendas Eduzz" pelo script vendas-recentes-apps-script.gs,
-    que só entrega primeiro nome, cidade, UF, tipo de ingresso e data. Nada mais.
+    que só entrega primeiro nome, UF, tipo de ingresso e data. Nada mais.
   - O horário só aparece se a compra for das últimas 48 horas.
   - Primeiro aviso 8 s depois de abrir a página, depois um a cada 15 a 22 s,
     no máximo 6 por visita. Quem fechar no X não vê mais nessa visita.
@@ -104,9 +105,9 @@
       if (ocupado()) { timer = setTimeout(proximo, 3000); return; }
       var v = fila.shift();
       quem.textContent = v.nome;
-      if (v.cidade) {
+      if (v.uf) {
         var local = document.createElement('span');
-        local.textContent = ', de ' + v.cidade + (v.uf ? '-' + v.uf : '');
+        local.textContent = ' (' + v.uf + ')';
         quem.appendChild(local);
       }
       oque.textContent = 'garantiu o ingresso ';

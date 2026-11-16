@@ -72,15 +72,7 @@ for small in ("logo-sertao-negocios-440.webp", "logo-sertao-negocios-240.webp"):
     data = base64.b64encode((ROOT / "assets/img" / small).read_bytes()).decode()
     html = must_replace(html, f"assets/img/{small}", f"data:image/webp;base64,{data}")
 
-# Fotos dos palestrantes revelados depois (só na página de vendas): embutidas, sem depender da galeria do GreatPages
-for small in ("speaker-linda.webp", "speaker-irclebson.webp", "speaker-fabio.webp", "speaker-anna.webp", "speaker-catarina.webp", "speaker-roberto.webp", "speaker-eduardo.webp", "speaker-karla.webp",
-              "patrocinio-mr3.webp", "patrocinio-masterdigna.webp", "patrocinio-ancorax.webp", "hotel-nord-easy.webp",
-              "patrocinio-bumax.webp", "patrocinio-fera.webp", "patrocinio-skyler.webp"):
-    if f"assets/img/{small}" in html:
-        data = base64.b64encode((ROOT / "assets/img" / small).read_bytes()).decode()
-        html = html.replace(f"assets/img/{small}", f"data:image/webp;base64,{data}")
-
-# Imagens: links do GreatPages
+# Imagens: links da galeria do GreatPages (greatpages/links-imagens.json). Imagem nova: subir na galeria e anotar o link lá
 for name, url in links.items():
     html = html.replace(f"assets/img/{name}", url)
 left = sorted(set(re.findall(r"assets/img/[\w.-]+", html)))

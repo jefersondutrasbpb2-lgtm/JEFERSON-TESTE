@@ -19,6 +19,13 @@ A pasta `greatpages/` traz a mesma página dividida em blocos para colar em elem
 | sertao-negocios-vendas (3659562) | www.sertaonegocios.com.br/ingressos | `vendas.html`, gerado por `tools/build_vendas.py` a partir do `index.html`; `python3 tools/build_gp_html.py vendas` monta o arquivo do GreatPages |
 | sertao-negocios-html (3658757) | www.sertaonegocios.com.br (raiz, desde 30/10) | Página da comunidade do lançamento. Fica como está no GreatPages: as mudanças de copy agora são só da página de ingressos. O `index.html` daqui serve de base para a de vendas e já não é igual à /comunidade no ar. A cópia do que está salvo no GreatPages fica em `greatpages-html/comunidade-no-greatpages.html` (03/11: Lote 1 aberto com os links na comunidade). |
 
+### Imagens na galeria do GreatPages (16/11)
+
+Todas as fotos dos palestrantes, as logos dos patrocinadores e a foto do hotel ficam na galeria do
+projeto, com os links em `greatpages/links-imagens.json`. Imagem nova: subir na galeria (pela MCP:
+images_upload_start + images_create na página 3659562) e anotar o link lá antes de gerar a página.
+Só as duas logos pequenas do topo continuam embutidas no HTML.
+
 ### Script de UTM para a Eduzz (09/11)
 
 `greatpages/utm-checkout-eduzz.html` está instalado nas duas páginas pelo painel do GreatPages

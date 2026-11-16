@@ -16,7 +16,7 @@
   Onde instalar
   - GreatPages → página sertao-negocios-vendas → Scripts → novo script, no final do corpo
     (antes de </body>), no mesmo lugar do script de UTM.
-  - Antes de colar, troque COLE_AQUI_A_URL_DO_APPS_SCRIPT pela URL /exec da implantação.
+  - A URL em FONTE é a implantação "App da Web" do script da planilha (termina em /exec).
 -->
 <style>
   .sn-aviso { position: fixed; z-index: 60; left: 12px; right: 84px; bottom: calc(84px + env(safe-area-inset-bottom));
@@ -46,7 +46,7 @@
 </style>
 <script>
 (function () {
-  var FONTE = 'COLE_AQUI_A_URL_DO_APPS_SCRIPT';
+  var FONTE = 'https://script.google.com/macros/s/AKfycbxSivbROdjYlh8j0P_-bt9RUrcGc9YVFqom4Sv0qSbe_D_lCf86Wfbu3hlMvl4qqXY/exec';
   var PRIMEIRO = 8000, VISIVEL = 6500, INTERVALO_MIN = 15000, INTERVALO_MAX = 22000, MAXIMO = 6;
   var DESLIGADO = 'sn26_aviso_off', VISTOS = 'sn26_aviso_vistos';
 

@@ -73,7 +73,7 @@ for small in ("logo-sertao-negocios-440.webp", "logo-sertao-negocios-240.webp"):
     html = must_replace(html, f"assets/img/{small}", f"data:image/webp;base64,{data}")
 
 # Fotos dos palestrantes revelados depois (só na página de vendas): embutidas, sem depender da galeria do GreatPages
-for small in ("speaker-linda.webp", "speaker-irclebson.webp", "speaker-fabio.webp", "speaker-anna.webp", "speaker-catarina.webp", "speaker-roberto.webp",
+for small in ("speaker-linda.webp", "speaker-irclebson.webp", "speaker-fabio.webp", "speaker-anna.webp", "speaker-catarina.webp", "speaker-roberto.webp", "speaker-eduardo.webp",
               "patrocinio-mr3.webp", "patrocinio-masterdigna.webp", "patrocinio-ancorax.webp", "hotel-nord-easy.webp",
               "patrocinio-bumax.webp", "patrocinio-fera.webp", "patrocinio-skyler.webp"):
     if f"assets/img/{small}" in html:

@@ -115,6 +115,11 @@ REVELADOS = [
      "bio": "Consultor financeiro e especialista em gestão financeira empresarial, passou 12 anos na Eletrobras Chesf "
             "gerindo um orçamento superior a R$ 5 bilhões e atua como consultor parceiro do Sebrae e do Grupo Primo. "
             "É criador do Ciclo do Sucesso Financeiro, método que ajuda pequenas e médias empresas a gerar mais lucro e mais caixa."},
+    {"slug": "eduardo", "nome": "Eduardo Calaça", "nome_html": "Eduardo<br>Calaça", "papel": "Palestrante",
+     "tema": "Liderança e alta performance",
+     "bio": "Mestre em Administração Estratégica, com MBAs em Marketing e Inovação, é palestrante, mentor e especialista em "
+            "gestão, liderança e alta performance. CEO da Imersão Líder de Impacto, da Positive Academy e do Leader Clube, "
+            "mentoria premium para líderes e times, soma mais de 20 anos formando líderes e já acelerou mais de 1.000 gestores."},
 ]
 A_REVELAR = 10 - len(REVELADOS)
 cards = "".join(f'''

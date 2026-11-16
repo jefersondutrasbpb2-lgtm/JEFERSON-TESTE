@@ -141,6 +141,12 @@ REVELADOS = [
      "bio": "Contador, empresário e palestrante, trocou o futebol pelo empreendedorismo e construiu a trajetória movido por "
             "desafios, visão estratégica e determinação. Cofundador e CEO da Bumax Contabilidade, é especialista em estratégia "
             "empresarial e atua no desenvolvimento de negócios, com foco em crescimento, escala e lucratividade."},
+    {"slug": "fast-ia", "nome": "Caio Galindo e João Guilherme", "nome_html": "Caio &amp;<br>João",
+     "papel": "Palestrantes", "pessoas": 2,
+     "tema": "Inteligência artificial e tecnologia para negócios",
+     "bio": "Caio Galindo e João Guilherme são empresários e cofundadores da Fast IA, especializada em soluções tecnológicas "
+            "e inteligência artificial para negócios. Com foco em inovação e eficiência, ajudam empresas a identificar "
+            "oportunidades, automatizar processos e melhorar a gestão por meio da tecnologia."},
 ]
 # O palco começou com 10 vagas anunciadas; se entrarem mais nomes, o total acompanha
 A_REVELAR = max(0, 10 - len(REVELADOS))

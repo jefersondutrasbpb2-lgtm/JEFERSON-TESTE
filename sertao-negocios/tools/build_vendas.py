@@ -342,8 +342,10 @@ escassez_html = f'''<div class="scarce" role="note" data-reveal>
         </div>
         ''' if ULTIMOS else ""
 
-tickets_lead = (f'Pagamento em até <strong>{INGRESSOS["smart"]["parcelas"] or "00"}x</strong>. O {LOTE_ANTERIOR}, a condição de abertura das vendas, já foi encerrado.'
-                if ULTIMOS else f'O <strong>{LOTE}</strong> está aberto, com pagamento em até <strong>{INGRESSOS["smart"]["parcelas"] or "00"}x</strong>. O {LOTE_ANTERIOR}, a condição de abertura das vendas, já foi encerrado, e os próximos lotes sobem de valor.')
+# Com o aviso de últimos ingressos, o parágrafo sai (falar do Lote 0 confundia o comprador)
+tickets_lead = ("" if ULTIMOS else f'O <strong>{LOTE}</strong> está aberto, com pagamento em até <strong>{INGRESSOS["smart"]["parcelas"] or "00"}x</strong>. O {LOTE_ANTERIOR}, a condição de abertura das vendas, já foi encerrado, e os próximos lotes sobem de valor.')
+
+tickets_lead_html = f'<p class="tickets__lead" data-reveal>{tickets_lead}</p>' if tickets_lead else ""
 
 # Ingressos no lugar do lote 0
 tickets = f'''<!-- ====== 06 INGRESSOS ====== -->
@@ -352,7 +354,7 @@ tickets = f'''<!-- ====== 06 INGRESSOS ====== -->
       <header class="tickets__head">
         <p class="kicker"><span class="kicker__num">05</span>Ingressos</p>
         <h2 class="h-display" id="tickets-title" data-split>Escolha como você vai viver o Sertão Negócios.</h2>
-        {escassez_html}<p class="tickets__lead" data-reveal>{tickets_lead}</p>
+        {escassez_html}{tickets_lead_html}
       </header>
 
       <div class="tickets__grid">

@@ -585,6 +585,11 @@ button { font: inherit; color: inherit; }
 .tickets__head .h-display { max-width: 18ch; }
 .tickets__lead { margin-top: 24px; max-width: 52ch; font-size: clamp(1.05rem, 1rem + .3vw, 1.25rem); color: rgb(255 255 255 / .85); }
 .tickets__lead strong { color: var(--branco); }
+.scarce { display: flex; align-items: center; gap: 14px; width: fit-content; max-width: 100%; margin-top: 28px; padding: 14px 20px 14px 18px;
+  border-radius: 999px; background: rgb(255 61 46 / .14); box-shadow: inset 0 0 0 1px rgb(255 61 46 / .55); color: var(--branco); font-size: clamp(.95rem, .9rem + .2vw, 1.05rem); line-height: 1.4; }
+.scarce .lot__dot { flex: none; }
+.scarce strong { color: #ff8a7f; font-weight: 800; }
+@media (max-width: 639px) { .scarce { border-radius: 16px; align-items: flex-start; } .scarce .lot__dot { margin-top: 6px; } }
 
 /* Lote 0: passos ao lado do celular com os avisos da comunidade */
 .lot { display: grid; gap: clamp(48px, 7vw, 96px); }

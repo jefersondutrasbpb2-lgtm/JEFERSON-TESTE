@@ -24,6 +24,11 @@ ROOT = Path(__file__).resolve().parent.parent
 # do card; price: valor à vista; anterior: valor do lote que já fechou, mostrado riscado e apagado
 LOTE = "Lote 1"
 LOTE_ANTERIOR = "Lote 0"
+# Escassez: True quando o lote estiver nos últimos ingressos (troca selos, textos e mostra o aviso na seção de ingressos)
+ULTIMOS = True
+LOTE_STATUS = "últimos ingressos" if ULTIMOS else "disponível"
+LOTE_FRASE = (f"Estamos nos últimos ingressos do {LOTE}, e quando ele virar o valor sobe." if ULTIMOS
+              else f"O {LOTE} está aberto, e os próximos lotes sobem de valor.")
 INGRESSOS = {
     "smart": {"de": 397, "parcelas": 12, "parcela": 25.55, "price": 247, "anterior": 197, "checkout": "https://chk.eduzz.com/39VKR1KYWR"},
     "vip": {"de": 597, "parcelas": 12, "parcela": 35.89, "price": 347, "anterior": 297, "checkout": "https://chk.eduzz.com/39YNX2NQWO"},
@@ -75,7 +80,7 @@ html = must_replace(html, "<title>Sertão Negócios 2026 · 03 e 04 de dezembro 
 html = must_sub(html, r'<meta name="description" content="[^"]*">',
                 '<meta name="description" content="Ingressos Smart e VIP do Sertão Negócios 2026, com Moisés Ramos, '
                 'Rick Chesther, Rossandro Klinjey, Padre Fabrício Timóteo e mais 10 palestrantes. 03 e 04 de dezembro, '
-                f'em Patos-PB. {LOTE} disponível.">')
+                f'em Patos-PB. ' + (f'Últimos ingressos do {LOTE}.' if ULTIMOS else f'{LOTE} disponível.') + '">')
 
 # Menu
 html = must_replace(html, '<a href="#lote-0">Lote 0</a>', '<a href="#ingressos">Ingressos</a>')
@@ -232,7 +237,7 @@ else:
 # Topo: card de compra no lugar do formulário
 s, v = INGRESSOS["smart"], INGRESSOS["vip"]
 hero_buy = f'''<div class="hero__form buy" id="comprar" data-hero="cta" data-dock-after>
-        <p class="buy__tag"><span class="lot__dot" aria-hidden="true"></span>{LOTE} · disponível</p>
+        <p class="buy__tag"><span class="lot__dot" aria-hidden="true"></span>{LOTE} · {LOTE_STATUS}</p>
         <a class="buy__opt" {attrs("smart", "hero-smart")}>
           <span class="buy__name">Smart</span>
           <span class="buy__desc">Acesso completo aos dois dias</span>
@@ -295,7 +300,7 @@ html = must_replace(html, "<p>Credenciais, pulseiras e moleskine para cada parti
 def ticket_price(key):
     t = INGRESSOS[key]
     return (f'<div class="ticket__price">'
-            f'<span class="ticket__lot"><span class="lot__dot" aria-hidden="true"></span>{LOTE} · disponível</span>'
+            f'<span class="ticket__lot"><span class="lot__dot" aria-hidden="true"></span>{LOTE} · {LOTE_STATUS}</span>'
             f'<span class="ticket__from">De <s>{brl(t["de"])}</s> por apenas</span>'
             f'<span class="ticket__value"><small>{t["parcelas"] or "00"}x de</small> {brl(t["parcela"])}</span>'
             f'<span class="ticket__inst">ou <strong>{brl(t["price"])}</strong> à vista</span>'
@@ -330,6 +335,16 @@ hotel_html = f'''
         </div>
       </article>'''
 
+# Aviso de escassez no topo da seção de ingressos
+escassez_html = f'''<div class="scarce" role="note" data-reveal>
+          <span class="lot__dot" aria-hidden="true"></span>
+          <p><strong>Últimos ingressos do {LOTE}.</strong> Quando eles acabarem, o lote vira e o mesmo ingresso passa a custar mais.</p>
+        </div>
+        ''' if ULTIMOS else ""
+
+tickets_lead = (f'Pagamento em até <strong>{INGRESSOS["smart"]["parcelas"] or "00"}x</strong>. O {LOTE_ANTERIOR}, a condição de abertura das vendas, já foi encerrado.'
+                if ULTIMOS else f'O <strong>{LOTE}</strong> está aberto, com pagamento em até <strong>{INGRESSOS["smart"]["parcelas"] or "00"}x</strong>. O {LOTE_ANTERIOR}, a condição de abertura das vendas, já foi encerrado, e os próximos lotes sobem de valor.')
+
 # Ingressos no lugar do lote 0
 tickets = f'''<!-- ====== 06 INGRESSOS ====== -->
   <section class="tickets" id="ingressos" data-theme="dark" aria-labelledby="tickets-title" data-dock-hide>
@@ -337,7 +352,7 @@ tickets = f'''<!-- ====== 06 INGRESSOS ====== -->
       <header class="tickets__head">
         <p class="kicker"><span class="kicker__num">05</span>Ingressos</p>
         <h2 class="h-display" id="tickets-title" data-split>Escolha como você vai viver o Sertão Negócios.</h2>
-        <p class="tickets__lead" data-reveal>O <strong>{LOTE}</strong> está aberto, com pagamento em até <strong>{INGRESSOS["smart"]["parcelas"] or "00"}x</strong>. O {LOTE_ANTERIOR}, a condição de abertura das vendas, já foi encerrado, e os próximos lotes sobem de valor.</p>
+        {escassez_html}<p class="tickets__lead" data-reveal>{tickets_lead}</p>
       </header>
 
       <div class="tickets__grid">
@@ -386,7 +401,7 @@ tickets = f'''<!-- ====== 06 INGRESSOS ====== -->
         <div class="presale__text">
           <p class="presale__title">São 400 lugares.</p>
           <p>Ficou com alguma dúvida antes de comprar? Fale com o Atendimento Sertão Negócios.</p>
-          <p class="presale__urgency">O {LOTE} está aberto, e os próximos lotes sobem de valor.</p>
+          <p class="presale__urgency">{LOTE_FRASE}</p>
         </div>
         <a class="btn btn--light btn--lg" href="{WA_DUVIDA}" target="_blank" rel="noopener" data-wa-direct="duvida-ingresso">
           <span>Tirar dúvida no WhatsApp</span>
@@ -411,7 +426,7 @@ faq_new = '''<details class="qa" data-reveal>
         </details>
         <details class="qa" data-reveal>
           <summary><span>Qual lote está à venda?</span><span class="qa__icon" aria-hidden="true"></span></summary>
-          <div class="qa__a"><p>O ''' + LOTE + '''. O ''' + LOTE_ANTERIOR + ''', a condição de abertura das vendas, já foi encerrado, e os próximos lotes sobem de valor.</p></div>
+          <div class="qa__a"><p>O ''' + LOTE + (''', e ele já está nos últimos ingressos''' if ULTIMOS else '') + '''. O ''' + LOTE_ANTERIOR + ''', a condição de abertura das vendas, já foi encerrado, e os próximos lotes sobem de valor.</p></div>
         </details>
         <details class="qa" data-reveal>
           <summary><span>Posso parcelar?</span><span class="qa__icon" aria-hidden="true"></span></summary>
@@ -434,11 +449,11 @@ html = must_replace(html, '''<a class="btn btn--light btn--lg" href="#cadastro" 
         <span>Quero o lote 0</span>''', '''<a class="btn btn--light btn--lg" href="#ingressos" data-cta="final" data-reveal>
         <span>Garantir meu ingresso</span>''')
 html = must_sub(html, r'<p class="finale__ps" data-reveal>.*?</p>',
-                f'<p class="finale__ps" data-reveal>Os 400 lugares não aumentam. O {LOTE} está aberto, e os próximos lotes sobem de valor.</p>')
+                f'<p class="finale__ps" data-reveal>Os 400 lugares não aumentam. {LOTE_FRASE}</p>')
 
 # Barra do celular e WhatsApp
 html = must_replace(html, '<a class="btn btn--sol btn--block" href="#cadastro" data-cta="dock">Entrar na comunidade · grátis</a>',
-                    f'<a class="btn btn--sol btn--block" href="#ingressos" data-cta="dock">Garantir meu ingresso · {LOTE}</a>')
+                    f'<a class="btn btn--sol btn--block" href="#ingressos" data-cta="dock">' + (f'Últimos ingressos · {LOTE}' if ULTIMOS else f'Garantir meu ingresso · {LOTE}') + '</a>')
 html = must_replace(html, '<span class="wa__opt-d">Lote 0, programação e inscrição</span>',
                     '<span class="wa__opt-d">Ingressos, pagamento e programação</span>')
 

@@ -258,17 +258,17 @@ html = must_sub(html, r'<div class="hero__form" id="cadastro".*?\n        </div>
 # Patrocínio e apoio: faixa de logos no fim da seção "Quem faz" (na ordem em que devem aparecer)
 PATROCINIO = [
     {"slug": "mr3", "nome": "MR3 Gestão de Marketing e Consultoria"},
-    {"slug": "masterdigna", "nome": "MasterDigna Cuidado Familiar"},
+    {"slug": "masterdigna", "nome": "MasterDigna Cuidado Familiar", "alto": True},
     {"slug": "ancorax", "nome": "Âncora X"},
     {"slug": "bumax", "nome": "BUMAX Contabilidade", "escuro": True},   # letra branca: cartão escuro
     {"slug": "fera", "nome": "FERA Colégio e Curso"},
     {"slug": "skyler", "nome": "Skyler Lifewear"},
     {"slug": "visare", "nome": "Visare Soluções Integradas"},
-    {"slug": "invictus", "nome": "Academia Invictus"},
+    {"slug": "invictus", "nome": "Academia Invictus", "alto": True},
     {"slug": "fastia", "nome": "FAST.IA"},
 ]
 logos = "".join(f'''
-            <li class="sponsor{' sponsor--dark' if p.get('escuro') else ''}"><img src="assets/img/patrocinio-{p["slug"]}.webp" alt="{p["nome"]}" loading="lazy" decoding="async"></li>'''
+            <li class="sponsor{' sponsor--dark' if p.get('escuro') else ''}{' sponsor--alto' if p.get('alto') else ''}"><img src="assets/img/patrocinio-{p["slug"]}.webp" alt="{p["nome"]}" loading="lazy" decoding="async"></li>'''
                 for p in PATROCINIO)
 html = must_replace(html, '''          </ul>
         </article>

@@ -120,6 +120,10 @@ REVELADOS = [
      "bio": "Mestre em Administração Estratégica, com MBAs em Marketing e Inovação, é palestrante, mentor e especialista em "
             "gestão, liderança e alta performance. CEO da Imersão Líder de Impacto, da Positive Academy e do Leader Clube, "
             "mentoria premium para líderes e times, soma mais de 20 anos formando líderes e já acelerou mais de 1.000 gestores."},
+    {"slug": "karla", "nome": "Karla Vital", "nome_html": "Karla<br>Vital", "papel": "Palestrante",
+     "tema": "Odontologia como negócio e presença digital",
+     "bio": "Cirurgiã-dentista e referência nas regiões do Seridó e da Borborema paraibana. Criadora do Método K, une a "
+            "experiência clínica ao mundo digital para transformar a odontologia em um negócio de sucesso."},
 ]
 A_REVELAR = 10 - len(REVELADOS)
 cards = "".join(f'''

@@ -147,6 +147,11 @@ REVELADOS = [
      "bio": "Caio Galindo e João Guilherme são empresários e cofundadores da Fast IA, especializada em soluções tecnológicas "
             "e inteligência artificial para negócios. Com foco em inovação e eficiência, ajudam empresas a identificar "
             "oportunidades, automatizar processos e melhorar a gestão por meio da tecnologia."},
+    {"slug": "jaqueline", "nome": "Jaqueline Araújo", "nome_html": "Jaqueline<br>Araújo", "papel": "Palestrante",
+     "tema": "Liderança e inovação no varejo",
+     "bio": "Empresária e CEO da Skyler Patos, referência em liderança e inovação no varejo de moda masculina. Enfermeira, "
+            "consultora de moda e mentora pelo Método Marotela, concilia a carreira com o papel de mãe de Caroline e João "
+            "Pedro, sempre em busca de transformação e excelência."},
 ]
 # O palco começou com 10 vagas anunciadas; se entrarem mais nomes, o total acompanha
 A_REVELAR = max(0, 10 - len(REVELADOS))

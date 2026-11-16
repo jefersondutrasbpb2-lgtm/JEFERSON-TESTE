@@ -1,0 +1,139 @@
+<!--
+  Sertão Negócios 2026 · Aviso de compras recentes (prova social)
+
+  O que faz
+  - Mostra no canto da tela um cartão discreto com compras REAIS de ingresso:
+    "Claudia, de Patos-PB · garantiu o ingresso VIP · Compra confirmada · há 2 h".
+  - Os dados vêm da planilha "SN26 · Vendas Eduzz" pelo script vendas-recentes-apps-script.gs,
+    que só entrega primeiro nome, cidade, UF, tipo de ingresso e data. Nada mais.
+  - O horário só aparece se a compra for das últimas 48 horas.
+  - Primeiro aviso 8 s depois de abrir a página, depois um a cada 15 a 22 s,
+    no máximo 6 por visita. Quem fechar no X não vê mais nessa visita.
+  - Clicar no cartão leva para os ingressos (#ingressos).
+  - Se a planilha não responder, não aparece nada e a página segue normal.
+
+  Onde instalar
+  - GreatPages → página sertao-negocios-vendas → Scripts → novo script, no final do corpo
+    (antes de </body>), no mesmo lugar do script de UTM.
+  - Antes de colar, troque COLE_AQUI_A_URL_DO_APPS_SCRIPT pela URL /exec da implantação.
+-->
+<style>
+  .sn-aviso { position: fixed; z-index: 60; left: 12px; right: 84px; bottom: calc(84px + env(safe-area-inset-bottom));
+    max-width: 360px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px;
+    padding: 12px 10px 12px 12px; border-radius: 16px; background: #fff; color: #0d0f2e;
+    box-shadow: 0 24px 48px -18px rgb(9 12 58 / .45), 0 0 0 1px rgb(9 12 58 / .06);
+    font-family: var(--font-body, "Manrope", system-ui, sans-serif); text-decoration: none;
+    opacity: 0; transform: translateY(16px); pointer-events: none;
+    transition: opacity .45s cubic-bezier(.16, 1, .3, 1), transform .45s cubic-bezier(.16, 1, .3, 1); }
+  .sn-aviso.is-on { opacity: 1; transform: none; pointer-events: auto; }
+  .sn-aviso__icone { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; color: #fff;
+    background: linear-gradient(135deg, #ff4a2a, #8a2bb8 60%, #2a30e0); }
+  .sn-aviso__icone svg { width: 22px; height: 22px; }
+  .sn-aviso__texto { min-width: 0; display: grid; gap: 1px; font-size: 13.5px; line-height: 1.3; }
+  .sn-aviso__quem { font-weight: 700; overflow-wrap: anywhere; }
+  .sn-aviso__quem span { font-weight: 500; color: #4a4c6a; }
+  .sn-aviso__oque b { font-weight: 800; color: #c42516; }
+  .sn-aviso__selo { display: flex; align-items: center; gap: 5px; margin-top: 2px; font-size: 11.5px; color: #4a4c6a; }
+  .sn-aviso__selo svg { width: 13px; height: 13px; color: #16a34a; flex: none; }
+  .sn-aviso__fechar { align-self: start; width: 28px; height: 28px; margin: -4px -2px 0 0; padding: 0; border: 0; border-radius: 8px;
+    background: transparent; color: #4a4c6a; cursor: pointer; display: grid; place-items: center; }
+  .sn-aviso__fechar:hover { background: #f3eee4; }
+  .sn-aviso__fechar svg { width: 14px; height: 14px; }
+  .sn-aviso:focus-visible, .sn-aviso__fechar:focus-visible { outline: 3px solid #3ec9f5; outline-offset: 2px; }
+  @media (min-width: 900px) { .sn-aviso { left: 24px; right: auto; bottom: calc(24px + env(safe-area-inset-bottom)); width: 340px; } }
+  @media (prefers-reduced-motion: reduce) { .sn-aviso { transform: none; transition: opacity .2s linear; } }
+</style>
+<script>
+(function () {
+  var FONTE = 'COLE_AQUI_A_URL_DO_APPS_SCRIPT';
+  var PRIMEIRO = 8000, VISIVEL = 6500, INTERVALO_MIN = 15000, INTERVALO_MAX = 22000, MAXIMO = 6;
+  var DESLIGADO = 'sn26_aviso_off', VISTOS = 'sn26_aviso_vistos';
+
+  function sessao(chave, valor) {
+    try {
+      if (valor === undefined) return sessionStorage.getItem(chave);
+      sessionStorage.setItem(chave, valor);
+    } catch (e) { return null; }
+  }
+  if (!/^https:\/\//.test(FONTE) || sessao(DESLIGADO)) return;
+
+  function quando(iso) {
+    var min = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+    if (!(min >= 0) || min > 48 * 60) return '';
+    if (min < 2) return 'agora há pouco';
+    if (min < 60) return 'há ' + min + ' min';
+    if (min < 24 * 60) return 'há ' + Math.floor(min / 60) + ' h';
+    return 'ontem';
+  }
+
+  function montar() {
+    var a = document.createElement('a');
+    a.className = 'sn-aviso';
+    a.href = '#ingressos';
+    a.setAttribute('aria-live', 'off');
+    a.innerHTML =
+      '<span class="sn-aviso__icone" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9a3 3 0 0 0 0 6v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3a3 3 0 0 0 0-6V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1z"/><path d="M13 5v2M13 11v2M13 17v2"/></svg></span>' +
+      '<span class="sn-aviso__texto"><span class="sn-aviso__quem"></span><span class="sn-aviso__oque"></span>' +
+      '<span class="sn-aviso__selo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span></span></span></span>' +
+      '<button type="button" class="sn-aviso__fechar" aria-label="Fechar avisos de compra"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>';
+    document.body.appendChild(a);
+    return a;
+  }
+
+  function iniciar(vendas) {
+    var vistos = (sessao(VISTOS) || '').split('|');
+    var fila = vendas.filter(function (v) { return v && v.nome && vistos.indexOf(v.nome + v.quando) < 0; });
+    if (!fila.length) return;
+    var el = montar(), mostrados = 0, timer = null, parado = false;
+    var quem = el.querySelector('.sn-aviso__quem'), oque = el.querySelector('.sn-aviso__oque'),
+        selo = el.querySelector('.sn-aviso__selo span');
+
+    el.querySelector('.sn-aviso__fechar').addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      parado = true; clearTimeout(timer); el.classList.remove('is-on'); sessao(DESLIGADO, '1');
+    });
+    el.addEventListener('click', function () { el.classList.remove('is-on'); });
+
+    function ocupado() {
+      return document.hidden || document.querySelector('dialog[open]') || document.querySelector('.wa.is-open');
+    }
+
+    function proximo() {
+      if (parado) return;
+      if (mostrados >= MAXIMO || !fila.length) { parado = true; return; }
+      if (ocupado()) { timer = setTimeout(proximo, 3000); return; }
+      var v = fila.shift();
+      quem.textContent = v.nome;
+      if (v.cidade) {
+        var local = document.createElement('span');
+        local.textContent = ', de ' + v.cidade + (v.uf ? '-' + v.uf : '');
+        quem.appendChild(local);
+      }
+      oque.textContent = 'garantiu o ingresso ';
+      var tipo = document.createElement('b'); tipo.textContent = v.ingresso === 'VIP' ? 'VIP' : 'Smart';
+      oque.appendChild(tipo);
+      var t = quando(v.quando);
+      selo.textContent = 'Compra confirmada' + (t ? ' · ' + t : '');
+      el.setAttribute('aria-label', quem.textContent + ' ' + oque.textContent + '. Ver ingressos');
+      el.classList.add('is-on');
+      mostrados++;
+      vistos.push(v.nome + v.quando); sessao(VISTOS, vistos.slice(-60).join('|'));
+      timer = setTimeout(function () {
+        el.classList.remove('is-on');
+        timer = setTimeout(proximo, INTERVALO_MIN + Math.random() * (INTERVALO_MAX - INTERVALO_MIN));
+      }, VISIVEL);
+    }
+    timer = setTimeout(proximo, PRIMEIRO);
+  }
+
+  function carregar() {
+    if (!window.fetch) return;
+    fetch(FONTE, { credentials: 'omit' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) { if (d && d.vendas && d.vendas.length) iniciar(d.vendas); })
+      .catch(function () {});
+  }
+  if (document.readyState === 'complete') carregar();
+  else window.addEventListener('load', carregar);
+})();
+</script>

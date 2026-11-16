@@ -124,8 +124,17 @@ REVELADOS = [
      "tema": "Odontologia como negócio e presença digital",
      "bio": "Cirurgiã-dentista e referência nas regiões do Seridó e da Borborema paraibana. Criadora do Método K, une a "
             "experiência clínica ao mundo digital para transformar a odontologia em um negócio de sucesso."},
+    # Casal numa palestra só: ocupa uma das 10 vagas, mas conta dois nomes confirmados ("pessoas": 2)
+    {"slug": "irany-gustavo", "nome": "Irany Martins e Gustavo Lucena", "nome_html": "Irany &amp;<br>Gustavo",
+     "papel": "Palestrantes", "pessoas": 2,
+     "tema": "Fé, coragem e visão empreendedora",
+     "bio": "Irany Martins e Gustavo Lucena fundaram há 19 anos a Casa do Bolo Sertanejo, empresa referência no Sertão "
+            "paraibano, e transformaram um sonho em um negócio de sucesso. Com uma trajetória marcada por fé, coragem e "
+            "visão empreendedora, são exemplo de determinação, superação e crescimento empresarial."},
 ]
 A_REVELAR = 10 - len(REVELADOS)
+CONFIRMADOS = 4 + sum(r.get("pessoas", 1) for r in REVELADOS)
+plural = A_REVELAR != 1
 cards = "".join(f'''
         <article class="speaker speaker--d" data-speaker>
           <div class="speaker__frame" data-speed="0.03">
@@ -151,16 +160,18 @@ POR_EXTENSO = {4: "Quatro", 5: "Cinco", 6: "Seis", 7: "Sete", 8: "Oito", 9: "Nov
 abertura = (f"{nomes_e} {'abrem' if len(lista) > 1 else 'abre'} a lista" if len(lista) <= 3
             else f"{POR_EXTENSO[len(lista)]} deles já estão aqui no palco")
 html = must_replace(html, "Padre Fabrício Timóteo e mais 10 palestrantes. 03 e 04 de dezembro",
-                    f"Padre Fabrício Timóteo, {nomes} e mais {A_REVELAR} palestrantes. 03 e 04 de dezembro")
+                    f"Padre Fabrício Timóteo, {nomes} e mais {A_REVELAR} {'palestrantes' if plural else 'palestrante'}. 03 e 04 de dezembro")
 html = must_replace(html, '<span class="stat__n" data-count="4">04</span><span class="stat__l">nomes confirmados</span>',
-                    f'<span class="stat__n" data-count="{4 + len(REVELADOS)}">{4 + len(REVELADOS):02d}</span><span class="stat__l">nomes confirmados</span>')
+                    f'<span class="stat__n" data-count="{CONFIRMADOS}">{CONFIRMADOS:02d}</span><span class="stat__l">nomes confirmados</span>')
 html = must_replace(html, '<span class="stat__n" data-count="10">10</span><span class="stat__l">palestrantes a revelar</span>',
-                    f'<span class="stat__n" data-count="{A_REVELAR}">{A_REVELAR:02d}</span><span class="stat__l">palestrantes a revelar</span>')
+                    f'<span class="stat__n" data-count="{A_REVELAR}">{A_REVELAR:02d}</span><span class="stat__l">{"palestrantes a revelar" if plural else "palestrante a revelar"}</span>')
 html = must_replace(html, "<p>Outros 10 palestrantes, escolhidos a dedo, completam a programação. Cada nome é revelado no Instagram,",
                     f"<p>Outros 10 palestrantes, escolhidos a dedo, completam a programação. {abertura}, e cada novo nome é revelado no Instagram,")
 html = must_replace(html, '<span class="speaker-cases__n">+10</span>', f'<span class="speaker-cases__n">+{A_REVELAR}</span>')
-html = must_replace(html, "<p><strong>palestrantes</strong> escolhidos a dedo completam este palco.",
-                    "<p><strong>palestrantes</strong> escolhidos a dedo ainda completam este palco.")
+html = must_replace(html, "<p><strong>palestrantes</strong> escolhidos a dedo completam este palco. Os nomes são revelados um a um no Instagram,",
+                    "<p><strong>palestrantes</strong> escolhidos a dedo ainda completam este palco. Os nomes são revelados um a um no Instagram,"
+                    if plural else
+                    "<p><strong>palestrante</strong> escolhido a dedo ainda completa este palco. O nome é revelado em breve no Instagram,")
 
 # Topo: card de compra no lugar do formulário
 s, v = INGRESSOS["smart"], INGRESSOS["vip"]

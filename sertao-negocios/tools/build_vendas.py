@@ -264,6 +264,8 @@ PATROCINIO = [
     {"slug": "fera", "nome": "FERA Colégio e Curso"},
     {"slug": "skyler", "nome": "Skyler Lifewear"},
     {"slug": "visare", "nome": "Visare Soluções Integradas"},
+    {"slug": "invictus", "nome": "Academia Invictus"},
+    {"slug": "fastia", "nome": "FAST.IA"},
 ]
 logos = "".join(f'''
             <li class="sponsor{' sponsor--dark' if p.get('escuro') else ''}"><img src="assets/img/patrocinio-{p["slug"]}.webp" alt="{p["nome"]}" loading="lazy" decoding="async"></li>'''

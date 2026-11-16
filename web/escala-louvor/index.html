@@ -611,16 +611,76 @@
   .progresso .barra { height: 8px; border-radius: var(--r-full); background: var(--surface-3); overflow: hidden; }
   .progresso .barra span { display: block; height: 100%; background: var(--ok); border-radius: var(--r-full); transition: width 0.4s var(--curva); }
   .rolagem-tabela { overflow-x: auto; }
+  /* grade de respostas: uma linha por pessoa (toque para marcar por ela), um quadradinho por dia */
   .grade-disp { min-width: 100%; width: max-content; }
-  .grade-disp th, .grade-disp td { padding: var(--e-15) var(--e-2); text-align: center; white-space: nowrap; }
-  .grade-disp thead th { font-size: var(--t-2xs); line-height: 1.3; }
-  .grade-disp tbody th, .grade-disp tfoot th, .grade-disp thead th:first-child { text-align: left; position: sticky; left: 0; background: var(--surface); z-index: 1; }
-  .grade-disp tbody th .btn { min-height: var(--toque-sm); font-size: var(--t-sm); }
-  .grade-disp td.disp { font-weight: 700; min-width: 44px; }
-  .grade-disp td.sim { color: var(--ok); background: var(--ok-suave); }
-  .grade-disp td.nao { color: var(--erro); background: var(--erro-suave); }
-  .grade-disp td.sem { color: var(--muted); }
+  .grade-disp th, .grade-disp td { padding: var(--e-15) var(--e-1); text-align: center; white-space: nowrap; vertical-align: middle; }
+  .grade-disp thead th { padding-block: var(--e-2); color: var(--muted); }
+  .grade-disp thead .dia-sem { display: block; font-size: var(--t-2xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+  .grade-disp thead .dia-num { display: block; font-size: var(--t-sm); font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .grade-disp tbody th, .grade-disp tfoot th, .grade-disp thead th:first-child { text-align: left; position: sticky; left: 0; background: var(--surface); z-index: 1; width: 1%; padding-left: var(--e-3); }
+  .grade-disp td.disp { min-width: 52px; }
   .grade-disp tfoot td, .grade-disp tfoot th { font-weight: 700; border-bottom: 0; }
+  .grade-disp tfoot td.ninguem { color: var(--erro); }
+  .linha-pessoa { cursor: pointer; }
+  .linha-pessoa:hover th, .linha-pessoa:hover td { background: var(--surface-2); }
+  .linha-pessoa.eu th { box-shadow: inset 3px 0 0 var(--azul); }
+  .linha-pessoa.sem-resposta .nome { color: var(--muted); font-weight: 500; }
+  .nome-pessoa { display: inline-flex; align-items: center; gap: var(--e-2); min-height: var(--toque-sm); padding: 0 var(--e-1); border: 0; background: none; color: var(--ink); font-weight: 600; font-size: var(--t-sm); border-radius: var(--r-sm); }
+  .nome-pessoa .avatar { width: 28px; height: 28px; font-size: var(--t-2xs); }
+  .nome-pessoa .tem-recado svg.i { width: 15px; height: 15px; color: var(--muted); }
+  .nome-pessoa .lapis { display: inline-flex; color: var(--azul); opacity: 0.55; }
+  .nome-pessoa .lapis svg.i { width: 15px; height: 15px; }
+  .linha-pessoa:hover .lapis, .nome-pessoa:focus-visible .lapis { opacity: 1; }
+  @media (max-width: 759px) { .nome-pessoa .nome { max-width: 9ch; overflow: hidden; text-overflow: ellipsis; } .nome-pessoa .selo { display: none; } }
+  /* marca do dia: quadradinho com ✓, ✕ ou – */
+  .marca-dia { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: var(--r-sm); font-weight: 700; color: var(--line-2); flex: none; }
+  .marca-dia svg.i { width: 16px; height: 16px; stroke-width: 2.6; }
+  td.sim .marca-dia, .marca-dia.sim { background: var(--ok-suave); color: var(--ok); }
+  td.nao .marca-dia, .marca-dia.nao { background: var(--erro-suave); color: var(--erro); }
+  td.sem .marca-dia, .marca-dia.sem { color: var(--muted); }
+  .legenda-disp { display: flex; flex-wrap: wrap; gap: var(--e-2) var(--e-4); align-items: center; font-size: var(--t-sm); color: var(--ink-2); }
+  .legenda-disp > span { display: inline-flex; align-items: center; gap: var(--e-15); }
+  .legenda-disp .marca-dia { width: 22px; height: 22px; }
+  .legenda-disp .marca-dia svg.i { width: 13px; height: 13px; }
+  .legenda-disp .dica { color: var(--muted); }
+  .legenda-disp .dica svg.i { width: 15px; height: 15px; color: var(--azul); }
+  .faltam { display: flex; flex-wrap: wrap; gap: var(--e-15); align-items: center; }
+  .chip.mini-chip { min-height: 32px; padding: 0 var(--e-3); font-weight: 600; }
+  .respostas-equipe .secao { gap: var(--e-3); }
+  .respostas-equipe .rolagem-tabela { border-top: 1px solid var(--line); }
+
+  /* "Marque a sua disponibilidade": o primeiro passo de quem abre a Agenda */
+  .minha-disp { padding: var(--e-5); display: grid; gap: var(--e-4); background: var(--azul-suave); border-color: var(--azul-linha); }
+  .minha-disp.feita { background: var(--surface); border-color: var(--line); }
+  .minha-disp h2 { font-size: var(--t-xl); }
+  .minha-cab { display: flex; gap: var(--e-3); align-items: center; }
+  .avatar.grande { width: 48px; height: 48px; font-size: var(--t-md); box-shadow: 0 0 0 3px var(--surface); }
+  .passos-disp { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--e-2) var(--e-5); font-size: var(--t-sm); color: var(--ink-2); }
+  .passos-disp li { display: inline-flex; align-items: center; gap: var(--e-15); flex-wrap: wrap; }
+  .passos-disp li > b { width: 24px; height: 24px; border-radius: var(--r-full); background: var(--azul); color: var(--sobre-cor); display: inline-grid; place-items: center; font-size: var(--t-xs); }
+  .passos-disp .marca-dia { width: 22px; height: 22px; }
+  .passos-disp .marca-dia svg.i { width: 13px; height: 13px; }
+  .nomes-rapidos { display: flex; flex-wrap: wrap; gap: var(--e-2); }
+  .nome-rapido { display: inline-flex; align-items: center; gap: var(--e-2); min-height: var(--toque); padding: 0 var(--e-4) 0 var(--e-1); border-radius: var(--r-full); border: 1px solid var(--line-2); background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: var(--sombra-1); }
+  .nome-rapido:hover { border-color: var(--azul); }
+  .nome-rapido .avatar { width: 34px; height: 34px; font-size: var(--t-2xs); }
+  .meus-dias { display: flex; gap: var(--e-2); overflow-x: auto; scrollbar-width: none; margin-inline: calc(-1 * var(--e-5)); padding: var(--e-05) var(--e-5); }
+  .meus-dias::-webkit-scrollbar { display: none; }
+  .meu-dia { flex: none; display: grid; justify-items: center; gap: var(--e-05); min-width: 66px; padding: var(--e-2) var(--e-15); border-radius: var(--r-md); border: 1.5px dashed var(--line-2); background: var(--surface); color: var(--ink); }
+  .meu-dia .small { color: var(--muted); font-weight: 600; text-transform: uppercase; font-size: var(--t-2xs); letter-spacing: 0.06em; }
+  .meu-dia b { font-size: var(--t-md); font-variant-numeric: tabular-nums; }
+  .meu-dia .marca-dia { width: 26px; height: 26px; }
+  .meu-dia[data-estado="sim"] { border-style: solid; border-color: var(--ok); }
+  .meu-dia[data-estado="sim"] .marca-dia { background: var(--ok-suave); color: var(--ok); }
+  .meu-dia[data-estado="nao"] { border-style: solid; border-color: var(--erro); }
+  .meu-dia[data-estado="nao"] .marca-dia { background: var(--erro-suave); color: var(--erro); }
+  .meu-dia:hover { box-shadow: var(--sombra-2); }
+
+  /* ferramentas de quem organiza */
+  .periodo-linha { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--e-3); align-items: center; width: 100%; text-align: left; padding: var(--e-25) var(--e-3); border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); color: inherit; min-height: var(--toque); }
+  .periodo-linha:hover { border-color: var(--azul-linha); background: var(--surface-2); }
+  .periodo-linha > svg.i:first-child { color: var(--azul); }
+  .organiza .secao { gap: var(--e-3); }
 
   /* ============================================================ músicas e equipe */
   .estante { display: grid; gap: var(--e-3); }

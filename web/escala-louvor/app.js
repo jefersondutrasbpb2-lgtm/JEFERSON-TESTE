@@ -1841,18 +1841,30 @@
     const existente = state.escalas.find((e) => e.inicio === periodo.inicio && e.fim === periodo.fim);
     const pct = ativas.length ? Math.round((responderam.length / ativas.length) * 100) : 0;
 
+    const eu = quemSouEu();
+    // Na grade: você primeiro, depois quem respondeu e, por último, quem ainda não respondeu.
+    const ordem = [...ativas].sort((a, b) => (b === eu) - (a === eu) || (!respostaDa(a)) - (!respostaDa(b)));
+    const faltam = ativas.filter((p) => !respostaDa(p));
+    const marca = (v) => h("span", { class: "marca-dia", "aria-hidden": "true" }, v === "sim" ? icone("ok") : v === "nao" ? icone("fechar") : "–");
     const tabela = h("table", { class: "grade-disp" },
-      h("thead", {}, h("tr", {}, h("th", { scope: "col" }, "Pessoa"), dias.map((d) => h("th", { scope: "col", class: "num" }, E.DIAS_CURTOS[E.diaSemana(d.data)], h("br"), E.formatarData(d.data, "curta"))))),
-      h("tbody", {}, ativas.map((p) => {
+      h("thead", {}, h("tr", {}, h("th", { scope: "col" }, "Pessoa"), dias.map((d) => h("th", { scope: "col", class: "num" }, h("span", { class: "dia-sem" }, E.DIAS_CURTOS[E.diaSemana(d.data)]), h("span", { class: "dia-num" }, E.formatarData(d.data, "curta")))))),
+      h("tbody", {}, ordem.map((p) => {
         const r = respostaDa(p);
-        return h("tr", {},
-          h("th", { scope: "row" }, h("button", { class: "btn texto", style: "padding:0 var(--e-15)", onclick: () => editarDisponibilidade(p) }, p.nome, r && r.obs ? icone("nota2") : null)),
+        const editar = () => editarDisponibilidade(p);
+        return h("tr", { class: `linha-pessoa${p === eu ? " eu" : ""}${r ? "" : " sem-resposta"}`, onclick: (e) => { if (!e.target.closest("button")) editar(); } },
+          h("th", { scope: "row" }, h("button", { class: "nome-pessoa", onclick: editar, "aria-label": `${p.nome}${p === eu ? " (você)" : ""}: ${r ? "respondeu" : "ainda não respondeu"}. Marcar ou alterar os dias` },
+            avatar(p), h("span", { class: "nome" }, p.nome), p === eu ? h("span", { class: "selo info" }, "Você") : null,
+            r && r.obs ? h("span", { class: "tem-recado", title: "Deixou recado" }, icone("nota2")) : null,
+            h("span", { class: "lapis" }, icone("editar")))),
           dias.map((d) => {
             const v = E.disponivelEm(state, p.id, d.data);
-            return h("td", { class: `disp ${v || "sem"}`, "aria-label": `${p.nome}, ${E.formatarData(d.data, "dia")}: ${v === "sim" ? "pode" : v === "nao" ? "não pode" : r ? "não marcou" : "não respondeu"}` }, v === "sim" ? "✓" : v === "nao" ? "✕" : "·");
+            return h("td", { class: `disp ${v || "sem"}`, "aria-label": `${p.nome}, ${E.formatarData(d.data, "dia")}: ${v === "sim" ? "pode" : v === "nao" ? "não pode" : r ? "não marcou" : "não respondeu"}` }, marca(v));
           }));
       })),
-      h("tfoot", {}, h("tr", {}, h("th", { scope: "row" }, "Podem"), dias.map((d) => h("td", { class: "num" }, String(ativas.filter((p) => E.disponivelEm(state, p.id, d.data) === "sim").length))))));
+      h("tfoot", {}, h("tr", {}, h("th", { scope: "row" }, "Podem"), dias.map((d) => {
+        const n = ativas.filter((p) => E.disponivelEm(state, p.id, d.data) === "sim").length;
+        return h("td", { class: `num${n ? "" : " ninguem"}` }, String(n));
+      }))));
 
     const recados = responderam.filter((p) => respostaDa(p).obs);
     const modo = (id, nome, ic) => h("button", { "aria-pressed": String(ui.agendaModo === id), onclick: () => { ui.agendaModo = id; render(); } }, icone(ic), nome);
@@ -1861,27 +1873,90 @@
         h("div", {}, h("h1", {}, "Agenda"), h("p", { class: "muted" }, "Os cultos do mês e a disponibilidade da equipe.")),
         h("div", { class: "segmentado", role: "group", "aria-label": "Ver como" }, modo("mes", "Mês", "grade"), modo("lista", "Lista", "lista"))),
       h("div", { class: "agenda-grade" }, calendarioCultos()),
+
       h("div", { class: "cabecalho recuo-topo-4" },
-        h("div", {}, h("h2", { class: "texto-xl" }, "Disponibilidade da equipe"), h("p", { class: "small muted" }, "Cada pessoa marca os dias em que pode servir; a escala é montada com essas respostas.")),
-        h("button", { class: "btn primario", onclick: () => irPara("disponibilidade") }, icone("certo"), "Marcar minha disponibilidade")),
-      h("section", { class: "cartao" },
-        h("div", { class: "seletor-escala" },
-          h("button", { class: "periodo", onclick: mudarPeriodo, "aria-label": `Período do pedido: ${E.formatarPeriodo(periodo.inicio, periodo.fim)}. Mudar` },
-            h("span", { class: "rotulo" }, "Pedido de disponibilidade"),
-            h("b", {}, E.formatarPeriodo(periodo.inicio, periodo.fim), icone("baixo")),
-            h("span", { class: "small muted" }, `${dias.length} dias de culto · toque para mudar o período`))),
-        h("div", { class: "resumo", style: "display:grid;gap:var(--e-3);border-top:0;padding-top:0" },
+        h("div", {}, h("h2", { class: "texto-xl" }, "Disponibilidade"),
+          h("p", { class: "small muted" }, `Dias de culto de ${E.formatarPeriodo(periodo.inicio, periodo.fim)} · ${dias.length} ${dias.length === 1 ? "dia" : "dias"}`))),
+      cartaoMinhaDisponibilidade(periodo, dias, ativas, respostaDa, eu),
+
+      dias.length ? h("section", { class: "cartao recorte respostas-equipe" },
+        h("div", { class: "cartao-cab" }, h("h2", {}, icone("pessoas"), "Respostas da equipe"),
+          h("span", { class: `selo ${faltam.length ? "neutro" : "ok"}` }, `${responderam.length} de ${ativas.length}`)),
+        h("div", { class: "secao" },
           h("div", { class: "progresso", role: "progressbar", "aria-valuemin": 0, "aria-valuemax": ativas.length, "aria-valuenow": responderam.length, "aria-label": "Respostas" },
-            h("div", { class: "barra" }, h("span", { style: `width:${pct}%` })),
-            h("span", { class: "small" }, h("b", {}, `${responderam.length} de ${ativas.length}`), " responderam")),
+            h("div", { class: "barra" }, h("span", { style: `width:${pct}%` }))),
+          faltam.length ? h("div", { class: "faltam" }, h("span", { class: "small muted" }, "Ainda não responderam:"),
+            faltam.map((p) => h("button", { class: "chip mini-chip", onclick: () => editarDisponibilidade(p), "aria-label": `${p.nome} ainda não respondeu. Marcar por essa pessoa` }, p.nome))) : null,
+          h("div", { class: "legenda-disp", "aria-hidden": "true" },
+            h("span", {}, h("span", { class: "marca-dia sim" }, icone("ok")), "pode"),
+            h("span", {}, h("span", { class: "marca-dia nao" }, icone("fechar")), "não pode"),
+            h("span", {}, h("span", { class: "marca-dia sem" }, "–"), "sem resposta"),
+            h("span", { class: "dica" }, icone("editar"), "toque numa linha para marcar por essa pessoa"))),
+        h("div", { class: "rolagem-tabela" }, tabela))
+        : h("div", { class: "estado-vazio" }, h("p", {}, "Nenhum culto ativo neste período.")),
+      recados.length ? h("section", { class: "cartao secao" }, h("span", { class: "rotulo" }, "Recados"), recados.map((p) => h("p", { class: "nota" }, h("b", {}, `${p.nome}: `), respostaDa(p).obs))) : null,
+
+      h("section", { class: "cartao organiza" },
+        h("div", { class: "cartao-cab" }, h("h2", {}, icone("ajustes"), "Para quem monta a escala")),
+        h("div", { class: "secao sem-recuo-topo" },
+          h("button", { class: "periodo-linha", onclick: mudarPeriodo, "aria-label": `Período do pedido: ${E.formatarPeriodo(periodo.inicio, periodo.fim)}. Mudar` },
+            icone("calendario"), h("span", {}, h("b", {}, E.formatarPeriodo(periodo.inicio, periodo.fim)), h("br"), h("span", { class: "small muted" }, "Período do pedido · toque para mudar")), icone("dir")),
           h("div", { class: "barra-painel" },
             h("button", { class: "btn tonal", onclick: () => pedirNoWhatsApp(periodo, dias) }, icone("enviar"), "Pedir no WhatsApp"),
             h("button", { class: "btn", onclick: colarRespostas }, icone("colar"), "Colar respostas")),
-          h("button", { class: "btn primario largo", onclick: () => gerarComRespostas(periodo, existente) }, icone("sortear"), existente ? "Atualizar a escala com as respostas" : "Gerar a escala com as respostas"))),
+          h("button", { class: "btn primario largo", onclick: () => gerarComRespostas(periodo, existente) }, icone("sortear"), existente ? "Atualizar a escala com as respostas" : "Gerar a escala com as respostas"))));
+  }
 
-      dias.length ? h("section", { class: "cartao recorte" }, h("div", { class: "rolagem-tabela" }, tabela)) : h("div", { class: "estado-vazio" }, h("p", {}, "Nenhum culto ativo neste período.")),
-      recados.length ? h("section", { class: "cartao secao" }, h("span", { class: "rotulo" }, "Recados"), recados.map((p) => h("p", { class: "nota" }, h("b", {}, `${p.nome}: `), respostaDa(p).obs))) : null,
-      h("p", { class: "small muted" }, "Toque no nome de alguém para marcar os dias por essa pessoa (por exemplo, quando ela responde por mensagem)."));
+  /** Quem está usando este aparelho (escolhido na tela de disponibilidade), se já se identificou. */
+  function quemSouEu() {
+    let id = ui.respostaPessoa;
+    if (!id) { try { id = localStorage.getItem(CHAVE_PESSOA); } catch (e) { /* sem armazenamento */ } }
+    const p = porId(state.pessoas, id);
+    return p && p.ativo !== false ? p : null;
+  }
+
+  /**
+   * O primeiro passo de quem abre a Agenda: marcar os próprios dias. Quem já se identificou vê os seus
+   * dias e um botão grande; quem não, escolhe o nome ali mesmo.
+   */
+  function cartaoMinhaDisponibilidade(periodo, dias, ativas, respostaDa, eu) {
+    const ir = (p) => {
+      ui.respostaPessoa = p.id;
+      ui.resposta = null;
+      try { localStorage.setItem(CHAVE_PESSOA, p.id); } catch (e) { /* sem armazenamento */ }
+      irPara("disponibilidade");
+    };
+    const passos = h("ol", { class: "passos-disp" },
+      h("li", {}, h("b", {}, "1"), eu ? "Toque em marcar meus dias" : "Toque no seu nome"),
+      h("li", {}, h("b", {}, "2"), "Marque cada dia: ", h("span", { class: "marca-dia sim" }, icone("ok")), "posso ou ", h("span", { class: "marca-dia nao" }, icone("fechar")), "não posso"),
+      h("li", {}, h("b", {}, "3"), "Toque em Enviar"));
+    if (!eu) {
+      return h("section", { class: "cartao minha-disp" },
+        h("div", {}, h("h2", {}, "Marque a sua disponibilidade"), h("p", { class: "muted" }, "Leva menos de um minuto. A escala é montada com essas respostas.")),
+        passos,
+        h("div", { class: "pilha pilha-2" }, h("span", { class: "rotulo" }, "Quem é você?"),
+          h("div", { class: "nomes-rapidos" }, ativas.map((p) => h("button", { class: "nome-rapido", onclick: () => ir(p) }, avatar(p), p.nome)))));
+    }
+    const r = respostaDa(eu);
+    const conta = { sim: 0, nao: 0, sem: 0 };
+    const meusDias = dias.map((d) => {
+      const v = E.disponivelEm(state, eu.id, d.data);
+      conta[v || "sem"]++;
+      return h("button", { class: "meu-dia", "data-estado": v || "sem", onclick: () => ir(eu), "aria-label": `${E.formatarData(d.data, "dia")}: ${v === "sim" ? "posso" : v === "nao" ? "não posso" : "sem marcar"}` },
+        h("span", { class: "small" }, E.DIAS_CURTOS[E.diaSemana(d.data)]), h("b", {}, E.formatarData(d.data, "curta")),
+        h("span", { class: "marca-dia", "aria-hidden": "true" }, v === "sim" ? icone("ok") : v === "nao" ? icone("fechar") : "–"));
+    });
+    const titulo = !r ? "Você ainda não marcou seus dias" : conta.sem ? `Faltam ${conta.sem} ${conta.sem === 1 ? "dia" : "dias"} para marcar` : "Seus dias estão marcados";
+    return h("section", { class: `cartao minha-disp${r && !conta.sem ? " feita" : ""}` },
+      h("div", { class: "minha-cab" },
+        avatar(eu, "grande"),
+        h("div", { class: "encolhe" }, h("span", { class: "rotulo" }, eu.nome), h("h2", {}, titulo),
+          r ? h("p", { class: "small muted" }, `${conta.sim} posso · ${conta.nao} não posso${conta.sem ? ` · ${conta.sem} sem marcar` : ""} · enviado em ${E.formatarData(r.em.slice(0, 10), "curta")}`) : null)),
+      h("div", { class: "meus-dias", role: "group", "aria-label": "Seus dias" }, meusDias),
+      conta.sem === dias.length ? passos : null,
+      h("div", { class: "acoes" },
+        h("button", { class: "btn primario", onclick: () => ir(eu) }, icone(r && !conta.sem ? "editar" : "certo"), r && !conta.sem ? "Alterar meus dias" : "Marcar meus dias"),
+        h("button", { class: "btn texto", onclick: () => { ui.respostaPessoa = null; try { localStorage.removeItem(CHAVE_PESSOA); } catch (e) { /* sem armazenamento */ } render(); } }, `Não sou ${eu.nome.split(" ")[0]}`)));
   }
 
   function mudarPeriodo() {

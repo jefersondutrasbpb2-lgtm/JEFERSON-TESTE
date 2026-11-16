@@ -152,6 +152,12 @@ REVELADOS = [
      "bio": "Empresária e CEO da Skyler Patos, referência em liderança e inovação no varejo de moda masculina. Enfermeira, "
             "consultora de moda e mentora pelo Método Marotela, concilia a carreira com o papel de mãe de Caroline e João "
             "Pedro, sempre em busca de transformação e excelência."},
+    {"slug": "rodrigo", "nome": "Dr. Rodrigo Pontes de Mello", "nome_html": "Rodrigo<br>de Mello", "papel": "Palestrante",
+     "tema": "Saúde mental, propósito e empreendedorismo",
+     "bio": "Psicólogo e doutor em Psicologia Clínica pela Universidade Católica de Pernambuco (Unicap), é fundador e diretor "
+            "da Anima Clínica de Psicologia e cofundador, com a esposa, da Salus Clínica de Saúde Mental. Casado, pai de "
+            "Maria Alice, apicultor e criador de ovelhas e cabras, entende que a vida está nas experiências profundas, "
+            "vividas a cada instante, a partir da essência do que empreendemos."},
 ]
 # O palco começou com 10 vagas anunciadas; se entrarem mais nomes, o total acompanha
 A_REVELAR = max(0, 10 - len(REVELADOS))

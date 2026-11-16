@@ -136,8 +136,15 @@ REVELADOS = [
      "bio": "Sócio-fundador da iD Tráfego, há 5 anos ajuda empresas a anunciar com intenção e clareza, a partir de dados, "
             "e já atendeu mais de 100 empresas. Em Patos, mostra como o comportamento do consumidor está mudando e o que a "
             "sua empresa precisa fazer para continuar sendo encontrada."},
+    {"slug": "rayran", "nome": "Rayran Sales", "nome_html": "Rayran<br>Sales", "papel": "Palestrante",
+     "tema": "Estratégia, crescimento e lucratividade",
+     "bio": "Contador, empresário e palestrante, trocou o futebol pelo empreendedorismo e construiu a trajetória movido por "
+            "desafios, visão estratégica e determinação. Cofundador e CEO da Bumax Contabilidade, é especialista em estratégia "
+            "empresarial e atua no desenvolvimento de negócios, com foco em crescimento, escala e lucratividade."},
 ]
-A_REVELAR = 10 - len(REVELADOS)
+# O palco começou com 10 vagas anunciadas; se entrarem mais nomes, o total acompanha
+A_REVELAR = max(0, 10 - len(REVELADOS))
+NOVOS = sum(r.get("pessoas", 1) for r in REVELADOS)   # pessoas reveladas (o casal conta duas)
 CONFIRMADOS = 4 + sum(r.get("pessoas", 1) for r in REVELADOS)
 plural = A_REVELAR != 1
 cards = "".join(f'''
@@ -163,7 +170,7 @@ nomes_e = " e ".join([", ".join(lista[:-1]), lista[-1]]) if len(lista) > 1 else 
 # Até três nomes, a frase cita cada um; depois, só a quantidade (a lista completa já está nos cards)
 POR_EXTENSO = {4: "Quatro", 5: "Cinco", 6: "Seis", 7: "Sete", 8: "Oito", 9: "Nove", 10: "Os dez"}
 abertura = (f"{nomes_e} {'abrem' if len(lista) > 1 else 'abre'} a lista" if len(lista) <= 3
-            else f"{POR_EXTENSO[len(lista)]} deles já estão aqui no palco")
+            else f"{POR_EXTENSO.get(len(lista), len(lista))} deles já estão aqui no palco")
 html = must_replace(html, '<span class="stat__n" data-count="4">04</span><span class="stat__l">nomes confirmados</span>',
                     f'<span class="stat__n" data-count="{CONFIRMADOS}">{CONFIRMADOS:02d}</span><span class="stat__l">nomes confirmados</span>')
 if A_REVELAR:
@@ -180,11 +187,13 @@ if A_REVELAR:
                         "<p><strong>palestrante</strong> escolhido a dedo ainda completa este palco. O nome é revelado em breve no Instagram,")
 else:
     # Palco completo: sem "a revelar"; o destaque vira um chamado para garantir o lugar
+    html = must_replace(html, "Padre Fabrício Timóteo e mais 10 palestrantes. 03 e 04 de dezembro",
+                        f"Padre Fabrício Timóteo e mais {NOVOS} palestrantes. 03 e 04 de dezembro")
     html = must_replace(html, '<span class="stat__n" data-count="10">10</span><span class="stat__l">palestrantes a revelar</span>',
-                        '<span class="stat__n" data-count="10">10</span><span class="stat__l">novos nomes no palco</span>')
+                        f'<span class="stat__n" data-count="{NOVOS}">{NOVOS:02d}</span><span class="stat__l">novos nomes no palco</span>')
     html = must_replace(html, "<h3>Um palco ainda por revelar</h3>", "<h3>Um palco completo</h3>")
     html = must_sub(html, r"<p>Outros 10 palestrantes, escolhidos a dedo, completam a programação\. Cada nome é revelado no Instagram,.*?</p>",
-                    "<p>Outros 10 palestrantes, escolhidos a dedo, completam a programação. Todos já estão aqui no palco.</p>")
+                    f"<p>Outros {NOVOS} palestrantes, escolhidos a dedo, completam a programação. Todos já estão aqui no palco.</p>")
     html = must_sub(html, r'<aside class="speaker-cases" data-reveal>.*?</aside>', f'''<aside class="speaker-cases speaker-cases--done" data-reveal>
           <span class="speaker-cases__n">{CONFIRMADOS}</span>
           <div>

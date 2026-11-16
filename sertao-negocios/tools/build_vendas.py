@@ -158,6 +158,11 @@ REVELADOS = [
             "da Anima Clínica de Psicologia e cofundador, com a esposa, da Salus Clínica de Saúde Mental. Casado, pai de "
             "Maria Alice, apicultor e criador de ovelhas e cabras, entende que a vida está nas experiências profundas, "
             "vividas a cada instante, a partir da essência do que empreendemos."},
+    {"slug": "alessia", "nome": "Aléssia Saluára", "nome_html": "Aléssia<br>Saluára", "papel": "Palestrante",
+     "tema": "Branding e posicionamento de marca",
+     "bio": "Publicitária e especialista em branding, soma 24 anos de experiência e mais de 650 marcas posicionadas no mundo. "
+            "Pós-graduada em Gestão Empresarial pela FGV, Master Coach e analista comportamental pela Febracis, já trabalhou "
+            "com marcas de nomes como Rick Chesther, Roberto Justus, Walter Longo, Paulo Vieira, Bráulio Bessa e João Kepler."},
 ]
 # O palco começou com 10 vagas anunciadas; se entrarem mais nomes, o total acompanha
 A_REVELAR = max(0, 10 - len(REVELADOS))

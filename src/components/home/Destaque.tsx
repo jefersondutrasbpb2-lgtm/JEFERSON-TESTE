@@ -1,4 +1,4 @@
-import { events, formatDateLong, formatTime, isUpcoming, todayInPombal } from "@/content/data";
+import { events, formatDateRange, formatTime, isUpcoming, lastDay, todayInPombal, weekdayOf } from "@/content/data";
 import { fullAddress, mapsDirectionsUrl } from "@/content/site";
 import { asset } from "@/lib/asset";
 import { Button } from "@/components/ui/Button";
@@ -12,7 +12,7 @@ export function Destaque() {
   if (!ev) return null;
   const locale = getLocale();
   return (
-    <ExpiresAfter date={ev.date}>
+    <ExpiresAfter date={lastDay(ev)}>
       <section className="section section--tight section-tone destaque" data-tone="green" data-tone-section="green" aria-labelledby="destaque-title">
         <div className="container destaque__grid">
           {ev.poster && (
@@ -31,7 +31,7 @@ export function Destaque() {
             <p className="destaque__kicker" data-reveal>
               <span>{t({ pt: "Próximo evento", en: "Upcoming event", es: "Próximo evento" })}</span>
               <span aria-hidden="true">·</span>
-              <time dateTime={ev.date}>{formatDateLong(ev.date, locale)}</time>
+              <time dateTime={ev.date}>{formatDateRange(ev.date, ev.endDate, locale)}</time>
               {ev.time && (
                 <>
                   <span aria-hidden="true">·</span>
@@ -52,6 +52,23 @@ export function Destaque() {
                 <p>“{t(ev.verse.text)}”</p>
                 <cite>{t(ev.verse.ref)}</cite>
               </blockquote>
+            )}
+            {ev.program && ev.program.length > 0 && (
+              <ul className="destaque__program" data-reveal>
+                {ev.program.map((d) => (
+                  <li key={d.date + (d.time ?? "")}>
+                    <span className="destaque__program-day">
+                      {t({ pt: "Dia", en: "Day", es: "Día" })} {Number(d.date.slice(8, 10))}
+                      <small>
+                        {weekdayOf(d.date, locale).replace(/-feira$/, "").toLowerCase()}
+                        {d.time && ` · ${formatTime(d.time, locale)}`}
+                      </small>
+                    </span>
+                    {d.speaker && <strong>{t(d.speaker)}</strong>}
+                    {d.role && <span className="destaque__program-role">{t(d.role)}</span>}
+                  </li>
+                ))}
+              </ul>
             )}
             {ev.speaker && (
               <p className="destaque__speaker" data-reveal>

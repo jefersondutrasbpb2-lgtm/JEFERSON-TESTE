@@ -209,7 +209,8 @@ data eles aparecem em **Próximos eventos**, com cartaz, horário, local, botão
 "Como chegar". No dia seguinte passam sozinhos para **Eventos recentes**, que mostra os 6 mais recentes. Isso não
 exige nova publicação: a divisão é refeita no navegador com a data de hoje.
 
-Campos: `id`, `date` (AAAA-MM-DD) e `title` são obrigatórios. Os opcionais são `time` e `endTime` (HH:MM),
+Campos: `id`, `date` (AAAA-MM-DD) e `title` são obrigatórios. Para eventos de mais de um dia, use `endDate`
+(último dia) e `program` (lista com `date`, `time`, `speaker` e `role` de cada dia). Os demais opcionais são `time` e `endTime` (HH:MM),
 `category`, `speaker`, `location`, `description`, `recap` (texto para quando o evento já passou), `verse` e `poster`. O `poster` leva `src`, `width`, `height` e `alt`,
 e o arquivo vai em `public/images/eventos/`, em .webp com cerca de 1000–1400 px de largura.
 

@@ -203,6 +203,46 @@ html.motion .hero__img {
 .destaque__media--poster img {
   height: auto;
 }
+.destaque__program {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 0.9rem;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.destaque__program li {
+  display: grid;
+  gap: 0.2rem;
+  padding: 1rem 1.15rem;
+  border: 1px solid color-mix(in srgb, var(--c-gold) 45%, transparent);
+  border-radius: var(--radius-sm);
+}
+.destaque__program-day {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--c-gold);
+}
+.destaque__program-day small {
+  font-size: inherit;
+  font-weight: 600;
+  color: var(--tone-muted);
+}
+.destaque__program strong {
+  font-family: var(--ff-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+.destaque__program-role {
+  font-size: var(--fs-small);
+  color: var(--tone-muted);
+}
 .destaque__speaker {
   font-size: var(--fs-small);
 }

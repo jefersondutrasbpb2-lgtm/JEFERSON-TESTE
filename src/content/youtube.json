@@ -1,8 +1,18 @@
 {
   "channelId": "UCY4CMIAu_8OxAHGlAsKuIJw",
-  "fetchedAt": "2026-11-02T21:20:33.570Z",
+  "fetchedAt": "2026-11-18T00:00:51.309Z",
   "live": null,
   "videos": [
+    {
+      "id": "X_KK1a0Jzro",
+      "title": "CULTO NOTURNO | Igreja Congregacional de Pombal - 15/11/2026",
+      "published": "2026-11-16T10:39:39+00:00"
+    },
+    {
+      "id": "ZaRxcAHaU_8",
+      "title": "CULTO DE CEIA | Igreja Congregacional de Pombal - 08/11/2026",
+      "published": "2026-11-09T00:19:59+00:00"
+    },
     {
       "id": "TdvkhjRC8R0",
       "title": "CULTO NOTURNO | Igreja Congregacional de Pombal - 01/11/2026",
@@ -32,16 +42,6 @@
       "id": "AZE-xP8NJIE",
       "title": "CULTO NOTURNO | Igreja Congregacional de Pombal - 27/09/2026",
       "published": "2026-09-28T10:45:01+00:00"
-    },
-    {
-      "id": "DrrB5WLZEkg",
-      "title": "CULTO NOTURNO | Igreja Congregacional de Pombal - 20/09/2026",
-      "published": "2026-09-20T22:59:39+00:00"
-    },
-    {
-      "id": "5L3R5owS8Tc",
-      "title": "CULTO DE SANTA CEIA  | Igreja Congregacional de Pombal - 13/09/2026",
-      "published": "2026-09-13T23:29:30+00:00"
     }
   ]
 }

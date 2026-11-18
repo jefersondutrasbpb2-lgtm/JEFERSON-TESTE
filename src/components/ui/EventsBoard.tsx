@@ -1,19 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { formatDateLong, formatTime, isUpcoming, todayInPombal, weekdays, type EventItem } from "@/content/data";
+import {
+  formatDateLong,
+  formatDateRange,
+  formatTime,
+  isUpcoming,
+  lastDay,
+  todayInPombal,
+  weekdayOf,
+  type EventItem,
+} from "@/content/data";
 import { fullAddress, mapsDirectionsUrl } from "@/content/site";
 import { asset } from "@/lib/asset";
 import { useLocale, useT } from "@/i18n/client";
-import type { Locale } from "@/i18n/config";
 import { Icon } from "./Icon";
 
 const RECENT_MAX = 6;
-
-const weekday = (iso: string, locale: Locale) => {
-  const [y, m, d] = iso.split("-").map(Number);
-  return weekdays[locale][new Date(y, m - 1, d).getDay()];
-};
 
 const addHours = (time: string, h: number) => {
   const [hh, mm] = time.split(":").map(Number);
@@ -23,12 +26,13 @@ const addHours = (time: string, h: number) => {
 /** Link "Adicionar à agenda" do Google Agenda, no fuso de Pombal. */
 function calendarUrl(e: EventItem, title: string, details: string) {
   const day = e.date.replace(/-/g, "");
+  const endDay = lastDay(e).replace(/-/g, "");
   let dates: string;
   if (e.time) {
     const end = e.endTime ?? addHours(e.time, 2);
-    dates = `${day}T${e.time.replace(":", "")}00/${day}T${end.replace(":", "")}00`;
+    dates = `${day}T${e.time.replace(":", "")}00/${endDay}T${end.replace(":", "")}00`;
   } else {
-    const [y, m, d] = e.date.split("-").map(Number);
+    const [y, m, d] = lastDay(e).split("-").map(Number);
     const next = new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10).replace(/-/g, "");
     dates = `${day}/${next}`;
   }
@@ -92,17 +96,45 @@ export function EventsBoard({ items, builtOn }: { items: EventItem[]; builtOn: s
                   <div className="ev-feature__body">
                     <p className="ev-kicker">
                       {e.category && <span>{t(e.category)}</span>}
-                      <time dateTime={e.date}>{formatDateLong(e.date, locale)}</time>
+                      <time dateTime={e.date}>{formatDateRange(e.date, e.endDate, locale)}</time>
                     </p>
                     <h3 className="ev-feature__title">{title}</h3>
                     <dl className="ev-facts">
                       <div>
                         <dt>{t({ pt: "Quando", en: "When", es: "Cuándo" })}</dt>
                         <dd>
-                          {weekday(e.date, locale)}, {formatDateLong(e.date, locale)}
+                          {e.endDate && e.endDate !== e.date
+                            ? formatDateRange(e.date, e.endDate, locale)
+                            : `${weekdayOf(e.date, locale)}, ${formatDateLong(e.date, locale)}`}
                           {e.time && ` · ${formatTime(e.time, locale)}`}
                         </dd>
                       </div>
+                      {e.program && e.program.length > 0 && (
+                        <div>
+                          <dt>{t({ pt: "Programação", en: "Program", es: "Programa" })}</dt>
+                          <dd>
+                            <ul className="ev-program">
+                              {e.program.map((d) => {
+                                const day = Number(d.date.slice(8, 10));
+                                return (
+                                  <li key={d.date + (d.time ?? "")}>
+                                    <span className="ev-program__day">
+                                      {t({ pt: "Dia", en: "Day", es: "Día" })} {day}
+                                      <span className="ev-program__wd">
+                                        {" "}
+                                        · {weekdayOf(d.date, locale).replace(/-feira$/, "").toLowerCase()}
+                                        {d.time && ` · ${formatTime(d.time, locale)}`}
+                                      </span>
+                                    </span>
+                                    {d.speaker && <span className="ev-program__who">{t(d.speaker)}</span>}
+                                    {d.role && <span className="ev-program__role">{t(d.role)}</span>}
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          </dd>
+                        </div>
+                      )}
                       {e.speaker && (
                         <div>
                           <dt>{t({ pt: "Com", en: "With", es: "Con" })}</dt>
@@ -175,7 +207,7 @@ export function EventsBoard({ items, builtOn }: { items: EventItem[]; builtOn: s
                     {e.category && <span>{t(e.category)}</span>}
                     <time dateTime={e.date}>
                       {t({ pt: "Realizado em ", en: "Held on ", es: "Realizado el " })}
-                      {formatDateLong(e.date, locale)}
+                      {formatDateRange(e.date, e.endDate, locale)}
                     </time>
                   </p>
                   <h3 className="ev-card__title">{t(e.title)}</h3>

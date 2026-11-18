@@ -15,9 +15,23 @@ export type WeeklyItem = {
 
 export type EventPoster = { src: string; width: number; height: number; alt: Text };
 
+export type EventDay = {
+  /** AAAA-MM-DD */
+  date: string;
+  time?: string;
+  /** Pregador ou responsável do dia */
+  speaker?: Text;
+  /** Igreja ou função de quem ministra (ex.: "IEC Cajazeiras") */
+  role?: Text;
+};
+
 export type EventItem = {
   id: string;
   date: string;
+  /** Último dia, para eventos de mais de um dia (AAAA-MM-DD) */
+  endDate?: string;
+  /** Programação por dia (eventos de mais de um dia) */
+  program?: EventDay[];
   time?: string;
   /** Horário de término (só usado no link "Adicionar à agenda"; padrão: 2 h depois) */
   endTime?: string;
@@ -39,8 +53,34 @@ export type EventItem = {
 /** Data de hoje em Pombal (UTC−3), no formato AAAA-MM-DD. */
 export const todayInPombal = (now = Date.now()) => new Date(now - 3 * 3600 * 1000).toISOString().slice(0, 10);
 
-/** Evento ainda por acontecer (ou acontecendo hoje). */
-export const isUpcoming = (e: EventItem, today = todayInPombal()) => e.date >= today;
+/** Evento ainda por acontecer (ou acontecendo hoje, inclusive no último dia). */
+export const isUpcoming = (e: EventItem, today = todayInPombal()) => (e.endDate ?? e.date) >= today;
+
+/** Último dia do evento. */
+export const lastDay = (e: EventItem) => e.endDate ?? e.date;
+
+/** "19 e 20 de dezembro de 2026" / "December 19–20, 2026" / "19 y 20 de diciembre de 2026". */
+export const formatDateRange = (start: string, end: string | undefined, locale: Locale = "pt") => {
+  if (!end || end === start) return formatDateLong(start, locale);
+  const a = parseDate(start, locale);
+  const b = parseDate(end, locale);
+  const [sy, sm, sd] = start.split("-").map(Number);
+  const [ey, em, ed] = end.split("-").map(Number);
+  const twoDays = Math.round((Date.UTC(ey, em - 1, ed) - Date.UTC(sy, sm - 1, sd)) / 86400000) === 1;
+  if (a.year === b.year && a.month === b.month) {
+    if (locale === "en") return `${a.monthLong} ${a.day}–${b.day}, ${a.year}`;
+    const sep = twoDays ? (locale === "es" ? " y " : " e ") : locale === "es" ? " al " : " a ";
+    return `${a.day}${sep}${b.day} de ${a.monthLong} de ${a.year}`;
+  }
+  const to = locale === "en" ? " – " : locale === "es" ? " al " : " a ";
+  return `${formatDateLong(start, locale)}${to}${formatDateLong(end, locale)}`;
+};
+
+/** Dia da semana de uma data AAAA-MM-DD. */
+export const weekdayOf = (iso: string, locale: Locale = "pt") => {
+  const [y, m, d] = iso.split("-").map(Number);
+  return weekdays[locale][new Date(y, m - 1, d).getDay()];
+};
 
 export type Message = {
   id: string;

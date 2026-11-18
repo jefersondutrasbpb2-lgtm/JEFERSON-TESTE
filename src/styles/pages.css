@@ -893,7 +893,7 @@
 }
 .ev-facts > div {
   display: grid;
-  grid-template-columns: 5.5rem minmax(0, 1fr);
+  grid-template-columns: 7.5rem minmax(0, 1fr);
   gap: 1rem;
   padding-block: 0.8rem;
   border-bottom: 1px solid var(--tone-line);
@@ -909,6 +909,46 @@
 .ev-facts dd {
   margin: 0;
   font-weight: 600;
+}
+@media (max-width: 559px) {
+  .ev-facts > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.35rem;
+  }
+  .ev-kicker {
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+  .ev-kicker > * + *::before {
+    content: none;
+  }
+}
+.ev-program {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ev-program li {
+  display: grid;
+  gap: 0.1rem;
+}
+.ev-program__day {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--tone-accent);
+}
+.ev-program__wd {
+  color: var(--tone-muted);
+  font-weight: 600;
+}
+.ev-program__role {
+  font-size: var(--fs-small);
+  font-weight: 400;
+  color: var(--tone-muted);
 }
 .ev-feature__text {
   max-width: 56ch;

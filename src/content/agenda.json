@@ -1,5 +1,5 @@
 {
-  "_instrucoes": "Programação regular (weekly) e eventos (events). Datas no formato AAAA-MM-DD e horários HH:MM. Textos em três idiomas: {\"pt\": \"…\", \"en\": \"…\", \"es\": \"…\"}. O nome do dia vem de dayIndex (0 = domingo). Eventos: até a data aparecem em 'Próximos eventos' na Agenda; depois, passam sozinhos para 'Eventos recentes'. Campos opcionais: time, endTime, category, speaker, location, description, verse, recap (texto para quando o evento já passou), poster {src, width, height, alt} (cartaz em public/images/eventos/) e highlight: true para destacar na página inicial até a data. Eventos com 'example: true' só aparecem no modo de revisão.",
+  "_instrucoes": "Programação regular (weekly) e eventos (events). Datas no formato AAAA-MM-DD e horários HH:MM. Textos em três idiomas: {\"pt\": \"…\", \"en\": \"…\", \"es\": \"…\"}. O nome do dia vem de dayIndex (0 = domingo). Eventos: até a data aparecem em 'Próximos eventos' na Agenda; depois, passam sozinhos para 'Eventos recentes'. Campos opcionais: endDate (último dia, para eventos de mais de um dia), program [{date, time, speaker, role}] (programação por dia), time, endTime, category, speaker, location, description, verse, recap (texto para quando o evento já passou), poster {src, width, height, alt} (cartaz em public/images/eventos/) e highlight: true para destacar na página inicial até a data. Eventos com 'example: true' só aparecem no modo de revisão.",
   "weekly": [
     {
       "id": "domingo-manha",
@@ -159,6 +159,75 @@
         "pt": "Palestra com o urologista Dr. Alexandre Andrade sobre a prevenção do câncer de próstata, dentro da campanha Novembro Azul.",
         "en": "A talk by urologist Dr. Alexandre Andrade on preventing prostate cancer, as part of the Blue November campaign.",
         "es": "Charla del urólogo Dr. Alexandre Andrade sobre la prevención del cáncer de próstata, dentro de la campaña Noviembre Azul."
+      }
+    },
+    {
+      "id": "aniversario-56-anos",
+      "date": "2026-12-19",
+      "endDate": "2026-12-20",
+      "highlight": true,
+      "category": {
+        "pt": "Aniversário da igreja",
+        "en": "Church anniversary",
+        "es": "Aniversario de la iglesia"
+      },
+      "title": {
+        "pt": "56 anos da IEC Pombal",
+        "en": "IEC Pombal's 56th anniversary",
+        "es": "56 años de la IEC Pombal"
+      },
+      "description": {
+        "pt": "Celebrando a fidelidade de Deus. Fundada em 13 de dezembro de 1970, a igreja comemora 56 anos com dois dias de celebração e pregadores das igrejas de Cajazeiras e Catolé do Rocha, que a IEC Pombal ajudou a fundar.",
+        "en": "Celebrating God's faithfulness. Founded on December 13, 1970, the church marks 56 years with two days of celebration and preachers from the churches in Cajazeiras and Catolé do Rocha, which IEC Pombal helped to found. (In Portuguese.)",
+        "es": "Celebrando la fidelidad de Dios. Fundada el 13 de diciembre de 1970, la iglesia conmemora 56 años con dos días de celebración y predicadores de las iglesias de Cajazeiras y Catolé do Rocha, que la IEC Pombal ayudó a fundar. (En portugués.)"
+      },
+      "recap": {
+        "pt": "A igreja celebrou 56 anos da fidelidade de Deus com dois dias de culto, com as pregações do Pr. Ubirani (IEC Cajazeiras) e do Pr. Raimundo Linhares (IEC Catolé do Rocha).",
+        "en": "The church celebrated 56 years of God's faithfulness with two days of worship and preaching by Pr. Ubirani (IEC Cajazeiras) and Pr. Raimundo Linhares (IEC Catolé do Rocha).",
+        "es": "La iglesia celebró 56 años de la fidelidad de Dios con dos días de culto y las predicaciones del Pr. Ubirani (IEC Cajazeiras) y del Pr. Raimundo Linhares (IEC Catolé do Rocha)."
+      },
+      "program": [
+        {
+          "date": "2026-12-19",
+          "speaker": {
+            "pt": "Pr. Ubirani",
+            "en": "Pr. Ubirani",
+            "es": "Pr. Ubirani"
+          },
+          "role": {
+            "pt": "IEC Cajazeiras",
+            "en": "IEC Cajazeiras",
+            "es": "IEC Cajazeiras"
+          }
+        },
+        {
+          "date": "2026-12-20",
+          "speaker": {
+            "pt": "Pr. Raimundo Linhares",
+            "en": "Pr. Raimundo Linhares",
+            "es": "Pr. Raimundo Linhares"
+          },
+          "role": {
+            "pt": "IEC Catolé do Rocha",
+            "en": "IEC Catolé do Rocha",
+            "es": "IEC Catolé do Rocha"
+          }
+        }
+      ],
+      "location": {
+        "pt": "IEC Pombal",
+        "en": "IEC Pombal",
+        "es": "IEC Pombal"
+      },
+      "poster": {
+        "src": "/images/eventos/aniversario-56-anos.webp",
+        "width": 1000,
+        "height": 1413,
+        "alt": {
+          "pt": "Cartaz dos 56 anos da Igreja Evangélica Congregacional de Pombal, “Celebrando a fidelidade de Deus”, com a fachada do templo: 19 e 20 de dezembro; dia 19, Pr. Ubirani (IEC Cajazeiras); dia 20, Pr. Raimundo Linhares (IEC Catolé do Rocha)",
+          "en": "Poster for the 56th anniversary of the Congregational Evangelical Church of Pombal, “Celebrating God's faithfulness”, showing the church building: December 19 and 20; on the 19th, Pr. Ubirani (IEC Cajazeiras); on the 20th, Pr. Raimundo Linhares (IEC Catolé do Rocha)",
+          "es": "Cartel de los 56 años de la Iglesia Evangélica Congregacional de Pombal, “Celebrando la fidelidad de Dios”, con la fachada del templo: 19 y 20 de diciembre; el día 19, Pr. Ubirani (IEC Cajazeiras); el día 20, Pr. Raimundo Linhares (IEC Catolé do Rocha)"
+        }
       }
     }
   ]

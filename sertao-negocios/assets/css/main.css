@@ -782,7 +782,7 @@ button { font: inherit; color: inherit; }
 .sponsor--dark img, .sponsor--dark:hover img { filter: grayscale(1) invert(1) contrast(1.2); }
 .sponsor--dark:hover img { opacity: .9; }
 .sponsor--alto { height: 56px; }
-@media (min-width: 900px) { .sponsors__grid { gap: 24px 36px; } .sponsor { width: 104px; height: 44px; } .sponsor--alto { height: 64px; } }
+@media (min-width: 900px) { .sponsors__grid { gap: 24px 28px; } .sponsor { width: 96px; height: 42px; } .sponsor--alto { height: 62px; } }
 
 /* =========================================================
    08 PERGUNTAS FREQUENTES

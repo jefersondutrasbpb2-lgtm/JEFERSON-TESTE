@@ -34,6 +34,7 @@
     tela: "inicio", ultimaTela: null, escalaId: null, ordemDe: {}, busca: "", filtro: "todas", coordena: true, resposta: null,
     agendaMes: null, agendaDia: null, agendaModo: "mes", abertos: new Set(), fechados: new Set(), somenteLeitura: false, instalar: null, tema: "",
     louvoresDias: 30, louvoresFiltro: "todos", louvoresBusca: "",
+    filtrosEscolha: {}, uso: "todas", ordemMusicas: "padrao", equipeFuncao: "", equipeSituacao: "todos", agendaFuncao: "",
   };
 
   /** Tela e opções do endereço: "#louvores?dias=60" → { tela: "louvores", dias: 60 }. */
@@ -693,15 +694,28 @@
   }
 
   /** Lista de escolha com busca. Cada opção: { id, rotulo, direita, meta, busca }. */
-  function escolher({ titulo, sub, topo, grupos, atual, vazio, aoEscolher, buscar }) {
+  /**
+   * Lista de escolha com busca. `filtros` (opcional): { chave, opcoes: [{ id, nome, fn(o), ordem?(a, b) }] } vira
+   * uma fileira de filtros com a contagem de cada um; o escolhido fica lembrado (por `chave`) enquanto o app está aberto.
+   */
+  function escolher({ titulo, sub, topo, grupos, atual, vazio, aoEscolher, buscar, filtros }) {
     const campo = h("input", { type: "search", id: "busca-opcao", placeholder: "Buscar", "aria-label": "Buscar" });
     const lista = h("div", { class: "opcoes", role: "listbox", "aria-label": titulo });
+    const fileira = filtros ? h("div", { class: "rolagem-x filtros-escolha", role: "group", "aria-label": "Filtrar" }) : null;
     let fechar = null;
+    const filtroAtual = () => (filtros && (filtros.opcoes.find((f) => f.id === ui.filtrosEscolha[filtros.chave]) || filtros.opcoes[0])) || null;
     const desenhar = () => {
       const q = E.normalizar(campo.value);
+      const f = filtroAtual();
+      if (fileira) {
+        const todos = grupos.flatMap((g) => g.itens);
+        fileira.replaceChildren(...filtros.opcoes.map((x) => h("button", { class: "chip", "aria-pressed": String(x === f), onclick: () => { ui.filtrosEscolha[filtros.chave] = x.id; desenhar(); } },
+          x.nome, h("span", { class: "conta" }, String(todos.filter(x.fn).length)))));
+      }
       const blocos = [];
       for (const g of grupos) {
-        const itens = g.itens.filter((o) => !q || E.normalizar(o.busca || o.rotulo).includes(q));
+        const itens = g.itens.filter((o) => (!q || E.normalizar(o.busca || o.rotulo).includes(q)) && (!f || f.fn(o)));
+        if (f && f.ordem) itens.sort(f.ordem);
         if (!itens.length) continue;
         if (g.titulo) blocos.push(h("div", { class: "grupo" }, g.titulo));
         for (const o of itens) {
@@ -715,7 +729,7 @@
     };
     campo.addEventListener("input", desenhar);
     desenhar();
-    fechar = painel({ titulo, sub, corpo: [topo, buscar ? h("div", { class: "busca" }, icone("busca"), campo) : null, lista], foco: buscar ? "#busca-opcao" : ".opcao" });
+    fechar = painel({ titulo, sub, corpo: [topo, buscar ? h("div", { class: "busca" }, icone("busca"), campo) : null, fileira, lista], foco: buscar ? "#busca-opcao" : ".opcao" });
   }
 
   /* ---------------------------------------------------------- início */
@@ -1170,7 +1184,7 @@
     const vaga = culto.equipe[si];
     const cands = E.candidatosPessoa(state, escala, ci, si);
     const op = (c) => ({
-      id: c.pessoa.id, rotulo: c.pessoa.nome,
+      c, id: c.pessoa.id, rotulo: c.pessoa.nome,
       direita: c.vezes ? `${c.vezes}× nesta escala` : "ainda não escalado",
       meta: c.bloqueio ? h("span", { class: "ruim" }, c.bloqueio)
         : [c.disp === "sim" ? h("span", { class: "texto-ok forte" }, "confirmou que pode") : c.semResposta ? "não respondeu a disponibilidade" : "", c.apoio ? "só apoio nesta função" : ""].filter(Boolean).flatMap((x, i) => (i ? [" · ", x] : [x])),
@@ -1189,6 +1203,12 @@
         { titulo: "Só apoio", itens: cands.filter((c) => !c.bloqueio && c.apoio).map(op) },
         { titulo: "Com restrição", itens: cands.filter((c) => c.bloqueio).map(op) },
       ],
+      filtros: { chave: "pessoa", opcoes: [
+        { id: "todos", nome: "Todos", fn: () => true },
+        { id: "posso", nome: "Marcaram \"posso\"", fn: (o) => o.c.disp === "sim" },
+        { id: "livres", nome: "Ainda não escalados", fn: (o) => !o.c.vezes },
+        { id: "titulares", nome: "Titulares", fn: (o) => !o.c.apoio },
+      ] },
       vazio: "Deixar sem ninguém",
       aoEscolher: (id) => mudou(() => { vaga.pessoaId = id; if (id) fixar(culto, `e:${si}`); }),
     });
@@ -1206,10 +1226,12 @@
     const vaga = culto.musicas[k];
     const cands = E.candidatosMusica(state, escala, ci, k);
     const exigidas = E.tagsExigidas(state, vaga.tipo, culto.solene);
+    const usos = usosMusicas();
+    const uso = (o) => usos[o.id] || SEM_USO;
     const op = (c) => {
       const st = E.subtemaDoHino(c.musica);
       const tema = E.temaDoHino(c.musica);
-      return { id: c.musica.id, rotulo: E.rotuloMusica(c.musica), busca: `${c.musica.numero} ${c.musica.titulo} ${c.musica.autor} ${assuntoDe(c.musica)} ${E.tambemServeEm(c.musica).map((x) => x.nome).join(" ")}`, direita: [st ? st.nome : tema ? tema.nome : "", c.musica.tom ? `tom ${c.musica.tom}` : ""].filter(Boolean).join(" · "), meta: metaMusica(c) };
+      return { c, id: c.musica.id, rotulo: E.rotuloMusica(c.musica), busca: `${c.musica.numero} ${c.musica.titulo} ${c.musica.autor} ${assuntoDe(c.musica)} ${E.tambemServeEm(c.musica).map((x) => x.nome).join(" ")}`, direita: [st ? st.nome : tema ? tema.nome : "", c.musica.tom ? `tom ${c.musica.tom}` : ""].filter(Boolean).join(" · "), meta: metaMusica(c) };
     };
     escolher({
       titulo: E.nomeTipo(vaga.tipo),
@@ -1226,6 +1248,10 @@
         { titulo: "Cantadas há pouco ou já neste culto", itens: cands.filter((c) => c.atende && c.bloqueio).map(op) },
         { titulo: "Fora da orientação do culto solene", itens: cands.filter((c) => !c.atende).map(op) },
       ],
+      filtros: { chave: `musica-${vaga.tipo}`, opcoes: [
+        ...FILTROS_USO.map((f) => ({ id: f.id, nome: f.nome, fn: (o) => f.fn(uso(o)), ordem: f.id === "descanso" ? (a, b) => porMaisTempoSemTocar(uso(a), uso(b)) : null })),
+        exigidas.length ? { id: "orientacao", nome: "Seguem a orientação", fn: (o) => o.c.atende } : null,
+      ].filter(Boolean) },
       vazio: "Deixar a definir",
       aoEscolher: (id) => mudou(() => { E.colocarMusica(culto, k, id); if (id) fixar(culto, `m:${k}`); }),
     });
@@ -1843,8 +1869,9 @@
 
     const eu = quemSouEu();
     // Na grade: você primeiro, depois quem respondeu e, por último, quem ainda não respondeu.
-    const ordem = [...ativas].sort((a, b) => (b === eu) - (a === eu) || (!respostaDa(a)) - (!respostaDa(b)));
-    const faltam = ativas.filter((p) => !respostaDa(p));
+    const daFuncao = ativas.filter((p) => fazFuncao(p, ui.agendaFuncao));
+    const ordem = [...daFuncao].sort((a, b) => (b === eu) - (a === eu) || (!respostaDa(a)) - (!respostaDa(b)));
+    const faltam = daFuncao.filter((p) => !respostaDa(p));
     const marca = (v) => h("span", { class: "marca-dia", "aria-hidden": "true" }, v === "sim" ? icone("ok") : v === "nao" ? icone("fechar") : "–");
     const tabela = h("table", { class: "grade-disp" },
       h("thead", {}, h("tr", {}, h("th", { scope: "col" }, "Pessoa"), dias.map((d) => h("th", { scope: "col", class: "num" }, h("span", { class: "dia-sem" }, E.DIAS_CURTOS[E.diaSemana(d.data)]), h("span", { class: "dia-num" }, E.formatarData(d.data, "curta")))))),
@@ -1861,8 +1888,8 @@
             return h("td", { class: `disp ${v || "sem"}`, "aria-label": `${p.nome}, ${E.formatarData(d.data, "dia")}: ${v === "sim" ? "pode" : v === "nao" ? "não pode" : r ? "não marcou" : "não respondeu"}` }, marca(v));
           }));
       })),
-      h("tfoot", {}, h("tr", {}, h("th", { scope: "row" }, "Podem"), dias.map((d) => {
-        const n = ativas.filter((p) => E.disponivelEm(state, p.id, d.data) === "sim").length;
+      h("tfoot", {}, h("tr", {}, h("th", { scope: "row" }, ui.agendaFuncao ? `Podem (${E.nomeFuncao(state, ui.agendaFuncao).toLowerCase()})` : "Podem"), dias.map((d) => {
+        const n = daFuncao.filter((p) => E.disponivelEm(state, p.id, d.data) === "sim").length;
         return h("td", { class: `num${n ? "" : " ninguem"}` }, String(n));
       }))));
 
@@ -1885,6 +1912,7 @@
         h("div", { class: "secao" },
           h("div", { class: "progresso", role: "progressbar", "aria-valuemin": 0, "aria-valuemax": ativas.length, "aria-valuenow": responderam.length, "aria-label": "Respostas" },
             h("div", { class: "barra" }, h("span", { style: `width:${pct}%` }))),
+          filtroFuncoes(ativas, ui.agendaFuncao, (id) => { ui.agendaFuncao = id; render(); }),
           faltam.length ? h("div", { class: "faltam" }, h("span", { class: "small muted" }, "Ainda não responderam:"),
             faltam.map((p) => h("button", { class: "chip mini-chip", onclick: () => editarDisponibilidade(p), "aria-label": `${p.nome} ainda não respondeu. Marcar por essa pessoa` }, p.nome))) : null,
           h("div", { class: "legenda-disp", "aria-hidden": "true" },
@@ -2087,17 +2115,48 @@
 
   /* ---------------------------------------------------------- músicas */
 
+  /** Por música: última vez (até hoje), próxima vez programada e quantos dias foi tocada nos últimos 90 dias. */
   function usosMusicas() {
     const mapa = {};
+    const desde90 = E.somarDias(hoje(), -90);
     const marcar = (id, data) => {
-      const u = (mapa[id] = mapa[id] || { ultima: null, proxima: null });
-      if (data <= hoje()) { if (!u.ultima || data > u.ultima) u.ultima = data; }
-      else if (!u.proxima || data < u.proxima) u.proxima = data;
+      const u = (mapa[id] = mapa[id] || { ultima: null, proxima: null, dias90: new Set() });
+      if (data <= hoje()) {
+        if (!u.ultima || data > u.ultima) u.ultima = data;
+        if (data > desde90) u.dias90.add(data);
+      } else if (!u.proxima || data < u.proxima) u.proxima = data;
     };
     for (const m of state.musicas) if (m.ultimaVez) marcar(m.id, m.ultimaVez);
     for (const e of state.escalas) for (const c of e.cultos) if (!E.liderDe(e, c)) for (const v of c.musicas) if (v.id) marcar(v.id, c.data);
     return mapa;
   }
+
+  const fazFuncao = (p, f) => !f || (p.funcoes || []).includes(f) || (p.apoio || []).includes(f);
+
+  /** Fileira de filtros por função (Equipe e Agenda): "Todas" e uma por função, com a contagem. */
+  function filtroFuncoes(pessoas, atual, aoMudar) {
+    const chip = (id, nome, n, ic) => h("button", { class: "chip", "aria-pressed": String(atual === id), onclick: () => aoMudar(id) }, ic, nome, h("span", { class: "conta" }, String(n)));
+    return h("div", { class: "rolagem-x", role: "group", "aria-label": "Filtrar por função" },
+      chip("", "Todas as funções", pessoas.length),
+      state.funcoes.map((f) => {
+        const n = pessoas.filter((p) => fazFuncao(p, f.id)).length;
+        return n ? chip(f.id, f.nome, n, icone(visualDaFuncao(f.id).icone)) : null;
+      }));
+  }
+
+  const diasDesde = (iso) => Math.round((E.parseData(hoje()) - E.parseData(iso)) / 86400000);
+  const SEM_USO = { ultima: null, proxima: null, dias90: new Set() };
+
+  /** Filtros pelo uso das músicas (Músicas e escolha de música na escala). `u` vem de usosMusicas(). */
+  const FILTROS_USO = [
+    { id: "todas", nome: "Todas", fn: () => true },
+    { id: "descanso", nome: "Sem tocar há 2+ meses", fn: (u) => !u.ultima || diasDesde(u.ultima) > 60 },
+    { id: "recentes", nome: "Tocadas no último mês", fn: (u) => !!u.ultima && diasDesde(u.ultima) <= 30 },
+    { id: "nunca", nome: "Nunca tocadas", fn: (u) => !u.ultima && !u.proxima },
+    { id: "programadas", nome: "Já programadas", fn: (u) => !!u.proxima },
+  ];
+  // Mais tempo sem tocar primeiro (nunca tocada vem antes de todas).
+  const porMaisTempoSemTocar = (ua, ub) => String(ua.ultima || "").localeCompare(String(ub.ultima || ""));
 
   function telaMusicas() {
     const FILTROS = [
@@ -2114,15 +2173,26 @@
     const desenhar = () => {
       const f = FILTROS.find((x) => x.id === ui.filtro) || FILTROS[0];
       const q = E.normalizar(ui.busca);
+      const fu = FILTROS_USO.find((x) => x.id === ui.uso) || FILTROS_USO[0];
+      const uso = (m) => usos[m.id] || SEM_USO;
+      const padrao = (a, b) => a.tipo.localeCompare(b.tipo) || String(a.numero).localeCompare(String(b.numero), "pt-BR", { numeric: true }) || a.titulo.localeCompare(b.titulo, "pt-BR");
+      const ORDENS = {
+        padrao,
+        az: (a, b) => E.normalizar(a.titulo || a.numero).localeCompare(E.normalizar(b.titulo || b.numero), "pt-BR"),
+        descanso: (a, b) => porMaisTempoSemTocar(uso(a), uso(b)) || padrao(a, b),
+        recentes: (a, b) => String(uso(b).ultima || "").localeCompare(String(uso(a).ultima || "")) || padrao(a, b),
+        mais: (a, b) => uso(b).dias90.size - uso(a).dias90.size || padrao(a, b),
+      };
       const itens = state.musicas
-        .filter((m) => f.fn(m) && (!ui.tema || E.hinoNoAssunto(m, ui.tema)))
+        .filter((m) => f.fn(m) && fu.fn(uso(m)) && (!ui.tema || E.hinoNoAssunto(m, ui.tema)))
         .filter((m) => !q || E.normalizar(`${m.numero} ${m.titulo} ${m.autor} ${assuntoDe(m)}`).includes(q))
-        .sort((a, b) => a.tipo.localeCompare(b.tipo) || String(a.numero).localeCompare(String(b.numero), "pt-BR", { numeric: true }) || a.titulo.localeCompare(b.titulo, "pt-BR"));
+        .sort(ORDENS[ui.ordemMusicas] || padrao);
       contagem.textContent = `${itens.length} de ${state.musicas.length} músicas`;
       lista.replaceChildren(itens.length ? h("ul", { class: "lista" }, itens.map((m) => {
         const u = usos[m.id] || {};
         const temas = (m.tags || []).map((t) => (porId(state.tags, t) || { nome: t }).nome).join(", ");
-        const quando = [u.ultima ? `cantada em ${E.formatarData(u.ultima, "curta")}` : "", u.proxima ? `próxima: ${E.formatarData(u.proxima, "curta")}` : ""].filter(Boolean).join(" · ");
+        const vezes = u.dias90 ? u.dias90.size : 0;
+        const quando = [u.ultima ? `cantada em ${E.formatarData(u.ultima, "curta")}` : "", vezes > 1 ? `${vezes}× em 90 dias` : "", u.proxima ? `próxima: ${E.formatarData(u.proxima, "curta")}` : ""].filter(Boolean).join(" · ");
         const destaques = (m.tags || []).filter((t) => PRINCIPAIS.includes(t));
         const outras = (m.tags || []).filter((t) => !PRINCIPAIS.includes(t)).map((t) => (porId(state.tags, t) || { nome: t }).nome).join(", ");
         return h("li", { class: "musica-linha" },
@@ -2150,8 +2220,16 @@
           h("button", { class: "btn", onclick: importarMusicas }, icone("importar"), "Importar"),
           h("button", { class: "btn primario", onclick: () => editarMusica(null) }, icone("mais"), "Música"))),
       h("div", { class: "busca" }, icone("busca"), h("input", { type: "search", id: "busca-musicas", placeholder: "Buscar por título ou número", "aria-label": "Buscar músicas", value: ui.busca, oninput: (e) => { ui.busca = e.target.value; desenhar(); } })),
-      h("div", { class: "rolagem-x", role: "group", "aria-label": "Filtrar" }, FILTROS.map((f) => h("button", { class: "chip", "aria-pressed": String(ui.filtro === f.id), onclick: () => { ui.filtro = f.id; render(); } }, f.nome, h("span", { class: "conta" }, String(state.musicas.filter(f.fn).length))))),
+      h("div", { class: "rolagem-x", role: "group", "aria-label": "Filtrar por tipo" }, FILTROS.map((f) => h("button", { class: "chip", "aria-pressed": String(ui.filtro === f.id), onclick: () => { ui.filtro = f.id; render(); } }, f.nome, h("span", { class: "conta" }, String(state.musicas.filter(f.fn).length))))),
+      h("div", { class: "rolagem-x", role: "group", "aria-label": "Filtrar pelo uso" }, FILTROS_USO.slice(1).map((f) => {
+        const conta = state.musicas.filter((m) => (FILTROS.find((x) => x.id === ui.filtro) || FILTROS[0]).fn(m) && f.fn(usos[m.id] || SEM_USO)).length;
+        return h("button", { class: "chip chip-uso", "aria-pressed": String(ui.uso === f.id), onclick: () => { ui.uso = ui.uso === f.id ? "todas" : f.id; render(); } }, icone("relogio"), f.nome, h("span", { class: "conta" }, String(conta)));
+      })),
       h("div", { class: "contador" }, contagem,
+        h("label", { class: "filtro-tema" }, h("span", { class: "sr" }, "Ordenar"),
+          h("select", { id: "ordem-musicas", "aria-label": "Ordenar", onchange: (e) => { ui.ordemMusicas = e.target.value; desenhar(); } },
+            [["padrao", "Ordem: tipo e número"], ["az", "Ordem: A–Z"], ["descanso", "Mais tempo sem tocar"], ["recentes", "Tocadas por último"], ["mais", "Mais tocadas (90 dias)"]]
+              .map(([v, t]) => h("option", { value: v, selected: ui.ordemMusicas === v || null }, t)))),
         h("label", { class: "filtro-tema" }, h("span", { class: "sr" }, "Assunto do hinário"),
           h("select", { id: "filtro-tema", "aria-label": "Assunto do hinário", onchange: (e) => { ui.tema = e.target.value; if (ui.tema && ui.filtro === "louvor") ui.filtro = "todas"; render(); } },
             h("option", { value: "" }, "Todos os assuntos"),
@@ -2557,6 +2635,16 @@
     if (escala) for (const l of E.resumoPessoas(state, escala)) vezes[l.pessoa.id] = l.total;
     const periodo = pedidoAtual();
     const respondeu = (p) => (state.respostas || []).some((r) => r.id === E.idResposta(p.id, periodo.inicio));
+    const datasFora = (p) => (p.indisponivel || []).filter((x) => (x.split("..")[1] || x) >= hoje()).length;
+    const SITUACOES = [
+      { id: "todos", nome: "Todas as situações", fn: () => true },
+      { id: "responderam", nome: "Mandaram a disponibilidade", fn: (p) => p.ativo !== false && respondeu(p) },
+      { id: "faltam", nome: "Não mandaram a disponibilidade", fn: (p) => p.ativo !== false && !respondeu(p) },
+      { id: "fora", nome: "Com datas em que não podem", fn: (p) => datasFora(p) > 0 },
+      { id: "pausados", nome: "Pausados (fora do rodízio)", fn: (p) => p.ativo === false },
+    ];
+    const situacao = SITUACOES.find((x) => x.id === ui.equipeSituacao) || SITUACOES[0];
+    const filtradas = pessoas.filter((p) => fazFuncao(p, ui.equipeFuncao) && situacao.fn(p));
     return h("div", { class: "tela" },
       h("div", { class: "cabecalho" },
         h("div", {}, h("h1", {}, "Equipe"), h("p", { class: "muted" }, `${ativas.length} pessoas no rodízio`)),
@@ -2566,7 +2654,14 @@
         const a = ativas.filter((p) => (p.apoio || []).includes(f.id)).length;
         return h("div", { class: n ? null : "falta" }, h("div", { style: "display:flex;align-items:center;justify-content:space-between;gap:var(--e-2)" }, h("b", {}, String(n)), seloFuncao(f.id)), h("span", {}, `${f.nome}${a ? ` · +${a} apoio` : ""}${n ? "" : " · sem titular"}`));
       }))),
-      pessoas.length ? h("div", { class: "equipe-grade" }, pessoas.map((p) => {
+      pessoas.length ? filtroFuncoes(pessoas.filter(situacao.fn), ui.equipeFuncao, (id) => { ui.equipeFuncao = id; render(); }) : null,
+      pessoas.length ? h("div", { class: "contador" },
+        h("p", { class: "small muted", "aria-live": "polite" }, `${filtradas.length} de ${pessoas.length} pessoas`),
+        h("label", { class: "filtro-tema" }, h("span", { class: "sr" }, "Situação"),
+          h("select", { id: "filtro-situacao", "aria-label": "Situação", onchange: (e) => { ui.equipeSituacao = e.target.value; render(); } },
+            SITUACOES.map((x) => h("option", { value: x.id, selected: x === situacao || null }, `${x.nome} (${pessoas.filter((p) => fazFuncao(p, ui.equipeFuncao) && x.fn(p)).length})`))))) : null,
+      pessoas.length && !filtradas.length ? h("div", { class: "estado-vazio" }, h("p", {}, "Ninguém com esse filtro."), h("button", { class: "btn", onclick: () => { ui.equipeFuncao = ""; ui.equipeSituacao = "todos"; render(); } }, "Limpar filtros")) : null,
+      filtradas.length ? h("div", { class: "equipe-grade" }, filtradas.map((p) => {
         const datas = (p.indisponivel || []).filter((x) => (x.split("..")[1] || x) >= hoje()).length;
         const cultos = (p.cultos || []).map((id) => porId(state.cultos, id)).filter(Boolean);
         return h("button", { class: `pessoa-cartao${p.ativo === false ? " pausado" : ""}`, onclick: () => editarPessoa(p), "aria-label": `${p.nome}. ${descreverPessoa(p)}. Editar` },
@@ -2580,7 +2675,7 @@
           h("div", { class: "pe" },
             escala ? h("span", {}, icone("escala"), `${vezes[p.id] || 0}× nesta escala`) : null,
             h("span", { style: respondeu(p) ? "color:var(--ok)" : null }, icone(respondeu(p) ? "certo" : "agenda"), respondeu(p) ? "Disponibilidade enviada" : "Não respondeu")));
-      })) : h("div", { class: "estado-vazio" }, h("span", { class: "estado-vazio-icone" }, icone("pessoas")), h("p", {}, "Ninguém cadastrado ainda.")));
+      })) : pessoas.length ? null : h("div", { class: "estado-vazio" }, h("span", { class: "estado-vazio-icone" }, icone("pessoas")), h("p", {}, "Ninguém cadastrado ainda.")));
   }
 
   function editorDatas(lista) {

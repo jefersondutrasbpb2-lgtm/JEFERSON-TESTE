@@ -748,6 +748,10 @@
   @keyframes aparece { from { opacity: 0; } }
   @keyframes sobe { from { transform: translateY(32px); opacity: 0.6; } }
   @keyframes surge { from { transform: translateY(8px) scale(0.985); opacity: 0; } }
+  /* fileira de filtros dentro do painel: rolagem lateral; sem altura mínima o grid a espremeria */
+  .filtros-escolha { min-height: calc(var(--toque) + var(--e-1)); }
+  .chip-uso svg.i { color: var(--muted); }
+  .chip-uso[aria-pressed="true"] svg.i { color: currentColor; }
   .opcoes { display: grid; gap: var(--e-05); margin-inline: calc(-1 * var(--e-2)); }
   .opcao {
     display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--e-05) var(--e-3); align-items: center; text-align: left; min-height: var(--toque-lg);

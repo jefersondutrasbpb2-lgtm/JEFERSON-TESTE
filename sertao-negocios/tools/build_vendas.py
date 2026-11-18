@@ -173,6 +173,12 @@ REVELADOS = [
      "bio": "Contador e CEO da Exate Soluções Contábeis, é especialista em reduzir a carga tributária dentro da legalidade, "
             "ajudando empresas a encontrar oportunidades para otimizar os custos com tributos. No Sertão Negócios, fala sobre "
             "gestão tributária e a importância do planejamento para quem busca mais eficiência financeira e crescimento sustentável."},
+    {"slug": "roberta", "nome": "Roberta Trindade", "nome_html": "Roberta<br>Trindade", "papel": "Palestrante",
+     "tema": "Gestão estratégica e crescimento sustentável",
+     "bio": "Economista, empresária e estrategista de negócios, soma mais de 35 anos de trajetória. CEO e cofundadora da "
+            "Trindade Consultoria, especializada em gestão estratégica e desenvolvimento empresarial, transforma negócios "
+            "fortalecendo a gestão, estruturando processos e desenvolvendo lideranças. É uma das idealizadoras do GESTRIN®, "
+            "método que integra estratégia, organização e pessoas para o crescimento sustentável das empresas."},
 ]
 # O palco começou com 10 vagas anunciadas; se entrarem mais nomes, o total acompanha
 A_REVELAR = max(0, 10 - len(REVELADOS))

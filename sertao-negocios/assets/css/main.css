@@ -52,7 +52,7 @@
 
 /* ---------- Base ---------- */
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; scroll-padding-top: var(--nav-h); }
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: calc(var(--nav-h) + var(--bar-h, 0px)); }
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
 .lenis.lenis-stopped { overflow: hidden; }
@@ -192,7 +192,7 @@ button { font: inherit; color: inherit; }
 .hero {
   position: relative; isolation: isolate;
   min-height: 100svh; display: flex; flex-direction: column;
-  padding-top: calc(var(--nav-h) + env(safe-area-inset-top) + clamp(12px, 3vh, 40px));
+  padding-top: calc(var(--nav-h) + var(--bar-h, 0px) + env(safe-area-inset-top) + clamp(12px, 3vh, 40px));
   overflow: hidden;
   background: radial-gradient(130% 90% at 40% 30%, var(--cobalto) 0%, #1c22b4 42%, var(--noite) 100%);
 }
@@ -972,6 +972,41 @@ button { font: inherit; color: inherit; }
   .wa__label { display: inline; }
   .wa.is-open .wa__btn { width: 58px; padding: 0; }
 }
+
+/* ---------- Virada do lote: faixa no topo e contagem regressiva ---------- */
+[data-cd][hidden], .cd-live[hidden] { display: none !important; }
+:root:has(.topbar) { --bar-h: 38px; }
+.topbar {
+  display: flex; align-items: center; justify-content: center; gap: 10px; height: var(--bar-h, 38px); padding-inline: var(--gutter);
+  background: linear-gradient(90deg, var(--sol-btn), #f2304f 55%, #8a2bb8); color: var(--branco);
+  font-size: 12.5px; line-height: 1; text-decoration: none; white-space: nowrap; overflow: hidden;
+}
+.topbar .lot__dot { flex: none; width: 8px; height: 8px; background: var(--branco); animation: sn-ping-claro 2s ease-out infinite; }
+@keyframes sn-ping-claro { 0% { box-shadow: 0 0 0 0 rgb(255 255 255 / .7); } 100% { box-shadow: 0 0 0 10px rgb(255 255 255 / 0); } }
+.topbar__msg { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.topbar__msg strong, .topbar b { font-weight: 800; }
+.topbar b { font-variant-numeric: tabular-nums; }
+.topbar__o, .topbar__dia, .topbar__cta { display: none; }
+@media (min-width: 640px) { .topbar { font-size: 13.5px; gap: 12px; } .topbar__o, .topbar__dia { display: inline; } }
+@media (min-width: 900px) {
+  .topbar__cta { display: inline-flex; align-items: center; gap: 6px; margin-left: 6px; padding: 6px 12px; border-radius: 999px; background: rgb(255 255 255 / .18); font-weight: 800; transition: background-color .3s; }
+  .topbar__cta .btn__icon { width: 14px; height: 14px; }
+  .topbar:hover .topbar__cta { background: rgb(255 255 255 / .3); }
+}
+.buy__vira { margin-top: -2px; font-size: .84rem; font-weight: 700; color: var(--tinta-2); }
+.buy__vira b { color: var(--sol-ink); font-variant-numeric: tabular-nums; }
+.scarce--cd { flex-wrap: wrap; gap: 16px 28px; padding: 18px 22px; border-radius: 20px; }
+.scarce__txt { display: flex; align-items: flex-start; gap: 14px; max-width: 44ch; }
+.scarce__txt .lot__dot { flex: none; margin-top: 7px; }
+.cd { display: flex; gap: 8px; }
+.cd__u { display: grid; justify-items: center; min-width: 60px; padding: 9px 6px 7px; border-radius: 12px; background: rgb(9 12 58 / .55); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .14); }
+.cd__u b { font-family: var(--font-display); font-weight: 800; font-size: 1.65rem; line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; color: var(--branco); }
+.cd__u small { margin-top: 5px; font-size: .64rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: rgb(255 255 255 / .72); }
+.dock .btn { flex-direction: column; gap: 2px; line-height: 1.15; padding-block: .55em; }
+.dock__vira { font-size: 11px; font-weight: 600; opacity: .92; }
+.dock__vira b { font-variant-numeric: tabular-nums; }
+:root.lote-virou { --bar-h: 0px; }
+.lote-virou .topbar, .lote-virou .buy__vira, .lote-virou .dock__vira { display: none; }
 
 /* ---------- Aviso de cookies do GreatPages: compacto no celular ---------- */
 @media (max-width: 899px) {

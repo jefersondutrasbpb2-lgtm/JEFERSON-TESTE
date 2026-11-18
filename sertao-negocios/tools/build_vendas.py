@@ -27,6 +27,10 @@ LOTE_ANTERIOR = "Lote 0"
 # Escassez: True quando o lote estiver nos últimos ingressos (troca selos, textos e mostra o aviso na seção de ingressos)
 ULTIMOS = True
 LOTE_STATUS = "últimos ingressos" if ULTIMOS else "disponível"
+# Virada do lote: horário de Brasília. Com data, a página mostra a faixa no topo e a contagem regressiva
+# (a contagem em si roda pelo script "Contagem da virada do lote", instalado no painel do GreatPages)
+VIRADA = "2026-11-24T08:00:00-03:00"
+VIRADA_DIA, VIRADA_DATA, VIRADA_HORA = "terça", "24/11", "8h"
 LOTE_FRASE = (f"Estamos nos últimos ingressos do {LOTE}, e quando ele virar o valor sobe." if ULTIMOS
               else f"O {LOTE} está aberto, e os próximos lotes sobem de valor.")
 INGRESSOS = {
@@ -81,6 +85,16 @@ html = must_sub(html, r'<meta name="description" content="[^"]*">',
                 '<meta name="description" content="Ingressos Smart e VIP do Sertão Negócios 2026, com Moisés Ramos, '
                 'Rick Chesther, Rossandro Klinjey, Padre Fabrício Timóteo e mais 10 palestrantes. 03 e 04 de dezembro, '
                 f'em Patos-PB. ' + (f'Últimos ingressos do {LOTE}.' if ULTIMOS else f'{LOTE} disponível.') + '">')
+
+# Faixa da virada do lote, no topo, junto do menu
+if VIRADA:
+    html = must_replace(html, '<header class="nav" data-nav>\n', f'''<header class="nav" data-nav>
+  <a class="topbar" href="#ingressos" data-cta="topbar" data-lote-virada="{VIRADA}">
+    <span class="lot__dot" aria-hidden="true"></span>
+    <span class="topbar__msg"><strong><span class="topbar__o">O </span>{LOTE} vira <span class="topbar__dia">{VIRADA_DIA}, </span>{VIRADA_DATA}, às {VIRADA_HORA}</strong><span class="cd-live" hidden> · faltam <b data-cd-text></b></span></span>
+    <span class="topbar__cta">Garantir meu ingresso <svg class="btn__icon" aria-hidden="true"><use href="#i-arrow"/></svg></span>
+  </a>
+''')
 
 # Menu
 html = must_replace(html, '<a href="#lote-0">Lote 0</a>', '<a href="#ingressos">Ingressos</a>')
@@ -242,8 +256,9 @@ else:
 
 # Topo: card de compra no lugar do formulário
 s, v = INGRESSOS["smart"], INGRESSOS["vip"]
+buy_vira = (f'\n        <p class="buy__vira">Vira {VIRADA_DIA}, {VIRADA_DATA}, às {VIRADA_HORA}<span class="cd-live" hidden> · faltam <b data-cd-text></b></span></p>' if VIRADA else "")
 hero_buy = f'''<div class="hero__form buy" id="comprar" data-hero="cta" data-dock-after>
-        <p class="buy__tag"><span class="lot__dot" aria-hidden="true"></span>{LOTE} · {LOTE_STATUS}</p>
+        <p class="buy__tag"><span class="lot__dot" aria-hidden="true"></span>{LOTE} · {LOTE_STATUS}</p>{buy_vira}
         <a class="buy__opt" {attrs("smart", "hero-smart")}>
           <span class="buy__name">Smart</span>
           <span class="buy__desc">Acesso completo aos dois dias</span>
@@ -345,9 +360,18 @@ hotel_html = f'''
       </article>'''
 
 # Aviso de escassez no topo da seção de ingressos
-escassez_html = f'''<div class="scarce" role="note" data-reveal>
-          <span class="lot__dot" aria-hidden="true"></span>
-          <p><strong>Últimos ingressos do {LOTE}.</strong> Quando eles acabarem, o lote vira e o mesmo ingresso passa a custar mais.</p>
+cd_html = f'''
+          <div class="cd" data-cd hidden role="timer" aria-label="Tempo até a virada do {LOTE}">
+            <span class="cd__u"><b data-cd-d>00</b><small>dias</small></span>
+            <span class="cd__u"><b data-cd-h>00</b><small>horas</small></span>
+            <span class="cd__u"><b data-cd-m>00</b><small>min</small></span>
+            <span class="cd__u"><b data-cd-s>00</b><small>seg</small></span>
+          </div>''' if VIRADA else ""
+escassez_html = f'''<div class="scarce{' scarce--cd' if VIRADA else ''}" role="note" data-reveal>
+          <div class="scarce__txt">
+            <span class="lot__dot" aria-hidden="true"></span>
+            <p><strong>Últimos ingressos do {LOTE}.</strong> {f'Ele vira na {VIRADA_DIA}, {VIRADA_DATA}, às&nbsp;{VIRADA_HORA}, e o mesmo ingresso passa a custar mais.' if VIRADA else 'Quando eles acabarem, o lote vira e o mesmo ingresso passa a custar mais.'}</p>
+          </div>{cd_html}
         </div>
         ''' if ULTIMOS else ""
 
@@ -464,7 +488,7 @@ html = must_sub(html, r'<p class="finale__ps" data-reveal>.*?</p>',
 
 # Barra do celular e WhatsApp
 html = must_replace(html, '<a class="btn btn--sol btn--block" href="#cadastro" data-cta="dock">Entrar na comunidade · grátis</a>',
-                    f'<a class="btn btn--sol btn--block" href="#ingressos" data-cta="dock">' + (f'Últimos ingressos · {LOTE}' if ULTIMOS else f'Garantir meu ingresso · {LOTE}') + '</a>')
+                    f'<a class="btn btn--sol btn--block" href="#ingressos" data-cta="dock">' + ((f'<span>Últimos ingressos · {LOTE}</span><small class="dock__vira">Vira {VIRADA_DATA}, às {VIRADA_HORA}<span class="cd-live" hidden> · faltam <b data-cd-text></b></span></small>' if VIRADA else f'Últimos ingressos · {LOTE}') if ULTIMOS else f'Garantir meu ingresso · {LOTE}') + '</a>')
 html = must_replace(html, '<span class="wa__opt-d">Lote 0, programação e inscrição</span>',
                     '<span class="wa__opt-d">Ingressos, pagamento e programação</span>')
 

@@ -1,0 +1,52 @@
+<!--
+  Sertão Negócios 2026 · Contagem regressiva da virada do lote
+
+  O que faz
+  - Lê a data da virada no atributo data-lote-virada da página (faixa do topo), definida em
+    tools/build_vendas.py (VIRADA, horário de Brasília).
+  - Atualiza a cada segundo: a faixa do topo ("faltam 5d 18h 32min"), a linha do quadro de compra,
+    a barra fixa do celular e o relógio grande da seção de ingressos (dias, horas, min, seg).
+  - Sem este script a página continua certa: mostra só a data fixa ("vira terça, 24/11, às 8h").
+  - Quando o horário passa, some a faixa e a contagem (a página ganha a classe lote-virou).
+    Depois disso, troque os preços e o lote em tools/build_vendas.py.
+
+  Onde instalar
+  - GreatPages → página sertao-negocios-vendas → Scripts → tipo "Funcionamento", no final do corpo.
+-->
+<script>
+(function () {
+  function iniciar() {
+    var alvo = document.querySelector('[data-lote-virada]');
+    if (!alvo) return;
+    var fim = new Date(alvo.getAttribute('data-lote-virada')).getTime();
+    if (isNaN(fim)) return;
+    var raiz = document.documentElement;
+    function todos(sel, fn) { Array.prototype.forEach.call(document.querySelectorAll(sel), fn); }
+    function dois(n) { return n < 10 ? '0' + n : String(n); }
+    var timer;
+
+    function tique() {
+      var ms = fim - Date.now();
+      if (ms <= 0) {
+        clearInterval(timer);
+        raiz.classList.add('lote-virou');
+        todos('[data-cd], .cd-live', function (e) { e.hidden = true; });
+        return;
+      }
+      var s = Math.floor(ms / 1000);
+      var d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60), seg = s % 60;
+      var curto = d > 0 ? d + 'd ' + dois(h) + 'h ' + dois(m) + 'min' : dois(h) + 'h ' + dois(m) + 'min ' + dois(seg) + 's';
+      todos('[data-cd-text]', function (e) { e.textContent = curto; });
+      todos('[data-cd-d]', function (e) { e.textContent = dois(d); });
+      todos('[data-cd-h]', function (e) { e.textContent = dois(h); });
+      todos('[data-cd-m]', function (e) { e.textContent = dois(m); });
+      todos('[data-cd-s]', function (e) { e.textContent = dois(seg); });
+      todos('[data-cd][hidden], .cd-live[hidden]', function (e) { e.hidden = false; });
+    }
+    tique();
+    timer = setInterval(tique, 1000);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar);
+  else iniciar();
+})();
+</script>

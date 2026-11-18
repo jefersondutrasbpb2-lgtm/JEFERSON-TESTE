@@ -80,6 +80,11 @@
 
 <!-- ====== Navegação ====== -->
 <header class="nav" data-nav>
+  <a class="topbar" href="#ingressos" data-cta="topbar" data-lote-virada="2026-11-24T08:00:00-03:00">
+    <span class="lot__dot" aria-hidden="true"></span>
+    <span class="topbar__msg"><strong><span class="topbar__o">O </span>Lote 1 vira <span class="topbar__dia">terça, </span>24/11, às 8h</strong><span class="cd-live" hidden> · faltam <b data-cd-text></b></span></span>
+    <span class="topbar__cta">Garantir meu ingresso <svg class="btn__icon" aria-hidden="true"><use href="#i-arrow"/></svg></span>
+  </a>
   <div class="nav__inner">
     <a class="nav__brand" href="#inicio" aria-label="Sertão Negócios, voltar ao início">
       <img src="assets/img/logo-sertao-negocios-240.webp" alt="" width="240" height="120">
@@ -140,6 +145,7 @@
 
       <div class="hero__form buy" id="comprar" data-hero="cta" data-dock-after>
         <p class="buy__tag"><span class="lot__dot" aria-hidden="true"></span>Lote 1 · últimos ingressos</p>
+        <p class="buy__vira">Vira terça, 24/11, às 8h<span class="cd-live" hidden> · faltam <b data-cd-text></b></span></p>
         <a class="buy__opt" href="https://chk.eduzz.com/39VKR1KYWR" data-checkout="smart" data-price="247" data-cta="hero-smart">
           <span class="buy__name">Smart</span>
           <span class="buy__desc">Acesso completo aos dois dias</span>
@@ -638,9 +644,17 @@
       <header class="tickets__head">
         <p class="kicker"><span class="kicker__num">05</span>Ingressos</p>
         <h2 class="h-display" id="tickets-title" data-split>Escolha como você vai viver o Sertão Negócios.</h2>
-        <div class="scarce" role="note" data-reveal>
-          <span class="lot__dot" aria-hidden="true"></span>
-          <p><strong>Últimos ingressos do Lote 1.</strong> Quando eles acabarem, o lote vira e o mesmo ingresso passa a custar mais.</p>
+        <div class="scarce scarce--cd" role="note" data-reveal>
+          <div class="scarce__txt">
+            <span class="lot__dot" aria-hidden="true"></span>
+            <p><strong>Últimos ingressos do Lote 1.</strong> Ele vira na terça, 24/11, às&nbsp;8h, e o mesmo ingresso passa a custar mais.</p>
+          </div>
+          <div class="cd" data-cd hidden role="timer" aria-label="Tempo até a virada do Lote 1">
+            <span class="cd__u"><b data-cd-d>00</b><small>dias</small></span>
+            <span class="cd__u"><b data-cd-h>00</b><small>horas</small></span>
+            <span class="cd__u"><b data-cd-m>00</b><small>min</small></span>
+            <span class="cd__u"><b data-cd-s>00</b><small>seg</small></span>
+          </div>
         </div>
         
       </header>
@@ -859,7 +873,7 @@
 
 <!-- CTA fixo no mobile -->
 <div class="dock" data-dock>
-  <a class="btn btn--sol btn--block" href="#ingressos" data-cta="dock">Últimos ingressos · Lote 1</a>
+  <a class="btn btn--sol btn--block" href="#ingressos" data-cta="dock"><span>Últimos ingressos · Lote 1</span><small class="dock__vira">Vira 24/11, às 8h<span class="cd-live" hidden> · faltam <b data-cd-text></b></span></small></a>
 </div>
 
 <!-- WhatsApp flutuante: troque o número em data-wa-number (55 + DDD + número, só dígitos) -->

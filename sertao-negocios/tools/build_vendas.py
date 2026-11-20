@@ -289,6 +289,7 @@ PATROCINIO = [
     {"slug": "fastia", "nome": "FAST.IA"},
     {"slug": "koris", "nome": "Koris Arquitetura e Cenografia"},
     {"slug": "mv2", "nome": "MV2 Viagens e Turismo", "alto": True, "claro": True},
+    {"slug": "vitoria", "nome": "Panificadora Vitória", "alto": True, "claro": True},
 ]
 logos = "".join(f'''
             <li class="sponsor{' sponsor--dark' if p.get('escuro') else ''}{' sponsor--alto' if p.get('alto') else ''}{' sponsor--claro' if p.get('claro') else ''}"><img src="assets/img/patrocinio-{p["slug"]}.webp" alt="{p["nome"]}" loading="lazy" decoding="async"></li>'''

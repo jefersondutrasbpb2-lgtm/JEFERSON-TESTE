@@ -31,6 +31,15 @@ LOTE_STATUS = "últimos ingressos" if ULTIMOS else "disponível"
 # (a contagem em si roda pelo script "Contagem da virada do lote", instalado no painel do GreatPages)
 VIRADA = "2026-11-24T08:00:00-03:00"
 VIRADA_DIA, VIRADA_DATA, VIRADA_HORA = "terça", "24/11", "8h"
+# Percentual de ingressos vendidos (informado pela organização). None tira a barra da página
+VENDIDOS_PCT = 66
+
+def barra_vendidos(extra=""):
+    if not VENDIDOS_PCT:
+        return ""
+    return (f'<div class="sold{extra}" role="img" aria-label="{VENDIDOS_PCT}% dos ingressos já foram vendidos">'
+            f'<p class="sold__txt"><strong>{VENDIDOS_PCT}%</strong> dos ingressos já foram vendidos</p>'
+            f'<span class="sold__bar" aria-hidden="true"><span style="width:{VENDIDOS_PCT}%"></span></span></div>')
 LOTE_FRASE = (f"Estamos nos últimos ingressos do {LOTE}, e quando ele virar o valor sobe." if ULTIMOS
               else f"O {LOTE} está aberto, e os próximos lotes sobem de valor.")
 INGRESSOS = {
@@ -256,7 +265,7 @@ else:
 
 # Topo: card de compra no lugar do formulário
 s, v = INGRESSOS["smart"], INGRESSOS["vip"]
-buy_vira = (f'\n        <p class="buy__vira">Vira {VIRADA_DIA}, {VIRADA_DATA}, às {VIRADA_HORA}<span class="cd-live" hidden> · faltam <b data-cd-text></b></span></p>' if VIRADA else "")
+buy_vira = (f'\n        <p class="buy__vira">Vira {VIRADA_DIA}, {VIRADA_DATA}, às {VIRADA_HORA}<span class="cd-live" hidden> · faltam <b data-cd-text></b></span></p>' if VIRADA else "") + ('\n        ' + barra_vendidos() if VENDIDOS_PCT else "")
 hero_buy = f'''<div class="hero__form buy" id="comprar" data-hero="cta" data-dock-after>
         <p class="buy__tag"><span class="lot__dot" aria-hidden="true"></span>{LOTE} · {LOTE_STATUS}</p>{buy_vira}
         <a class="buy__opt" {attrs("smart", "hero-smart")}>
@@ -373,7 +382,7 @@ escassez_html = f'''<div class="scarce{' scarce--cd' if VIRADA else ''}" role="n
           <div class="scarce__txt">
             <span class="lot__dot" aria-hidden="true"></span>
             <p><strong>Últimos ingressos do {LOTE}.</strong> {f'Ele vira na {VIRADA_DIA}, {VIRADA_DATA}, às&nbsp;{VIRADA_HORA}, e o mesmo ingresso passa a custar mais.' if VIRADA else 'Quando eles acabarem, o lote vira e o mesmo ingresso passa a custar mais.'}</p>
-          </div>{cd_html}
+          </div>{cd_html}{(chr(10) + '          ' + barra_vendidos(' sold--dark')) if VENDIDOS_PCT else ''}
         </div>
         ''' if ULTIMOS else ""
 

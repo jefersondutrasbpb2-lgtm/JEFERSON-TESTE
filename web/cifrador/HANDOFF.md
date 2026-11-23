@@ -328,6 +328,18 @@ Com `prefers-reduced-motion: reduce`, as transições de barra e progresso são 
 - **Acordes ligados por "_"** ("G__D", "A4___A"): `lerLinhaDeAcordes` separa nos "_" e o "_" é token
   neutro; numa letra ("ali___an__ça") a linha continua sendo letra.
 
+## 10e. Repertórios por dia do culto
+
+- **Grupos:** Domingo · Quinta · Terça · Pastas (e "Outros dias" quando houver), com contagem. O grupo
+  vem do **dia da semana da data** (`tipoDoRep`); sem data = Pasta (Favoritas também ficam lá).
+  Abre no grupo escolhido antes (`repTipo`, no aparelho) ou, na primeira vez, no do próximo culto.
+- **Dentro do grupo:** "Próximo culto" em destaque, "Depois" (outros futuros) e "Tocados em <mês>"
+  do mais recente para o mais antigo. Cada repertório tem um quadradinho de calendário (dia da
+  semana, dia, mês) e a linha "PRÓXIMO/HOJE/TOCADO · dd/mm/aaaa · N músicas".
+- **Busca:** procura em todos os grupos.
+- **+ Novo:** menu Culto de domingo / quinta-feira / terça-feira (data = próximo dia certo; se já
+  houver repertório nessa data, abre ele), Outro culto (escolhe a data) e Pasta sem data.
+
 ## 11. Código
 
 - `assets/app.js`: os nomes do arquivo inteiro são legíveis (`renderizar`, `abrirCifra`,

@@ -17,8 +17,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap">
-  <script type="module" crossorigin src="./assets/app.js?v=77db9a9fbe"></script>
-  <link rel="stylesheet" crossorigin href="./assets/estilo.css?v=7e7dea61b7">
+  <script type="module" crossorigin src="./assets/app.js?v=6fc1d1bc44"></script>
+  <link rel="stylesheet" crossorigin href="./assets/estilo.css?v=62e7166306">
 </head>
 <body>
 
@@ -191,10 +191,20 @@ Em             C
     <div id="repLista">
       <div class="libhead">
         <h2>Repertórios</h2>
-        <button class="btn primary" id="repNovo">+ Novo</button>
+        <div class="menuwrap">
+          <button class="btn primary" id="repNovo" aria-expanded="false" aria-haspopup="true">+ Novo</button>
+          <div class="menu" id="repNovoMenu" hidden>
+            <p class="menu-tit">Montar repertório para:</p>
+            <button data-dia="0">Culto de domingo</button>
+            <button data-dia="4">Culto de quinta-feira</button>
+            <button data-dia="2">Culto de terça-feira</button>
+            <button data-dia="outro">Outro culto (escolho a data)</button>
+            <button data-dia="pasta">Pasta sem data (ex.: Salmos e Hinos)</button>
+          </div>
+        </div>
       </div>
-      <input type="search" id="repFiltro" class="campo" placeholder="Buscar repertório" aria-label="Buscar repertório">
-      <p class="hint">Pastas com a ordem e o tom das músicas: um culto, ou um grupo fixo como “Salmos e Hinos”. A data é opcional.</p>
+      <div class="chips" id="repTipos" role="group" aria-label="Mostrar repertórios de"></div>
+      <input type="search" id="repFiltro" class="campo" placeholder="Buscar em todos os repertórios" aria-label="Buscar repertório">
       <p class="status" id="repMsg" aria-live="polite"></p>
       <div class="libgrid" id="repGrid"></div>
     </div>

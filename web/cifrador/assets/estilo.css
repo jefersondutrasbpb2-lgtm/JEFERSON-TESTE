@@ -1968,10 +1968,11 @@ body.culto.com-setas .cifra-grid {
 .filtros button[aria-pressed="true"] {
   background: var(--chord);
   border-color: var(--chord);
-  color: #fff;
+  color: var(--surface);
 }
 .filtros button[aria-pressed="true"] span {
-  color: #ffffffcc;
+  color: var(--surface);
+  opacity: 0.85;
 }
 .palco-cont {
   font-weight: 700;
@@ -1981,4 +1982,134 @@ body.culto.com-setas .cifra-grid {
   border: 1px solid var(--line);
   border-radius: var(--radius-pill);
   padding: 2px var(--space-4);
+}
+
+/* ===================== Repertórios por dia do culto ===================== */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+.chips button {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: var(--radius-pill);
+  padding: var(--space-3) var(--space-7);
+  font-weight: 700;
+  color: var(--ink);
+  min-height: 44px;
+}
+.chips button span {
+  color: var(--muted);
+  font-weight: 400;
+  margin-left: 2px;
+}
+.chips button[aria-pressed="true"] {
+  background: var(--chord);
+  border-color: var(--chord);
+  color: var(--surface);
+}
+.chips button[aria-pressed="true"] span {
+  color: var(--surface);
+  opacity: 0.85;
+}
+.libhead .menuwrap .menu {
+  min-width: 280px;
+}
+/* Quadradinho de calendário: dia grande, mês e dia da semana */
+.dia-tile {
+  width: 58px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--chord);
+  background: var(--surface);
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+.dia-tile small {
+  order: -1;
+  width: 100%;
+  text-align: center;
+  background: var(--chord);
+  color: var(--surface);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 2px 0;
+}
+.dia-tile b {
+  font-family: var(--display);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--ink);
+  margin-top: 3px;
+}
+.dia-tile span {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  padding-bottom: 4px;
+}
+.dia-tile.passou {
+  border-color: var(--line);
+}
+.dia-tile.passou small {
+  background: var(--muted);
+}
+.linha.rep .l-nome span {
+  line-height: 1.4;
+}
+.rep-musicas {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.quando {
+  font-style: normal;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.quando.vem {
+  color: var(--chord);
+}
+.linha.rep.destaque {
+  border: 2px solid var(--chord);
+  box-shadow: 0 4px 14px #2343cf1f;
+  padding-block: var(--space-6);
+}
+.linha.rep.destaque .dia-tile {
+  width: 68px;
+}
+.linha.rep.destaque .dia-tile b {
+  font-size: 30px;
+}
+.linha.passado {
+  opacity: 1;
+}
+.linha.passado strong {
+  color: var(--ink);
+}
+#repGrid .secao-tit:first-child {
+  margin-top: 0;
+}
+
+#repFiltro {
+  width: 100%;
+  max-width: 520px;
+}
+#repMsg:empty {
+  display: none;
+}
+#repGrid {
+  margin-top: var(--space-5);
 }

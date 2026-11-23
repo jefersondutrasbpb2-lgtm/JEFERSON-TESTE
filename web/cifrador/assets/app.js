@@ -2252,56 +2252,129 @@ async function repAtualizar() {
   }
   repAtual ? repItens() : repLista();
 }
+/* ---------- Lista de repertórios: separada por dia do culto ---------- */
+// O grupo vem do dia da semana da data (domingo, quinta, terça); sem data = pasta fixa.
+const TIPOS_REP = [
+    { id: "domingo", nome: "Domingo", dia: 0 },
+    { id: "quinta", nome: "Quinta", dia: 4 },
+    { id: "terca", nome: "Terça", dia: 2 },
+    { id: "pastas", nome: "Pastas" },
+    { id: "outros", nome: "Outros dias" },
+  ],
+  MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"],
+  SEMANA = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"],
+  diaDaSemana = (data) => new Date(data + "T12:00").getDay(),
+  tipoDoRep = (r) => {
+    if (!r.data) return "pastas";
+    const t = TIPOS_REP.find((x) => x.dia === diaDaSemana(r.data));
+    return t ? t.id : "outros";
+  };
+let repTipo = guardado.get("repTipo", null);
+function repCartao(r, hoje, destaque = !1) {
+  const n = r.itens.length,
+    pend = r.id.startsWith("t") || biblioteca.repertoriosPendentes().some((x) => x.rep.id === r.id),
+    nomes = r.itens.map((it) => (biblioteca.achar(it.id) || { title: "?" }).title),
+    d = r.data ? new Date(r.data + "T12:00") : null,
+    quando = !r.data ? "" : r.data === hoje ? "Hoje" : r.data > hoje ? "Próximo" : "Tocado",
+    tile = d
+      ? `<span class="dia-tile${r.data < hoje ? " passou" : ""}" aria-hidden="true"><b>${d.getDate()}</b><span>${MESES[d.getMonth()]}</span><small>${SEMANA[d.getDay()]}</small></span>`
+      : '<span class="pasta" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>';
+  return `<article class="linha rep${destaque ? " destaque" : ""}${r.data && r.data < hoje ? " passado" : ""}" data-id="${esc(r.id)}">${tile}<button class="l-nome linkbtn" data-a="abrir"><strong>${esc(r.nome)}</strong><span>${r.data ? `<em class="quando ${quando === "Tocado" ? "" : "vem"}">${quando}</em> · ${esc(new Date(r.data + "T12:00").toLocaleDateString("pt-BR"))} · ` : ""}${n} música${n === 1 ? "" : "s"}${pend ? ' · <span class="pend">só neste aparelho</span>' : ""}</span>${n ? `<span class="rep-musicas">${esc(nomes.slice(0, 4).join(" · ") + (n > 4 ? ` +${n - 4}` : ""))}</span>` : ""}</button><button class="btn primary" data-a="tocar"${n ? "" : " disabled"} aria-label="Tocar ${esc(r.nome)}">▶ Tocar</button></article>`;
+}
 function repLista() {
   (elemento("repLista").hidden = !1), (elemento("repEdit").hidden = !0);
   const hoje = dataLocal(new Date()),
-    lista = [...biblioteca.repertorios].sort((a, b) => {
-      const fa = a.data && a.data >= hoje,
-        fb = b.data && b.data >= hoje;
-      return fa !== fb
-        ? fa
-          ? -1
-          : 1
-        : fa
-          ? a.data.localeCompare(b.data)
-          : (b.data || "").localeCompare(a.data || "");
-    });
+    todos = [...biblioteca.repertorios],
+    favs = favoritas(),
+    conta = Object.fromEntries(TIPOS_REP.map((t) => [t.id, 0]));
+  for (const r of todos) conta[tipoDoRep(r)]++;
+  favs.length && conta.pastas++;
+  // Aba inicial: a escolhida antes; senão a do próximo culto; senão Domingo.
+  if (!repTipo || !conta[repTipo]) {
+    const prox = todos
+      .filter((r) => r.data && r.data >= hoje)
+      .sort((a, b) => a.data.localeCompare(b.data))[0];
+    repTipo = repTipo && repTipo !== "outros" ? repTipo : prox ? tipoDoRep(prox) : "domingo";
+  }
+  elemento("repTipos").innerHTML = TIPOS_REP.filter((t) => t.id !== "outros" || conta.outros)
+    .map(
+      (t) =>
+        `<button data-t="${t.id}" aria-pressed="${t.id === repTipo}">${t.nome} <span>${conta[t.id]}</span></button>`,
+    )
+    .join("");
   biblioteca.conectado === !1 &&
     repAviso("Sem conexão com o servidor. Mostrando a última cópia deste aparelho.");
+
   const filtro = semAcento(elemento("repFiltro").value.trim()),
-    visiveis = lista.filter(
-      (r) =>
-        !filtro ||
-        semAcento(
-          r.nome + " " + r.itens.map((it) => (biblioteca.achar(it.id) || { title: "" }).title).join(" "),
-        ).includes(filtro),
-    ),
-    favs = favoritas(),
-    pasta =
-      '<span class="pasta" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>',
-    linhaFav =
-      !filtro && favs.length
-        ? `<article class="linha fav" data-id="__fav"><span class="pasta" aria-hidden="true">★</span><button class="l-nome linkbtn" data-a="favs"><strong>Favoritas</strong><span>${favs.length} música${favs.length === 1 ? "" : "s"} · só neste aparelho</span></button><button class="btn primary" data-a="tocar">▶ Tocar</button></article>`
-        : "";
-  elemento("repGrid").innerHTML =
-    linhaFav +
-    (visiveis.length
-      ? visiveis
-          .map((r) => {
-            const n = r.itens.length,
-              pend = r.id.startsWith("t") || biblioteca.repertoriosPendentes().some((x) => x.rep.id === r.id);
-            return `<article class="linha${r.data && r.data < hoje ? " passado" : ""}" data-id="${esc(r.id)}">${pasta}<button class="l-nome linkbtn" data-a="abrir"><strong>${esc(r.nome)}</strong><span>${n} música${n === 1 ? "" : "s"}${r.data ? " · " + esc(dataBR(r.data)) : ""}${pend ? ' · <span class="pend">só neste aparelho</span>' : ""}</span></button><button class="btn primary" data-a="tocar"${n ? "" : " disabled"} aria-label="Tocar ${esc(r.nome)}">▶ Tocar</button></article>`;
-          })
-          .join("")
-      : filtro
-        ? '<p class="empty">Nenhum repertório com essa busca.</p>'
-        : '<p class="empty">Nenhum repertório ainda. Toque em “+ Novo” para montar o do próximo culto ou uma pasta como “Salmos e Hinos”.</p>');
+    combina = (r) =>
+      !filtro ||
+      semAcento(
+        r.nome + " " + r.itens.map((it) => (biblioteca.achar(it.id) || { title: "" }).title).join(" "),
+      ).includes(filtro);
+  // Buscando: procura em todos os grupos.
+  const lista = todos.filter((r) => (filtro ? combina(r) : tipoDoRep(r) === repTipo));
+  let html = "";
+  if (filtro) {
+    html = lista.length
+      ? `<div class="lista">${lista
+          .sort((a, b) => (b.data || "").localeCompare(a.data || ""))
+          .map((r) => repCartao(r, hoje))
+          .join("")}</div>`
+      : '<p class="empty">Nenhum repertório com essa busca.</p>';
+  } else if (repTipo === "pastas") {
+    const fav = favs.length
+      ? `<article class="linha fav" data-id="__fav"><span class="pasta" aria-hidden="true">★</span><button class="l-nome linkbtn" data-a="favs"><strong>Favoritas</strong><span>${favs.length} música${favs.length === 1 ? "" : "s"} · só neste aparelho</span></button><button class="btn primary" data-a="tocar">▶ Tocar</button></article>`
+      : "";
+    const pastas = lista.sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+    html =
+      fav || pastas.length
+        ? `<div class="lista">${fav}${pastas.map((r) => repCartao(r, hoje)).join("")}</div>`
+        : '<p class="empty">Nenhuma pasta ainda. Pastas são grupos fixos, sem data, como “Salmos e Hinos”.</p>';
+  } else {
+    const futuros = lista.filter((r) => r.data >= hoje).sort((a, b) => a.data.localeCompare(b.data)),
+      passados = lista.filter((r) => r.data < hoje).sort((a, b) => b.data.localeCompare(a.data)),
+      nomeTipo = TIPOS_REP.find((t) => t.id === repTipo).nome.toLowerCase();
+    if (futuros.length)
+      html +=
+        `<h3 class="secao-tit">Próximo culto</h3><div class="lista">${repCartao(futuros[0], hoje, !0)}</div>` +
+        (futuros.length > 1
+          ? `<h3 class="secao-tit">Depois</h3><div class="lista">${futuros
+              .slice(1)
+              .map((r) => repCartao(r, hoje))
+              .join("")}</div>`
+          : "");
+    else if (repTipo !== "outros")
+      html += `<p class="empty">Nenhum culto de ${nomeTipo} marcado ainda. <button class="linkbtn" data-novo="${TIPOS_REP.find((t) => t.id === repTipo).dia}">Montar o do próximo ${nomeTipo === "domingo" ? "domingo" : nomeTipo === "quinta" ? "quinta-feira" : "terça-feira"}</button></p>`;
+    // Já tocados, agrupados por mês
+    let mes = "";
+    for (const r of passados) {
+      const d = new Date(r.data + "T12:00"),
+        m = d.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+      if (m !== mes)
+        (html += `${mes ? "</div>" : ""}<h3 class="secao-tit">Tocados em ${m}</h3><div class="lista">`),
+          (mes = m);
+      html += repCartao(r, hoje);
+    }
+    mes && (html += "</div>");
+  }
+  elemento("repGrid").innerHTML = html;
 }
+elemento("repTipos").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-t]");
+  b &&
+    ((repTipo = b.dataset.t),
+    guardado.set("repTipo", repTipo),
+    (elemento("repFiltro").value = ""),
+    repLista());
+});
 elemento("repFiltro").addEventListener("input", () => repLista());
 elemento("repGrid").addEventListener("click", (e) => {
+  const novo = e.target.closest("button[data-novo]");
+  if (novo) return novoRepertorio(novo.dataset.novo);
   const b = e.target.closest("button[data-a]");
   if (!b) return;
-  const id = b.closest(".linha").dataset.id;
+  const id = b.closest(".linha") && b.closest(".linha").dataset.id;
+  if (!id) return;
   if (id === "__fav") return b.dataset.a === "tocar" ? tocarFavoritas() : mostrarAba("busca");
   const r = biblioteca.repertorios.find((x) => x.id === id);
   r && (b.dataset.a === "tocar" ? r.itens.length && entrarCulto(structuredClone(r), 0) : repAbrir(r));
@@ -2319,16 +2392,43 @@ function repAbrir(r) {
     repItens(),
     scrollTo(0, 0);
 }
-elemento("repNovo").onclick = () => {
+/** Próxima data (hoje ou depois) que cai no dia da semana pedido (0 = domingo). */
+function proximoDia(dia) {
+  const dt = new Date();
+  dt.setDate(dt.getDate() + ((dia - dt.getDay() + 7) % 7));
+  return dataLocal(dt);
+}
+const NOMES_CULTO = { 0: "Culto de domingo", 4: "Culto de quinta-feira", 2: "Culto de terça-feira" };
+function novoRepertorio(opcao) {
+  fecharMenuNovo();
+  const dia = opcao === "outro" || opcao === "pasta" ? null : Number(opcao),
+    data = dia == null ? (opcao === "outro" ? dataLocal(new Date()) : "") : proximoDia(dia);
+  // Já existe repertório nessa data: abre ele em vez de criar outro igual.
+  const existente = data && opcao !== "outro" && biblioteca.repertorios.find((r) => r.data === data);
+  if (existente) return repAbrir(existente), repAviso("");
   repAbrir({
     id: null,
-    nome: "Novo repertório",
-    data: "",
+    nome: dia == null ? (opcao === "pasta" ? "Nova pasta" : "Culto especial") : NOMES_CULTO[dia],
+    data,
     itens: [],
-  }),
-    elemento("repNome").select(),
-    repMudou();
+  });
+  opcao === "outro" ? elemento("repData").focus() : elemento("repNome").select();
+  repMudou();
+}
+function fecharMenuNovo() {
+  (elemento("repNovoMenu").hidden = !0), elemento("repNovo").setAttribute("aria-expanded", "false");
+}
+elemento("repNovo").onclick = (e) => {
+  e.stopPropagation();
+  const m = elemento("repNovoMenu"),
+    abrir = m.hidden;
+  (m.hidden = !abrir), elemento("repNovo").setAttribute("aria-expanded", String(abrir));
 };
+elemento("repNovoMenu").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-dia]");
+  b && novoRepertorio(b.dataset.dia);
+});
+document.addEventListener("click", (e) => e.target.closest("#repNovo, #repNovoMenu") || fecharMenuNovo());
 elemento("repVoltar").onclick = () => {
   (repAtual = null), repLista();
 };

@@ -273,6 +273,17 @@ export const biblioteca = {
     guardar(CHAVE_REPERTORIOS, this.repertorios);
   },
 
+  /** Repertórios excluídos que ainda dá para recuperar (lixeira e backups diários do servidor). */
+  async repertoriosExcluidos() {
+    return (await chamar("excluidos")).excluidos || [];
+  },
+
+  async restaurarRepertorio(id) {
+    const r = await chamar("restaurar_repertorio", { id });
+    this._colocarRep(r.repertorio);
+    return r.repertorio;
+  },
+
   async restaurar(id) {
     const r = await chamar("restaurar", { id });
     this._colocar(r.cifra);

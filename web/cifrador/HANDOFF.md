@@ -340,6 +340,16 @@ Com `prefers-reduced-motion: reduce`, as transições de barra e progresso são 
 - **+ Novo:** menu Culto de domingo / quinta-feira / terça-feira (data = próximo dia certo; se já
   houver repertório nessa data, abre ele), Outro culto (escolhe a data) e Pasta sem data.
 
+## 10f. Repertórios excluídos
+
+- Excluir repertório agora manda para `lixeira_rep` (30 dias), como as cifras.
+- `GET api.php?acao=excluidos` lista os que não existem mais: da lixeira e de **todos os backups
+  diários** (`backup-AAAA-MM-DD.php`, 60 dias), ficando com a versão mais recente de cada um.
+  `POST acao=restaurar_repertorio {id}` traz de volta.
+- No app: link "Recuperar repertórios excluídos" no fim da aba Repertórios.
+- Limite: o backup é feito uma vez por dia, antes da primeira alteração do dia. Repertório criado e
+  excluído no mesmo dia (antes da lixeira existir) não aparece em nenhum backup.
+
 ## 11. Código
 
 - `assets/app.js`: os nomes do arquivo inteiro são legíveis (`renderizar`, `abrirCifra`,

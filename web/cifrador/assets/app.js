@@ -1,5 +1,5 @@
 import { textoDoPdf, separarCabecalho } from "./importar.js?v=0f527f0755";
-import { biblioteca } from "./biblioteca.js?v=f63588bc71";
+import { biblioteca } from "./biblioteca.js?v=9a6531dc5b";
 (function () {
   const t = document.createElement("link").relList;
   if (t && t.supports && t.supports("modulepreload")) return;
@@ -2357,7 +2357,39 @@ function repLista() {
     }
     mes && (html += "</div>");
   }
-  elemento("repGrid").innerHTML = html;
+  elemento("repGrid").innerHTML =
+    html +
+    '<p class="rep-rec"><button class="linkbtn" data-rec="lista">Recuperar repertórios excluídos</button></p>';
+}
+/** Lista os repertórios excluídos (lixeira e backups diários) com o botão Restaurar. */
+async function repExcluidos() {
+  const hoje = dataLocal(new Date());
+  elemento("repGrid").innerHTML = '<p class="hint">Procurando nos backups…</p>';
+  let lista;
+  try {
+    lista = await biblioteca.repertoriosExcluidos();
+  } catch (erro) {
+    elemento("repGrid").innerHTML =
+      `<p class="empty">${esc(erro.codigo === "offline" ? "Sem conexão com o servidor." : erro.message)}</p>`;
+    return;
+  }
+  const voltar = '<p><button class="linkbtn" data-rec="voltar">‹ Voltar aos repertórios</button></p>';
+  elemento("repGrid").innerHTML =
+    voltar +
+    `<h3 class="secao-tit">Repertórios excluídos (${lista.length})</h3>` +
+    (lista.length
+      ? `<p class="hint">Encontrados na lixeira e nos backups diários do servidor (até 60 dias). Restaurar traz de volta a última versão salva.</p><div class="lista">${lista
+          .map((r) => {
+            const d = r.data ? new Date(r.data + "T12:00") : null,
+              n = (r.itens || []).length,
+              tile = d
+                ? `<span class="dia-tile${r.data < hoje ? " passou" : ""}" aria-hidden="true"><b>${d.getDate()}</b><span>${MESES[d.getMonth()]}</span><small>${SEMANA[d.getDay()]}</small></span>`
+                : '<span class="pasta" aria-hidden="true">📁</span>',
+              nomes = (r.itens || []).map((it) => (biblioteca.achar(it.id) || { title: "?" }).title);
+            return `<article class="linha rep" data-id="${esc(r.id)}">${tile}<div class="l-nome"><strong>${esc(r.nome)}</strong><span>${r.data ? esc(d.toLocaleDateString("pt-BR")) + " · " : ""}${n} música${n === 1 ? "" : "s"} · ${esc(r.origem)}</span>${n ? `<span class="rep-musicas">${esc(nomes.slice(0, 4).join(" · ") + (n > 4 ? ` +${n - 4}` : ""))}</span>` : ""}</div><button class="btn primary" data-rec="restaurar">Restaurar</button></article>`;
+          })
+          .join("")}</div>`
+      : '<p class="empty">Nenhum repertório excluído encontrado nos backups.</p>');
 }
 elemento("repTipos").addEventListener("click", (e) => {
   const b = e.target.closest("button[data-t]");
@@ -2371,6 +2403,17 @@ elemento("repFiltro").addEventListener("input", () => repLista());
 elemento("repGrid").addEventListener("click", (e) => {
   const novo = e.target.closest("button[data-novo]");
   if (novo) return novoRepertorio(novo.dataset.novo);
+  const rec = e.target.closest("button[data-rec]");
+  if (rec) {
+    if (rec.dataset.rec === "lista") return repExcluidos();
+    if (rec.dataset.rec === "voltar") return repLista();
+    const id = rec.closest(".linha").dataset.id;
+    rec.disabled = !0;
+    return biblioteca
+      .restaurarRepertorio(id)
+      .then((r) => (repAviso(`“${r.nome}” voltou para a lista.`), repExcluidos()))
+      .catch((erro) => ((rec.disabled = !1), repAviso(erro.message)));
+  }
   const b = e.target.closest("button[data-a]");
   if (!b) return;
   const id = b.closest(".linha") && b.closest(".linha").dataset.id;

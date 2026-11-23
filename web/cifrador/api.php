@@ -9,7 +9,10 @@
 //   POST api.php?acao=restaurar    {id}       tira da lixeira
 //   POST api.php?acao=gravar_repertorio  {repertorio: {id?, nome, data, itens: [{id, semis}]}, antes}
 //                                  Como nas cifras: se outra pessoa gravou no meio tempo, responde 409.
-//   POST api.php?acao=apagar_repertorio  {id}
+//   POST api.php?acao=apagar_repertorio  {id}   o repertório vai para a lixeira (30 dias)
+//   GET  api.php?acao=excluidos        repertórios que não existem mais: os da lixeira e os que só
+//                                      aparecem nos backups diários (de antes da lixeira existir)
+//   POST api.php?acao=restaurar_repertorio  {id}  traz de volta a versão mais recente encontrada
 //
 // Os dados ficam num arquivo fora da pasta pública quando dá (domains/<domínio>/cifras-dados/);
 // se não der, em _dados/ ao lado, protegido. O arquivo começa com um trecho PHP que encerra a
@@ -89,11 +92,13 @@ function banco(?callable $mudar = null): array
         $banco['cifras'] = $banco['cifras'] ?? [];
         $banco['lixeira'] = $banco['lixeira'] ?? [];
         $banco['repertorios'] = $banco['repertorios'] ?? [];
+        $banco['lixeira_rep'] = $banco['lixeira_rep'] ?? [];
         if (!$mudar) return [$banco, null];
         backupDoDia($pasta, $arquivo);
         [$banco, $resposta] = $mudar($banco);
         $limite = (time() - DIAS_NA_LIXEIRA * 86400) * 1000;
         $banco['lixeira'] = array_filter($banco['lixeira'], fn ($c) => ($c['apagada'] ?? 0) >= $limite);
+        $banco['lixeira_rep'] = array_filter($banco['lixeira_rep'], fn ($r) => ($r['apagada'] ?? 0) >= $limite);
         $json = json_encode($banco, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         $temporario = $arquivo . '.tmp';
         file_put_contents($temporario, CABECA . $json);
@@ -141,6 +146,10 @@ if ($metodo === 'GET' && $acao === 'lista') {
         'cifras' => $banco['cifras'] ?: new stdClass(),
         'repertorios' => $banco['repertorios'] ?: new stdClass(),
     ]);
+}
+if ($metodo === 'GET' && $acao === 'excluidos') {
+    [$banco] = banco();
+    responder(200, ['excluidos' => repertoriosExcluidos($banco)]);
 }
 if ($metodo !== 'POST') falhar(405, 'metodo', 'Use POST.');
 
@@ -243,10 +252,59 @@ if ($acao === 'apagar_repertorio') {
     $id = $pedido['id'] ?? null;
     if (!idValido($id)) falhar(400, 'invalido', 'Identificador inválido.');
     banco(function (array $banco) use ($id) {
-        unset($banco['repertorios'][$id]);
+        if (isset($banco['repertorios'][$id])) {
+            $banco['lixeira_rep'][$id] = $banco['repertorios'][$id] + ['apagada' => agora()];
+            unset($banco['repertorios'][$id]);
+        }
         return [$banco, null];
     });
     responder(200, ['ok' => true]);
+}
+
+/**
+ * Repertórios que não existem mais no banco atual: os da lixeira e os que aparecem nos backups
+ * diários. De cada um fica a versão mais recente (maior "updated"), com a origem.
+ */
+function repertoriosExcluidos(array $banco): array
+{
+    $achados = [];
+    $guardar = function (array $r, string $origem) use (&$achados, $banco) {
+        $id = $r['id'] ?? null;
+        if (!is_string($id) || isset($banco['repertorios'][$id])) return;
+        if (!isset($achados[$id]) || ($r['updated'] ?? 0) > ($achados[$id]['updated'] ?? 0)) {
+            $achados[$id] = $r + ['origem' => $origem];
+            $achados[$id]['origem'] = $origem;
+        }
+    };
+    foreach (glob(pastaDados() . '/backup-*.php') ?: [] as $arquivo) {
+        $copia = lerArquivo($arquivo);
+        $dia = substr(basename($arquivo, '.php'), 7);
+        foreach (($copia['repertorios'] ?? []) as $r) if (is_array($r)) $guardar($r, "backup de $dia");
+    }
+    foreach ($banco['lixeira_rep'] as $r) {
+        // a lixeira é a versão mais nova: guarda por cima do que veio dos backups
+        $id = $r['id'] ?? null;
+        if (is_string($id) && !isset($banco['repertorios'][$id])) $achados[$id] = $r + ['origem' => 'lixeira'];
+    }
+    $lista = array_values($achados);
+    usort($lista, fn ($a, $b) => strcmp($b['data'] ?? '', $a['data'] ?? '') ?: (($b['updated'] ?? 0) <=> ($a['updated'] ?? 0)));
+    return $lista;
+}
+
+if ($acao === 'restaurar_repertorio') {
+    $id = $pedido['id'] ?? null;
+    if (!idValido($id)) falhar(400, 'invalido', 'Identificador inválido.');
+    [, $resposta] = banco(function (array $banco) use ($id) {
+        if (isset($banco['repertorios'][$id])) falhar(409, 'existe', 'Esse repertório já está na lista.');
+        $achado = null;
+        foreach (repertoriosExcluidos($banco) as $r) if ($r['id'] === $id) $achado = $r;
+        if (!$achado) falhar(404, 'nao_achei', 'Não encontrei esse repertório nos backups nem na lixeira.');
+        unset($achado['origem'], $achado['apagada'], $banco['lixeira_rep'][$id]);
+        $achado['updated'] = agora();
+        $banco['repertorios'][$id] = $achado;
+        return [$banco, $achado];
+    });
+    responder(200, ['ok' => true, 'repertorio' => $resposta]);
 }
 
 falhar(400, 'acao', 'Ação desconhecida.');

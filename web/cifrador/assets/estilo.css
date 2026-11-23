@@ -2122,3 +2122,49 @@ body.culto.com-setas .cifra-grid {
   color: var(--muted);
   text-decoration: underline;
 }
+
+/* Cifras em linhas compactas (como a Busca) */
+#libGrid {
+  display: block;
+}
+.del-linha {
+  margin: var(--space-3) 0 0;
+}
+/* Repertório: sem culto marcado */
+.rep-vazio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  background: var(--surface);
+  border: 1px dashed var(--chord);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6) var(--space-7);
+}
+.rep-vazio p {
+  margin: 0;
+  color: var(--muted);
+}
+.rep-vazio .btn::first-letter {
+  text-transform: uppercase;
+}
+/* Repertório aberto: nome e dia por extenso */
+.rep-cab {
+  margin: var(--space-6) 0 var(--space-2);
+}
+.rep-cab h2 {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(22px, 3vw, 30px);
+  margin: 0;
+  line-height: 1.15;
+}
+.rep-cab p {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-weight: 700;
+}
+.rep-cab p::first-letter {
+  text-transform: uppercase;
+}

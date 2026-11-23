@@ -1495,7 +1495,10 @@ function renderizarBiblioteca() {
         ...t,
         pendente: !0,
       })),
-      ...[...biblioteca.cifras].sort(ordemDaLista),
+      ...biblioteca.cifras
+        .filter(passaFiltro)
+        .filter((t) => !busca || semAcento(t.title + " " + t.artist + " " + t.text).includes(busca))
+        .sort(ordemDaLista),
     ]
       .filter(passaFiltro)
       .filter((t) => !busca || semAcento(t.title + " " + t.artist + " " + t.text).includes(busca));
@@ -1507,13 +1510,8 @@ function renderizarBiblioteca() {
         : '<p class="empty">Nenhuma cifra salva ainda. No editor, toque em “Salvar na biblioteca”.</p>';
     return;
   }
-  elemento("libGrid").innerHTML = lista
-    .map((t) => {
-      const g = lerCifra(t.text),
-        n = [...new Set(acordesDaCifra(g).map((s) => nomeAcorde(s)))].slice(0, 8).join("  ");
-      return `<article class="song" data-id="${esc(t.id)}"><div class="songtop"><h4><button class="linkbtn" data-a="open">${esc(t.title)}</button></h4><span class="tom" title="Tom">${esc(tomDe(t))}</span></div><div class="meta">${esc(t.artist || "Artista não informado")}${t.pendente ? ' · <span class="pend">só neste aparelho</span>' : ""}</div><div class="chs">${esc(n)}</div><div class="row"><button class="btn primary" data-a="play">▶ Tocar</button><button class="btn" data-a="open">Abrir e editar</button><button class="btn ghost" data-a="del">Excluir</button></div></article>`;
-    })
-    .join("");
+  // Mesma linha compacta da Busca (nome, artista, tom, ▶). Excluir fica só dentro do editor da cifra.
+  elemento("libGrid").innerHTML = `<div class="lista">${lista.map(linhaCifra).join("")}</div>`;
 }
 async function libAtualizar() {
   try {
@@ -1549,36 +1547,39 @@ elemento("libMsg").addEventListener("click", async (e) => {
   }
   renderizarBiblioteca();
 });
-elemento("libGrid").addEventListener("click", async (e) => {
-  const t = e.target.closest("button");
+elemento("libGrid").addEventListener("click", (e) => {
+  const t = e.target.closest("button[data-a]");
   if (!t) return;
-  const n = t.closest(".song").dataset.id,
-    i = biblioteca.achar(n);
-  if (t.dataset.a === "open" && i)
-    return (
-      abrirCifra(i),
-      mostrarEditor(!window.matchMedia("(max-width: 860px)").matches),
-      mostrarAba("cifra"),
-      scrollTo(0, 0)
-    );
-  if (t.dataset.a === "play" && i) return abrirCifra(i), entrarCulto();
-  if (t.dataset.a === "del")
-    return (
-      (t.textContent = "Confirmar exclusão"), (t.dataset.a = "del2"), void (t.style.color = "var(--danger)")
-    );
-  if (t.dataset.a !== "del2" || !i) return;
-  t.disabled = !0;
+  const i = biblioteca.achar(t.closest(".linha").dataset.id);
+  if (!i) return;
+  if (t.dataset.a === "tocar") return abrirCifra(i), entrarCulto();
+  abrirCifra(i),
+    mostrarEditor(!window.matchMedia("(max-width: 860px)").matches),
+    mostrarAba("cifra"),
+    scrollTo(0, 0);
+});
+// Excluir: só dentro do editor, com confirmação; depois mostra "Desfazer" na lista de Cifras.
+elemento("delBtn").onclick = async () => {
+  const b = elemento("delBtn"),
+    id = estado.songId,
+    c = id && biblioteca.achar(id);
+  if (!c) return avisoEditor("Essa cifra ainda não foi salva na biblioteca.");
+  if (b.dataset.conf !== "1") return (b.dataset.conf = "1"), (b.textContent = "Toque de novo para excluir");
+  (b.dataset.conf = ""), (b.textContent = "Excluir cifra"), (b.disabled = !0);
   try {
-    const pend = biblioteca.pendentes().some((r) => r.id === n) && !biblioteca.cifras.some((r) => r.id === n);
-    await biblioteca.apagar(n), estado.songId === n && ((estado.songId = null), (estado.songBase = null));
-    libAviso(`“${i.title}” foi excluída.`, pend ? null : n);
+    const pend =
+      biblioteca.pendentes().some((r) => r.id === id) && !biblioteca.cifras.some((r) => r.id === id);
+    await biblioteca.apagar(id);
+    abrirCifra({ title: "", artist: "", text: "", id: null }), mostrarAba("lib"), scrollTo(0, 0);
+    libAviso(`“${c.title}” foi excluída.`, pend ? null : id), renderizarBiblioteca();
   } catch (erro) {
-    libAviso(
+    avisoEditor(
       erro.codigo === "offline" ? "Sem conexão com o servidor: não deu para excluir agora." : erro.message,
     );
+  } finally {
+    b.disabled = !1;
   }
-  renderizarBiblioteca();
-});
+};
 document.addEventListener("visibilitychange", () => {
   !document.hidden && !elemento("tab-lib").hidden && libAtualizar();
 });
@@ -2343,8 +2344,11 @@ function repLista() {
               .map((r) => repCartao(r, hoje))
               .join("")}</div>`
           : "");
-    else if (repTipo !== "outros")
-      html += `<p class="empty">Nenhum culto de ${nomeTipo} marcado ainda. <button class="linkbtn" data-novo="${TIPOS_REP.find((t) => t.id === repTipo).dia}">Montar o do próximo ${nomeTipo === "domingo" ? "domingo" : nomeTipo === "quinta" ? "quinta-feira" : "terça-feira"}</button></p>`;
+    else if (repTipo !== "outros") {
+      const dia = TIPOS_REP.find((t) => t.id === repTipo).dia,
+        prox = new Date(proximoDia(dia) + "T12:00");
+      html += `<div class="rep-vazio"><p>Nenhum culto de ${nomeTipo} marcado ainda.</p><button class="btn primary" data-novo="${dia}">+ Montar o de ${esc(prox.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "2-digit" }))}</button></div>`;
+    }
     // Já tocados, agrupados por mês
     let mes = "";
     for (const r of passados) {
@@ -2475,8 +2479,19 @@ document.addEventListener("click", (e) => e.target.closest("#repNovo, #repNovoMe
 elemento("repVoltar").onclick = () => {
   (repAtual = null), repLista();
 };
+function repTitulo() {
+  const r = repAtual,
+    n = r.itens.length,
+    d = r.data ? new Date(r.data + "T12:00") : null;
+  elemento("repTit").textContent = r.nome || "Repertório";
+  elemento("repSub").textContent =
+    (d
+      ? d.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "2-digit", year: "numeric" })
+      : "Pasta sem data") + ` · ${n} música${n === 1 ? "" : "s"}`;
+}
 function repItens() {
   const r = repAtual;
+  repTitulo();
   elemento("repTocar").disabled = !r.itens.length;
   elemento("repItens").innerHTML = r.itens.length
     ? r.itens
@@ -2531,7 +2546,10 @@ elemento("repSug").addEventListener("click", (e) => {
 });
 for (const id of ["repNome", "repData"])
   elemento(id).addEventListener("input", () => {
-    (repAtual.nome = elemento("repNome").value), (repAtual.data = elemento("repData").value), repMudou();
+    (repAtual.nome = elemento("repNome").value),
+      (repAtual.data = elemento("repData").value),
+      repTitulo(),
+      repMudou();
   });
 function repMudou() {
   clearTimeout(repTimer), (elemento("repSalvo").textContent = "Salvando…");
@@ -2591,7 +2609,13 @@ let filtroTipo = guardado.get("filtroTipo", "todas");
 const passaFiltro = (c) => !!c && (filtroTipo === "todas" || (filtroTipo === "hinos") === ehHino(c));
 // Hinos pela numeração do hinário; o resto em ordem alfabética.
 function ordemDaLista(a, b) {
-  if (filtroTipo === "hinos" && ehHino(a) && ehHino(b)) return numeroHino(a) - numeroHino(b);
+  // Uma regra só para todos os pares (senão a ordenação embaralha): no filtro de hinos, primeiro o
+  // número do hino (quem não tem número vai para o fim); depois, e nos outros filtros, o nome.
+  if (filtroTipo === "hinos") {
+    const na = ehHino(a) ? numeroHino(a) : 1e9,
+      nb = ehHino(b) ? numeroHino(b) : 1e9;
+    if (na !== nb) return na - nb;
+  }
   return a.title.localeCompare(b.title, "pt-BR", { sensitivity: "base" });
 }
 function marcarFiltros() {
@@ -2657,7 +2681,9 @@ function tocarFavoritas() {
 
 /* ===================== Busca (tela inicial) ===================== */
 function linhaCifra(c) {
-  return `<article class="linha" data-id="${esc(c.id)}"><button class="l-nome linkbtn" data-a="abrir"><strong>${esc(c.title)}</strong><span>${esc(c.artist || "Artista não informado")}</span></button><span class="tom" title="Tom">${esc(tomDe(c))}</span><button class="btn sq" data-a="tocar" aria-label="Tocar ${esc(c.title)}">▶</button></article>`;
+  const pend =
+    biblioteca.pendentes().some((p) => p.id === c.id) && !biblioteca.cifras.some((x) => x.id === c.id);
+  return `<article class="linha" data-id="${esc(c.id)}"><button class="l-nome linkbtn" data-a="abrir"><strong>${esc(c.title)}</strong><span>${esc(c.artist || "Artista não informado")}${pend ? ' · <span class="pend">só neste aparelho</span>' : ""}</span></button><span class="tom" title="Tom">${esc(tomDe(c))}</span><button class="btn sq" data-a="tocar" aria-label="Tocar ${esc(c.title)}">▶</button></article>`;
 }
 function buscaRender() {
   marcarFiltros();

@@ -17,8 +17,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap">
-  <script type="module" crossorigin src="./assets/app.js?v=85114cb6c6"></script>
-  <link rel="stylesheet" crossorigin href="./assets/estilo.css?v=15efd8a5d3">
+  <script type="module" crossorigin src="./assets/app.js?v=d8633b73a1"></script>
+  <link rel="stylesheet" crossorigin href="./assets/estilo.css?v=c80262ab75">
 </head>
 <body>
 
@@ -122,6 +122,7 @@ Em             C
         <button class="btn" id="copyTrBtn" title="Copia o texto já no tom escolhido">Copiar no tom atual</button>
       </div>
       <p class="status" id="edStatus" aria-live="polite"></p>
+      <p class="del-linha"><button class="btn ghost perigo" id="delBtn">Excluir cifra</button></p>
       <details class="dica" open>
         <summary>Como trazer uma cifra</summary>
         <ul>
@@ -214,6 +215,7 @@ Em             C
         <span class="sp"></span>
         <button class="btn" id="repImprimir">Imprimir</button>
       </div>
+      <div class="rep-cab"><h2 id="repTit">Repertório</h2><p id="repSub"></p></div>
       <div class="repform">
         <label>Nome<input type="text" id="repNome" placeholder="Culto de domingo à noite"></label>
         <label>Data (opcional)<input type="date" id="repData"></label>

@@ -148,7 +148,7 @@ button {
   font-weight: 700;
   color: var(--muted);
 }
-.tabs button[aria-selected="true"] {
+.tabs button[aria-current="page"] {
   background: var(--surface);
   color: var(--ink);
   box-shadow: 0 1px 2px #0000001f;
@@ -553,6 +553,7 @@ textarea {
   gap: var(--space-6);
   min-width: 0;
 }
+.panel h1,
 .panel h2 {
   font-family: var(--display);
   font-weight: 800;
@@ -884,6 +885,7 @@ textarea {
   justify-content: space-between;
   gap: var(--space-4);
 }
+.libhead h1,
 .libhead h2 {
   font-family: var(--display);
   font-weight: 800;
@@ -1354,7 +1356,7 @@ body.culto.ajuste.ocioso {
 .nav .tabs button:hover {
   background: var(--surface-2);
 }
-.nav .tabs button[aria-selected="true"] {
+.nav .tabs button[aria-current="page"] {
   background: var(--chord-soft);
   color: var(--chord);
   box-shadow: none;
@@ -1756,10 +1758,10 @@ body.culto.com-setas .cifra-grid {
     text-align: center;
     justify-content: center;
   }
-  .nav .tabs button[aria-selected="true"] {
+  .nav .tabs button[aria-current="page"] {
     background: none;
   }
-  .nav .tabs button[aria-selected="true"] .ico {
+  .nav .tabs button[aria-current="page"] .ico {
     stroke-width: 2.3;
   }
   .principal {
@@ -2153,7 +2155,7 @@ body.culto.com-setas .cifra-grid {
 .rep-cab {
   margin: var(--space-6) 0 var(--space-2);
 }
-.rep-cab h2 {
+.rep-cab h1 {
   font-family: var(--display);
   font-weight: 800;
   font-size: clamp(22px, 3vw, 30px);
@@ -2167,4 +2169,103 @@ body.culto.com-setas .cifra-grid {
 }
 .rep-cab p::first-letter {
   text-transform: uppercase;
+}
+
+
+/* ===================== Acessibilidade ===================== */
+:root {
+  --line-campo: #7f88a1; /* borda de campo de texto: 3,5:1 sobre branco */
+}
+:root[data-theme="dark"] {
+  --line-campo: #68729a;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --line-campo: #68729a;
+  }
+}
+/* Campos de texto com borda visível (1.4.11); botões têm texto e continuam com a borda clara */
+input[type="text"],
+input[type="search"],
+input[type="date"],
+input[type="url"],
+select,
+textarea,
+.busca-campo,
+.campo,
+.acedit input {
+  border-color: var(--line-campo) !important;
+}
+.busca-campo input {
+  border: 0 !important;
+}
+/* Anel de foco também no campo grande da busca (2.4.7) */
+.busca-campo:focus-within {
+  border-color: var(--chord) !important;
+  box-shadow: 0 0 0 3px var(--chord-soft), 0 0 0 4px var(--chord);
+}
+/* Título que recebe o foco ao trocar de tela: sem anel ao clicar, com anel pelo teclado */
+h1[tabindex="-1"]:focus {
+  outline: none;
+}
+h1[tabindex="-1"]:focus-visible {
+  outline: 2px solid var(--chord);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+.libhead h1,
+.panel h1 {
+  font-family: var(--display);
+  font-weight: 800;
+  margin: 0;
+}
+.libhead h1 {
+  font-size: 24px;
+}
+.busca-marca {
+  margin-top: 0;
+}
+/* Pular para o conteúdo (2.4.1): aparece no primeiro Tab */
+.pular {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  position: absolute;
+  left: var(--space-3);
+  top: -100px;
+  z-index: 100;
+  background: var(--chord);
+  color: var(--surface);
+  font-weight: 700;
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+}
+.pular:focus {
+  top: var(--space-3);
+}
+#principal:focus {
+  outline: none;
+}
+/* Alvos de toque maiores (2.5.5) */
+.filtros button,
+.chips button {
+  min-height: 44px;
+}
+.busca-dica .linkbtn,
+.rep-rec .linkbtn,
+#buscaRes .empty .linkbtn,
+.rep-vazio .linkbtn {
+  min-height: 44px;
+  padding: 0 var(--space-2);
+  display: inline-flex;
+  align-items: center;
+}
+.dcard .cyc button {
+  width: 44px !important;
+  height: 40px !important;
+}
+.palco-pos button {
+  width: 28px;
+  height: 28px;
 }

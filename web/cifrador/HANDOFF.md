@@ -350,6 +350,17 @@ Com `prefers-reduced-motion: reduce`, as transições de barra e progresso são 
 - Limite: o backup é feito uma vez por dia, antes da primeira alteração do dia. Repertório criado e
   excluído no mesmo dia (antes da lixeira existir) não aparece em nenhum backup.
 
+## 10g. Acessibilidade (auditoria de 23/11/2026)
+
+- axe-core 4.10 (wcag2a/aa, wcag21a/aa e best-practice): 0 problemas em todas as telas, nos modos claro e escuro.
+- Campos de texto com borda `--line-campo` (3,5:1 claro, 3,7:1 escuro); anel de foco na busca.
+- Uma h1 por tela (Busca, Cifras, Repertórios, repertório aberto, cifra, Áudio); subtítulos `.secao-tit` em h2.
+- "Pular para o conteúdo" no primeiro Tab (`#principal`).
+- Menu lateral: botões com `aria-current="page"` (não é mais tablist).
+- Foco: ao trocar de tela, abrir cifra ou repertório, vai para o h1 da tela (`focarTitulo`, só depois da abertura do app).
+- Menus "+ Repertório" e "+ Novo": foco na 1ª opção, ↑ ↓, Esc fecha e volta ao botão, Tab fecha.
+- Alvos de toque de 44px no celular (filtros, links, ‹ › dos desenhos; bolinhas do palco com 28px).
+
 ## 11. Código
 
 - `assets/app.js`: os nomes do arquivo inteiro são legíveis (`renderizar`, `abrirCifra`,

@@ -1587,20 +1587,34 @@ function mostrarAba(e) {
   const atual = [...document.querySelectorAll(".view")].find((t) => !t.hidden);
   atual && e === "cifra" && atual.id !== "tab-cifra" && (estado.abaAnterior = atual.id.slice(4));
   document.querySelectorAll(".view").forEach((t) => (t.hidden = t.id !== "tab-" + e)),
-    document
-      .querySelectorAll(".tabs button")
-      .forEach((t) =>
-        t.setAttribute(
-          "aria-selected",
-          String(t.dataset.tab === (e === "cifra" ? estado.abaAnterior || "lib" : e)),
-        ),
-      ),
+    document.querySelectorAll(".tabs button").forEach((t) => {
+      t.dataset.tab === (e === "cifra" ? estado.abaAnterior || "lib" : e)
+        ? t.setAttribute("aria-current", "page")
+        : t.removeAttribute("aria-current");
+    }),
     e !== "cifra" && rolando && rolar(!1),
     e === "lib" && libAtualizar(),
     e === "busca" && buscaAtualizar(),
     e === "culto" && repAtualizar(),
     e !== "cifra" && culto && sairCulto(),
-    guardado.set("tab", e);
+    guardado.set("tab", e),
+    focarTitulo();
+}
+/**
+ * Se o foco ficou num elemento que sumiu (trocou de tela, abriu uma cifra, abriu um repertório),
+ * leva o foco para o título da tela que está à vista, para quem usa teclado ou leitor de tela
+ * não ficar perdido no começo da página. Quem clicou num botão do menu continua nele.
+ */
+let focoAutomatico = !1; // só depois de abrir o app: na abertura o 1º Tab tem que achar "Pular para o conteúdo"
+function focarTitulo() {
+  focoAutomatico &&
+    requestAnimationFrame(() => {
+      const ativo = document.activeElement;
+      if (ativo && ativo !== document.body && ativo.offsetParent !== null) return;
+      const tela = [...document.querySelectorAll(".view")].find((v) => !v.hidden),
+        titulo = tela && [...tela.querySelectorAll("h1")].find((x) => x.offsetParent !== null);
+      titulo && (titulo.setAttribute("tabindex", "-1"), titulo.focus({ preventScroll: !0 }));
+    });
 }
 document.querySelectorAll(".tabs button").forEach((e) => (e.onclick = () => mostrarAba(e.dataset.tab)));
 let analise = null,
@@ -2337,9 +2351,9 @@ function repLista() {
       nomeTipo = TIPOS_REP.find((t) => t.id === repTipo).nome.toLowerCase();
     if (futuros.length)
       html +=
-        `<h3 class="secao-tit">Próximo culto</h3><div class="lista">${repCartao(futuros[0], hoje, !0)}</div>` +
+        `<h2 class="secao-tit">Próximo culto</h2><div class="lista">${repCartao(futuros[0], hoje, !0)}</div>` +
         (futuros.length > 1
-          ? `<h3 class="secao-tit">Depois</h3><div class="lista">${futuros
+          ? `<h2 class="secao-tit">Depois</h2><div class="lista">${futuros
               .slice(1)
               .map((r) => repCartao(r, hoje))
               .join("")}</div>`
@@ -2355,7 +2369,7 @@ function repLista() {
       const d = new Date(r.data + "T12:00"),
         m = d.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
       if (m !== mes)
-        (html += `${mes ? "</div>" : ""}<h3 class="secao-tit">Tocados em ${m}</h3><div class="lista">`),
+        (html += `${mes ? "</div>" : ""}<h2 class="secao-tit">Tocados em ${m}</h2><div class="lista">`),
           (mes = m);
       html += repCartao(r, hoje);
     }
@@ -2380,7 +2394,7 @@ async function repExcluidos() {
   const voltar = '<p><button class="linkbtn" data-rec="voltar">‹ Voltar aos repertórios</button></p>';
   elemento("repGrid").innerHTML =
     voltar +
-    `<h3 class="secao-tit">Repertórios excluídos (${lista.length})</h3>` +
+    `<h2 class="secao-tit">Repertórios excluídos (${lista.length})</h2>` +
     (lista.length
       ? `<p class="hint">Encontrados na lixeira e nos backups diários do servidor (até 60 dias). Restaurar traz de volta a última versão salva.</p><div class="lista">${lista
           .map((r) => {
@@ -2437,7 +2451,8 @@ function repAbrir(r) {
     (elemento("repSug").innerHTML = ""),
     (elemento("repApagar").textContent = "Excluir repertório"),
     repItens(),
-    scrollTo(0, 0);
+    scrollTo(0, 0),
+    focarTitulo();
 }
 /** Próxima data (hoje ou depois) que cai no dia da semana pedido (0 = domingo). */
 function proximoDia(dia) {
@@ -2470,6 +2485,7 @@ elemento("repNovo").onclick = (e) => {
   const m = elemento("repNovoMenu"),
     abrir = m.hidden;
   (m.hidden = !abrir), elemento("repNovo").setAttribute("aria-expanded", String(abrir));
+  abrir && focarMenu(m);
 };
 elemento("repNovoMenu").addEventListener("click", (e) => {
   const b = e.target.closest("button[data-dia]");
@@ -2701,7 +2717,7 @@ function buscaRender() {
         return ta !== tb ? (ta ? -1 : 1) : ordemDaLista(a, b);
       });
     elemento("buscaRes").innerHTML = achadas.length
-      ? `<h3 class="secao-tit">${achadas.length} resultado${achadas.length === 1 ? "" : "s"}</h3><div class="lista">${achadas.slice(0, 40).map(linhaCifra).join("")}</div>`
+      ? `<h2 class="secao-tit">${achadas.length} resultado${achadas.length === 1 ? "" : "s"}</h2><div class="lista">${achadas.slice(0, 40).map(linhaCifra).join("")}</div>`
       : '<p class="empty">Nenhuma cifra encontrada. <button class="linkbtn" data-a="nova">Cadastrar uma nova</button></p>';
     return;
   }
@@ -2716,7 +2732,7 @@ function buscaRender() {
       .slice(0, 8),
     bloco = (tit, lista, extra = "") =>
       lista.length
-        ? `<h3 class="secao-tit">${tit}${extra}</h3><div class="lista">${lista.map(linhaCifra).join("")}</div>`
+        ? `<h2 class="secao-tit">${tit}${extra}</h2><div class="lista">${lista.map(linhaCifra).join("")}</div>`
         : "";
   elemento("buscaRes").innerHTML =
     bloco(
@@ -2776,8 +2792,28 @@ elemento("addRepBtn").onclick = (e) => {
       })
       .join("") +
     '<button data-id="__novo">+ Novo repertório com esta música</button>';
-  (menu.hidden = !1), elemento("addRepBtn").setAttribute("aria-expanded", "true");
+  (menu.hidden = !1), elemento("addRepBtn").setAttribute("aria-expanded", "true"), focarMenu(menu);
 };
+/* Menus (+ Repertório, + Novo): abre com o foco na 1ª opção, ↑ ↓ andam, Esc fecha e volta ao botão. */
+function focarMenu(menu) {
+  const primeira = menu.querySelector("button:not(:disabled)");
+  primeira && primeira.focus();
+}
+document.addEventListener("keydown", (e) => {
+  const menu = e.target.closest && e.target.closest("#addRepMenu, #repNovoMenu");
+  if (!menu) return;
+  const botoes = [...menu.querySelectorAll("button:not(:disabled)")],
+    i = botoes.indexOf(e.target),
+    dono = menu.id === "addRepMenu" ? elemento("addRepBtn") : elemento("repNovo");
+  if (e.key === "Escape")
+    return e.preventDefault(), menu.id === "addRepMenu" ? fecharMenuRep() : fecharMenuNovo(), dono.focus();
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    e.preventDefault();
+    const n = (i + (e.key === "ArrowDown" ? 1 : -1) + botoes.length) % botoes.length;
+    botoes[n].focus();
+  }
+  if (e.key === "Tab") menu.id === "addRepMenu" ? fecharMenuRep() : fecharMenuNovo();
+});
 document.addEventListener("click", (e) => e.target.closest(".menuwrap") || fecharMenuRep());
 elemento("addRepMenu").addEventListener("click", async (e) => {
   const b = e.target.closest("button[data-id]");
@@ -2936,3 +2972,4 @@ elemento("repItens").addEventListener("pointerdown", (e) => {
   n && ((elemento("apiUrl").value = n), conectarServidor()),
     "serviceWorker" in navigator && navigator.serviceWorker.register("./sw.js").catch(() => {});
 })();
+setTimeout(() => (focoAutomatico = !0), 0);

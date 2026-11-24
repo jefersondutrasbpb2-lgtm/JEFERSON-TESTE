@@ -107,8 +107,30 @@ export function EventsBoard({ items, builtOn }: { items: EventItem[]; builtOn: s
                             ? formatDateRange(e.date, e.endDate, locale)
                             : `${weekdayOf(e.date, locale)}, ${formatDateLong(e.date, locale)}`}
                           {e.time && ` · ${formatTime(e.time, locale)}`}
+                          {!e.time && e.when && ` · ${t(e.when)}`}
                         </dd>
                       </div>
+                      {e.signup && (
+                        <div>
+                          <dt>{t({ pt: "Inscrição", en: "Sign-up", es: "Inscripción" })}</dt>
+                          <dd>
+                            {today > e.signup.deadline ? (
+                              <span className="ev-signup__closed">
+                                {t({ pt: "Prazo encerrado em ", en: "Closed on ", es: "Plazo cerrado el " })}
+                                {formatDateLong(e.signup.deadline, locale)}
+                              </span>
+                            ) : (
+                              <>
+                                {t(e.signup.how)}
+                                <span className="ev-signup__deadline">
+                                  {t({ pt: "Prazo: até ", en: "Deadline: ", es: "Plazo: hasta el " })}
+                                  {formatDateLong(e.signup.deadline, locale)}
+                                </span>
+                              </>
+                            )}
+                          </dd>
+                        </div>
+                      )}
                       {e.program && e.program.length > 0 && (
                         <div>
                           <dt>{t({ pt: "Programação", en: "Program", es: "Programa" })}</dt>

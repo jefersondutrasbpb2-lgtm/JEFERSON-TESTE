@@ -774,8 +774,8 @@ button { font: inherit; color: inherit; }
 .sponsors__head { display: grid; gap: 6px; margin-bottom: clamp(20px, 2.4vw, 28px); }
 .sponsors__title { font-size: .72rem; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: var(--tinta-2); }
 .sponsors__lead { font-size: .92rem; color: var(--tinta-2); }
-.sponsors__grid { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 20px 24px; }
-.sponsor { position: relative; flex: none; width: 96px; height: 40px; }
+.sponsors__grid { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 18px 16px; max-width: 1100px; margin-inline: auto; }
+.sponsor { position: relative; flex: none; width: 70px; height: 34px; }
 .sponsor img { position: absolute; inset: 0; margin: auto; max-width: 100%; max-height: 100%; width: auto; height: auto;
   filter: grayscale(1) contrast(1.1); opacity: .55; transition: filter .3s ease, opacity .3s ease; }
 .sponsor:hover img { filter: none; opacity: 1; }
@@ -783,8 +783,9 @@ button { font: inherit; color: inherit; }
 .sponsor--claro:hover img { filter: none; }
 .sponsor--dark img, .sponsor--dark:hover img { filter: grayscale(1) invert(1) contrast(1.2); }
 .sponsor--dark:hover img { opacity: .9; }
-.sponsor--alto { height: 56px; }
-@media (min-width: 900px) { .sponsors__grid { gap: 24px 22px; } .sponsor { width: 84px; height: 40px; } .sponsor--alto { height: 60px; } }
+.sponsor--alto { height: 48px; }
+@media (min-width: 640px) { .sponsors__grid { gap: 22px 28px; } .sponsor { width: 88px; height: 40px; } .sponsor--alto { height: 56px; } }
+@media (min-width: 900px) { .sponsors__grid { gap: 26px 36px; } .sponsor { width: 104px; height: 44px; } .sponsor--alto { height: 62px; } }
 
 /* =========================================================
    08 PERGUNTAS FREQUENTES

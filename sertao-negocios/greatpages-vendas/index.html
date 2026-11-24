@@ -785,8 +785,8 @@ button { font: inherit; color: inherit; }
 .sponsors__head { display: grid; gap: 6px; margin-bottom: clamp(20px, 2.4vw, 28px); }
 .sponsors__title { font-size: .72rem; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: var(--tinta-2); }
 .sponsors__lead { font-size: .92rem; color: var(--tinta-2); }
-.sponsors__grid { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 20px 24px; }
-.sponsor { position: relative; flex: none; width: 96px; height: 40px; }
+.sponsors__grid { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 18px 16px; max-width: 1100px; margin-inline: auto; }
+.sponsor { position: relative; flex: none; width: 70px; height: 34px; }
 .sponsor img { position: absolute; inset: 0; margin: auto; max-width: 100%; max-height: 100%; width: auto; height: auto;
   filter: grayscale(1) contrast(1.1); opacity: .55; transition: filter .3s ease, opacity .3s ease; }
 .sponsor:hover img { filter: none; opacity: 1; }
@@ -794,8 +794,9 @@ button { font: inherit; color: inherit; }
 .sponsor--claro:hover img { filter: none; }
 .sponsor--dark img, .sponsor--dark:hover img { filter: grayscale(1) invert(1) contrast(1.2); }
 .sponsor--dark:hover img { opacity: .9; }
-.sponsor--alto { height: 56px; }
-@media (min-width: 900px) { .sponsors__grid { gap: 24px 22px; } .sponsor { width: 84px; height: 40px; } .sponsor--alto { height: 60px; } }
+.sponsor--alto { height: 48px; }
+@media (min-width: 640px) { .sponsors__grid { gap: 22px 28px; } .sponsor { width: 88px; height: 40px; } .sponsor--alto { height: 56px; } }
+@media (min-width: 900px) { .sponsors__grid { gap: 26px 36px; } .sponsor { width: 104px; height: 44px; } .sponsor--alto { height: 62px; } }
 
 /* =========================================================
    08 PERGUNTAS FREQUENTES
@@ -1846,6 +1847,10 @@ button { font: inherit; color: inherit; }
             <li class="sponsor"><img src="https://files.greatpages.com.br/images/6419/s3lKjWet5c3t9mUsjrxO43mU.webp" alt="Koris Arquitetura e Cenografia" loading="lazy" decoding="async"></li>
             <li class="sponsor sponsor--alto sponsor--claro"><img src="https://files.greatpages.com.br/images/6419/fKxAkDIOH3KwWuopt34txeEg.webp" alt="MV2 Viagens e Turismo" loading="lazy" decoding="async"></li>
             <li class="sponsor sponsor--alto sponsor--claro"><img src="https://files.greatpages.com.br/images/6419/93o93cjeK9APehuB9YOiRhEK.webp" alt="Panificadora Vitória" loading="lazy" decoding="async"></li>
+            <li class="sponsor"><img src="https://files.greatpages.com.br/images/6419/rMYvc4WfKusGWYi9WlWEWnOG.webp" alt="Pneumatex Especialistas em Ar Comprimido" loading="lazy" decoding="async"></li>
+            <li class="sponsor sponsor--alto"><img src="https://files.greatpages.com.br/images/6419/R1HITcmtznVOiCY5r9LPxvRW.webp" alt="Açaímix Brazil" loading="lazy" decoding="async"></li>
+            <li class="sponsor sponsor--alto"><img src="https://files.greatpages.com.br/images/6419/D1KrJ99UseZ93dVKAXGv29Dv.webp" alt="Colinas Engenharia" loading="lazy" decoding="async"></li>
+            <li class="sponsor sponsor--dark"><img src="https://files.greatpages.com.br/images/6419/ID3uUIrppnxaZziHcUGhDi3z.webp" alt="Vertia Growth Systems & Technology" loading="lazy" decoding="async"></li>
         </ul>
       </div>
     </div>

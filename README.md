@@ -210,14 +210,16 @@ data eles aparecem em **Próximos eventos**, com cartaz, horário, local, botão
 exige nova publicação: a divisão é refeita no navegador com a data de hoje.
 
 Campos: `id`, `date` (AAAA-MM-DD) e `title` são obrigatórios. Para eventos de mais de um dia, use `endDate`
-(último dia) e `program` (lista com `date`, `time`, `speaker` e `role` de cada dia). Os demais opcionais são `time` e `endTime` (HH:MM),
+(último dia) e `program` (lista com `date`, `time`, `speaker` e `role` de cada dia). Os demais opcionais são `time` e `endTime` (HH:MM), `when` (horário em texto, como "Após o Culto de Natal"),
+`signup` (`deadline` e `how`: prazo e como se inscrever; depois do prazo aparece "Prazo encerrado"),
 `category`, `speaker`, `location`, `description`, `recap` (texto para quando o evento já passou), `verse` e `poster`. O `poster` leva `src`, `width`, `height` e `alt`,
 e o arquivo vai em `public/images/eventos/`, em .webp com cerca de 1000–1400 px de largura.
 
 ### Destaque de evento
 
-Um evento com `"highlight": true` aparece em destaque logo abaixo da abertura da página inicial, com o cartaz, e
-some automaticamente no dia seguinte à data do evento, sem precisar republicar o site.
+Eventos com `"highlight": true` aparecem em destaque logo abaixo da abertura da página inicial, com o cartaz: o
+próximo fica em destaque e os seguintes aparecem em "Também na agenda". Quando um termina, o seguinte assume o
+destaque sozinho (horário de Pombal), sem precisar republicar o site.
 
 ### Modo de revisão
 

@@ -1,18 +1,42 @@
-import { events, formatDateRange, formatTime, isUpcoming, lastDay, todayInPombal, weekdayOf } from "@/content/data";
+import {
+  events,
+  formatDateLong,
+  formatDateRange,
+  formatTime,
+  isUpcoming,
+  lastDay,
+  todayInPombal,
+  weekdayOf,
+  type EventItem,
+} from "@/content/data";
 import { fullAddress, mapsDirectionsUrl } from "@/content/site";
 import { asset } from "@/lib/asset";
 import { Button } from "@/components/ui/Button";
 import { ExpiresAfter } from "@/components/ui/ExpiresAfter";
+import { FirstActive } from "@/components/ui/FirstActive";
+import { SiteLink } from "@/components/ui/SiteLink";
 import { getLocale, t } from "@/i18n/server";
 
-/** Destaque do próximo evento marcado com `highlight` em agenda.json (some sozinho depois da data). */
+/**
+ * Destaque dos eventos marcados com `highlight` em agenda.json: aparece o
+ * próximo; quando ele termina, o seguinte assume sozinho (horário de Pombal).
+ */
 export function Destaque() {
   const today = todayInPombal();
-  const ev = events.find((e) => e.highlight && !e.example && isUpcoming(e, today));
-  if (!ev) return null;
+  const list = events.filter((e) => e.highlight && !e.example && isUpcoming(e, today));
+  if (!list.length) return null;
+  return (
+    <FirstActive until={list.map(lastDay)}>
+      {list.map((ev, i) => (
+        <DestaqueEvento key={ev.id} ev={ev} also={list.slice(i + 1, i + 3)} />
+      ))}
+    </FirstActive>
+  );
+}
+
+function DestaqueEvento({ ev, also }: { ev: EventItem; also: EventItem[] }) {
   const locale = getLocale();
   return (
-    <ExpiresAfter date={lastDay(ev)}>
       <section className="section section--tight section-tone destaque" data-tone="green" data-tone-section="green" aria-labelledby="destaque-title">
         <div className="container destaque__grid">
           {ev.poster && (
@@ -36,6 +60,12 @@ export function Destaque() {
                 <>
                   <span aria-hidden="true">·</span>
                   <span>{formatTime(ev.time, locale)}</span>
+                </>
+              )}
+              {!ev.time && ev.when && (
+                <>
+                  <span aria-hidden="true">·</span>
+                  <span>{t(ev.when)}</span>
                 </>
               )}
             </p>
@@ -76,6 +106,17 @@ export function Destaque() {
                 <strong>{t(ev.speaker)}</strong>
               </p>
             )}
+            {ev.signup && (
+              <ExpiresAfter date={ev.signup.deadline}>
+                <p className="destaque__signup" data-reveal>
+                  {t(ev.signup.how)}{" "}
+                  <strong>
+                    {t({ pt: "até ", en: "by ", es: "hasta el " })}
+                    {formatDateLong(ev.signup.deadline, locale)}
+                  </strong>
+                </p>
+              </ExpiresAfter>
+            )}
             <p className="destaque__place small" data-reveal>
               {ev.location ? t(ev.location) : null} — {fullAddress}
             </p>
@@ -87,9 +128,30 @@ export function Destaque() {
                 {t({ pt: "Ver todos os eventos", en: "See all events", es: "Ver todos los eventos" })}
               </Button>
             </div>
+            {also.length > 0 && (
+              <div className="destaque__also" data-reveal>
+                <p className="destaque__also-label">{t({ pt: "Também na agenda", en: "Also coming up", es: "También en la agenda" })}</p>
+                <ul>
+                  {also.map((e) => (
+                    <li key={e.id}>
+                      <SiteLink href={`/agenda/#evento-${e.id}`}>
+                        <strong>{t(e.title)}</strong> · {formatDateRange(e.date, e.endDate, locale)}
+                      </SiteLink>
+                      {e.signup && (
+                        <ExpiresAfter date={e.signup.deadline}>
+                          <span className="destaque__also-note">
+                            {t({ pt: "Dê seu nome até ", en: "Sign up by ", es: "Da tu nombre hasta el " })}
+                            {formatDateLong(e.signup.deadline, locale)}
+                          </span>
+                        </ExpiresAfter>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       </section>
-    </ExpiresAfter>
   );
 }

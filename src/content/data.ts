@@ -33,6 +33,10 @@ export type EventItem = {
   /** Programação por dia (eventos de mais de um dia) */
   program?: EventDay[];
   time?: string;
+  /** Horário em texto, quando não há hora marcada (ex.: "Após o Culto de Natal") */
+  when?: Text;
+  /** Inscrição: prazo (AAAA-MM-DD) e como se inscrever */
+  signup?: { deadline: string; how: Text };
   /** Horário de término (só usado no link "Adicionar à agenda"; padrão: 2 h depois) */
   endTime?: string;
   title: Text;

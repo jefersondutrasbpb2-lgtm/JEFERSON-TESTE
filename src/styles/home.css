@@ -243,6 +243,52 @@ html.motion .hero__img {
   font-size: var(--fs-small);
   color: var(--tone-muted);
 }
+.destaque__signup {
+  font-size: var(--fs-small);
+  padding: 0.75rem 1rem;
+  border-left: 2px solid var(--c-gold);
+  background: rgb(255 255 255 / 0.06);
+}
+.destaque__also {
+  display: grid;
+  gap: 0.6rem;
+  width: 100%;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--tone-line);
+}
+.destaque__also-label {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--tone-muted);
+}
+.destaque__also ul {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.destaque__also li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2rem 0.9rem;
+}
+.destaque__also a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--c-gold) 60%, transparent);
+  text-underline-offset: 0.25em;
+}
+.destaque__also a:hover {
+  text-decoration-color: var(--c-gold);
+}
+.destaque__also-note {
+  font-size: var(--fs-small);
+  color: var(--c-gold);
+}
 .destaque__speaker {
   font-size: var(--fs-small);
 }

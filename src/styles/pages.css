@@ -950,6 +950,14 @@
   font-weight: 400;
   color: var(--tone-muted);
 }
+.ev-signup__deadline {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--tone-accent);
+}
+.ev-signup__closed {
+  color: var(--tone-muted);
+}
 .ev-feature__text {
   max-width: 56ch;
 }

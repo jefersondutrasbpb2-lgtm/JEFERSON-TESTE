@@ -22,15 +22,16 @@ ROOT = Path(__file__).resolve().parent.parent
 
 # Lote à venda e links dos checkouts. de: valor de referência ("De R$ 397 por apenas"); parcelas/parcela: o destaque
 # do card; price: valor à vista; anterior: valor do lote que já fechou, mostrado riscado e apagado
-LOTE = "Lote 1"
-LOTE_ANTERIOR = "Lote 0"
+LOTE = "Lote 2"
+LOTE_ANTERIOR = "Lote 1"
 # Escassez: True quando o lote estiver nos últimos ingressos (troca selos, textos e mostra o aviso na seção de ingressos)
-ULTIMOS = True
+ULTIMOS = False
 LOTE_STATUS = "últimos ingressos" if ULTIMOS else "disponível"
 # Virada do lote: horário de Brasília. Com data, a página mostra a faixa no topo e a contagem regressiva
 # (a contagem em si roda pelo script "Contagem da virada do lote", instalado no painel do GreatPages)
-VIRADA = "2026-11-24T08:00:00-03:00"
-VIRADA_DIA, VIRADA_DATA, VIRADA_HORA = "terça", "24/11", "8h"
+# None: sem faixa nem contagem (o Lote 2 ainda não tem data de virada)
+VIRADA = None
+VIRADA_DIA, VIRADA_DATA, VIRADA_HORA = "", "", ""
 # Percentual de ingressos vendidos (informado pela organização). None tira a barra da página
 VENDIDOS_PCT = 66
 
@@ -43,8 +44,9 @@ def barra_vendidos(extra=""):
 LOTE_FRASE = (f"Estamos nos últimos ingressos do {LOTE}, e quando ele virar o valor sobe." if ULTIMOS
               else f"O {LOTE} está aberto, e os próximos lotes sobem de valor.")
 INGRESSOS = {
-    "smart": {"de": 397, "parcelas": 12, "parcela": 25.55, "price": 247, "anterior": 197, "checkout": "https://chk.eduzz.com/39VKR1KYWR"},
-    "vip": {"de": 597, "parcelas": 12, "parcela": 35.89, "price": 347, "anterior": 297, "checkout": "https://chk.eduzz.com/39YNX2NQWO"},
+    # Lote 2 (25/11): parcelas calculadas pela mesma taxa da Eduzz que dava 12x 25,55 em 247 e 12x 35,89 em 347
+    "smart": {"de": 397, "parcelas": 12, "parcela": 30.72, "price": 297, "anterior": 247, "checkout": "https://chk.eduzz.com/39VKR1KYWR"},
+    "vip": {"de": 597, "parcelas": 12, "parcela": 41.07, "price": 397, "anterior": 347, "checkout": "https://chk.eduzz.com/39YNX2NQWO"},
 }
 WA_DUVIDA = ("https://wa.me/5583996986238?text=Ol%C3%A1!%20Tenho%20uma%20d%C3%BAvida%20sobre%20os%20"
              "ingressos%20do%20Sert%C3%A3o%20Neg%C3%B3cios%202026.")
@@ -388,10 +390,10 @@ escassez_html = f'''<div class="scarce{' scarce--cd' if VIRADA else ''}" role="n
             <p><strong>Últimos ingressos do {LOTE}.</strong> {f'Ele vira na {VIRADA_DIA}, {VIRADA_DATA}, às&nbsp;{VIRADA_HORA}, e o mesmo ingresso passa a custar mais.' if VIRADA else 'Quando eles acabarem, o lote vira e o mesmo ingresso passa a custar mais.'}</p>
           </div>{cd_html}{(chr(10) + '          ' + barra_vendidos(' sold--dark')) if VENDIDOS_PCT else ''}
         </div>
-        ''' if ULTIMOS else ""
+        ''' if ULTIMOS else ((f'<div class="scarce scarce--sold" data-reveal>' + barra_vendidos(' sold--dark') + '</div>\n        ') if VENDIDOS_PCT else "")
 
 # Com o aviso de últimos ingressos, o parágrafo sai (falar do Lote 0 confundia o comprador)
-tickets_lead = ("" if ULTIMOS else f'O <strong>{LOTE}</strong> está aberto, com pagamento em até <strong>{INGRESSOS["smart"]["parcelas"] or "00"}x</strong>. O {LOTE_ANTERIOR}, a condição de abertura das vendas, já foi encerrado, e os próximos lotes sobem de valor.')
+tickets_lead = ("" if ULTIMOS else f'O <strong>{LOTE}</strong> está aberto, com pagamento em até <strong>{INGRESSOS["smart"]["parcelas"] or "00"}x</strong>, e os próximos lotes sobem de valor.')
 
 tickets_lead_html = f'<p class="tickets__lead" data-reveal>{tickets_lead}</p>' if tickets_lead else ""
 
@@ -476,7 +478,7 @@ faq_new = '''<details class="qa" data-reveal>
         </details>
         <details class="qa" data-reveal>
           <summary><span>Qual lote está à venda?</span><span class="qa__icon" aria-hidden="true"></span></summary>
-          <div class="qa__a"><p>O ''' + LOTE + (''', e ele já está nos últimos ingressos''' if ULTIMOS else '') + '''. O ''' + LOTE_ANTERIOR + ''', a condição de abertura das vendas, já foi encerrado, e os próximos lotes sobem de valor.</p></div>
+          <div class="qa__a"><p>O ''' + LOTE + (''', e ele já está nos últimos ingressos''' if ULTIMOS else '') + '''. O ''' + LOTE_ANTERIOR + ''' já foi encerrado, e os próximos lotes sobem de valor.</p></div>
         </details>
         <details class="qa" data-reveal>
           <summary><span>Posso parcelar?</span><span class="qa__icon" aria-hidden="true"></span></summary>

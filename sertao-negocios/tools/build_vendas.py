@@ -33,7 +33,7 @@ LOTE_STATUS = "últimos ingressos" if ULTIMOS else "disponível"
 VIRADA = None
 VIRADA_DIA, VIRADA_DATA, VIRADA_HORA = "", "", ""
 # Percentual de ingressos vendidos (informado pela organização). None tira a barra da página
-VENDIDOS_PCT = 66
+VENDIDOS_PCT = 71
 
 def barra_vendidos(extra=""):
     if not VENDIDOS_PCT:

@@ -161,6 +161,46 @@
     return (tipo === "louvor" ? r.soleneTagsLouvor : r.soleneTagsHinario) || [];
   }
 
+  /* -------------------------------------------------------- liturgia */
+  // A ordem das músicas no culto: 1º Salmos e Hinos trinitário, 2º Salmos e Hinos do ofertório
+  // (qualquer um) e, depois, os louvores.
+
+  /** Momento da liturgia de cada posição: { id, nome }, pela ordem dentro do tipo. */
+  function momentoDaMusica(culto, k) {
+    const vaga = culto.musicas[k];
+    if (!vaga) return { id: "", nome: "" };
+    if (vaga.tipo === "louvor") return { id: "louvor", nome: "Louvor" };
+    const n = culto.musicas.slice(0, k).filter((v) => v.tipo === "hino").length;
+    if (n === 0) return { id: "trinitario", nome: "Trinitário" };
+    if (n === 1) return { id: "ofertorio", nome: "Ofertório" };
+    return { id: "hino", nome: "Salmos e Hinos" };
+  }
+
+  /**
+   * Etiquetas que a música desta posição precisa ter: o 1º Salmos e Hinos é sempre trinitário (em qualquer
+   * culto); o do ofertório é livre; no culto solene os louvores seguem a orientação pastoral.
+   */
+  function exigidasDaVaga(state, culto, k) {
+    const vaga = culto.musicas[k];
+    if (!vaga) return [];
+    const r = state.regras || {};
+    if (vaga.tipo === "hino") return momentoDaMusica(culto, k).id === "trinitario" ? (r.primeiroHinoTags || ["trinitario"]) : [];
+    return tagsExigidas(state, vaga.tipo, culto.solene);
+  }
+
+  /** Põe os Salmos e Hinos antes dos louvores (sem mudar a ordem dentro de cada tipo); o "fixo" acompanha. */
+  function ordenarLiturgia(culto) {
+    const ordem = culto.musicas.map((v, k) => k).sort((a, b) => (culto.musicas[a].tipo === "hino" ? 0 : 1) - (culto.musicas[b].tipo === "hino" ? 0 : 1) || a - b);
+    if (ordem.every((k, i) => k === i)) return culto;
+    const nova = ordem.map((k) => culto.musicas[k]);
+    culto.travados = (culto.travados || []).map((t) => {
+      const [p, n] = t.split(":");
+      return p === "m" ? `m:${ordem.indexOf(Number(n))}` : t;
+    });
+    culto.musicas = nova;
+    return culto;
+  }
+
   function aptaSolene(state, m) {
     return tagsExigidas(state, m.tipo, true).every((t) => (m.tags || []).includes(t));
   }
@@ -342,7 +382,7 @@
    */
   function sincronizarCulto(escala, culto) {
     const lider = liderDe(escala, culto);
-    if (!lider) return culto;
+    if (!lider) return ordenarLiturgia(culto);
     culto.equipe = lider.equipe.map((s) => ({ funcao: s.funcao, pessoaId: s.pessoaId }));
     const restantes = lider.musicas.map((m) => ({ tipo: m.tipo, id: m.id }));
     const nova = culto.musicas.map((m) => {
@@ -351,7 +391,7 @@
     });
     for (let k = 0; k < nova.length && restantes.length; k++) if (!nova[k]) nova[k] = restantes.shift();
     culto.musicas = nova.filter(Boolean).concat(restantes);
-    return culto;
+    return ordenarLiturgia(culto);
   }
 
   function sincronizarEscala(escala) {
@@ -450,7 +490,7 @@
     const usos = montarUsos(state, escala, `${ci}:m:${k}`);
     const intervalo = ((state.regras && state.regras.intervaloMusicaSemanas) || 0) * 7;
     const noCulto = new Set(culto.musicas.filter((m, kk) => kk !== k).map((m) => m.id));
-    const exigidas = tagsExigidas(state, vaga.tipo, culto.solene);
+    const exigidas = exigidasDaVaga(state, culto, k);
     return (state.musicas || [])
       .filter((m) => m.ativo !== false && m.tipo === vaga.tipo)
       .map((m) => {
@@ -753,6 +793,7 @@
   function moverMusica(culto, k, delta) {
     const j = k + delta;
     if (j < 0 || j >= culto.musicas.length) return culto;
+    if (culto.musicas[j].tipo !== culto.musicas[k].tipo) return culto; // hinos antes dos louvores (liturgia)
     [culto.musicas[k], culto.musicas[j]] = [culto.musicas[j], culto.musicas[k]];
     // A marca de "fixa" acompanha a música.
     const fixo = new Set(culto.travados || []);
@@ -883,7 +924,52 @@
   /** Mais uma música no culto, no fim da lista. Devolve a posição. */
   function adicionarMusica(culto, tipo) {
     culto.musicas.push({ tipo, id: null });
+    ordenarLiturgia(culto);
+    // a vaga nova é a última vazia do seu tipo
+    for (let k = culto.musicas.length - 1; k >= 0; k--) if (culto.musicas[k].tipo === tipo && !culto.musicas[k].id) return k;
     return culto.musicas.length - 1;
+  }
+
+  /**
+   * Leva para a liturgia as escalas já feitas (só os cultos que ainda vão acontecer): Salmos e Hinos antes
+   * dos louvores; tantas vagas de cada tipo quantas o culto pede (vagas vazias ou sorteadas sobrando saem,
+   * as fixadas à mão ficam); o trinitário em 1º; e as vagas vazias sorteadas. Devolve quantos cultos mudaram.
+   */
+  function aplicarLiturgia(state, escala, hoje, rand) {
+    rand = rand || Math.random;
+    let mudaram = 0;
+    escala.cultos.forEach((culto, ci) => {
+      if (culto.data < hoje || liderDe(escala, culto)) return;
+      const antes = JSON.stringify([culto.musicas, culto.travados]);
+      ordenarLiturgia(culto);
+      const cfg = porId(state.cultos, culto.cultoId);
+      const quer = cfg && !culto.avulso ? cfg.musicas || {} : null;
+      const fixo = () => new Set(culto.travados || []);
+      if (quer) {
+        for (const tipo of ["hino", "louvor"]) {
+          const alvo = Number(quer[tipo]) || 0;
+          while (culto.musicas.filter((v) => v.tipo === tipo).length < alvo) adicionarMusica(culto, tipo);
+          while (culto.musicas.filter((v) => v.tipo === tipo).length > alvo) {
+            const ks = culto.musicas.map((v, k) => k).filter((k) => culto.musicas[k].tipo === tipo && !fixo().has(`m:${k}`));
+            if (!ks.length) break;
+            removerMusica(culto, ks[ks.length - 1]);
+          }
+        }
+      }
+      // O trinitário vai para o 1º lugar; sem nenhum, a 1ª vaga (se não foi fixada) é sorteada de novo.
+      const hinos = culto.musicas.map((v, k) => k).filter((k) => culto.musicas[k].tipo === "hino");
+      const exig = hinos.length ? exigidasDaVaga(state, culto, hinos[0]) : [];
+      const serve = (k) => { const m = porId(state.musicas, culto.musicas[k].id); return !!m && exig.every((t) => (m.tags || []).includes(t)); };
+      if (hinos.length && !serve(hinos[0])) {
+        const outro = hinos.slice(1).find(serve);
+        if (outro !== undefined) for (let k = outro; k > hinos[0]; k--) moverMusica(culto, k, -1);
+        else if (!fixo().has(`m:${hinos[0]}`)) culto.musicas[hinos[0]].id = null;
+      }
+      culto.musicas.forEach((v, k) => { if (!v.id && !fixo().has(`m:${k}`)) sortearCampo(state, escala, ci, `m:${k}`, rand); });
+      if (JSON.stringify([culto.musicas, culto.travados]) !== antes) mudaram++;
+    });
+    sincronizarEscala(escala);
+    return mudaram;
   }
 
   function removerMusica(culto, k) {
@@ -928,8 +1014,11 @@
         if (!vaga.id) return push("erro", campo, `${nomeTipo(vaga.tipo)}: falta escolher a música`);
         const m = porId(state.musicas, vaga.id);
         if (!m) return push("erro", campo, "Música removida do repertório");
-        const faltam = tagsExigidas(state, m.tipo, culto.solene).filter((t) => !(m.tags || []).includes(t));
-        if (faltam.length) push("erro", campo, `${rotuloMusica(m)} não está marcada como ${faltam.map((t) => nomeTag(state, t)).join(" e ")}`);
+        const faltam = exigidasDaVaga(state, culto, k).filter((t) => !(m.tags || []).includes(t));
+        const momento = momentoDaMusica(culto, k);
+        if (faltam.length) push("erro", campo, momento.id === "trinitario"
+          ? `O 1º Salmos e Hinos precisa ser ${faltam.map((t) => nomeTag(state, t)).join(" e ")} (${rotuloMusica(m)} não está marcado)`
+          : `${rotuloMusica(m)} não está marcada como ${faltam.map((t) => nomeTag(state, t)).join(" e ")}`);
         const antes = escala.cultos.find((outro, cj) => cj < ci && !liderDe(escala, outro) && Math.abs(diasEntre(outro.data, culto.data)) < intervalo && outro.musicas.some((x) => x.id === vaga.id));
         if (antes) push("alerta", campo, `${rotuloMusica(m)} repete a de ${formatarData(antes.data, "dia")}`);
       });
@@ -1015,9 +1104,21 @@
 
   function textoWhatsApp(state, escala, opcoes) {
     opcoes = opcoes || {};
-    const musica = (vaga, i) => {
+    const nomeMusica = (vaga) => {
       const m = porId(state.musicas, vaga.id);
-      return `${i + 1}. ${m ? rotuloMusica(m) : "a definir"}${opcoes.links && m && m.link ? ` ${m.link}` : ""}`;
+      return `${m ? rotuloMusica(m) : "a definir"}${opcoes.links && m && m.link ? ` ${m.link}` : ""}`;
+    };
+    // Na ordem da liturgia: Trinitário, Ofertório e os louvores numerados.
+    const musicasNaLiturgia = (culto) => {
+      const linhas = [];
+      let n = 0;
+      culto.musicas.forEach((v, k) => {
+        const momento = momentoDaMusica(culto, k);
+        if (momento.id !== "louvor") return linhas.push(`*${momento.nome}:* ${nomeMusica(v)}`);
+        if (!n) linhas.push("*Louvor:*");
+        linhas.push(`${++n}. ${nomeMusica(v)}`);
+      });
+      return linhas;
     };
     const igreja = (state.igreja && state.igreja.nome) || "";
     // Com `opcoes.data`, só os cultos daquele dia (ex.: só a quinta ou só o domingo).
@@ -1033,14 +1134,10 @@
         const nomes = g.vagas.map((v) => (porId(state.pessoas, v.pessoaId) || {}).nome || "a definir");
         linhas.push(`${nomeFuncao(state, g.funcao)}: ${nomes.join(", ")}`);
       }
-      if (c.musicas.length) {
-        linhas.push("Músicas:");
-        c.musicas.forEach((v, i) => linhas.push(musica(v, i)));
-      }
+      if (c.musicas.length) linhas.push("", "🎵 Músicas", ...musicasNaLiturgia(c));
       for (const s of seguidores) {
         if (s.musicas.map((m) => m.id).join() === c.musicas.map((m) => m.id).join()) continue;
-        linhas.push(`Ordem às ${s.hora || s.nome}:`);
-        s.musicas.forEach((v, i) => linhas.push(musica(v, i)));
+        linhas.push("", `Ordem às ${s.hora || s.nome}:`, ...musicasNaLiturgia(s));
       }
       for (const x of todos) if (x.obs) linhas.push(`Obs.${todos.length > 1 ? ` (${x.hora})` : ""}: ${x.obs}`);
     }
@@ -1184,6 +1281,12 @@
         if (/a confirmar/i.test(atual.obs || "")) atual.obs = m.obs;
       }
     }
+    // Versão 6: liturgia (1º Salmos e Hinos trinitário, 2º do ofertório, depois 2 louvores). Os cultos
+    // que estavam com o padrão antigo (1 Salmos e Hinos + 3 louvores) passam a 2 + 2.
+    if ((Number(state.versao) || 0) < 6) {
+      s.regras.primeiroHinoTags = s.regras.primeiroHinoTags || (s.regras.soleneTagsHinario && s.regras.soleneTagsHinario.length ? s.regras.soleneTagsHinario.slice() : ["trinitario"]);
+      s.cultos = s.cultos.map((c) => (c.musicas && Number(c.musicas.hino) === 1 && Number(c.musicas.louvor) === 3 ? Object.assign({}, c, { musicas: { hino: 2, louvor: 2 } }) : c));
+    }
     // Versão 5: o sorteio passa a usar só quem marcou "posso" no dia.
     if ((Number(state.versao) || 0) < 5) {
       s.regras.soQuemPode = true;
@@ -1192,7 +1295,7 @@
     delete s.liturgias;
     delete s.oficiais;
     delete s.exemplo;
-    s.versao = 5;
+    s.versao = 6;
     return s;
   }
 
@@ -1201,7 +1304,7 @@
     parseData, isoData, somarDias, diasEntre, diaSemana, semanaDoMes, fimDoMes,
     formatarData, formatarPeriodo, indisponivelEm,
     criarAleatorio, novoId, porId, normalizar, rotuloMusica, nomeFuncao, nomeTag, nomeTipo,
-    nivelFuncao, tagsExigidas, aptaSolene, listarOcorrencias, montarUsos,
+    nivelFuncao, tagsExigidas, aptaSolene, momentoDaMusica, exigidasDaVaga, ordenarLiturgia, aplicarLiturgia, listarOcorrencias, montarUsos,
     liderDe, vincularCultos, sincronizarCulto, sincronizarEscala,
     candidatosPessoa, candidatosMusica,
     gerarEscala, preencherCulto, adicionarCultoExtra, sortearCampo, sortearCulto, colocarMusica, moverMusica,

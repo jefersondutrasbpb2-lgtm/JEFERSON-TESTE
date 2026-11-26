@@ -509,6 +509,7 @@
       }
     }
     const base = D.configuracaoBase();
+    const versaoAntes = Number(((remoto || salvoLocal) || {}).versao) || 0;
     if (remoto) state = E.migrar(remoto, base, D.repertorio());
     else if (salvoLocal) state = E.migrar(salvoLocal, base, D.repertorio());
     else state = estadoInicial();
@@ -523,6 +524,10 @@
     garantirEscalaAtual();
     // Respostas que chegaram enquanto o app estava fechado entram na escala agora.
     const ajusteInicial = !ui.somenteLeitura && ui.coordena ? ajustarEscalas() : "";
+    // Versão 6: as escalas em aberto passam uma vez para a ordem da liturgia (trinitário, ofertório, louvores).
+    if (versaoAntes && versaoAntes < 6 && !ui.somenteLeitura && ui.coordena) {
+      for (const esc of E.escalasAtivas(state, hoje())) E.aplicarLiturgia(state, esc, hoje(), E.criarAleatorio((Number(esc.seed) || 1) + 6));
+    }
     if (ui.somenteLeitura) mostrarSalvo("offline", "Sem conexão");
     else if (ui.coordena) salvar(); // grava a migração (ou os dados iniciais) e leva para o servidor o que estava só no aparelho
     else mostrarSalvo("ok", armazem.db ? "Conectado" : "Neste aparelho");
@@ -826,10 +831,11 @@
         const p = porId(state.pessoas, v.pessoaId);
         return h("span", { class: `pessoa leitura${p ? "" : " vazia"}` }, p ? [avatar(p), p.nome] : "a definir");
       }))));
-    const musicas = base.musicas.map((v) => {
+    const musicas = base.musicas.map((v, k) => {
       const m = porId(state.musicas, v.id);
       return h("li", { class: "item" }, h("span", { class: `marcador ${v.tipo === "hino" ? "hino" : "louvor"}`, style: "min-width:40px;height:32px" }, v.tipo === "hino" ? (m && m.numero ? m.numero : "SH") : icone("musica")),
-        h("span", {}, h("span", { class: "t" }, m ? (m.titulo || `Salmos e Hinos nº ${m.numero}`) : `${E.nomeTipo(v.tipo)} a definir`), m && m.tom ? h("span", { class: "s" }, ` · tom ${m.tom}`) : null), h("span"));
+        h("span", {}, h("span", { class: "momento", "data-momento": E.momentoDaMusica(base, k).id }, E.momentoDaMusica(base, k).nome), h("br"),
+          h("span", { class: "t" }, m ? (m.titulo || `Salmos e Hinos nº ${m.numero}`) : `${E.nomeTipo(v.tipo)} a definir`), m && m.tom ? h("span", { class: "s" }, ` · tom ${m.tom}`) : null), h("span"));
     });
     return h("section", { class: "cartao largo-2" },
       h("div", { class: "destaque-culto" },
@@ -1095,17 +1101,21 @@
       const a = ehSeguidor ? null : aviso(`m:${k}`);
       const tags = m ? (m.tags || []).filter((t) => ["trinitario", "cristocentrico", "doutrinario"].includes(t)).map((t) => E.nomeTag(state, t)).join(" · ") : "";
       const nome = m ? E.rotuloMusica(m) : "música";
+      const momento = E.momentoDaMusica(mostrado, k);
+      const vizinho = (d) => mostrado.musicas[k + d] && mostrado.musicas[k + d].tipo === vaga.tipo;
       return h("li", {},
         h("button", {
           class: `musica${m ? "" : " vazia"}`, "data-nivel": a ? a.nivel : null, title: a ? a.msg : null,
+          "aria-label": `${momento.nome}: ${m ? E.rotuloMusica(m) : "a definir"}${a ? `. ${a.msg}` : ""}`,
           onclick: () => (ehSeguidor ? escolherOrdem(escala, mci, k, culto) : escolherMusica(escala, ci, k)),
         },
+          h("span", { class: "momento", "data-momento": momento.id }, momento.nome),
           h("b", {}, m ? E.rotuloMusica(m) : `${E.nomeTipo(vaga.tipo)} a definir`),
           h("span", { class: "fixa" }, !ehSeguidor && fixo.has(`m:${k}`) ? icone("pino") : null),
           h("span", { class: "sub" }, [E.nomeTipo(vaga.tipo), m && m.tom ? `tom ${m.tom}` : "", tags, a ? a.msg : ""].filter(Boolean).join(" · "))),
         h("span", { class: "ordem" },
-          h("button", { class: "btn icone", "aria-label": `Subir ${nome}`, disabled: k === 0 || null, onclick: () => mudou(() => E.moverMusica(mostrado, k, -1)) }, icone("cima")),
-          h("button", { class: "btn icone", "aria-label": `Descer ${nome}`, disabled: k === mostrado.musicas.length - 1 || null, onclick: () => mudou(() => E.moverMusica(mostrado, k, 1)) }, icone("baixo"))));
+          h("button", { class: "btn icone", "aria-label": `Subir ${nome}`, disabled: !vizinho(-1) || null, onclick: () => mudou(() => E.moverMusica(mostrado, k, -1)) }, icone("cima")),
+          h("button", { class: "btn icone", "aria-label": `Descer ${nome}`, disabled: !vizinho(1) || null, onclick: () => mudou(() => E.moverMusica(mostrado, k, 1)) }, icone("baixo"))));
     });
 
     const notas = grupo.filter((x) => x.obs);
@@ -1225,7 +1235,8 @@
     const culto = escala.cultos[ci];
     const vaga = culto.musicas[k];
     const cands = E.candidatosMusica(state, escala, ci, k);
-    const exigidas = E.tagsExigidas(state, vaga.tipo, culto.solene);
+    const exigidas = E.exigidasDaVaga(state, culto, k);
+    const momento = E.momentoDaMusica(culto, k);
     const usos = usosMusicas();
     const uso = (o) => usos[o.id] || SEM_USO;
     const op = (c) => {
@@ -1234,8 +1245,8 @@
       return { c, id: c.musica.id, rotulo: E.rotuloMusica(c.musica), busca: `${c.musica.numero} ${c.musica.titulo} ${c.musica.autor} ${assuntoDe(c.musica)} ${E.tambemServeEm(c.musica).map((x) => x.nome).join(" ")}`, direita: [st ? st.nome : tema ? tema.nome : "", c.musica.tom ? `tom ${c.musica.tom}` : ""].filter(Boolean).join(" · "), meta: metaMusica(c) };
     };
     escolher({
-      titulo: E.nomeTipo(vaga.tipo),
-      sub: `${E.formatarData(culto.data, "longa")} · ${culto.nome}${exigidas.length ? ` · precisa ser ${exigidas.map((t) => E.nomeTag(state, t)).join(" e ")}` : ""}`,
+      titulo: momento.id === "louvor" ? "Louvor" : `${momento.nome} · Salmos e Hinos`,
+      sub: `${E.formatarData(culto.data, "longa")} · ${culto.nome}${exigidas.length ? ` · precisa ser ${exigidas.map((t) => E.nomeTag(state, t)).join(" e ")}` : momento.id === "ofertorio" ? " · qualquer Salmos e Hinos" : ""}`,
       topo: h("div", { class: "pilha pilha-2" },
         h("div", { class: "barra-painel" },
           h("button", { class: "btn tonal", onclick: () => { fecharAtual(); mudou(() => E.sortearCampo(state, escala, ci, `m:${k}`)); } }, icone("sortear"), "Sortear outra música"),
@@ -1246,7 +1257,7 @@
       grupos: [
         { titulo: exigidas.length ? "Seguem a orientação e não foram cantadas há pouco" : "Não foram cantadas há pouco", itens: cands.filter((c) => c.atende && !c.bloqueio).map(op) },
         { titulo: "Cantadas há pouco ou já neste culto", itens: cands.filter((c) => c.atende && c.bloqueio).map(op) },
-        { titulo: "Fora da orientação do culto solene", itens: cands.filter((c) => !c.atende).map(op) },
+        { titulo: momento.id === "trinitario" ? "Não são trinitários" : "Fora da orientação do culto solene", itens: cands.filter((c) => !c.atende).map(op) },
       ],
       filtros: { chave: `musica-${vaga.tipo}`, opcoes: [
         ...FILTROS_USO.map((f) => ({ id: f.id, nome: f.nome, fn: (o) => f.fn(uso(o)), ordem: f.id === "descanso" ? (a, b) => porMaisTempoSemTocar(uso(a), uso(b)) : null })),

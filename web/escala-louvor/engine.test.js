@@ -38,7 +38,7 @@ test("cada culto tem só equipe e músicas, na quantidade configurada", () => {
   const manha = cultoDe(esc, "dom-manha");
   assert.deepEqual(Object.keys(manha).sort(), ["acompanha", "cultoId", "data", "equipe", "hora", "id", "musicas", "nome", "obs", "solene", "travados"]);
   assert.equal(manha.equipe.length, 8);
-  assert.deepEqual(manha.musicas.map((m) => m.tipo), ["hino", "louvor", "louvor", "louvor"]);
+  assert.deepEqual(manha.musicas.map((m) => m.tipo), ["hino", "hino", "louvor", "louvor"]);
   assert.deepEqual(cultoDe(esc, "ter-oracao").musicas.map((m) => m.tipo), ["hino", "hino", "louvor", "louvor"]);
 });
 
@@ -47,11 +47,14 @@ test("a escala quinzenal preenche tudo e cumpre a orientação pastoral nos cult
   const esc = E.gerarEscala(s, { inicio: "2026-10-25", fim: "2026-11-07", seed: 3 });
   assert.ok(esc.cultos.every((c) => todosCampos(c).every(Boolean)), "nenhum campo vazio");
   assert.deepEqual(E.validarEscala(s, esc).filter((a) => a.nivel === "erro"), []);
-  for (const c of esc.cultos.filter((x) => x.solene)) {
-    for (const m of musicasDo(s, c)) {
-      const exig = m.tipo === "louvor" ? ["cristocentrico", "doutrinario"] : ["trinitario"];
-      assert.ok(exig.every((t) => m.tags.includes(t)), `${E.rotuloMusica(m)} em ${c.nome}`);
-    }
+  // Liturgia: em todo culto o 1º Salmos e Hinos é trinitário; no solene os louvores seguem a orientação.
+  for (const c of esc.cultos) {
+    musicasDo(s, c).forEach((m, k) => {
+      const momento = E.momentoDaMusica(c, k).id;
+      const exig = momento === "trinitario" ? ["trinitario"] : m.tipo === "louvor" && c.solene ? ["cristocentrico", "doutrinario"] : [];
+      assert.ok(exig.every((t) => m.tags.includes(t)), `${E.rotuloMusica(m)} (${momento}) em ${c.nome} ${c.data}`);
+    });
+    assert.deepEqual(c.musicas.map((v) => v.tipo), [...c.musicas.filter((v) => v.tipo === "hino"), ...c.musicas.filter((v) => v.tipo === "louvor")].map((v) => v.tipo), "hinos antes dos louvores");
   }
 });
 
@@ -145,7 +148,7 @@ test("a ordem das músicas da noite é mantida quando a manhã troca uma música
   const esc = E.gerarEscala(s, { inicio: "2026-10-25", fim: "2026-10-25", seed: 8 });
   const manha = cultoDe(esc, "dom-manha");
   const noite = cultoDe(esc, "dom-noite");
-  E.moverMusica(noite, 1, 1); // inverte o 1º e o 2º louvor à noite
+  E.moverMusica(noite, 2, 1); // inverte o 1º e o 2º louvor à noite
   const ordemNoite = noite.musicas.map((m) => m.id);
   assert.notDeepEqual(ordemNoite, manha.musicas.map((m) => m.id));
   const antiga = manha.musicas[3].id;
@@ -220,9 +223,10 @@ test("texto do WhatsApp: domingo num bloco só, com a ordem da noite quando muda
   assert.match(txt, /https:\/\/youtu\.be\//);
   assert.doesNotMatch(txt, /Ordem às/);
   assert.doesNotMatch(txt, /Ministro|Dirigente|Pregação/);
-  E.moverMusica(cultoDe(esc, "dom-noite"), 1, 1);
+  assert.match(txt, /🎵 Músicas\n\*Trinitário:\* SH \d+ · .+\n\*Ofertório:\* SH \d+ · .+\n\*Louvor:\*\n1\. .+\n2\. /);
+  E.moverMusica(cultoDe(esc, "dom-noite"), 2, 1);
   txt = E.textoWhatsApp(s, esc);
-  assert.match(txt, /Ordem às 18:00:\n1\. /);
+  assert.match(txt, /Ordem às 18:00:\n\*Trinitário:\* .+\n\*Ofertório:\* .+\n\*Louvor:\*\n1\. /);
 });
 
 test("migra dados salvos com liturgia e oficiais para o formato novo", () => {
@@ -254,8 +258,9 @@ test("migra dados salvos com liturgia e oficiais para o formato novo", () => {
   assert.equal(s.oficiais, undefined);
   assert.equal(s.liturgias, undefined);
   assert.equal(E.porId(s.musicas, "sh1").tipo, "hino");
-  assert.deepEqual(E.porId(s.cultos, "dom-manha").musicas, { hino: 1, louvor: 3 });
-  assert.deepEqual(E.porId(s.cultos, "dom-noite").musicas, { hino: 1, louvor: 3 }); // liturgia sumiu: usa o padrão do culto
+  // 1 hino + 3 louvores (formato antigo) vira a liturgia atual: 2 Salmos e Hinos (trinitário e ofertório) + 2 louvores.
+  assert.deepEqual(E.porId(s.cultos, "dom-manha").musicas, { hino: 2, louvor: 2 });
+  assert.deepEqual(E.porId(s.cultos, "dom-noite").musicas, { hino: 2, louvor: 2 }); // liturgia sumiu: usa o padrão do culto
   const [manha, noite] = s.escalas[0].cultos;
   assert.equal(manha.liturgia, undefined);
   assert.deepEqual(manha.musicas, [{ tipo: "hino", id: "sh1" }, { tipo: "louvor", id: "lv1" }, { tipo: "louvor", id: null }]);
@@ -324,7 +329,7 @@ test("versão 5: dados antigos passam a sortear só quem marcou que pode", () =>
   s.regras = Object.assign({}, s.regras, { soQuemRespondeu: false });
   delete s.regras.soQuemPode;
   const m = E.migrar(s, D.configuracaoBase());
-  assert.equal(m.versao, 5);
+  assert.equal(m.versao, 6);
   assert.equal(m.regras.soQuemPode, true);
   assert.equal("soQuemRespondeu" in m.regras, false);
 });
@@ -531,6 +536,42 @@ test("texto do WhatsApp de um dia só", () => {
   assert.equal(quinta.split("\n")[0], tudo.split("\n")[0], "mesmo título");
 });
 
+test("liturgia: trinitário, ofertório e louvores; escalas antigas se ajustam", () => {
+  const s = novoEstado();
+  // Escala feita no formato antigo do domingo: 1 Salmos e Hinos (não trinitário) depois de um louvor e 3 louvores.
+  const esc = E.gerarEscala(s, { inicio: "2026-11-01", fim: "2026-11-01", seed: 2 });
+  const manha = cultoDe(esc, "dom-manha");
+  const naoTrinitario = s.musicas.find((m) => m.tipo === "hino" && !(m.tags || []).includes("trinitario"));
+  const louvores = s.musicas.filter((m) => m.tipo === "louvor" && (m.tags || []).includes("cristocentrico") && (m.tags || []).includes("doutrinario"));
+  manha.musicas = [{ tipo: "louvor", id: louvores[0].id }, { tipo: "hino", id: naoTrinitario.id }, { tipo: "louvor", id: louvores[1].id }, { tipo: "louvor", id: louvores[2].id }];
+  manha.travados = ["m:2"]; // o 2º louvor foi fixado à mão
+  // Na tela: o 1º hino é o "Trinitário" e exige a etiqueta; o 2º é o "Ofertório", livre.
+  E.ordenarLiturgia(manha);
+  assert.deepEqual(manha.musicas.map((v) => v.tipo), ["hino", "louvor", "louvor", "louvor"]);
+  assert.deepEqual(manha.travados, ["m:2"], "o fixo acompanha a música");
+  assert.equal(E.momentoDaMusica(manha, 0).nome, "Trinitário");
+  assert.ok(E.validarEscala(s, esc).some((a) => a.campo === "m:0" && a.nivel === "erro" && /1º Salmos e Hinos/.test(a.msg)));
+  // Aplicar a liturgia: 2 hinos (o 1º trinitário) + 2 louvores; o louvor fixado fica.
+  const n = E.aplicarLiturgia(s, esc, "2026-10-26", () => 0);
+  assert.equal(n, 1);
+  assert.deepEqual(manha.musicas.map((v) => v.tipo), ["hino", "hino", "louvor", "louvor"]);
+  const hino1 = E.porId(s.musicas, manha.musicas[0].id);
+  assert.ok(hino1.tags.includes("trinitario"), "o 1º é trinitário");
+  assert.ok(manha.musicas.every((v) => v.id), "nenhuma vaga vazia");
+  assert.ok(manha.musicas.some((v) => v.id === louvores[1].id), "o louvor fixado ficou");
+  assert.equal(E.momentoDaMusica(manha, 1).nome, "Ofertório");
+  // A noite (que repete a manhã) segue a mesma liturgia.
+  assert.deepEqual(cultoDe(esc, "dom-noite").musicas.map((v) => v.tipo), ["hino", "hino", "louvor", "louvor"]);
+  // Mover não deixa um louvor passar à frente dos hinos.
+  const antes = manha.musicas.map((v) => v.id);
+  E.moverMusica(manha, 2, -1);
+  assert.deepEqual(manha.musicas.map((v) => v.id), antes);
+  // Acrescentar um Salmos e Hinos põe a vaga junto dos outros hinos.
+  const k = E.adicionarMusica(manha, "hino");
+  assert.equal(k, 2);
+  assert.deepEqual(manha.musicas.map((v) => v.tipo), ["hino", "hino", "hino", "louvor", "louvor"]);
+});
+
 test("dias de culto do período agrupam os cultos de cada dia", () => {
   const s = novoEstado();
   const dias = E.diasDeCulto(s, "2026-10-25", "2026-10-31");
@@ -547,7 +588,7 @@ test("a migração completa a seção Trindade do Salmos e Hinos sem duplicar", 
   s.musicas = s.musicas.filter((m) => !["sh32", "sh33", "sh34", "sh35", "sh228"].includes(m.id));
   E.porId(s.musicas, "sh30").titulo = "";
   const m = E.migrar(s, D.configuracaoBase(), D.repertorio());
-  assert.equal(m.versao, 5);
+  assert.equal(m.versao, 6);
   for (const id of ["sh32", "sh33", "sh34", "sh35", "sh228"]) assert.ok(E.porId(m.musicas, id), id);
   assert.equal(E.porId(m.musicas, "sh30").titulo, "Vem, ó Todo-Poderoso!");
   assert.equal(m.musicas.filter((x) => x.id === "sh29").length, 1);
@@ -618,7 +659,7 @@ test("versão 4: entra a coletânea, sem duplicar, e completa o 232 e o 247", ()
   s.musicas.push({ id: "m-manual", tipo: "hino", numero: "640", titulo: "Castelo Forte", tags: [] });
   const m = E.migrar(s, D.configuracaoBase(), D.repertorio());
   const hinos = m.musicas.filter((x) => x.tipo === "hino");
-  assert.equal(m.versao, 5);
+  assert.equal(m.versao, 6);
   assert.equal(hinos.filter((x) => x.numero === "640").length, 1, "não duplica hino que a igreja já tinha");
   assert.equal(hinos.filter((x) => x.numero === "29").length, 1);
   assert.equal(E.porId(m.musicas, "sh247").titulo, "Santo! Santo! Santo!");

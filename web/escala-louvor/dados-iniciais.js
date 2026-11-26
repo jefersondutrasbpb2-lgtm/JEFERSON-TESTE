@@ -54,6 +54,8 @@
     // Orientação pastoral: nos cultos de domingo (solenes), salmos e hinos
     // trinitários e louvores cristocêntricos de forte conteúdo doutrinário.
     soleneTagsHinario: ["trinitario"],
+    // Liturgia: o 1º Salmos e Hinos de todo culto é trinitário; o 2º (ofertório) é livre; depois os louvores.
+    primeiroHinoTags: ["trinitario"],
     soleneTagsLouvor: ["cristocentrico", "doutrinario"],
     intervaloMusicaSemanas: 3,
     permitirAcumular: false,
@@ -76,9 +78,9 @@
   ];
 
   const cultos = [
-    { id: "dom-manha", nome: "Culto matinal e EBD", diaSemana: 0, hora: "09:00", semanas: [], solene: true, ativo: true, equipe: equipeDomingo, musicas: { hino: 1, louvor: 3 } },
+    { id: "dom-manha", nome: "Culto matinal e EBD", diaSemana: 0, hora: "09:00", semanas: [], solene: true, ativo: true, equipe: equipeDomingo, musicas: { hino: 2, louvor: 2 } },
     // Mesmo grupo e mesmas músicas do culto da manhã; muda só a ordem, se preciso.
-    { id: "dom-noite", nome: "Culto solene", diaSemana: 0, hora: "18:00", semanas: [], solene: true, ativo: true, equipe: equipeDomingo, musicas: { hino: 1, louvor: 3 }, acompanha: "dom-manha" },
+    { id: "dom-noite", nome: "Culto solene", diaSemana: 0, hora: "18:00", semanas: [], solene: true, ativo: true, equipe: equipeDomingo, musicas: { hino: 2, louvor: 2 }, acompanha: "dom-manha" },
     { id: "ter-oracao", nome: "Culto de oração", diaSemana: 2, hora: "19:30", semanas: [], solene: false, ativo: true, equipe: equipeSemana, musicas: { hino: 2, louvor: 2 } },
     { id: "qui-doutrina", nome: "Culto de doutrina (estudo bíblico)", diaSemana: 4, hora: "19:30", semanas: [], solene: false, ativo: true, equipe: equipeSemana, musicas: { hino: 2, louvor: 2 } },
   ];
@@ -327,7 +329,7 @@
   ];
 
   function configuracaoBase() {
-    return JSON.parse(JSON.stringify({ versao: 5, igreja: { nome: "IEC Pombal", link: "https://escalas.igrejacongregacionalpombal.com.br" }, funcoes, tags, regras, cultos }));
+    return JSON.parse(JSON.stringify({ versao: 6, igreja: { nome: "IEC Pombal", link: "https://escalas.igrejacongregacionalpombal.com.br" }, funcoes, tags, regras, cultos }));
   }
 
   function repertorio() {

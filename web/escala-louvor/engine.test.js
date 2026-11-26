@@ -218,7 +218,7 @@ test("texto do WhatsApp: domingo num bloco só, com a ordem da noite quando muda
   assert.equal(E.rotuloMusica(E.porId(s.musicas, "sh247")), "SH 247 · Santo! Santo! Santo!");
   const esc = E.gerarEscala(s, { inicio: "2026-10-25", fim: "2026-10-25", seed: 1 });
   let txt = E.textoWhatsApp(s, esc, { links: true });
-  assert.match(txt, /\*Dom, 25\/10\*\n_Culto matinal e EBD · 09:00 {2}\| {2}Culto solene · 18:00_/);
+  assert.match(txt, /━+\n📅 \*CULTO DE DOMINGO · 25\/10\*\n_Culto matinal e EBD · 09:00 {2}\| {2}Culto solene · 18:00_/);
   assert.match(txt, /Vocal: \S+, \S+, \S+/);
   assert.match(txt, /https:\/\/youtu\.be\//);
   assert.doesNotMatch(txt, /Ordem às/);
@@ -525,13 +525,13 @@ test("texto do WhatsApp de um dia só", () => {
   const tudo = E.textoWhatsApp(s, esc);
   const domingo = E.textoWhatsApp(s, esc, { data: "2026-10-25" });
   const quinta = E.textoWhatsApp(s, esc, { data: "2026-10-29" });
-  assert.match(tudo, /Ter, 27\/10/);
+  assert.match(tudo, /CULTO DE TERÇA-FEIRA · 27\/10/);
   // Domingo: manhã e noite juntas, sem os outros dias nem o período.
-  assert.match(domingo, /\*Dom, 25\/10\*/);
+  assert.match(domingo, /📅 \*CULTO DE DOMINGO · 25\/10\*/);
   assert.match(domingo, /Culto solene/);
   assert.doesNotMatch(domingo, /27\/10|29\/10|25\/10 a /);
   // Quinta: só a quinta.
-  assert.match(quinta, /\*Qui, 29\/10\*/);
+  assert.match(quinta, /📅 \*CULTO DE QUINTA-FEIRA · 29\/10\*/);
   assert.doesNotMatch(quinta, /25\/10|27\/10/);
   assert.equal(quinta.split("\n")[0], tudo.split("\n")[0], "mesmo título");
 });

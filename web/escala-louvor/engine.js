@@ -1134,7 +1134,11 @@
       if (opcoes.data && c.data !== opcoes.data) continue;
       const seguidores = escala.cultos.filter((x) => liderDe(escala, x) === c);
       const todos = [c, ...seguidores];
-      linhas.push("", `*${formatarData(c.data, "dia")}*`, `_${todos.map((x) => (x.hora ? `${x.nome} · ${x.hora}` : x.nome)).join("  |  ")}_`);
+      // Cabeçalho do dia em destaque: quem lê no WhatsApp acha logo o seu culto.
+      const dia = DIAS[diaSemana(c.data)];
+      const diaCheio = `${dia}${diaSemana(c.data) % 6 ? "-feira" : ""}`.toUpperCase();
+      linhas.push("", "━━━━━━━━━━━━━━", `📅 *CULTO DE ${diaCheio} · ${formatarData(c.data, "curta")}*`,
+        `_${todos.map((x) => (x.hora ? `${x.nome} · ${x.hora}` : x.nome)).join("  |  ")}_`);
       for (const g of equipePorFuncao(c)) {
         const nomes = g.vagas.map((v) => (porId(state.pessoas, v.pessoaId) || {}).nome || "a definir");
         linhas.push(`${nomeFuncao(state, g.funcao)}: ${nomes.join(", ")}`);

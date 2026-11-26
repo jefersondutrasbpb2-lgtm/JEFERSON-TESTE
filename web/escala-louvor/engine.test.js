@@ -572,6 +572,23 @@ test("liturgia: trinitário, ofertório e louvores; escalas antigas se ajustam",
   assert.deepEqual(manha.musicas.map((v) => v.tipo), ["hino", "hino", "hino", "louvor", "louvor"]);
 });
 
+test("liturgia só no domingo: na semana Salmos e Hinos e louvores são livres", () => {
+  const s = novoEstado();
+  const esc = E.gerarEscala(s, { inicio: "2026-10-25", fim: "2026-10-29", seed: 5 });
+  const ter = cultoDe(esc, "ter-oracao");
+  assert.deepEqual(ter.musicas.map((v, k) => E.momentoDaMusica(ter, k).nome), ["Salmos e Hinos", "Salmos e Hinos", "Louvor", "Louvor"]);
+  assert.deepEqual(ter.musicas.map((v, k) => E.exigidasDaVaga(s, ter, k)), [[], [], [], []]);
+  const domingo = cultoDe(esc, "dom-manha");
+  assert.deepEqual(domingo.musicas.map((v, k) => E.momentoDaMusica(domingo, k).nome), ["Trinitário", "Ofertório", "Louvor", "Louvor"]);
+  // Um hino qualquer em 1º na terça não é erro.
+  const qualquer = s.musicas.find((m) => m.tipo === "hino" && !(m.tags || []).includes("trinitario"));
+  ter.musicas[0].id = qualquer.id;
+  assert.ok(!E.validarEscala(s, esc).some((a) => a.ci === esc.cultos.indexOf(ter) && /trinitário/.test(a.msg)));
+  const txt = E.textoWhatsApp(s, esc, { data: "2026-10-27" });
+  assert.match(txt, /\*Salmos e Hinos:\*\n1\. .+\n2\. .+\n\*Louvor:\*\n1\. /);
+  assert.doesNotMatch(txt, /Trinitário|Ofertório/);
+});
+
 test("dias de culto do período agrupam os cultos de cada dia", () => {
   const s = novoEstado();
   const dias = E.diasDeCulto(s, "2026-10-25", "2026-10-31");

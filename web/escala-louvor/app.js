@@ -834,7 +834,7 @@
     const musicas = base.musicas.map((v, k) => {
       const m = porId(state.musicas, v.id);
       return h("li", { class: "item" }, h("span", { class: `marcador ${v.tipo === "hino" ? "hino" : "louvor"}`, style: "min-width:40px;height:32px" }, v.tipo === "hino" ? (m && m.numero ? m.numero : "SH") : icone("musica")),
-        h("span", {}, h("span", { class: "momento", "data-momento": E.momentoDaMusica(base, k).id }, E.momentoDaMusica(base, k).nome), h("br"),
+        h("span", {}, base.solene ? [h("span", { class: "momento", "data-momento": E.momentoDaMusica(base, k).id }, E.momentoDaMusica(base, k).nome), h("br")] : null,
           h("span", { class: "t" }, m ? (m.titulo || `Salmos e Hinos nº ${m.numero}`) : `${E.nomeTipo(v.tipo)} a definir`), m && m.tom ? h("span", { class: "s" }, ` · tom ${m.tom}`) : null), h("span"));
     });
     return h("section", { class: "cartao largo-2" },
@@ -1109,7 +1109,7 @@
           "aria-label": `${momento.nome}: ${m ? E.rotuloMusica(m) : "a definir"}${a ? `. ${a.msg}` : ""}`,
           onclick: () => (ehSeguidor ? escolherOrdem(escala, mci, k, culto) : escolherMusica(escala, ci, k)),
         },
-          h("span", { class: "momento", "data-momento": momento.id }, momento.nome),
+          mostrado.solene ? h("span", { class: "momento", "data-momento": momento.id }, momento.nome) : null,
           h("b", {}, m ? E.rotuloMusica(m) : `${E.nomeTipo(vaga.tipo)} a definir`),
           h("span", { class: "fixa" }, !ehSeguidor && fixo.has(`m:${k}`) ? icone("pino") : null),
           h("span", { class: "sub" }, [E.nomeTipo(vaga.tipo), m && m.tom ? `tom ${m.tom}` : "", tags, a ? a.msg : ""].filter(Boolean).join(" · "))),
@@ -1245,7 +1245,7 @@
       return { c, id: c.musica.id, rotulo: E.rotuloMusica(c.musica), busca: `${c.musica.numero} ${c.musica.titulo} ${c.musica.autor} ${assuntoDe(c.musica)} ${E.tambemServeEm(c.musica).map((x) => x.nome).join(" ")}`, direita: [st ? st.nome : tema ? tema.nome : "", c.musica.tom ? `tom ${c.musica.tom}` : ""].filter(Boolean).join(" · "), meta: metaMusica(c) };
     };
     escolher({
-      titulo: momento.id === "louvor" ? "Louvor" : `${momento.nome} · Salmos e Hinos`,
+      titulo: momento.id === "trinitario" || momento.id === "ofertorio" ? `${momento.nome} · Salmos e Hinos` : E.nomeTipo(vaga.tipo),
       sub: `${E.formatarData(culto.data, "longa")} · ${culto.nome}${exigidas.length ? ` · precisa ser ${exigidas.map((t) => E.nomeTag(state, t)).join(" e ")}` : momento.id === "ofertorio" ? " · qualquer Salmos e Hinos" : ""}`,
       topo: h("div", { class: "pilha pilha-2" },
         h("div", { class: "barra-painel" },

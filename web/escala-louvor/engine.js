@@ -162,14 +162,16 @@
   }
 
   /* -------------------------------------------------------- liturgia */
-  // A ordem das músicas no culto: 1º Salmos e Hinos trinitário, 2º Salmos e Hinos do ofertório
-  // (qualquer um) e, depois, os louvores.
+  // A ordem das músicas no culto de domingo (culto solene): 1º Salmos e Hinos trinitário, 2º Salmos e
+  // Hinos do ofertório (qualquer um) e, depois, os louvores. Nos encontros da semana, Salmos e Hinos e
+  // louvores são livres: só ficam os hinos antes dos louvores.
 
   /** Momento da liturgia de cada posição: { id, nome }, pela ordem dentro do tipo. */
   function momentoDaMusica(culto, k) {
     const vaga = culto.musicas[k];
     if (!vaga) return { id: "", nome: "" };
     if (vaga.tipo === "louvor") return { id: "louvor", nome: "Louvor" };
+    if (!culto.solene) return { id: "hino", nome: "Salmos e Hinos" };
     const n = culto.musicas.slice(0, k).filter((v) => v.tipo === "hino").length;
     if (n === 0) return { id: "trinitario", nome: "Trinitário" };
     if (n === 1) return { id: "ofertorio", nome: "Ofertório" };
@@ -177,8 +179,8 @@
   }
 
   /**
-   * Etiquetas que a música desta posição precisa ter: o 1º Salmos e Hinos é sempre trinitário (em qualquer
-   * culto); o do ofertório é livre; no culto solene os louvores seguem a orientação pastoral.
+   * Etiquetas que a música desta posição precisa ter: no culto de domingo (solene) o 1º Salmos e Hinos é
+   * trinitário, o do ofertório é livre e os louvores seguem a orientação pastoral; na semana, tudo livre.
    */
   function exigidasDaVaga(state, culto, k) {
     const vaga = culto.musicas[k];
@@ -1112,10 +1114,13 @@
     const musicasNaLiturgia = (culto) => {
       const linhas = [];
       let n = 0;
+      let atual = "";
       culto.musicas.forEach((v, k) => {
         const momento = momentoDaMusica(culto, k);
-        if (momento.id !== "louvor") return linhas.push(`*${momento.nome}:* ${nomeMusica(v)}`);
-        if (!n) linhas.push("*Louvor:*");
+        if (momento.id === "trinitario" || momento.id === "ofertorio") return linhas.push(`*${momento.nome}:* ${nomeMusica(v)}`);
+        // Na semana, Salmos e Hinos e louvores numerados, cada grupo com o seu título.
+        const grupo = momento.id === "louvor" ? "Louvor" : "Salmos e Hinos";
+        if (grupo !== atual) { linhas.push(`*${grupo}:*`); atual = grupo; n = 0; }
         linhas.push(`${++n}. ${nomeMusica(v)}`);
       });
       return linhas;

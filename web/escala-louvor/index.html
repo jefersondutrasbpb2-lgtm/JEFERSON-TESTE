@@ -545,7 +545,11 @@
   .musica .sub { font-size: var(--t-xs); color: var(--muted); grid-column: 1; }
   .musica.vazia { border-style: dashed; }
   .musica.vazia b { color: var(--muted); font-weight: 500; }
-  .musica .fixa { grid-row: 1 / span 2; grid-column: 2; }
+  .musica .fixa { grid-row: 1 / span 3; grid-column: 2; }
+  /* momento da liturgia: Trinitário · Ofertório · Louvor */
+  .momento { font-size: var(--t-2xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--azul); grid-column: 1; }
+  .momento[data-momento="trinitario"] { color: var(--dourado-tinta); }
+  .momento[data-momento="ofertorio"] { color: var(--ok); }
   .ordem { display: flex; }
   .ordem .btn.icone { width: 40px; min-height: var(--toque-sm); }
   .nota { font-size: var(--t-sm); color: var(--ink-2); background: var(--surface-2); border-radius: var(--r-md); padding: var(--e-2) var(--e-3); white-space: pre-wrap; }
